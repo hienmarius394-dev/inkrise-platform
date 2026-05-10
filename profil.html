@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mon Profil — Inkrise</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root {
+      --bg: #0d0d12;
+      --surface: #16161f;
+      --surface2: #1e1e2e;
+      --accent: #7c6fef;
+      --accent2: #a89af7;
+      --purple: #9b59f5;
+      --text: #f0f0f0;
+      --muted: #7a7a9a;
+      --border: rgba(255,255,255,0.07);
+      --card-bg: #1a1a27;
+      --gold: #f5c842;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(13,13,18,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .nav-logo {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.2rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-decoration: none;
+    }
+    .nav-right { display: flex; align-items: center; gap: 14px; }
+    .nav-user {
+      display: flex; align-items: center; gap: 8px;
+      font-weight: 700; font-size: 0.9rem; color: var(--text);
+    }
+    .nav-avatar-sm {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--purple));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.85rem; font-weight: 900; color: #fff;
+      text-transform: uppercase;
+    }
+    .btn-logout {
+      background: transparent; border: 1px solid var(--border);
+      color: var(--muted); padding: 6px 14px; border-radius: 8px;
+      cursor: pointer; font-size: 0.82rem; font-family: 'Nunito', sans-serif;
+      transition: all .2s;
+    }
+    .btn-logout:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ── HERO PROFIL ── */
+    .profile-hero {
+      position: relative;
+      background: linear-gradient(180deg, #1a0a2e 0%, var(--bg) 100%);
+      padding: 60px 0 0;
+      overflow: hidden;
+    }
+    .profile-hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 60% 50% at 50% 0%, rgba(155,89,245,0.18) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .profile-container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    .profile-top {
+      display: flex;
+      align-items: flex-end;
+      gap: 28px;
+      padding-bottom: 32px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Avatar principal */
+    .avatar-wrap {
+      position: relative; flex-shrink: 0;
+    }
+    .avatar-main {
+      width: 110px; height: 110px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent) 0%, var(--purple) 100%);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2.6rem; font-weight: 900; color: #fff;
+      text-transform: uppercase;
+      border: 4px solid var(--bg);
+      box-shadow: 0 0 0 2px var(--purple), 0 8px 32px rgba(155,89,245,0.3);
+      position: relative; z-index: 1;
+    }
+    .avatar-ring {
+      position: absolute; inset: -6px;
+      border-radius: 50%;
+      background: conic-gradient(var(--accent), var(--purple), var(--accent2), var(--accent));
+      animation: spin 4s linear infinite;
+      z-index: 0;
+      filter: blur(1px);
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Infos profil */
+    .profile-info { flex: 1; min-width: 0; }
+    .profile-username {
+      font-family: 'Bebas Neue', cursive;
+      font-size: 2.4rem;
+      letter-spacing: 2px;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .profile-plan {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(155,89,245,0.15);
+      border: 1px solid rgba(155,89,245,0.3);
+      color: var(--purple);
+      font-size: 0.78rem; font-weight: 800;
+      padding: 3px 12px; border-radius: 20px;
+      text-transform: uppercase; letter-spacing: 1px;
+      margin-bottom: 14px;
+    }
+    .plan-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--purple); }
+
+    .profile-stats {
+      display: flex; gap: 24px; flex-wrap: wrap;
+    }
+    .stat-item { text-align: center; }
+    .stat-num {
+      font-family: 'Bebas Neue', cursive;
+      font-size: 1.5rem; color: var(--text); line-height: 1;
+    }
+    .stat-label { font-size: 0.72rem; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+
+    /* ── TABS PROFIL ── */
+    .profile-tabs {
+      display: flex; gap: 0;
+      border-bottom: 1px solid var(--border);
+      margin-top: 8px;
+    }
+    .ptab {
+      padding: 14px 22px;
+      font-weight: 700; font-size: 0.88rem;
+      color: var(--muted);
+      cursor: pointer; border: none; background: none;
+      border-bottom: 2px solid transparent;
+      transition: all .2s;
+      font-family: 'Nunito', sans-serif;
+      letter-spacing: 0.3px;
+    }
+    .ptab:hover { color: var(--text); }
+    .ptab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+    /* ── CONTENT ── */
+    .profile-content {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 32px 24px;
+    }
+
+    /* Section titre */
+    .section-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .section-title {
+      font-family: 'Bebas Neue', cursive;
+      font-size: 1.6rem; letter-spacing: 1.5px;
+      position: relative;
+    }
+    .section-title::after {
+      content: '';
+      display: block;
+      width: 40px; height: 3px;
+      background: var(--accent);
+      border-radius: 2px;
+      margin-top: 4px;
+    }
+
+    /* ── BANNER CRÉATEUR ── */
+    .creator-banner {
+      background: linear-gradient(135deg, #1a0835 0%, #0d1a35 100%);
+      border: 1px solid rgba(155,89,245,0.25);
+      border-radius: 16px;
+      padding: 28px 32px;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      margin-bottom: 36px;
+      position: relative;
+      overflow: hidden;
+    }
+    .creator-banner::before {
+      content: '';
+      position: absolute;
+      right: -40px; top: -40px;
+      width: 200px; height: 200px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(155,89,245,0.15) 0%, transparent 70%);
+    }
+    .creator-banner-icon {
+      font-size: 3rem; flex-shrink: 0;
+    }
+    .creator-banner-text { flex: 1; }
+    .creator-banner-text h3 {
+      font-size: 1.15rem; font-weight: 800; margin-bottom: 6px;
+    }
+    .creator-banner-text p {
+      font-size: 0.85rem; color: var(--muted); line-height: 1.5;
+    }
+    .btn-creator {
+      background: linear-gradient(135deg, var(--purple), #5e2dcf);
+      color: #fff; border: none;
+      padding: 12px 24px; border-radius: 10px;
+      font-weight: 800; font-size: 0.9rem;
+      cursor: pointer; white-space: nowrap;
+      font-family: 'Nunito', sans-serif;
+      transition: all .25s;
+      box-shadow: 0 4px 20px rgba(155,89,245,0.35);
+    }
+    .btn-creator:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 28px rgba(155,89,245,0.5);
+    }
+
+    /* ── MANGA CARDS ── */
+    .manga-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 18px;
+    }
+    .manga-card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      transition: transform .25s, box-shadow .25s;
+      cursor: pointer;
+    }
+    .manga-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 36px rgba(0,0,0,0.4);
+      border-color: rgba(255,94,58,0.3);
+    }
+    .manga-cover {
+      width: 100%; aspect-ratio: 2/3;
+      object-fit: cover;
+      display: block;
+      background: linear-gradient(135deg, #1e1e35, #2e1e3e);
+      position: relative;
+    }
+    .manga-cover-placeholder {
+      width: 100%; aspect-ratio: 2/3;
+      background: linear-gradient(135deg, #1e1e35 0%, #2e1e3e 100%);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2.5rem;
+    }
+    .manga-info { padding: 10px 12px 12px; }
+    .manga-title {
+      font-weight: 800; font-size: 0.85rem;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      margin-bottom: 4px;
+    }
+    .manga-meta {
+      font-size: 0.72rem; color: var(--muted);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .manga-meta span { display: flex; align-items: center; gap: 3px; }
+
+    /* Empty state */
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--muted);
+    }
+    .empty-icon { font-size: 3.5rem; margin-bottom: 16px; }
+    .empty-state h3 { font-size: 1.1rem; color: var(--text); margin-bottom: 8px; font-weight: 800; }
+    .empty-state p { font-size: 0.88rem; line-height: 1.6; }
+
+    /* Btn upload */
+    .btn-upload {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: linear-gradient(135deg, var(--accent), #e0401a);
+      color: #fff; border: none;
+      padding: 11px 22px; border-radius: 10px;
+      font-weight: 800; font-size: 0.88rem;
+      cursor: pointer; margin-top: 18px;
+      font-family: 'Nunito', sans-serif;
+      transition: all .25s;
+      text-decoration: none;
+    }
+    .btn-upload:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(255,94,58,0.4); }
+
+    /* ── TAB PANELS ── */
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* Stats panel */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+    .stat-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px 22px;
+      display: flex; flex-direction: column; gap: 6px;
+    }
+    .stat-card-label { font-size: 0.75rem; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; }
+    .stat-card-num {
+      font-family: 'Bebas Neue', cursive;
+      font-size: 2.2rem;
+      line-height: 1;
+    }
+    .stat-card-num.orange { color: var(--accent); }
+    .stat-card-num.purple { color: var(--purple); }
+    .stat-card-num.gold { color: var(--gold); }
+    .stat-card-num.green { color: #4ade80; }
+
+    /* Infos panel */
+    .info-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 24px 28px;
+      margin-bottom: 20px;
+    }
+    .info-card h3 { font-size: 1rem; font-weight: 800; margin-bottom: 18px; color: var(--text); }
+    .info-row {
+      display: flex; align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+      gap: 16px;
+    }
+    .info-row:last-child { border-bottom: none; }
+    .info-row label { font-size: 0.8rem; color: var(--muted); font-weight: 700; min-width: 100px; }
+    .info-row value { font-size: 0.88rem; color: var(--text); flex: 1; }
+    .info-row input {
+      flex: 1; background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 8px; padding: 8px 12px; color: var(--text);
+      font-size: 0.88rem; font-family: 'Nunito', sans-serif;
+      outline: none; transition: border-color .2s;
+    }
+    .info-row input:focus { border-color: var(--purple); }
+    .btn-save {
+      background: linear-gradient(135deg, var(--purple), #5e2dcf);
+      color: #fff; border: none;
+      padding: 10px 22px; border-radius: 9px;
+      font-weight: 800; font-size: 0.88rem;
+      cursor: pointer; margin-top: 16px;
+      font-family: 'Nunito', sans-serif;
+      transition: all .25s;
+    }
+    .btn-save:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(155,89,245,0.4); }
+
+    /* ── MODAL PLANS ── */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.75);
+      backdrop-filter: blur(6px);
+      z-index: 999;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .modal-overlay.open { display: flex; }
+
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 36px 32px;
+      max-width: 820px;
+      width: 100%;
+      position: relative;
+      animation: slideUp .3s ease;
+    }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .modal-close {
+      position: absolute; top: 18px; right: 20px;
+      background: none; border: none; color: var(--muted);
+      font-size: 1.4rem; cursor: pointer;
+      transition: color .2s;
+    }
+    .modal-close:hover { color: var(--text); }
+    .modal-title {
+      font-family: 'Bebas Neue', cursive;
+      font-size: 2rem; letter-spacing: 2px; text-align: center;
+      margin-bottom: 6px;
+    }
+    .modal-sub { text-align: center; color: var(--muted); font-size: 0.88rem; margin-bottom: 30px; }
+
+    .plans-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+    @media (max-width: 640px) { .plans-grid { grid-template-columns: 1fr; } }
+
+    .plan-card {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px 20px;
+      text-align: center;
+      transition: all .25s;
+      position: relative;
+    }
+    .plan-card.featured {
+      border-color: var(--purple);
+      background: linear-gradient(180deg, rgba(155,89,245,0.08), var(--bg));
+    }
+    .plan-badge {
+      position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+      background: linear-gradient(135deg, var(--purple), #5e2dcf);
+      color: #fff; font-size: 0.7rem; font-weight: 800;
+      padding: 3px 14px; border-radius: 20px;
+      text-transform: uppercase; letter-spacing: 1px;
+    }
+    .plan-icon { font-size: 2.2rem; margin-bottom: 12px; }
+    .plan-name { font-family: 'Bebas Neue', cursive; font-size: 1.5rem; letter-spacing: 1px; margin-bottom: 6px; }
+    .plan-price {
+      font-size: 1.8rem; font-weight: 900;
+      margin-bottom: 4px;
+    }
+    .plan-price span { font-size: 0.85rem; font-weight: 600; color: var(--muted); }
+    .plan-desc { font-size: 0.78rem; color: var(--muted); margin-bottom: 18px; line-height: 1.5; }
+    .plan-features { list-style: none; text-align: left; margin-bottom: 22px; display: flex; flex-direction: column; gap: 8px; }
+    .plan-features li { font-size: 0.8rem; display: flex; align-items: flex-start; gap: 8px; }
+    .plan-features li::before { content: '✓'; color: #4ade80; font-weight: 900; flex-shrink: 0; margin-top: 1px; }
+    .plan-features li.no::before { content: '✗'; color: var(--muted); }
+    .btn-plan {
+      width: 100%;
+      padding: 11px 0; border-radius: 10px;
+      font-weight: 800; font-size: 0.88rem;
+      cursor: pointer; border: none;
+      font-family: 'Nunito', sans-serif;
+      transition: all .25s;
+    }
+    .btn-plan.free { background: var(--surface2); color: var(--muted); cursor: default; }
+    .btn-plan.standard {
+      background: linear-gradient(135deg, var(--purple), #5e2dcf);
+      color: #fff;
+    }
+    .btn-plan.standard:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(155,89,245,0.4); }
+    .btn-plan.pro {
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #fff;
+    }
+    .btn-plan.pro:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(255,94,58,0.4); }
+
+    /* ── LOADING ── */
+    .loading-dots {
+      display: flex; align-items: center; justify-content: center;
+      gap: 6px; padding: 40px;
+    }
+    .loading-dots span {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--accent);
+      animation: bounce 1.2s infinite ease-in-out;
+    }
+    .loading-dots span:nth-child(2) { animation-delay: .2s; background: var(--purple); }
+    .loading-dots span:nth-child(3) { animation-delay: .4s; background: var(--accent2); }
+    @keyframes bounce {
+      0%, 80%, 100% { transform: scale(0.6); opacity: 0.5; }
+      40% { transform: scale(1); opacity: 1; }
+    }
+
+    /* Toast */
+    .toast {
+      position: fixed; bottom: 28px; right: 28px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 20px;
+      font-size: 0.88rem; font-weight: 700;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+      z-index: 9999;
+      display: flex; align-items: center; gap: 10px;
+      transform: translateY(80px); opacity: 0;
+      transition: all .3s cubic-bezier(.34,1.56,.64,1);
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast.success { border-color: #4ade80; color: #4ade80; }
+    .toast.error { border-color: var(--accent); color: var(--accent); }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      .profile-top { flex-direction: column; align-items: center; text-align: center; }
+      .profile-stats { justify-content: center; }
+      .creator-banner { flex-direction: column; text-align: center; }
+      .btn-creator { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── NAV ── -->
+<nav>
+  <a href="index.html" class="nav-logo">INK<span style="color:#7c6fef">RISE</span></a>
+  <div class="nav-right">
+    <div class="nav-user">
+      <div class="nav-avatar-sm" id="navInitial">?</div>
+      <span id="navUsername">Chargement…</span>
+    </div>
+    <button class="btn-logout" id="btnLogout">Déconnexion</button>
+  </div>
+</nav>
+
+<!-- ── HERO ── -->
+<div class="profile-hero">
+  <div class="profile-container">
+    <div class="profile-top">
+      <div class="avatar-wrap">
+        <div class="avatar-ring"></div>
+        <div class="avatar-main" id="avatarMain">?</div>
+      </div>
+      <div class="profile-info">
+        <div class="profile-username" id="profileUsername">Chargement…</div>
+        <div class="profile-plan">
+          <span class="plan-dot"></span>
+          <span id="planName">Débutant gratuit</span>
+        </div>
+        <div class="profile-stats">
+          <div class="stat-item">
+            <div class="stat-num" id="statMangas">0</div>
+            <div class="stat-label">Mangas</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-num" id="statVues">0</div>
+            <div class="stat-label">Vues</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-num" id="statLikes">0</div>
+            <div class="stat-label">Likes</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-num" id="statChapitres">0</div>
+            <div class="stat-label">Chapitres</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="profile-tabs">
+      <button class="ptab active" data-tab="mangas">📚 Mes Mangas</button>
+      <button class="ptab" data-tab="stats">📊 Statistiques</button>
+      <button class="ptab" data-tab="infos">⚙️ Mon Compte</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── CONTENT ── -->
+<div class="profile-content">
+
+  <!-- TAB : Mes Mangas -->
+  <div class="tab-panel active" id="tab-mangas">
+    <!-- Banner créateur -->
+    <div class="creator-banner" id="creatorBanner">
+      <div class="creator-banner-icon">🚀</div>
+      <div class="creator-banner-text">
+        <h3>Publie ton premier manga sur Inkrise !</h3>
+        <p>Deviens créateur et partage ton univers avec notre communauté. 0% de commission sur tes ventes.</p>
+      </div>
+      <button class="btn-creator" id="btnOpenPlans">Devenir Créateur ✨</button>
+    </div>
+
+    <div class="section-header">
+      <div class="section-title">Mes Publications</div>
+      <a href="upload.html" class="btn-upload" id="btnUpload" style="display:none;">+ Publier un manga</a>
+    </div>
+
+    <div id="mangaLoading" class="loading-dots">
+      <span></span><span></span><span></span>
+    </div>
+
+    <div class="manga-grid" id="mangaGrid" style="display:none;"></div>
+
+    <div id="mangaEmpty" class="empty-state" style="display:none;">
+      <div class="empty-icon">📖</div>
+      <h3>Aucun manga publié pour l'instant</h3>
+      <p>Tu n'as pas encore publié de manga.<br>Commence dès maintenant et partage ton univers !</p>
+      <button class="btn-upload" onclick="document.getElementById('btnOpenPlans').click()">Commencer à publier</button>
+    </div>
+  </div>
+
+  <!-- TAB : Statistiques -->
+  <div class="tab-panel" id="tab-stats">
+    <div class="section-header">
+      <div class="section-title">Mes Statistiques</div>
+    </div>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-card-label">Vues totales</div>
+        <div class="stat-card-num orange" id="statsVues">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-label">Likes reçus</div>
+        <div class="stat-card-num purple" id="statsLikes">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-label">Mangas publiés</div>
+        <div class="stat-card-num gold" id="statsMangas">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-label">Chapitres publiés</div>
+        <div class="stat-card-num green" id="statsChapitres">0</div>
+      </div>
+    </div>
+    <div class="info-card">
+      <h3>📈 Activité</h3>
+      <div style="color:var(--muted); font-size:0.88rem; padding:20px 0; text-align:center;">
+        Les graphiques d'activité détaillés seront disponibles avec le plan Créateur Standard ou Pro.
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB : Mon Compte -->
+  <div class="tab-panel" id="tab-infos">
+    <div class="section-header">
+      <div class="section-title">Mon Compte</div>
+    </div>
+    <div class="info-card">
+      <h3>👤 Informations personnelles</h3>
+      <div class="info-row">
+        <label>Nom d'affichage</label>
+        <input type="text" id="inputUsername" placeholder="Ton nom d'utilisateur" />
+      </div>
+      <div class="info-row">
+        <label>Email</label>
+        <value id="displayEmail" style="color:var(--muted);">—</value>
+      </div>
+      <div class="info-row">
+        <label>Membre depuis</label>
+        <value id="displayJoined" style="color:var(--muted);">—</value>
+      </div>
+      <div class="info-row">
+        <label>Plan actuel</label>
+        <value id="displayPlan" style="color:var(--purple); font-weight:800;">Débutant gratuit</value>
+      </div>
+      <button class="btn-save" id="btnSave">💾 Sauvegarder</button>
+    </div>
+
+    <div class="info-card">
+      <h3>⚡ Changer de plan</h3>
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;">
+        <div style="font-size:0.88rem; color:var(--muted);">Accède à plus de fonctionnalités avec un plan supérieur.</div>
+        <button class="btn-creator" id="btnOpenPlans2">Voir les plans ✨</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ── MODAL PLANS ── -->
+<div class="modal-overlay" id="plansModal">
+  <div class="modal">
+    <button class="modal-close" id="modalClose">✕</button>
+    <div class="modal-title">CHOISIR UN PLAN</div>
+    <div class="modal-sub">Commence gratuitement, évolue quand tu es prêt.</div>
+    <div class="plans-grid">
+
+      <!-- Free -->
+      <div class="plan-card">
+        <div class="plan-icon">🌱</div>
+        <div class="plan-name">Débutant</div>
+        <div class="plan-price">0€ <span>/ mois</span></div>
+        <div class="plan-desc">Pour découvrir Inkrise et publier tes premiers chapitres.</div>
+        <ul class="plan-features">
+          <li>Jusqu'à 3 mangas</li>
+          <li>10 chapitres par manga</li>
+          <li>Statistiques basiques</li>
+          <li class="no">Contenu Premium</li>
+          <li class="no">Badge Créateur</li>
+          <li class="no">Support prioritaire</li>
+        </ul>
+        <button class="btn-plan free">Plan actuel</button>
+      </div>
+
+      <!-- Standard -->
+      <div class="plan-card featured">
+        <div class="plan-badge">⭐ Populaire</div>
+        <div class="plan-icon">⚡</div>
+        <div class="plan-name">Standard</div>
+        <div class="plan-price">4,99€ <span>/ mois</span></div>
+        <div class="plan-desc">Pour les créateurs sérieux qui veulent grandir.</div>
+        <ul class="plan-features">
+          <li>Mangas illimités</li>
+          <li>Chapitres illimités</li>
+          <li>Statistiques avancées</li>
+          <li>1 manga Premium/mois</li>
+          <li>Badge Créateur</li>
+          <li class="no">Support prioritaire</li>
+        </ul>
+        <button class="btn-plan standard">Choisir Standard</button>
+      </div>
+
+      <!-- Pro -->
+      <div class="plan-card">
+        <div class="plan-icon">🔥</div>
+        <div class="plan-name">Pro</div>
+        <div class="plan-price">9,99€ <span>/ mois</span></div>
+        <div class="plan-desc">Pour les pros qui veulent monétiser leur passion.</div>
+        <ul class="plan-features">
+          <li>Tout du Standard</li>
+          <li>Mangas Premium illimités</li>
+          <li>Analytics complets</li>
+          <li>Badge Pro exclusif</li>
+          <li>Support prioritaire 24/7</li>
+          <li>Mise en avant accueil</li>
+        </ul>
+        <button class="btn-plan pro">Choisir Pro 🔥</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+  const SUPABASE_URL = 'https://upkqdxqskjozcrnkposm.supabase.co';
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVwa3FkeHFza2pvemNybmtwb3NtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgxNTkxMTIsImV4cCI6MjA5MzczNTExMn0.E79sDlt673cS-y3kwvXxbF-hl2ZZT_nNN1HmRHlE8Ek';
+  const { createClient } = supabase;
+  const sb = createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { flowType: 'pkce' } });
+
+  let currentUser = null;
+  let userProfile = null;
+
+  // ── INIT ──
+  async function init() {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) {
+      window.location.href = 'auth.html';
+      return;
+    }
+    currentUser = session.user;
+    await loadProfile();
+    await loadMangas();
+  }
+
+  // ── CHARGER PROFIL ──
+  async function loadProfile() {
+    const { data: profile } = await sb
+      .from('profiles')
+      .select('*')
+      .eq('id', currentUser.id)
+      .single();
+
+    userProfile = profile;
+
+    const username = profile?.username || currentUser.email.split('@')[0];
+    const initial  = username[0].toUpperCase();
+
+    // Nav
+    document.getElementById('navInitial').textContent  = initial;
+    document.getElementById('navUsername').textContent = username;
+
+    // Hero
+    document.getElementById('avatarMain').textContent     = initial;
+    document.getElementById('profileUsername').textContent = username;
+
+    // Compte
+    document.getElementById('inputUsername').value    = username;
+    document.getElementById('displayEmail').textContent = currentUser.email;
+    const joined = new Date(currentUser.created_at).toLocaleDateString('fr-FR', { year:'numeric', month:'long', day:'numeric' });
+    document.getElementById('displayJoined').textContent = joined;
+  }
+
+  // ── CHARGER MANGAS ──
+  async function loadMangas() {
+    document.getElementById('mangaLoading').style.display = 'flex';
+
+    const { data: mangas, error } = await sb
+      .from('mangas')
+      .select('*, chapitres(count), vues(count)')
+      .eq('auteur_id', currentUser.id)
+      .order('created_at', { ascending: false });
+
+    document.getElementById('mangaLoading').style.display = 'none';
+
+    const totalMangas = mangas?.length || 0;
+    let   totalVues   = 0;
+    let   totalLikes  = 0;
+    let   totalChaps  = 0;
+
+    if (mangas && mangas.length > 0) {
+      document.getElementById('mangaGrid').style.display = 'grid';
+      document.getElementById('mangaEmpty').style.display = 'none';
+      document.getElementById('btnUpload').style.display = 'inline-flex';
+
+      const grid = document.getElementById('mangaGrid');
+      grid.innerHTML = '';
+
+      mangas.forEach(m => {
+        const chaps = m.chapitres?.[0]?.count || 0;
+        const vues  = m.vues?.[0]?.count     || 0;
+        const likes = m.likes                 || 0;
+        totalChaps += chaps;
+        totalVues  += vues;
+        totalLikes += likes;
+
+        const card = document.createElement('div');
+        card.className = 'manga-card';
+        card.innerHTML = `
+          <div class="manga-cover-placeholder">📖</div>
+          <div class="manga-info">
+            <div class="manga-title">${m.titre || 'Sans titre'}</div>
+            <div class="manga-meta">
+              <span>👁 ${vues}</span>
+              <span>❤️ ${likes}</span>
+              <span>📄 ${chaps}</span>
+            </div>
+          </div>
+          <div style="padding:0 12px 12px; display:flex; gap:8px;">
+            <a href="gestion-chapitres.html?manga_id=${m.id}" onclick="event.stopPropagation()" style="flex:1;text-align:center;font-size:0.75rem;font-weight:700;padding:7px 0;border-radius:8px;background:rgba(124,111,239,0.15);color:#a594f9;border:1px solid rgba(124,111,239,0.25);text-decoration:none;transition:all .2s;" onmouseover="this.style.background='rgba(124,111,239,0.28)'" onmouseout="this.style.background='rgba(124,111,239,0.15)'">📄 Chapitres</a>
+            <a href="manga.html?id=${m.id}" onclick="event.stopPropagation()" style="flex:1;text-align:center;font-size:0.75rem;font-weight:700;padding:7px 0;border-radius:8px;background:rgba(255,255,255,0.05);color:#9896b8;border:1px solid rgba(255,255,255,0.08);text-decoration:none;transition:all .2s;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">👁 Voir</a>
+          </div>
+        `;
+        card.onclick = () => window.location.href = `gestion-chapitres.html?manga_id=${m.id}`;
+        grid.appendChild(card);
+      });
+    } else {
+      document.getElementById('mangaGrid').style.display = 'none';
+      document.getElementById('mangaEmpty').style.display = 'block';
+    }
+
+    // Stats
+    document.getElementById('statMangas').textContent   = totalMangas;
+    document.getElementById('statVues').textContent     = totalVues;
+    document.getElementById('statLikes').textContent    = totalLikes;
+    document.getElementById('statChapitres').textContent = totalChaps;
+
+    document.getElementById('statsVues').textContent     = totalVues;
+    document.getElementById('statsLikes').textContent    = totalLikes;
+    document.getElementById('statsMangas').textContent   = totalMangas;
+    document.getElementById('statsChapitres').textContent = totalChaps;
+  }
+
+  // ── TABS ──
+  document.querySelectorAll('.ptab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.ptab').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+    });
+  });
+
+  // ── MODAL PLANS ──
+  function openPlans() { document.getElementById('plansModal').classList.add('open'); }
+  function closePlans() { document.getElementById('plansModal').classList.remove('open'); }
+
+  document.getElementById('btnOpenPlans').addEventListener('click', openPlans);
+  document.getElementById('btnOpenPlans2').addEventListener('click', openPlans);
+  document.getElementById('modalClose').addEventListener('click', closePlans);
+  document.getElementById('plansModal').addEventListener('click', e => {
+    if (e.target === e.currentTarget) closePlans();
+  });
+
+  // ── SAUVEGARDER NOM ──
+  document.getElementById('btnSave').addEventListener('click', async () => {
+    const newName = document.getElementById('inputUsername').value.trim();
+    if (!newName) { showToast('Le nom ne peut pas être vide.', 'error'); return; }
+
+    const { error } = await sb
+      .from('profiles')
+      .upsert({ id: currentUser.id, username: newName, updated_at: new Date().toISOString() });
+
+    if (error) {
+      showToast('Erreur lors de la sauvegarde.', 'error');
+    } else {
+      document.getElementById('navUsername').textContent = newName;
+      document.getElementById('profileUsername').textContent = newName;
+      document.getElementById('navInitial').textContent = newName[0].toUpperCase();
+      document.getElementById('avatarMain').textContent = newName[0].toUpperCase();
+      showToast('✅ Profil mis à jour !', 'success');
+    }
+  });
+
+  // ── DÉCONNEXION ──
+  document.getElementById('btnLogout').addEventListener('click', async () => {
+    await sb.auth.signOut();
+    window.location.href = 'index.html';
+  });
+
+  // ── TOAST ──
+  function showToast(msg, type = 'success') {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = `toast ${type} show`;
+    setTimeout(() => t.classList.remove('show'), 3000);
+  }
+
+  // ── LANCER ──
+  init();
+</script>
+</body>
+</html>

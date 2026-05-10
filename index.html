@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inkrise — La plateforme des artistes manga & dessin</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f4f4ef;
+  --bg-2: #ffffff;
+  --bg-3: #ebebeb;
+  --border: #e0e0d8;
+  --orange: #ff6b35;
+  --orange-light: #ff8c5a;
+  --purple: #7c6fef;
+  --teal: #00c9a7;
+  --text: #111111;
+  --text-2: #555555;
+  --text-3: #999999;
+  --radius: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --shadow: 0 2px 12px rgba(0,0,0,0.07);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.10);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+  overflow-x: hidden;
+  padding-bottom: 90px;
+}
+h1,h2,h3,.logo { font-family: 'Nunito', sans-serif; }
+
+/* ── TOP NAV ── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 16px; height: 54px;
+  background: var(--bg-2);
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 1px 8px rgba(0,0,0,0.05);
+}
+.logo { font-size: 20px; font-weight: 900; letter-spacing: -0.5px; color: var(--text); text-decoration: none; }
+.logo span { color: var(--orange); }
+.nav-right { display: flex; align-items: center; gap: 8px; }
+
+.btn-publier {
+  background: var(--orange); color: #fff; border: none; border-radius: 20px;
+  padding: 7px 16px; font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 13px;
+  cursor: pointer; text-decoration: none; transition: all 0.2s; display: none; align-items: center; gap: 5px;
+}
+.btn-publier:hover { background: var(--orange-light); }
+.btn-publier.show { display: inline-flex; }
+
+.nav-icon-btn {
+  width: 36px; height: 36px; border-radius: 50%; background: var(--bg-3); border: none;
+  display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px;
+  position: relative; text-decoration: none; transition: background 0.2s;
+}
+.nav-icon-btn:hover { background: var(--border); }
+.notif-dot {
+  position: absolute; top: 1px; right: 1px; width: 9px; height: 9px;
+  background: #ff3d71; border-radius: 50%; border: 2px solid var(--bg-2); display: none;
+}
+.notif-dot.show { display: block; }
+
+.avatar-btn {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--orange), var(--purple));
+  border: 2px solid var(--bg-2); box-shadow: 0 2px 8px rgba(124,111,239,0.25);
+  display: none; align-items: center; justify-content: center; font-size: 17px;
+  cursor: pointer; text-decoration: none; transition: transform 0.2s;
+}
+.avatar-btn:hover { transform: scale(1.05); }
+.avatar-btn.show { display: flex; }
+
+.btn-connexion {
+  font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 700;
+  padding: 7px 14px; border-radius: 20px; border: 1.5px solid var(--border);
+  background: transparent; color: var(--text-2); cursor: pointer; text-decoration: none; transition: all 0.2s;
+}
+.btn-connexion:hover { border-color: var(--orange); color: var(--orange); }
+
+.hamburger {
+  width: 36px; height: 36px; border-radius: 50%; background: var(--bg-3); border: none;
+  display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 18px;
+  color: var(--text); transition: background 0.2s;
+}
+.hamburger:hover { background: var(--border); }
+
+/* ── MENU DRAWER ── */
+.drawer-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.35); z-index: 150; backdrop-filter: blur(3px);
+}
+.drawer-overlay.open { display: block; }
+
+.drawer {
+  position: fixed; top: 0; right: 0; width: 280px; height: 100%;
+  background: var(--bg-2); z-index: 151;
+  transform: translateX(100%);
+  transition: transform 0.28s cubic-bezier(0.4,0,0.2,1);
+  overflow-y: auto; box-shadow: -4px 0 32px rgba(0,0,0,0.12);
+}
+.drawer.open { transform: translateX(0); }
+
+.drawer-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px; border-bottom: 1px solid var(--border);
+}
+.drawer-logo { font-family: 'Nunito', sans-serif; font-size: 18px; font-weight: 900; text-decoration: none; color: var(--text); }
+.drawer-logo span { color: var(--orange); }
+.drawer-close {
+  width: 32px; height: 32px; border-radius: 50%; background: var(--bg-3); border: none;
+  display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; color: var(--text-2);
+}
+.drawer-section-title {
+  font-size: 10px; font-weight: 800; color: var(--text-3);
+  letter-spacing: 1.5px; text-transform: uppercase; padding: 16px 16px 6px;
+}
+.drawer-item {
+  display: flex; align-items: center; gap: 12px; padding: 10px 12px; margin: 2px 8px;
+  text-decoration: none; color: var(--text); font-weight: 600; font-size: 14px;
+  cursor: pointer; transition: background 0.15s; border: none; background: none;
+  width: calc(100% - 16px); text-align: left; border-radius: 10px;
+}
+.drawer-item:hover { background: var(--bg); }
+.drawer-item-icon {
+  width: 38px; height: 38px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center; font-size: 19px; flex-shrink: 0;
+}
+.drawer-item-label { flex: 1; font-family: 'Nunito', sans-serif; }
+.drawer-item-badge {
+  font-size: 9px; font-weight: 800; padding: 2px 8px; border-radius: 8px;
+  letter-spacing: 0.5px; font-family: 'Nunito', sans-serif;
+}
+.drawer-divider { height: 1px; background: var(--border); margin: 8px 16px; }
+
+/* ── BANNIERE ── */
+.hero-banner {
+  margin: 66px 12px 0; border-radius: var(--radius-lg); overflow: hidden; height: 150px;
+  background: linear-gradient(135deg, #1a1a2e 0%, #2d1b69 50%, #0f3460 100%);
+  position: relative; display: flex; align-items: center; padding: 0 20px;
+}
+.hero-banner-tag {
+  display: inline-block; background: var(--orange); color: #fff;
+  font-family: 'Nunito', sans-serif; font-size: 9px; font-weight: 800;
+  padding: 3px 10px; border-radius: 4px; margin-bottom: 8px; letter-spacing: 0.8px; text-transform: uppercase;
+}
+.hero-banner-title { color: #fff; font-family: 'Nunito', sans-serif; font-weight: 900; font-size: 20px; line-height: 1.2; }
+.hero-banner-sub { color: rgba(255,255,255,0.55); font-size: 11px; margin-top: 5px; }
+.hero-banner-deco {
+  font-size: 70px; opacity: 0.08; position: absolute; right: 16px; top: 50%; transform: translateY(-50%);
+}
+
+/* ── CRÉATEURS ── */
+.creators-section { padding: 14px 12px 0; }
+.creators-scroll { display: flex; gap: 14px; overflow-x: auto; scrollbar-width: none; }
+.creators-scroll::-webkit-scrollbar { display: none; }
+.creator-item { display: flex; flex-direction: column; align-items: center; gap: 4px; flex-shrink: 0; cursor: pointer; }
+.creator-avatar {
+  width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  font-weight: 900; font-size: 18px; color: #fff; font-family: 'Nunito', sans-serif; transition: transform 0.2s;
+}
+.creator-item:hover .creator-avatar { transform: scale(1.06); }
+.creator-name { font-size: 9px; font-weight: 700; color: var(--text-3); max-width: 52px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* ── TABS ── */
+.section-tabs { display: flex; gap: 8px; padding: 14px 12px 0; overflow-x: auto; scrollbar-width: none; }
+.section-tabs::-webkit-scrollbar { display: none; }
+.section-tab {
+  border: none; border-radius: 20px; padding: 7px 15px; font-family: 'Nunito', sans-serif;
+  font-size: 12px; font-weight: 800; cursor: pointer; transition: all 0.2s; white-space: nowrap; flex-shrink: 0;
+}
+.section-tab.active { background: var(--text); color: #fff; }
+.section-tab:not(.active) { background: var(--bg-3); color: var(--text-2); }
+
+/* ── SEC HEADER ── */
+.sec-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 12px 10px; }
+.sec-title { font-family: 'Nunito', sans-serif; font-size: 15px; font-weight: 900; color: var(--text); }
+.sec-title span { color: var(--orange); }
+.sec-link { font-size: 12px; font-weight: 700; color: var(--orange); text-decoration: none; }
+
+/* ── FEATURED SCROLL ── */
+.featured-scroll { display: flex; gap: 10px; padding: 0 12px; overflow-x: auto; scrollbar-width: none; }
+.featured-scroll::-webkit-scrollbar { display: none; }
+.featured-card-h {
+  flex-shrink: 0; width: 155px; background: var(--bg-2); border-radius: var(--radius); overflow: hidden;
+  cursor: pointer; box-shadow: var(--shadow); text-decoration: none; color: inherit; transition: transform 0.2s; display: block;
+}
+.featured-card-h:hover { transform: translateY(-3px); }
+.featured-cover-h { height: 105px; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.featured-badge-h {
+  position: absolute; top: 7px; left: 7px; font-size: 9px; font-weight: 800;
+  padding: 3px 8px; border-radius: 5px; z-index: 2; font-family: 'Nunito', sans-serif;
+}
+.cover-deco-icon { font-size: 38px; opacity: 0.14; }
+.featured-body-h { padding: 8px 10px 10px; }
+.featured-title-h {
+  font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 12px; color: var(--text);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 3px;
+}
+.featured-meta-h { font-size: 10px; color: var(--text-3); display: flex; justify-content: space-between; }
+
+/* ── GRILLE 2 COL ── */
+.manga-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 12px; }
+.manga-card-2 {
+  background: var(--bg-2); border-radius: var(--radius); overflow: hidden; cursor: pointer;
+  box-shadow: var(--shadow); text-decoration: none; color: inherit; transition: transform 0.2s, box-shadow 0.2s; display: block;
+}
+.manga-card-2:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+.manga-cover { height: 125px; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+.manga-time-badge {
+  position: absolute; top: 7px; left: 7px; background: rgba(0,0,0,0.65); color: #fff;
+  font-size: 9px; font-weight: 700; padding: 3px 8px; border-radius: 10px;
+  display: flex; align-items: center; gap: 3px; z-index: 2;
+}
+.manga-cover-deco { font-size: 40px; opacity: 0.13; }
+.manga-card-body { padding: 8px 10px 10px; }
+.manga-card-title {
+  font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 13px; color: var(--text);
+  margin-bottom: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.manga-card-footer { display: flex; justify-content: space-between; align-items: center; }
+.manga-card-genre { font-size: 10px; color: var(--text-3); background: var(--bg); padding: 2px 7px; border-radius: 8px; font-weight: 600; }
+.manga-card-likes { font-size: 11px; font-weight: 800; color: var(--orange); }
+
+.c1{background:linear-gradient(145deg,#26215C,#534AB7)}
+.c2{background:linear-gradient(145deg,#085041,#1D9E75)}
+.c3{background:linear-gradient(145deg,#4A1B0C,#993C1D)}
+.c4{background:linear-gradient(145deg,#4B1528,#D4537E)}
+.c5{background:linear-gradient(145deg,#1a1a3e,#3a3a8a)}
+.c6{background:linear-gradient(145deg,#2C2C2A,#5F5E5A)}
+
+/* ── BOTTOM NAV ── */
+.bottom-nav {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+  background: var(--bg-2); border-top: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-around;
+  padding: 8px 0 16px; box-shadow: 0 -2px 12px rgba(0,0,0,0.06);
+}
+.bottom-nav-item {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  cursor: pointer; text-decoration: none; color: inherit; opacity: 0.4;
+  border: none; background: none; padding: 0 8px; transition: opacity 0.2s;
+}
+.bottom-nav-item.active { opacity: 1; }
+.bottom-nav-item:hover { opacity: 0.75; }
+.bottom-nav-icon { font-size: 21px; }
+.bottom-nav-label { font-size: 9px; font-weight: 800; font-family: 'Nunito', sans-serif; color: var(--text-3); }
+.bottom-nav-item.active .bottom-nav-label { color: var(--orange); }
+.bottom-nav-search {
+  width: 50px; height: 50px; border-radius: 50%; background: var(--orange); border: none;
+  display: flex; align-items: center; justify-content: center; font-size: 21px;
+  cursor: pointer; margin-top: -18px; box-shadow: 0 4px 18px rgba(255,107,53,0.45);
+  transition: all 0.2s; flex-shrink: 0;
+}
+.bottom-nav-search:hover { background: var(--orange-light); transform: scale(1.06); }
+
+/* ── MODAL ── */
+.modal-overlay {
+  display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 200;
+  align-items: center; justify-content: center; backdrop-filter: blur(6px); padding: 20px;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--bg-2); border: 1px solid var(--border); border-radius: var(--radius-xl);
+  padding: 28px; width: 100%; max-width: 720px; max-height: 90vh; overflow-y: auto;
+  position: relative; animation: modalIn 0.25s ease;
+}
+@keyframes modalIn { from{opacity:0;transform:translateY(14px) scale(0.97)}to{opacity:1;transform:translateY(0) scale(1)} }
+.modal-close {
+  position: absolute; top: 12px; right: 12px; background: var(--bg-3); border: none;
+  border-radius: 8px; width: 28px; height: 28px; display: flex; align-items: center;
+  justify-content: center; cursor: pointer; color: var(--text-2); font-size: 15px;
+}
+.modal-tag { font-size: 11px; font-weight: 700; color: var(--text-3); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 6px; display: block; }
+.modal-title { font-family: 'Nunito', sans-serif; font-size: 22px; font-weight: 900; color: var(--text); margin-bottom: 6px; }
+.modal-sub { font-size: 13px; color: var(--text-2); margin-bottom: 22px; line-height: 1.6; }
+.plans-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; }
+.plan-card { background: var(--bg); border: 1.5px solid var(--border); border-radius: var(--radius-lg); padding: 20px 16px; position: relative; }
+.plan-card.featured { border-color: var(--orange); background: rgba(255,107,53,0.04); box-shadow: 0 0 0 1px var(--orange), 0 8px 32px rgba(255,107,53,0.1); }
+.plan-badge { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: var(--orange); color: #fff; font-family: 'Nunito', sans-serif; font-size: 9px; font-weight: 800; padding: 3px 12px; border-radius: 100px; white-space: nowrap; }
+.plan-name { font-family: 'Nunito', sans-serif; font-size: 15px; font-weight: 800; color: var(--text); margin-bottom: 8px; }
+.plan-price { display: flex; align-items: baseline; gap: 4px; margin-bottom: 14px; }
+.plan-price-num { font-family: 'Nunito', sans-serif; font-size: 28px; font-weight: 900; color: var(--text); }
+.plan-price-per { font-size: 11px; color: var(--text-3); }
+.plan-features { list-style: none; margin-bottom: 16px; }
+.plan-features li { font-size: 12px; color: var(--text-2); padding: 5px 0; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 6px; }
+.plan-features li:last-child { border-bottom: none; }
+.plan-features li::before { content: '✓'; color: var(--teal); font-weight: 800; font-size: 11px; flex-shrink: 0; }
+.btn-plan { width: 100%; font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 800; padding: 10px; border-radius: var(--radius); cursor: pointer; transition: all 0.2s; border: 1.5px solid var(--border); background: transparent; color: var(--text); }
+.btn-plan:hover { background: var(--bg-3); }
+.btn-plan.featured { background: var(--orange); border-color: var(--orange); color: #fff; }
+.btn-plan.featured:hover { background: var(--orange-light); }
+
+/* ── FOOTER ── */
+.footer { padding: 24px 16px 12px; text-align: center; }
+.footer-logo { font-family: 'Nunito', sans-serif; font-size: 14px; font-weight: 900; color: var(--text-3); margin-bottom: 4px; }
+.footer-logo span { color: var(--orange); }
+.footer-text { font-size: 11px; color: var(--text-3); }
+.empty-state { grid-column:1/-1; text-align:center; padding:36px; color:var(--text-3); font-size:13px; }
+
+@keyframes fadeUp { from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)} }
+.hero-banner { animation: fadeUp 0.4s ease both; }
+.creators-section { animation: fadeUp 0.4s 0.05s ease both; }
+.manga-grid-2 { animation: fadeUp 0.4s 0.1s ease both; }
+@media(max-width:600px){ .plans-grid{ grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+
+<!-- TOP NAV -->
+<nav>
+  <a href="index.html" class="logo">INK<span>RISE</span></a>
+  <div class="nav-right">
+    <a href="auth.html" class="btn-connexion" id="btnConnexion">Connexion</a>
+    <a href="upload-manga.html" class="btn-publier" id="btnPublier">📤 Publier</a>
+    <div class="nav-icon-btn" id="notifBtn" style="display:none;">🔔<div class="notif-dot" id="notifDot"></div></div>
+    <a href="profil.html" class="avatar-btn" id="avatarBtn">🧑‍🎨</a>
+    <button class="hamburger" onclick="openDrawer()">☰</button>
+  </div>
+</nav>
+
+<!-- DRAWER OVERLAY -->
+<div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
+
+<!-- MENU DRAWER -->
+<div class="drawer" id="drawer">
+  <div class="drawer-header">
+    <a href="index.html" class="drawer-logo">INK<span>RISE</span></a>
+    <button class="drawer-close" onclick="closeDrawer()">✕</button>
+  </div>
+
+  <div class="drawer-section-title">Explorer</div>
+  <a href="index.html" class="drawer-item">
+    <div class="drawer-item-icon" style="background:#fff3ee;">🏠</div>
+    <span class="drawer-item-label">Accueil</span>
+  </a>
+  <a href="#" class="drawer-item">
+    <div class="drawer-item-icon" style="background:#f0effe;">📖</div>
+    <span class="drawer-item-label">Manga & BD</span>
+  </a>
+  <a href="#" class="drawer-item">
+    <div class="drawer-item-icon" style="background:#edfdf8;">🎓</div>
+    <span class="drawer-item-label">Tutoriels</span>
+    <span class="drawer-item-badge" style="background:#edfdf8;color:#00c9a7;">GRATUIT</span>
+  </a>
+  <a href="#" class="drawer-item" onclick="openModal();closeDrawer();">
+    <div class="drawer-item-icon" style="background:#fff3ee;">💎</div>
+    <span class="drawer-item-label">Espace Premium</span>
+    <span class="drawer-item-badge" style="background:#fff3ee;color:var(--orange);">PRO</span>
+  </a>
+  <a href="#" class="drawer-item">
+    <div class="drawer-item-icon" style="background:#f0effe;">👥</div>
+    <span class="drawer-item-label">Communauté Créateur</span>
+  </a>
+
+  <div class="drawer-divider"></div>
+  <div class="drawer-section-title">Mon compte</div>
+
+  <a href="profil.html" class="drawer-item" id="drawerProfil" style="display:none;">
+    <div class="drawer-item-icon" style="background:#f4f4ef;">🧑‍🎨</div>
+    <span class="drawer-item-label">Mon profil</span>
+  </a>
+  <a href="upload-manga.html" class="drawer-item" id="drawerPublier" style="display:none;">
+    <div class="drawer-item-icon" style="background:#fff3ee;">📤</div>
+    <span class="drawer-item-label">Publier un manga</span>
+  </a>
+  <a href="auth.html" class="drawer-item" id="drawerConnexion">
+    <div class="drawer-item-icon" style="background:#f4f4ef;">🔑</div>
+    <span class="drawer-item-label">Connexion / Inscription</span>
+  </a>
+  <button class="drawer-item" id="drawerLogout" style="display:none;" onclick="logout()">
+    <div class="drawer-item-icon" style="background:#fff0f3;">🚪</div>
+    <span class="drawer-item-label" style="color:#ff3d71;">Déconnexion</span>
+  </button>
+</div>
+
+<!-- BANNIERE -->
+<div class="hero-banner">
+  <div>
+    <div class="hero-banner-tag">✨ NOUVELLE PLATEFORME</div>
+    <div class="hero-banner-title">Bienvenue sur<br>Inkrise 🎨</div>
+    <div class="hero-banner-sub">Publie, partage et monétise ta passion manga — gratuitement.</div>
+  </div>
+  <div class="hero-banner-deco">🎨</div>
+</div>
+
+<!-- CRÉATEURS -->
+<div class="creators-section">
+  <div class="creators-scroll" id="creatorsScroll">
+    <div class="creator-item">
+      <div class="creator-avatar" style="background:linear-gradient(135deg,#ff6b35,#ff3d71);">M</div>
+      <div class="creator-name">mario</div>
+    </div>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="section-tabs">
+  <button class="section-tab active">🌟 Originals</button>
+  <button class="section-tab">🔥 Populaires</button>
+  <button class="section-tab">✨ Nouveaux</button>
+</div>
+
+<!-- MIS EN AVANT -->
+<div class="sec-header">
+  <div class="sec-title">INKRISE <span>ORIGINALS</span></div>
+  <a href="#" class="sec-link">Voir tout →</a>
+</div>
+<div class="featured-scroll" id="featuredRow">
+  <div style="padding:20px 0;color:var(--text-3);font-size:13px;">Chargement…</div>
+</div>
+
+<!-- POPULAIRES -->
+<div class="sec-header" style="margin-top:18px;">
+  <div class="sec-title">🔥 <span>Populaires</span> cette semaine</div>
+  <a href="#" class="sec-link">Voir tout →</a>
+</div>
+<div class="manga-grid-2" id="populairesGrid">
+  <div class="empty-state">Chargement…</div>
+</div>
+
+<!-- NOUVEAUX -->
+<div class="sec-header" style="margin-top:18px;">
+  <div class="sec-title">✨ Dernières <span>mises à jour</span></div>
+  <a href="#" class="sec-link">Voir tout →</a>
+</div>
+<div class="manga-grid-2" id="derniersGrid">
+  <div class="empty-state">Chargement…</div>
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+  <div class="footer-logo">INK<span>RISE</span></div>
+  <div class="footer-text">© 2026 Inkrise — La plateforme des artistes</div>
+  <div class="footer-text" style="margin-top:3px;">Wave · Orange Money · MTN MoMo · Stripe</div>
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+  <button class="bottom-nav-item active" onclick="setActiveNav(this)">
+    <span class="bottom-nav-icon">🏠</span>
+    <span class="bottom-nav-label">Accueil</span>
+  </button>
+  <button class="bottom-nav-item" onclick="setActiveNav(this)">
+    <span class="bottom-nav-icon">📖</span>
+    <span class="bottom-nav-label">Manga</span>
+  </button>
+  <button class="bottom-nav-search">🔍</button>
+  <button class="bottom-nav-item" onclick="setActiveNav(this)">
+    <span class="bottom-nav-icon">🎓</span>
+    <span class="bottom-nav-label">Tutoriels</span>
+  </button>
+  <button class="bottom-nav-item" onclick="setActiveNav(this)">
+    <span class="bottom-nav-icon">👥</span>
+    <span class="bottom-nav-label">Communauté</span>
+  </button>
+</div>
+
+<!-- MODAL PLANS -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModalOutside(event)">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <span class="modal-tag">Espace créateur</span>
+    <div class="modal-title">Choisis ton plan créateur</div>
+    <div class="modal-sub">La publication et la monétisation de base sont gratuites. Passe à un plan supérieur pour débloquer ta communauté privée et tes fonctionnalités avancées.</div>
+    <div class="plans-grid">
+      <div class="plan-card">
+        <div class="plan-name">Débutant</div>
+        <div class="plan-price"><span class="plan-price-num">0€</span><span class="plan-price-per">/ pour toujours</span></div>
+        <ul class="plan-features">
+          <li>Publication de mangas</li><li>Monétisation par les vues</li>
+          <li>Profil créateur basique</li><li>Accès à la communauté</li>
+        </ul>
+        <button class="btn-plan" onclick="window.location='auth.html'">Commencer gratuit</button>
+      </div>
+      <div class="plan-card featured">
+        <div class="plan-badge">⭐ POPULAIRE</div>
+        <div class="plan-name">Créateur</div>
+        <div class="plan-price"><span class="plan-price-num">8€</span><span class="plan-price-per">/ mois</span></div>
+        <ul class="plan-features">
+          <li>Tout du plan Débutant</li><li>Communauté privée payante</li>
+          <li>0% commission abonnés</li><li>Analytics basiques</li><li>Support prioritaire</li>
+        </ul>
+        <button class="btn-plan featured">Devenir Créateur</button>
+      </div>
+      <div class="plan-card">
+        <div class="plan-name">Pro</div>
+        <div class="plan-price"><span class="plan-price-num">15€</span><span class="plan-price-per">/ mois</span></div>
+        <ul class="plan-features">
+          <li>Tout du plan Créateur</li><li>Badge vérifié ✓</li>
+          <li>Mise en avant accueil</li><li>Analytics avancés</li><li>Support dédié</li>
+        </ul>
+        <button class="btn-plan">Passer Pro</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL = 'https://upkqdxqskjozcrnkposm.supabase.co'
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVwa3FkeHFza2pvemNybmtwb3NtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgxNTkxMTIsImV4cCI6MjA5MzczNTExMn0.E79sDlt673cS-y3kwvXxbF-hl2ZZT_nNN1HmRHlE8Ek'
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { flowType: 'pkce' } })
+const COLORS = ['c1','c2','c3','c4','c5','c6']
+const TYPE_LABELS = { manga:'Manga', manhwa:'Manhwa', manhua:'Manhua', webtoon:'Webtoon', bd:'BD', roman:'Roman' }
+
+// DRAWER
+function openDrawer() {
+  document.getElementById('drawer').classList.add('open')
+  document.getElementById('drawerOverlay').classList.add('open')
+  document.body.style.overflow = 'hidden'
+}
+function closeDrawer() {
+  document.getElementById('drawer').classList.remove('open')
+  document.getElementById('drawerOverlay').classList.remove('open')
+  document.body.style.overflow = ''
+}
+
+// MODAL
+function openModal() { document.getElementById('modalOverlay').classList.add('open'); document.body.style.overflow='hidden'; }
+function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); document.body.style.overflow=''; }
+function closeModalOutside(e) { if(e.target===document.getElementById('modalOverlay')) closeModal(); }
+document.addEventListener('keydown', e => { if(e.key==='Escape') { closeModal(); closeDrawer(); } })
+
+// BOTTOM NAV
+function setActiveNav(el) {
+  document.querySelectorAll('.bottom-nav-item').forEach(i => i.classList.remove('active'))
+  el.classList.add('active')
+}
+
+// AUTH
+async function checkAuth() {
+  const { data } = await supabaseClient.auth.getSession()
+  if (data.session) {
+    document.getElementById('btnConnexion').style.display = 'none'
+    document.getElementById('btnPublier').classList.add('show')
+    document.getElementById('avatarBtn').classList.add('show')
+    document.getElementById('notifBtn').style.display = 'flex'
+    document.getElementById('drawerProfil').style.display = 'flex'
+    document.getElementById('drawerPublier').style.display = 'flex'
+    document.getElementById('drawerConnexion').style.display = 'none'
+    document.getElementById('drawerLogout').style.display = 'flex'
+  }
+}
+async function logout() {
+  await supabaseClient.auth.signOut()
+  window.location.reload()
+}
+
+// HELPERS
+function timeAgo(dateStr) {
+  const diff = Date.now() - new Date(dateStr).getTime()
+  const h = Math.floor(diff / 3600000), d = Math.floor(diff / 86400000), w = Math.floor(diff / 604800000)
+  if (h < 1) return 'à l\'instant'
+  if (h < 24) return `il y a ${h}h`
+  if (d < 7) return `il y a ${d}j`
+  if (w < 4) return `il y a ${w} sem.`
+  return new Date(dateStr).toLocaleDateString('fr-FR', {day:'numeric', month:'short'})
+}
+function colorClass(i) { return COLORS[i % COLORS.length] }
+function emptyState(msg) { return `<div class="empty-state">${msg}</div>` }
+
+// FEATURED
+async function loadFeatured() {
+  const { data: mangas } = await supabaseClient.from('mangas')
+    .select('id, titre, type, vues, likes, created_at, cover_url, profiles(username)')
+    .eq('public', true).eq('brouillon', false).order('likes', { ascending: false }).limit(6)
+  const row = document.getElementById('featuredRow')
+  if (!mangas || mangas.length === 0) {
+    row.innerHTML = `<div style="padding:20px 0;color:var(--text-3);font-size:13px;">Aucun manga en avant pour l'instant.</div>`
+    return
+  }
+  const badges = [
+    { text:'⭐ MIS EN AVANT', bg:'#7c6fef', color:'#fff' },
+    { text:'🆕 NOUVEAU',      bg:'#00c9a7', color:'#fff' },
+    { text:'🔥 TENDANCE',     bg:'#ff6b35', color:'#fff' },
+  ]
+  row.innerHTML = mangas.map((m, i) => {
+    const badge = badges[i % 3]
+    const views = m.vues > 999 ? (m.vues/1000).toFixed(1)+'k' : m.vues || 0
+    const bg = m.cover_url ? `background:url('${m.cover_url}') center/cover no-repeat;` : ''
+    const colorBg = !m.cover_url ? colorClass(i) : ''
+    return `<a href="manga.html?id=${m.id}" class="featured-card-h">
+      <div class="featured-cover-h ${colorBg}" style="${bg}">
+        <div class="featured-badge-h" style="background:${badge.bg};color:${badge.color};">${badge.text}</div>
+        <div class="cover-deco-icon">📖</div>
+      </div>
+      <div class="featured-body-h">
+        <div class="featured-title-h">${m.titre || 'Sans titre'}</div>
+        <div class="featured-meta-h"><span>${TYPE_LABELS[m.type]||'Manga'}</span><span style="color:var(--orange);">👁 ${views}</span></div>
+      </div>
+    </a>`
+  }).join('')
+}
+
+// POPULAIRES
+async function loadPopulaires() {
+  const { data: mangas } = await supabaseClient.from('mangas')
+    .select('id, titre, type, genres, vues, likes, created_at, cover_url')
+    .eq('public', true).eq('brouillon', false).order('likes', { ascending: false }).limit(6)
+  const grid = document.getElementById('populairesGrid')
+  if (!mangas || mangas.length === 0) { grid.innerHTML = emptyState('Aucun manga populaire pour l\'instant.'); return }
+  grid.innerHTML = mangas.map((m, i) => {
+    const likes = m.likes > 999 ? (m.likes/1000).toFixed(1)+'k' : m.likes || 0
+    const bg = m.cover_url ? `background:url('${m.cover_url}') center/cover no-repeat;` : ''
+    const colorBg = !m.cover_url ? colorClass(i) : ''
+    return `<a href="manga.html?id=${m.id}" class="manga-card-2">
+      <div class="manga-cover ${colorBg}" style="${bg}">
+        <div class="manga-time-badge">🕐 ${timeAgo(m.created_at)}</div>
+        <div class="manga-cover-deco">📖</div>
+      </div>
+      <div class="manga-card-body">
+        <div class="manga-card-title">${m.titre || 'Sans titre'}</div>
+        <div class="manga-card-footer">
+          <span class="manga-card-genre">${TYPE_LABELS[m.type]||'Manga'}</span>
+          <span class="manga-card-likes">♥ ${likes}</span>
+        </div>
+      </div>
+    </a>`
+  }).join('')
+}
+
+// DERNIERS
+async function loadDerniers() {
+  const { data: mangas } = await supabaseClient.from('mangas')
+    .select('id, titre, type, genres, created_at, cover_url')
+    .eq('public', true).eq('brouillon', false).order('created_at', { ascending: false }).limit(6)
+  const grid = document.getElementById('derniersGrid')
+  if (!mangas || mangas.length === 0) { grid.innerHTML = emptyState('Aucune mise à jour récente.'); return }
+  grid.innerHTML = mangas.map((m, i) => {
+    const bg = m.cover_url ? `background:url('${m.cover_url}') center/cover no-repeat;` : ''
+    const colorBg = !m.cover_url ? colorClass(i+2) : ''
+    return `<a href="manga.html?id=${m.id}" class="manga-card-2">
+      <div class="manga-cover ${colorBg}" style="${bg}">
+        <div class="manga-time-badge">✨ ${timeAgo(m.created_at)}</div>
+        <div class="manga-cover-deco">📖</div>
+      </div>
+      <div class="manga-card-body">
+        <div class="manga-card-title">${m.titre || 'Sans titre'}</div>
+        <div class="manga-card-footer">
+          <span class="manga-card-genre">${TYPE_LABELS[m.type]||'Manga'}</span>
+          <span class="manga-card-likes" style="color:var(--teal);">NEW</span>
+        </div>
+      </div>
+    </a>`
+  }).join('')
+}
+
+checkAuth()
+loadFeatured()
+loadPopulaires()
+loadDerniers()
+</script>
+</body>
+</html>

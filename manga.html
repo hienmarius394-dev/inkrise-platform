@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Manga — Inkrise</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root {
+      --bg:       #0b0b10;
+      --surface:  #13131c;
+      --surface2: #1c1c28;
+      --surface3: #22222f;
+      --purple:   #7c6fef;
+      --purple2:  #a594f9;
+      --accent:   #f0522a;
+      --green:    #3ddc84;
+      --amber:    #f5a623;
+      --text:     #ececf4;
+      --muted:    #6b6b8a;
+      --border:   rgba(255,255,255,0.07);
+      --border2:  rgba(124,111,239,0.25);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    /* ── NAV ── */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(11,11,16,0.92); backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 28px; height: 62px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-logo {
+      font-family: 'Syne', sans-serif; font-size: 1.4rem; font-weight: 800;
+      letter-spacing: 2px;
+      background: linear-gradient(135deg, var(--purple), var(--purple2));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      text-decoration: none;
+    }
+    .nav-right { display: flex; align-items: center; gap: 12px; }
+    .nav-back {
+      display: flex; align-items: center; gap: 6px;
+      color: var(--muted); font-size: 0.85rem; font-weight: 500;
+      text-decoration: none; padding: 7px 14px;
+      border: 1px solid var(--border); border-radius: 8px; transition: all .2s;
+    }
+    .nav-back:hover { color: var(--text); border-color: var(--border2); }
+    .nav-avatar {
+      width: 34px; height: 34px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--purple), #5040c8);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.85rem; font-weight: 700; color: #fff; text-transform: uppercase;
+      text-decoration: none;
+    }
+
+    /* ── HERO BANNER ── */
+    .hero-banner {
+      position: relative; overflow: hidden;
+      height: 320px;
+      background: linear-gradient(180deg, #1a0a2e 0%, var(--bg) 100%);
+    }
+    .hero-bg {
+      position: absolute; inset: 0;
+      background-size: cover; background-position: center;
+      filter: blur(24px) brightness(0.25);
+      transform: scale(1.1);
+    }
+    .hero-gradient {
+      position: absolute; inset: 0;
+      background: linear-gradient(180deg, transparent 30%, var(--bg) 100%);
+    }
+    .hero-content {
+      position: relative; z-index: 2;
+      max-width: 960px; margin: 0 auto;
+      padding: 40px 24px 0;
+      display: flex; gap: 32px; align-items: flex-end;
+      height: 100%;
+    }
+
+    /* Cover */
+    .cover-wrap {
+      flex-shrink: 0;
+      position: relative;
+    }
+    .cover-img {
+      width: 150px; height: 215px; border-radius: 14px;
+      object-fit: cover; display: block;
+      box-shadow: 0 16px 48px rgba(0,0,0,0.6);
+      border: 2px solid rgba(255,255,255,0.08);
+      background: linear-gradient(135deg, var(--surface2), var(--surface3));
+    }
+    .cover-placeholder {
+      width: 150px; height: 215px; border-radius: 14px;
+      background: linear-gradient(135deg, #1e1e35, #2e1e4e);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 3rem;
+      box-shadow: 0 16px 48px rgba(0,0,0,0.6);
+      border: 2px solid rgba(255,255,255,0.08);
+    }
+
+    /* Type badge sur cover */
+    .cover-type-badge {
+      position: absolute; top: 10px; left: 10px;
+      font-size: 0.65rem; font-weight: 800;
+      padding: 3px 9px; border-radius: 6px;
+      text-transform: uppercase; letter-spacing: 1px;
+    }
+    .type-manga    { background: #e53e3e; color: #fff; }
+    .type-manhwa   { background: #3182ce; color: #fff; }
+    .type-manhua   { background: #d69e2e; color: #000; }
+    .type-webtoon  { background: #38a169; color: #fff; }
+    .type-bd       { background: #805ad5; color: #fff; }
+    .type-roman    { background: #2d3748; color: #fff; border: 1px solid rgba(255,255,255,0.2); }
+
+    /* Infos hero */
+    .hero-info { flex: 1; padding-bottom: 28px; min-width: 0; }
+    .hero-badges { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+    .badge {
+      font-size: 0.72rem; font-weight: 700; padding: 3px 10px; border-radius: 20px;
+      text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .badge-statut-cours  { background: rgba(61,220,132,0.15); color: var(--green); border: 1px solid rgba(61,220,132,0.25); }
+    .badge-statut-fini   { background: rgba(124,111,239,0.15); color: var(--purple2); border: 1px solid rgba(124,111,239,0.25); }
+    .badge-statut-pause  { background: rgba(245,166,35,0.15); color: var(--amber); border: 1px solid rgba(245,166,35,0.25); }
+    .badge-adult { background: rgba(240,82,42,0.15); color: var(--accent); border: 1px solid rgba(240,82,42,0.25); }
+
+    .hero-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 2.2rem; font-weight: 800;
+      line-height: 1.15; margin-bottom: 10px;
+      text-shadow: 0 2px 12px rgba(0,0,0,0.5);
+    }
+    .hero-author {
+      font-size: 0.88rem; color: var(--muted); margin-bottom: 16px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .hero-author a { color: var(--purple2); text-decoration: none; font-weight: 600; }
+    .hero-author a:hover { text-decoration: underline; }
+
+    .hero-stats {
+      display: flex; gap: 20px; flex-wrap: wrap;
+    }
+    .hstat { text-align: left; }
+    .hstat-num {
+      font-family: 'Syne', sans-serif; font-size: 1.2rem; font-weight: 700;
+      line-height: 1;
+    }
+    .hstat-label { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+
+    /* ── MAIN CONTENT ── */
+    .main-wrap {
+      max-width: 960px; margin: 0 auto; padding: 28px 24px 80px;
+    }
+
+    /* ── ACTION BAR ── */
+    .action-bar {
+      display: flex; align-items: center; gap: 12px;
+      margin-bottom: 32px; flex-wrap: wrap;
+    }
+    .btn-read-first {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: linear-gradient(135deg, var(--purple), #5040c8);
+      color: #fff; border: none; padding: 13px 28px; border-radius: 12px;
+      font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 700;
+      cursor: pointer; text-decoration: none; transition: all .25s;
+      box-shadow: 0 4px 20px rgba(124,111,239,0.35);
+    }
+    .btn-read-first:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(124,111,239,0.5); }
+
+    .btn-continue {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: linear-gradient(135deg, var(--green), #22a85a);
+      color: #000; border: none; padding: 13px 28px; border-radius: 12px;
+      font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 700;
+      cursor: pointer; text-decoration: none; transition: all .25s;
+      box-shadow: 0 4px 20px rgba(61,220,132,0.3);
+    }
+    .btn-continue:hover { transform: translateY(-2px); }
+
+    .btn-subscribe {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: transparent; color: var(--text);
+      border: 1px solid var(--border2); padding: 12px 22px; border-radius: 12px;
+      font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight: 700;
+      cursor: pointer; transition: all .25s;
+    }
+    .btn-subscribe:hover, .btn-subscribe.active {
+      background: rgba(124,111,239,0.15);
+      border-color: var(--purple); color: var(--purple2);
+    }
+    .btn-subscribe.active { background: rgba(124,111,239,0.2); }
+
+    .btn-like {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: transparent; border: 1px solid var(--border);
+      color: var(--muted); padding: 12px 18px; border-radius: 12px;
+      font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight: 600;
+      cursor: pointer; transition: all .25s;
+    }
+    .btn-like:hover, .btn-like.liked {
+      border-color: var(--accent); color: var(--accent);
+      background: rgba(240,82,42,0.1);
+    }
+
+    /* Bouton gérer (visible seulement par l'auteur) */
+    .btn-manage {
+      display: none;
+      align-items: center; gap: 6px;
+      background: rgba(245,166,35,0.1); border: 1px solid rgba(245,166,35,0.3);
+      color: var(--amber); padding: 12px 18px; border-radius: 12px;
+      font-family: 'DM Sans', sans-serif; font-size: 0.88rem; font-weight: 700;
+      cursor: pointer; text-decoration: none; transition: all .2s;
+    }
+    .btn-manage:hover { background: rgba(245,166,35,0.2); }
+    .btn-manage.visible { display: inline-flex; }
+
+    /* ── GRID ── */
+    .content-grid {
+      display: grid;
+      grid-template-columns: 1fr 300px;
+      gap: 28px;
+    }
+    @media (max-width: 700px) {
+      .content-grid { grid-template-columns: 1fr; }
+      .sidebar { order: -1; }
+    }
+
+    /* ── DESCRIPTION ── */
+    .section-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 24px 26px;
+      margin-bottom: 20px;
+    }
+    .section-title {
+      font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 700;
+      margin-bottom: 16px; display: flex; align-items: center; gap: 8px;
+    }
+    .section-title::after {
+      content:''; flex:1; height:1px; background: var(--border);
+    }
+
+    .description-text {
+      font-size: 0.92rem; line-height: 1.8; color: #c8c8d8;
+    }
+    .description-text.clamped {
+      display: -webkit-box; -webkit-line-clamp: 4;
+      -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .btn-more {
+      background: none; border: none; color: var(--purple2);
+      font-size: 0.82rem; font-weight: 700; cursor: pointer;
+      padding: 6px 0; margin-top: 8px;
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    /* Genres */
+    .genres-list { display: flex; flex-wrap: wrap; gap: 8px; }
+    .genre-tag {
+      font-size: 0.78rem; font-weight: 600;
+      padding: 5px 12px; border-radius: 20px;
+      background: var(--surface2); border: 1px solid var(--border);
+      color: var(--muted);
+    }
+
+    /* ── CHAPITRES LIST ── */
+    .chap-list { display: flex; flex-direction: column; gap: 8px; }
+
+    .chap-item {
+      display: flex; align-items: center; gap: 14px;
+      padding: 14px 18px; border-radius: 12px;
+      background: var(--surface2); border: 1px solid var(--border);
+      text-decoration: none; color: var(--text);
+      transition: all .2s;
+    }
+    .chap-item:hover {
+      border-color: var(--border2);
+      background: rgba(124,111,239,0.07);
+      transform: translateX(4px);
+    }
+    .chap-item.new-chap { border-left: 3px solid var(--purple); }
+
+    .chap-num-badge {
+      font-family: 'Syne', sans-serif; font-size: 0.72rem; font-weight: 700;
+      color: var(--purple2); background: rgba(124,111,239,0.12);
+      padding: 3px 9px; border-radius: 6px; white-space: nowrap; flex-shrink: 0;
+    }
+    .chap-info { flex: 1; min-width: 0; }
+    .chap-name {
+      font-size: 0.9rem; font-weight: 600;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .chap-date-small { font-size: 0.73rem; color: var(--muted); margin-top: 2px; }
+    .chap-read-btn {
+      font-size: 0.78rem; font-weight: 700; color: var(--purple2);
+      background: rgba(124,111,239,0.1); border: 1px solid rgba(124,111,239,0.2);
+      padding: 5px 12px; border-radius: 7px; white-space: nowrap;
+      transition: all .2s; flex-shrink: 0;
+    }
+    .chap-item:hover .chap-read-btn {
+      background: rgba(124,111,239,0.25); border-color: var(--purple);
+    }
+
+    /* Pagination chapitres */
+    .chap-pagination {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      margin-top: 16px;
+    }
+    .btn-page {
+      padding: 7px 16px; border-radius: 8px;
+      background: var(--surface2); border: 1px solid var(--border);
+      color: var(--muted); font-size: 0.82rem; font-weight: 600;
+      cursor: pointer; transition: all .2s;
+      font-family: 'DM Sans', sans-serif;
+    }
+    .btn-page:hover:not(:disabled) { border-color: var(--border2); color: var(--text); }
+    .btn-page:disabled { opacity: 0.4; cursor: not-allowed; }
+    .page-info { font-size: 0.8rem; color: var(--muted); }
+
+    /* ── SIDEBAR ── */
+    .info-block {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 20px 22px;
+      margin-bottom: 16px;
+    }
+    .info-block h3 {
+      font-family: 'Syne', sans-serif; font-size: 0.9rem; font-weight: 700;
+      margin-bottom: 14px; color: var(--muted); text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+    .info-row-sb {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 8px 0; border-bottom: 1px solid var(--border);
+      font-size: 0.85rem;
+    }
+    .info-row-sb:last-child { border-bottom: none; }
+    .info-row-sb .key { color: var(--muted); }
+    .info-row-sb .val { font-weight: 600; }
+
+    /* Auteur card */
+    .author-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 20px 22px;
+      margin-bottom: 16px;
+      text-align: center;
+    }
+    .author-avatar {
+      width: 60px; height: 60px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--purple), #5040c8);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem; font-weight: 800; color: #fff;
+      margin: 0 auto 12px; text-transform: uppercase;
+    }
+    .author-name { font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 700; margin-bottom: 4px; }
+    .author-sub  { font-size: 0.78rem; color: var(--muted); margin-bottom: 14px; }
+    .btn-author-profile {
+      display: block; width: 100%;
+      padding: 9px 0; border-radius: 10px;
+      background: var(--surface2); border: 1px solid var(--border);
+      color: var(--muted); font-size: 0.82rem; font-weight: 700;
+      text-decoration: none; transition: all .2s;
+      font-family: 'DM Sans', sans-serif;
+    }
+    .btn-author-profile:hover { color: var(--text); border-color: var(--border2); }
+
+    /* ── LOADING ── */
+    .page-loading {
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; min-height: 50vh; gap: 16px; color: var(--muted);
+    }
+    .loading-ring {
+      width: 48px; height: 48px; border-radius: 50%;
+      border: 3px solid var(--border);
+      border-top-color: var(--purple);
+      animation: spin .8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── 404 ── */
+    .not-found {
+      text-align: center; padding: 80px 20px;
+    }
+    .not-found-icon { font-size: 4rem; margin-bottom: 20px; }
+    .not-found h2 { font-family: 'Syne', sans-serif; font-size: 1.5rem; margin-bottom: 10px; }
+    .not-found p  { color: var(--muted); margin-bottom: 24px; }
+    .btn-home {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: var(--purple); color: #fff; border: none;
+      padding: 11px 22px; border-radius: 10px;
+      font-family: 'DM Sans', sans-serif; font-weight: 700; font-size: 0.9rem;
+      text-decoration: none; cursor: pointer;
+    }
+
+    /* ── TOAST ── */
+    .toast {
+      position: fixed; bottom: 24px; right: 24px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 13px 18px;
+      font-size: 0.85rem; font-weight: 600; z-index: 9999;
+      display: flex; align-items: center; gap: 8px;
+      transform: translateY(60px); opacity: 0;
+      transition: all .3s cubic-bezier(.34,1.56,.64,1);
+      box-shadow: 0 8px 28px rgba(0,0,0,0.3);
+    }
+    .toast.show    { transform: translateY(0); opacity: 1; }
+    .toast.success { border-color: var(--green);  color: var(--green); }
+    .toast.error   { border-color: var(--accent); color: var(--accent); }
+    .toast.info    { border-color: var(--purple); color: var(--purple2); }
+
+    @media (max-width: 600px) {
+      .hero-title { font-size: 1.6rem; }
+      .hero-content { gap: 16px; }
+      .cover-img, .cover-placeholder { width: 110px; height: 158px; }
+      .action-bar { gap: 8px; }
+      .btn-read-first, .btn-continue { padding: 11px 18px; font-size: 0.9rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-logo">INKRISE</a>
+  <div class="nav-right">
+    <a href="index.html" class="nav-back">← Accueil</a>
+    <a href="profil.html" class="nav-avatar" id="navAvatar" style="display:none;">?</a>
+  </div>
+</nav>
+
+<!-- LOADING -->
+<div class="page-loading" id="pageLoading">
+  <div class="loading-ring"></div>
+  <span>Chargement du manga…</span>
+</div>
+
+<!-- 404 -->
+<div id="notFound" style="display:none;">
+  <div class="main-wrap">
+    <div class="not-found">
+      <div class="not-found-icon">😕</div>
+      <h2>Manga introuvable</h2>
+      <p>Ce manga n'existe pas ou a été supprimé.</p>
+      <a href="index.html" class="btn-home">← Retour à l'accueil</a>
+    </div>
+  </div>
+</div>
+
+<!-- CONTENU PRINCIPAL -->
+<div id="mainContent" style="display:none;">
+
+  <!-- Hero Banner -->
+  <div class="hero-banner">
+    <div class="hero-bg" id="heroBg"></div>
+    <div class="hero-gradient"></div>
+    <div class="hero-content">
+      <div class="cover-wrap">
+        <div id="coverEl" class="cover-placeholder">📖</div>
+        <span class="cover-type-badge" id="typeBadge"></span>
+      </div>
+      <div class="hero-info">
+        <div class="hero-badges" id="heroBadges"></div>
+        <h1 class="hero-title" id="heroTitle">—</h1>
+        <div class="hero-author">par <a href="#" id="heroAuthorLink" id="heroAuthor">—</a></div>
+        <div class="hero-stats">
+          <div class="hstat">
+            <div class="hstat-num" id="statVues">0</div>
+            <div class="hstat-label">Vues</div>
+          </div>
+          <div class="hstat">
+            <div class="hstat-num" id="statLikes">0</div>
+            <div class="hstat-label">Likes</div>
+          </div>
+          <div class="hstat">
+            <div class="hstat-num" id="statChaps">0</div>
+            <div class="hstat-label">Chapitres</div>
+          </div>
+          <div class="hstat">
+            <div class="hstat-num" id="statAbonnes">0</div>
+            <div class="hstat-label">Abonnés</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main -->
+  <div class="main-wrap">
+
+    <!-- Action bar -->
+    <div class="action-bar">
+      <a href="#" class="btn-read-first" id="btnReadFirst">▶ Lire le chapitre 1</a>
+      <button class="btn-subscribe" id="btnSubscribe">🔔 S'abonner</button>
+      <button class="btn-like" id="btnLike">❤️ <span id="likeCount">0</span></button>
+      <a href="#" class="btn-manage" id="btnManage">⚙️ Gérer</a>
+    </div>
+
+    <div class="content-grid">
+
+      <!-- COLONNE GAUCHE -->
+      <div>
+
+        <!-- Description -->
+        <div class="section-card">
+          <div class="section-title">📖 Synopsis</div>
+          <div class="description-text clamped" id="descText">—</div>
+          <button class="btn-more" id="btnMore" style="display:none;">Lire la suite ▾</button>
+        </div>
+
+        <!-- Genres -->
+        <div class="section-card" id="genresCard" style="display:none;">
+          <div class="section-title">🏷️ Genres</div>
+          <div class="genres-list" id="genresList"></div>
+        </div>
+
+        <!-- Chapitres -->
+        <div class="section-card">
+          <div class="section-title">📄 Chapitres</div>
+          <div class="chap-list" id="chapList">
+            <div style="text-align:center; padding:24px; color:var(--muted); font-size:0.88rem;">Chargement des chapitres…</div>
+          </div>
+          <div class="chap-pagination" id="chapPagination" style="display:none;">
+            <button class="btn-page" id="btnPrevPage">← Précédent</button>
+            <span class="page-info" id="pageInfo">Page 1</span>
+            <button class="btn-page" id="btnNextPage">Suivant →</button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- COLONNE DROITE (sidebar) -->
+      <div class="sidebar">
+
+        <!-- Auteur -->
+        <div class="author-card" id="authorCard">
+          <div class="author-avatar" id="authorAvatar">?</div>
+          <div class="author-name" id="authorName">—</div>
+          <div class="author-sub">Créateur</div>
+          <a href="#" class="btn-author-profile" id="authorProfileLink">Voir le profil</a>
+        </div>
+
+        <!-- Infos -->
+        <div class="info-block">
+          <h3>Informations</h3>
+          <div class="info-row-sb">
+            <span class="key">Type</span>
+            <span class="val" id="infoType">—</span>
+          </div>
+          <div class="info-row-sb">
+            <span class="key">Statut</span>
+            <span class="val" id="infoStatut">—</span>
+          </div>
+          <div class="info-row-sb">
+            <span class="key">Chapitres</span>
+            <span class="val" id="infoChaps">—</span>
+          </div>
+          <div class="info-row-sb">
+            <span class="key">Publié le</span>
+            <span class="val" id="infoDate">—</span>
+          </div>
+          <div class="info-row-sb">
+            <span class="key">Format pages</span>
+            <span class="val" id="infoFormat">—</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SUPABASE_URL = 'https://upkqdxqskjozcrnkposm.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVwa3FkeHFza2pvemNybmtwb3NtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgxNTkxMTIsImV4cCI6MjA5MzczNTExMn0.E79sDlt673cS-y3kwvXxbF-hl2ZZT_nNN1HmRHlE8Ek';
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { flowType: 'pkce' } });
+
+let currentUser = null;
+let manga       = null;
+let chapitres   = [];
+let currentPage = 0;
+const CHAPS_PER_PAGE = 20;
+let isSubscribed = false;
+let isLiked      = false;
+
+const TYPE_LABELS  = { manga:'Manga', manhwa:'Manhwa', manhua:'Manhua', webtoon:'Webtoon', bd:'BD / Comic', roman:'Roman graphique' };
+const TYPE_CLASSES = { manga:'type-manga', manhwa:'type-manhwa', manhua:'type-manhua', webtoon:'type-webtoon', bd:'type-bd', roman:'type-roman' };
+const TYPE_FORMAT  = { manga:'800 × 1200 px', manhwa:'800 px (scroll)', manhua:'800 × 1200 px', webtoon:'700-800 px (scroll)', bd:'1200 × 900 px', roman:'800 × 1200 px' };
+const STATUT_LABELS = { en_cours:'En cours', termine:'Terminé', pause:'En pause', hiatus:'Hiatus' };
+const STATUT_CLASSES = { en_cours:'badge-statut-cours', termine:'badge-statut-fini', pause:'badge-statut-pause', hiatus:'badge-statut-pause' };
+
+// ── INIT ──
+async function init() {
+  // Auth (optionnel — page visible sans connexion)
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) {
+    currentUser = session.user;
+    const av = document.getElementById('navAvatar');
+    av.style.display = 'flex';
+    const { data: profile } = await sb.from('profiles').select('username').eq('id', currentUser.id).single();
+    const name = profile?.username || currentUser.email.split('@')[0];
+    av.textContent = name[0].toUpperCase();
+  }
+
+  const params = new URLSearchParams(window.location.search);
+  const mangaId = params.get('id');
+  if (!mangaId) { showNotFound(); return; }
+
+  await loadManga(mangaId);
+}
+
+// ── CHARGER MANGA ──
+async function loadManga(mangaId) {
+  const { data, error } = await sb
+    .from('mangas')
+    .select('*, profiles(username)')
+    .eq('id', mangaId)
+    .single();
+
+  if (error || !data) { showNotFound(); return; }
+  manga = data;
+
+  // Charger chapitres
+  const { data: chaps } = await sb
+    .from('chapitres')
+    .select('*')
+    .eq('manga_id', mangaId)
+    .order('ordre', { ascending: true });
+  chapitres = chaps || [];
+
+  // Enregistrer une vue
+  if (currentUser) {
+    await sb.from('vues').insert({ manga_id: mangaId, user_id: currentUser.id }).maybeSingle();
+  }
+
+  document.getElementById('pageLoading').style.display = 'none';
+  document.getElementById('mainContent').style.display = 'block';
+  document.title = `${data.titre} — Inkrise`;
+
+  renderManga();
+  renderChapitres();
+}
+
+// ── RENDER MANGA ──
+function renderManga() {
+  // Hero background flou
+  if (manga.cover_url) {
+    document.getElementById('heroBg').style.backgroundImage = `url('${manga.cover_url}')`;
+  }
+
+  // Cover
+  const coverEl = document.getElementById('coverEl');
+  if (manga.cover_url) {
+    coverEl.outerHTML = `<img id="coverEl" class="cover-img" src="${manga.cover_url}" alt="${manga.titre}" />`;
+  }
+
+  // Type badge sur cover
+  const typeBadge = document.getElementById('typeBadge');
+  if (manga.type) {
+    typeBadge.textContent = TYPE_LABELS[manga.type] || manga.type;
+    typeBadge.className = `cover-type-badge ${TYPE_CLASSES[manga.type] || ''}`;
+  }
+
+  // Badges statut
+  const badgesEl = document.getElementById('heroBadges');
+  if (manga.statut) {
+    const span = document.createElement('span');
+    span.className = `badge ${STATUT_CLASSES[manga.statut] || 'badge-statut-cours'}`;
+    span.textContent = STATUT_LABELS[manga.statut] || manga.statut;
+    badgesEl.appendChild(span);
+  }
+  if (manga.adulte) {
+    const span = document.createElement('span');
+    span.className = 'badge badge-adult';
+    span.textContent = '18+';
+    badgesEl.appendChild(span);
+  }
+
+  // Titre & auteur
+  document.getElementById('heroTitle').textContent = manga.titre || 'Sans titre';
+  const authorName = manga.profiles?.username || 'Auteur inconnu';
+  document.getElementById('heroAuthorLink').textContent = authorName;
+  document.getElementById('authorName').textContent     = authorName;
+  document.getElementById('authorAvatar').textContent   = authorName[0].toUpperCase();
+
+  // Stats
+  document.getElementById('statVues').textContent  = manga.vues   || 0;
+  document.getElementById('statLikes').textContent = manga.likes  || 0;
+  document.getElementById('statChaps').textContent = chapitres.length;
+  document.getElementById('statAbonnes').textContent = manga.abonnes || 0;
+  document.getElementById('likeCount').textContent  = manga.likes  || 0;
+
+  // Description
+  const desc = manga.description || 'Aucune description disponible.';
+  document.getElementById('descText').textContent = desc;
+  if (desc.length > 300) {
+    document.getElementById('btnMore').style.display = 'block';
+  }
+
+  // Genres
+  if (manga.genres && manga.genres.length > 0) {
+    document.getElementById('genresCard').style.display = 'block';
+    const list = document.getElementById('genresList');
+    manga.genres.forEach(g => {
+      const tag = document.createElement('span');
+      tag.className = 'genre-tag'; tag.textContent = g;
+      list.appendChild(tag);
+    });
+  }
+
+  // Sidebar infos
+  document.getElementById('infoType').textContent   = TYPE_LABELS[manga.type]    || manga.type    || '—';
+  document.getElementById('infoStatut').textContent = STATUT_LABELS[manga.statut] || manga.statut  || '—';
+  document.getElementById('infoChaps').textContent  = chapitres.length;
+  document.getElementById('infoDate').textContent   = new Date(manga.created_at).toLocaleDateString('fr-FR', { day:'numeric', month:'long', year:'numeric' });
+  document.getElementById('infoFormat').textContent = TYPE_FORMAT[manga.type]     || '—';
+
+  // Bouton gérer (si auteur)
+  if (currentUser && manga.auteur_id === currentUser.id) {
+    const btn = document.getElementById('btnManage');
+    btn.classList.add('visible');
+    btn.href = `gestion-chapitres.html?manga_id=${manga.id}`;
+  }
+
+  // Bouton lire premier chapitre
+  if (chapitres.length > 0) {
+    document.getElementById('btnReadFirst').href = `lecteur.html?manga_id=${manga.id}&chapitre=${chapitres[0].id}`;
+    document.getElementById('btnReadFirst').textContent = '▶ Lire le chapitre 1';
+  } else {
+    document.getElementById('btnReadFirst').textContent = '📭 Aucun chapitre';
+    document.getElementById('btnReadFirst').style.opacity = '0.5';
+    document.getElementById('btnReadFirst').style.pointerEvents = 'none';
+  }
+}
+
+// ── RENDER CHAPITRES ──
+function renderChapitres() {
+  const list = document.getElementById('chapList');
+  const total = chapitres.length;
+
+  if (total === 0) {
+    list.innerHTML = `<div style="text-align:center;padding:32px;color:var(--muted);font-size:0.88rem;">📭 Aucun chapitre disponible pour l'instant.</div>`;
+    return;
+  }
+
+  const start = currentPage * CHAPS_PER_PAGE;
+  const end   = Math.min(start + CHAPS_PER_PAGE, total);
+  const page  = chapitres.slice(start, end);
+
+  list.innerHTML = '';
+  page.forEach((chap, i) => {
+    const date  = new Date(chap.created_at).toLocaleDateString('fr-FR', { day:'numeric', month:'short' });
+    const isNew = (Date.now() - new Date(chap.created_at).getTime()) < 7 * 24 * 60 * 60 * 1000;
+
+    const a = document.createElement('a');
+    a.className = `chap-item${isNew ? ' new-chap' : ''}`;
+    a.href = `lecteur.html?manga_id=${manga.id}&chapitre=${chap.id}`;
+    a.innerHTML = `
+      <div class="chap-num-badge">Ch. ${chap.ordre}</div>
+      <div class="chap-info">
+        <div class="chap-name">${chap.titre || `Chapitre ${chap.ordre}`}</div>
+        <div class="chap-date-small">${date}${isNew ? ' · <span style="color:var(--purple2);font-weight:700;">Nouveau</span>' : ''}</div>
+      </div>
+      <div class="chap-read-btn">Lire →</div>
+    `;
+    list.appendChild(a);
+  });
+
+  // Pagination
+  const pagination = document.getElementById('chapPagination');
+  const totalPages = Math.ceil(total / CHAPS_PER_PAGE);
+  if (totalPages > 1) {
+    pagination.style.display = 'flex';
+    document.getElementById('pageInfo').textContent = `Page ${currentPage + 1} / ${totalPages}`;
+    document.getElementById('btnPrevPage').disabled = currentPage === 0;
+    document.getElementById('btnNextPage').disabled = currentPage >= totalPages - 1;
+  }
+}
+
+// ── DESCRIPTION expand ──
+document.getElementById('btnMore').addEventListener('click', function() {
+  const desc = document.getElementById('descText');
+  if (desc.classList.contains('clamped')) {
+    desc.classList.remove('clamped');
+    this.textContent = 'Réduire ▴';
+  } else {
+    desc.classList.add('clamped');
+    this.textContent = 'Lire la suite ▾';
+  }
+});
+
+// ── S'ABONNER ──
+document.getElementById('btnSubscribe').addEventListener('click', async () => {
+  if (!currentUser) { showToast('Connecte-toi pour t\'abonner !', 'info'); return; }
+  isSubscribed = !isSubscribed;
+  const btn = document.getElementById('btnSubscribe');
+  if (isSubscribed) {
+    btn.classList.add('active');
+    btn.textContent = '🔔 Abonné ✓';
+    showToast('✅ Tu es abonné à ce manga !', 'success');
+  } else {
+    btn.classList.remove('active');
+    btn.textContent = '🔔 S\'abonner';
+    showToast('Désabonné', 'info');
+  }
+});
+
+// ── LIKER ──
+document.getElementById('btnLike').addEventListener('click', async () => {
+  if (!currentUser) { showToast('Connecte-toi pour liker !', 'info'); return; }
+  isLiked = !isLiked;
+  const btn   = document.getElementById('btnLike');
+  const count = document.getElementById('likeCount');
+  let n = parseInt(count.textContent) || 0;
+  if (isLiked) {
+    btn.classList.add('liked');
+    n++;
+    await sb.from('mangas').update({ likes: n }).eq('id', manga.id);
+    showToast('❤️ Manga liké !', 'success');
+  } else {
+    btn.classList.remove('liked');
+    n = Math.max(0, n - 1);
+    await sb.from('mangas').update({ likes: n }).eq('id', manga.id);
+  }
+  count.textContent = n;
+  document.getElementById('statLikes').textContent = n;
+});
+
+// ── PAGINATION CHAPITRES ──
+document.getElementById('btnPrevPage').addEventListener('click', () => {
+  if (currentPage > 0) { currentPage--; renderChapitres(); window.scrollTo(0,0); }
+});
+document.getElementById('btnNextPage').addEventListener('click', () => {
+  currentPage++; renderChapitres(); window.scrollTo(0,0);
+});
+
+// ── NOT FOUND ──
+function showNotFound() {
+  document.getElementById('pageLoading').style.display = 'none';
+  document.getElementById('notFound').style.display = 'block';
+}
+
+// ── TOAST ──
+function showToast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast ${type} show`;
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+init();
+</script>
+</body>
+</html>
