@@ -346,6 +346,43 @@
     .univ-bnav-search:hover{transform:scale(1.08);}
     /* push content above bottom nav in scroll mode */
     .scroll-viewer{padding-bottom:100px;}
+
+    /* ── COMMENTS SECTION ── */
+    .comments-section{max-width:800px;margin:0 auto;padding:32px 16px 140px;}
+    .comments-header{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800;margin-bottom:20px;padding-bottom:12px;border-bottom:1px solid var(--border);}
+    .comment-form{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:24px;}
+    .comment-textarea{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.9rem;padding:12px;resize:vertical;min-height:80px;outline:none;transition:border-color .2s;}
+    .comment-textarea:focus{border-color:var(--purple);}
+    .comment-form-footer{display:flex;justify-content:flex-end;margin-top:10px;}
+    .btn-comment-submit{background:var(--purple);color:#fff;border:none;border-radius:8px;padding:9px 20px;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:700;cursor:pointer;transition:all .2s;}
+    .btn-comment-submit:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(124,111,239,.4);}
+    .btn-comment-submit:disabled{opacity:.5;cursor:not-allowed;transform:none;}
+    .comment-login-prompt{text-align:center;padding:16px;background:var(--surface);border:1px solid var(--border);border-radius:12px;margin-bottom:24px;color:var(--muted);font-size:.9rem;}
+    .comment-login-prompt a{color:var(--purple2);text-decoration:none;font-weight:600;}
+    .comment-login-prompt a:hover{text-decoration:underline;}
+    .comments-list{display:flex;flex-direction:column;gap:16px;}
+    .comment-item{display:flex;gap:12px;}
+    .comment-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--purple2));display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;overflow:hidden;}
+    .comment-avatar img{width:100%;height:100%;object-fit:cover;}
+    .comment-body{flex:1;min-width:0;}
+    .comment-meta{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+    .comment-username{font-weight:700;font-size:.85rem;}
+    .comment-date{font-size:.72rem;color:var(--muted);}
+    .comment-content{font-size:.88rem;line-height:1.6;color:var(--text);word-break:break-word;}
+    .comment-actions{display:flex;align-items:center;gap:12px;margin-top:8px;}
+    .btn-like{display:flex;align-items:center;gap:4px;background:none;border:none;color:var(--muted);font-size:.78rem;cursor:pointer;padding:3px 8px;border-radius:6px;transition:all .2s;font-family:'DM Sans',sans-serif;}
+    .btn-like:hover,.btn-like.liked{color:#e05;background:rgba(238,0,85,.08);}
+    .btn-reply-action{background:none;border:none;color:var(--muted);font-size:.78rem;cursor:pointer;padding:3px 8px;border-radius:6px;transition:all .2s;font-family:'DM Sans',sans-serif;font-weight:600;}
+    .btn-reply-action:hover{color:var(--purple2);background:rgba(165,148,249,.08);}
+    .comment-replies{margin-top:12px;padding-left:20px;border-left:2px solid var(--border);display:flex;flex-direction:column;gap:12px;}
+    .reply-form{margin-top:10px;display:none;gap:8px;}
+    .reply-form.open{display:flex;}
+    .reply-textarea{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.85rem;padding:8px 12px;resize:none;min-height:56px;outline:none;transition:border-color .2s;}
+    .reply-textarea:focus{border-color:var(--purple);}
+    .btn-reply-submit{background:var(--purple);color:#fff;border:none;border-radius:8px;padding:0 14px;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:700;cursor:pointer;transition:all .2s;align-self:flex-end;height:36px;}
+    .btn-reply-submit:hover{box-shadow:0 4px 12px rgba(124,111,239,.4);}
+    .comments-empty{text-align:center;padding:40px 16px;color:var(--muted);font-size:.9rem;}
+    .comments-spinner{text-align:center;padding:24px;color:var(--muted);font-size:.88rem;}
   </style>
 </head>
 <body>
@@ -423,6 +460,14 @@
     <a href="#" class="btn-end secondary" id="btnBackManga2">← Retour au manga</a>
   </div>
 
+</div>
+
+<!-- COMMENTS SECTION -->
+<div class="comments-section" id="commentsSection">
+  <div class="comments-header">Commentaires (<span id="commentsCount">0</span>)</div>
+  <div id="commentFormWrap"></div>
+  <div class="comments-spinner" id="commentsSpinner">Chargement des commentaires…</div>
+  <div class="comments-list" id="commentsList"></div>
 </div>
 
 <!-- BOTTOMBAR (mode pages) -->
@@ -566,6 +611,7 @@ async function loadChapter() {
   updateChapNav();
   updateSidebarActive();
   window.scrollTo(0, 0);
+  loadComments(mangaId, chapitreId);
 }
 
 // ── PLACEHOLDER (pas de pages uploadées) ──
@@ -812,6 +858,231 @@ function showToast(msg) {
 }
 
 function focusSearch(){window.location.href='manga.html';}
+
+// ── COMMENTS ──
+let currentUser = null;
+
+async function loadComments(mId, cId) {
+  document.getElementById('commentsSpinner').style.display = 'block';
+  document.getElementById('commentsList').innerHTML = '';
+  document.getElementById('commentsCount').textContent = '0';
+
+  const { data: { session } } = await sb.auth.getSession();
+  currentUser = session?.user || null;
+  renderCommentForm();
+
+  const { data: comments } = await sb.from('commentaires')
+    .select('*, profiles(username, avatar_url)')
+    .eq('manga_id', mId)
+    .eq('chapitre_id', cId)
+    .is('parent_id', null)
+    .order('created_at', { ascending: false });
+
+  document.getElementById('commentsSpinner').style.display = 'none';
+
+  if (!comments || comments.length === 0) {
+    document.getElementById('commentsList').innerHTML =
+      '<div class="comments-empty">Sois le premier à commenter ! 💬</div>';
+    return;
+  }
+
+  const { data: replies } = await sb.from('commentaires')
+    .select('*, profiles(username, avatar_url)')
+    .eq('manga_id', mId)
+    .eq('chapitre_id', cId)
+    .not('parent_id', 'is', null)
+    .order('created_at', { ascending: true });
+
+  const allIds = [...comments.map(c => c.id), ...(replies || []).map(r => r.id)];
+
+  let userLikes = new Set();
+  if (currentUser && allIds.length > 0) {
+    const { data: ul } = await sb.from('commentaire_likes')
+      .select('commentaire_id')
+      .eq('user_id', currentUser.id)
+      .in('commentaire_id', allIds);
+    if (ul) ul.forEach(l => userLikes.add(l.commentaire_id));
+  }
+
+  const likeCountMap = {};
+  if (allIds.length > 0) {
+    const { data: lc } = await sb.from('commentaire_likes')
+      .select('commentaire_id')
+      .in('commentaire_id', allIds);
+    if (lc) lc.forEach(l => {
+      likeCountMap[l.commentaire_id] = (likeCountMap[l.commentaire_id] || 0) + 1;
+    });
+  }
+
+  const repliesByParent = {};
+  if (replies) replies.forEach(r => {
+    if (!repliesByParent[r.parent_id]) repliesByParent[r.parent_id] = [];
+    repliesByParent[r.parent_id].push(r);
+  });
+
+  document.getElementById('commentsCount').textContent = comments.length;
+  document.getElementById('commentsList').innerHTML =
+    comments.map(c => buildCommentHTML(c, repliesByParent[c.id] || [], userLikes, likeCountMap)).join('');
+}
+
+function renderCommentForm() {
+  const wrap = document.getElementById('commentFormWrap');
+  if (currentUser) {
+    wrap.innerHTML = `
+      <div class="comment-form">
+        <textarea class="comment-textarea" id="newCommentText" placeholder="Ajoute un commentaire…" rows="3"></textarea>
+        <div class="comment-form-footer">
+          <button class="btn-comment-submit" id="btnPublish" onclick="submitComment()">Publier</button>
+        </div>
+      </div>`;
+  } else {
+    wrap.innerHTML = `
+      <div class="comment-login-prompt">
+        <a href="auth.html">Connecte-toi</a> pour laisser un commentaire 💬
+      </div>`;
+  }
+}
+
+function buildAvatarHTML(profile, size) {
+  const username = profile?.username || '?';
+  const url = profile?.avatar_url;
+  const style = size ? `style="width:${size}px;height:${size}px;font-size:${size * 0.4}px;"` : '';
+  return url
+    ? `<div class="comment-avatar" ${style}><img src="${url}" alt="${escapeHTML(username)}" /></div>`
+    : `<div class="comment-avatar" ${style}><span>${escapeHTML(username.charAt(0).toUpperCase())}</span></div>`;
+}
+
+function buildCommentHTML(c, replies, userLikes, likeCountMap) {
+  const liked = userLikes.has(c.id);
+  const count = likeCountMap[c.id] || 0;
+  const username = c.profiles?.username || 'Anonyme';
+
+  const repliesHTML = replies.length
+    ? `<div class="comment-replies">${replies.map(r => buildReplyHTML(r, userLikes, likeCountMap)).join('')}</div>`
+    : '';
+
+  const replyFormHTML = currentUser
+    ? `<div class="reply-form" id="replyForm-${c.id}">
+         <textarea class="reply-textarea" id="replyText-${c.id}" placeholder="Ta réponse…"></textarea>
+         <button class="btn-reply-submit" onclick="submitReply(${c.id})">↩</button>
+       </div>`
+    : '';
+
+  return `<div class="comment-item" id="comment-${c.id}">
+    ${buildAvatarHTML(c.profiles)}
+    <div class="comment-body">
+      <div class="comment-meta">
+        <span class="comment-username">${escapeHTML(username)}</span>
+        <span class="comment-date">${formatDateRelative(c.created_at)}</span>
+      </div>
+      <div class="comment-content">${escapeHTML(c.contenu)}</div>
+      <div class="comment-actions">
+        <button class="btn-like${liked ? ' liked' : ''}" id="like-${c.id}" onclick="toggleLike(${c.id})">❤️ ${count}</button>
+        ${currentUser ? `<button class="btn-reply-action" onclick="toggleReplyForm(${c.id})">Répondre</button>` : ''}
+      </div>
+      ${replyFormHTML}
+      ${repliesHTML}
+    </div>
+  </div>`;
+}
+
+function buildReplyHTML(r, userLikes, likeCountMap) {
+  const liked = userLikes.has(r.id);
+  const count = likeCountMap[r.id] || 0;
+  const username = r.profiles?.username || 'Anonyme';
+  return `<div class="comment-item" id="comment-${r.id}">
+    ${buildAvatarHTML(r.profiles, 28)}
+    <div class="comment-body">
+      <div class="comment-meta">
+        <span class="comment-username">${escapeHTML(username)}</span>
+        <span class="comment-date">${formatDateRelative(r.created_at)}</span>
+      </div>
+      <div class="comment-content">${escapeHTML(r.contenu)}</div>
+      <div class="comment-actions">
+        <button class="btn-like${liked ? ' liked' : ''}" id="like-${r.id}" onclick="toggleLike(${r.id})">❤️ ${count}</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function toggleReplyForm(commentId) {
+  const form = document.getElementById(`replyForm-${commentId}`);
+  if (!form) return;
+  form.classList.toggle('open');
+  if (form.classList.contains('open')) {
+    document.getElementById(`replyText-${commentId}`)?.focus();
+  }
+}
+
+async function submitComment() {
+  if (!currentUser) return;
+  const textarea = document.getElementById('newCommentText');
+  const text = textarea.value.trim();
+  if (!text) return;
+  const btn = document.getElementById('btnPublish');
+  btn.disabled = true; btn.textContent = 'Publication…';
+  const { error } = await sb.from('commentaires').insert({
+    manga_id: parseInt(mangaId),
+    chapitre_id: parseInt(chapitreId),
+    user_id: currentUser.id,
+    contenu: text,
+    parent_id: null
+  });
+  if (error) { showToast('Erreur lors de la publication'); }
+  else { textarea.value = ''; await loadComments(mangaId, chapitreId); }
+  btn.disabled = false; btn.textContent = 'Publier';
+}
+
+async function submitReply(parentId) {
+  if (!currentUser) return;
+  const textarea = document.getElementById(`replyText-${parentId}`);
+  const text = textarea?.value.trim();
+  if (!text) return;
+  const { error } = await sb.from('commentaires').insert({
+    manga_id: parseInt(mangaId),
+    chapitre_id: parseInt(chapitreId),
+    user_id: currentUser.id,
+    contenu: text,
+    parent_id: parentId
+  });
+  if (error) { showToast('Erreur lors de la réponse'); }
+  else { await loadComments(mangaId, chapitreId); }
+}
+
+async function toggleLike(commentId) {
+  if (!currentUser) { showToast('Connecte-toi pour liker'); return; }
+  const btn = document.getElementById(`like-${commentId}`);
+  const isLiked = btn?.classList.contains('liked');
+  if (isLiked) {
+    await sb.from('commentaire_likes').delete()
+      .eq('commentaire_id', commentId).eq('user_id', currentUser.id);
+  } else {
+    await sb.from('commentaire_likes').insert({ commentaire_id: commentId, user_id: currentUser.id });
+  }
+  if (btn) {
+    const prev = parseInt(btn.textContent.replace('❤️', '').trim()) || 0;
+    btn.classList.toggle('liked', !isLiked);
+    btn.innerHTML = `❤️ ${isLiked ? prev - 1 : prev + 1}`;
+  }
+}
+
+function formatDateRelative(isoDate) {
+  const diff = Date.now() - new Date(isoDate).getTime();
+  const s = Math.floor(diff / 1000);
+  const m = Math.floor(s / 60);
+  const h = Math.floor(m / 60);
+  const d = Math.floor(h / 24);
+  if (s < 60)  return 'à l\'instant';
+  if (m < 60)  return `il y a ${m} min`;
+  if (h < 24)  return `il y a ${h}h`;
+  if (d < 7)   return `il y a ${d}j`;
+  return new Date(isoDate).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+function escapeHTML(str) {
+  if (!str) return '';
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
 
 init();
 </script>
