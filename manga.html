@@ -813,6 +813,11 @@ function renderManga() {
   document.getElementById('heroAuthorLink').textContent = authorName;
   document.getElementById('authorName').textContent     = authorName;
   document.getElementById('authorAvatar').textContent   = authorName[0].toUpperCase();
+  if (manga.auteur_id) {
+    const auteurUrl = `auteur.html?id=${manga.auteur_id}`;
+    document.getElementById('heroAuthorLink').href   = auteurUrl;
+    document.getElementById('authorProfileLink').href = auteurUrl;
+  }
 
   // Stats
     document.getElementById('statVues').textContent  = manga.vues   || 0;

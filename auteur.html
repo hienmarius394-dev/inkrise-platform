@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Profil auteur — Inkrise</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root {
+      --bg:      #0b0b10;
+      --surface: #13131c;
+      --surface2:#1c1c28;
+      --surface3:#22222f;
+      --purple:  #7c6fef;
+      --purple2: #a594f9;
+      --accent:  #f0522a;
+      --green:   #3ddc84;
+      --amber:   #f5a623;
+      --orange:  #ff6b35;
+      --text:    #ececf4;
+      --muted:   #6b6b8a;
+      --border:  rgba(255,255,255,0.07);
+      --border2: rgba(124,111,239,0.25);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding-bottom: 90px; }
+
+    /* ── NAV UNIVERSEL ── */
+    .univ-nav { position: sticky; top: 0; z-index: 100; background: rgba(11,11,16,0.96); backdrop-filter: blur(14px); border-bottom: 1px solid rgba(255,255,255,0.08); padding: 0 16px; height: 58px; display: flex; align-items: center; gap: 8px; }
+    .univ-nav-logo { font-family: 'Syne', sans-serif; font-size: 1.2rem; font-weight: 900; text-decoration: none; background: linear-gradient(135deg, #7c6fef, #a594f9); -webkit-background-clip: text; -webkit-text-fill-color: transparent; flex-shrink: 0; letter-spacing: 1px; }
+    .univ-nav-links-d { display: flex; align-items: center; gap: 2px; flex: 1; margin: 0 8px; }
+    @media (max-width: 680px) { .univ-nav-links-d { display: none; } }
+    .univ-nav-lk { color: rgba(240,239,254,0.6); font-size: .82rem; font-weight: 600; text-decoration: none; padding: 5px 10px; border-radius: 7px; transition: all .2s; white-space: nowrap; font-family: 'DM Sans', sans-serif; }
+    .univ-nav-lk:hover { color: #f0effe; background: rgba(255,255,255,0.06); }
+    .univ-nav-search { display: flex; align-items: center; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1); border-radius: 18px; overflow: hidden; max-width: 200px; flex-shrink: 0; }
+    @media (max-width: 480px) { .univ-nav-search { max-width: 110px; } }
+    .univ-nav-si { background: none; border: none; outline: none; color: #f0effe; font-size: .8rem; padding: 7px 10px; width: 100%; font-family: 'DM Sans', sans-serif; }
+    .univ-nav-si::placeholder { color: rgba(240,239,254,.35); }
+    .univ-nav-sb { background: none; border: none; cursor: pointer; padding: 6px 8px; font-size: 13px; color: rgba(240,239,254,.5); flex-shrink: 0; }
+    .univ-nav-sb:hover { color: #7c6fef; }
+    .nav-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+    .nav-connexion-btn { color: rgba(255,255,255,0.7); font-size: .8rem; font-weight: 600; padding: 6px 13px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.15); text-decoration: none; transition: all .2s; white-space: nowrap; }
+    .nav-connexion-btn:hover { border-color: var(--purple); color: var(--purple2); }
+    .nav-avatar-btn { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #7c6fef, #5040c8); display: none; align-items: center; justify-content: center; font-size: .85rem; font-weight: 700; color: #fff; text-decoration: none; text-transform: uppercase; }
+    .nav-avatar-btn.show { display: flex; }
+    .nav-notif-link { position: relative; display: none; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 8px; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1); text-decoration: none; font-size: .95rem; transition: all .2s; }
+    .nav-notif-link.show { display: flex; }
+    .nav-notif-link:hover { background: rgba(255,255,255,0.13); }
+    .nav-notif-dot { position: absolute; top: -5px; right: -5px; min-width: 16px; height: 16px; border-radius: 8px; background: var(--accent); color: #fff; font-size: 9px; font-weight: 800; padding: 0 3px; display: none; align-items: center; justify-content: center; border: 2px solid var(--bg); }
+    .nav-notif-dot.show { display: flex; }
+    .univ-nav-hbg { width: 34px; height: 34px; border-radius: 8px; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; color: #f0effe; transition: background .2s; flex-shrink: 0; }
+    .univ-nav-hbg:hover { background: rgba(255,255,255,0.13); }
+
+    /* ── DRAWER ── */
+    .univ-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 150; backdrop-filter: blur(3px); }
+    .univ-overlay.open { display: block; }
+    .univ-drawer { position: fixed; top: 0; right: 0; width: 270px; height: 100%; background: #13131c; z-index: 151; overflow-y: auto; transform: translateX(100%); transition: transform .28s cubic-bezier(.4,0,.2,1); box-shadow: -4px 0 32px rgba(0,0,0,.4); border-left: 1px solid rgba(255,255,255,.07); }
+    .univ-drawer.open { transform: translateX(0); }
+    .univ-d-hdr { display: flex; align-items: center; justify-content: space-between; padding: 16px; border-bottom: 1px solid rgba(255,255,255,.07); }
+    .univ-d-logo { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 900; text-decoration: none; background: linear-gradient(135deg, #7c6fef, #a594f9); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .univ-d-close { width: 30px; height: 30px; border-radius: 50%; background: rgba(255,255,255,.08); border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; color: rgba(240,239,254,.7); }
+    .univ-d-sec { font-size: .65rem; font-weight: 800; color: rgba(240,239,254,.3); letter-spacing: 1.5px; text-transform: uppercase; padding: 14px 16px 5px; }
+    .univ-d-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; margin: 2px 8px; text-decoration: none; color: rgba(240,239,254,.85); font-weight: 600; font-size: .88rem; cursor: pointer; transition: background .15s; border: none; background: none; width: calc(100% - 16px); text-align: left; border-radius: 9px; font-family: 'DM Sans', sans-serif; }
+    .univ-d-item:hover { background: rgba(255,255,255,.06); }
+    .univ-d-icon { width: 34px; height: 34px; border-radius: 9px; background: rgba(255,255,255,.07); display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+    .univ-d-badge { font-size: .65rem; font-weight: 800; padding: 2px 7px; border-radius: 6px; margin-left: auto; }
+    .univ-d-badge.orange { background: rgba(255,107,53,.15); color: #ff6b35; }
+    .univ-d-badge.teal { background: rgba(0,201,167,.15); color: #00c9a7; }
+    .univ-d-divider { height: 1px; background: rgba(255,255,255,.07); margin: 8px 16px; }
+
+    /* ── BOTTOM NAV ── */
+    .univ-bnav { position: fixed; bottom: 0; left: 0; right: 0; z-index: 100; background: rgba(10,10,15,.97); border-top: 1px solid rgba(255,255,255,.07); display: flex; align-items: center; justify-content: space-around; padding: 8px 0 16px; backdrop-filter: blur(14px); }
+    .univ-bnav-item { display: flex; flex-direction: column; align-items: center; gap: 2px; text-decoration: none; color: rgba(240,239,254,.4); padding: 0 8px; transition: color .2s; border: none; background: none; cursor: pointer; }
+    .univ-bnav-item:hover { color: rgba(240,239,254,.9); }
+    .univ-bnav-icon { font-size: 20px; }
+    .univ-bnav-label { font-size: .6rem; font-weight: 800; font-family: 'DM Sans', sans-serif; }
+    .univ-bnav-search { width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, #7c6fef, #5040c8); border: none; display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer; margin-top: -18px; box-shadow: 0 4px 18px rgba(124,111,239,.5); transition: transform .2s; flex-shrink: 0; }
+    .univ-bnav-search:hover { transform: scale(1.08); }
+
+    /* ── LOADING ── */
+    .page-loading { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 60vh; gap: 16px; color: var(--muted); }
+    .loading-ring { width: 48px; height: 48px; border-radius: 50%; border: 3px solid var(--border); border-top-color: var(--purple); animation: spin .8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── NOT FOUND ── */
+    .not-found { text-align: center; padding: 80px 20px; }
+    .not-found-icon { font-size: 4rem; margin-bottom: 20px; }
+    .not-found h2 { font-family: 'Syne', sans-serif; font-size: 1.5rem; margin-bottom: 10px; }
+    .not-found p { color: var(--muted); margin-bottom: 24px; }
+    .btn-home { display: inline-flex; align-items: center; gap: 6px; background: var(--purple); color: #fff; border: none; padding: 11px 22px; border-radius: 10px; font-family: 'DM Sans', sans-serif; font-weight: 700; font-size: 0.9rem; text-decoration: none; }
+
+    /* ── AUTHOR HERO ── */
+    .author-hero {
+      background: linear-gradient(180deg, #1a0a2e 0%, var(--bg) 100%);
+      padding: 48px 0 40px;
+      position: relative;
+      overflow: hidden;
+    }
+    .author-hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse 70% 60% at 50% 0%, rgba(124,111,239,0.14) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .author-hero-inner {
+      max-width: 900px; margin: 0 auto; padding: 0 24px;
+      display: flex; align-items: center; gap: 36px;
+      position: relative; z-index: 1;
+    }
+    @media (max-width: 600px) {
+      .author-hero-inner { flex-direction: column; align-items: flex-start; gap: 20px; }
+      .author-hero { padding: 32px 0 28px; }
+    }
+
+    /* Avatar */
+    .author-avatar-wrap { flex-shrink: 0; }
+    .author-avatar-el {
+      width: 100px; height: 100px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--purple), #5040c8);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Syne', sans-serif; font-size: 2.4rem; font-weight: 800;
+      color: #fff; text-transform: uppercase;
+      border: 3px solid rgba(124,111,239,0.5);
+      box-shadow: 0 0 0 5px rgba(124,111,239,0.12), 0 10px 36px rgba(0,0,0,0.4);
+      overflow: hidden;
+    }
+    .author-avatar-el img { width: 100%; height: 100%; object-fit: cover; }
+
+    /* Info */
+    .author-hero-info { flex: 1; min-width: 0; }
+    .author-badges { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+    .badge-creator {
+      display: none; align-items: center; gap: 5px;
+      background: rgba(124,111,239,0.15); border: 1px solid rgba(124,111,239,0.3);
+      color: var(--purple2); font-size: 0.7rem; font-weight: 800;
+      padding: 3px 10px; border-radius: 20px;
+      text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .badge-creator.show { display: inline-flex; }
+    .author-username {
+      font-family: 'Syne', sans-serif; font-size: 2rem; font-weight: 800;
+      line-height: 1.1; margin-bottom: 10px;
+      text-shadow: 0 2px 12px rgba(0,0,0,0.4);
+    }
+    @media (max-width: 480px) { .author-username { font-size: 1.6rem; } }
+    .author-bio {
+      font-size: 0.9rem; line-height: 1.7; color: #b0b0c8;
+      margin-bottom: 18px; max-width: 580px;
+    }
+    .author-stats {
+      display: flex; gap: 28px; margin-bottom: 14px; flex-wrap: wrap;
+    }
+    .astat { display: flex; flex-direction: column; gap: 2px; }
+    .astat-num {
+      font-family: 'Syne', sans-serif; font-size: 1.3rem; font-weight: 700;
+      line-height: 1;
+    }
+    .astat-label {
+      font-size: 0.68rem; color: var(--muted); text-transform: uppercase;
+      letter-spacing: 0.5px; font-weight: 700;
+    }
+    .author-join-date {
+      font-size: 0.78rem; color: var(--muted); margin-bottom: 18px;
+    }
+    .author-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .btn-follow-author {
+      display: none; align-items: center; gap: 7px;
+      background: transparent; border: 1px solid var(--border2);
+      color: var(--text); padding: 10px 22px; border-radius: 10px;
+      font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight: 700;
+      cursor: pointer; transition: all .25s;
+    }
+    .btn-follow-author.show { display: inline-flex; }
+    .btn-follow-author:hover { background: rgba(124,111,239,0.15); border-color: var(--purple); color: var(--purple2); }
+    .btn-follow-author.following { background: rgba(61,220,132,0.1); border-color: var(--green); color: var(--green); }
+    .btn-follow-author:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    /* ── MAIN WRAP ── */
+    .main-wrap { max-width: 900px; margin: 0 auto; padding: 32px 24px; }
+
+    /* ── SECTION HEADER ── */
+    .section-header { margin-bottom: 20px; }
+    .section-title {
+      font-family: 'Syne', sans-serif; font-size: 1.05rem; font-weight: 700;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+    /* ── MANGA GRID ── */
+    .manga-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
+      gap: 16px;
+    }
+    @media (max-width: 360px) { .manga-grid { grid-template-columns: repeat(2, 1fr); } }
+
+    /* ── MANGA CARD ── */
+    .manga-card {
+      background: var(--surface);
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      text-decoration: none;
+      display: block;
+      transition: transform .25s, box-shadow .25s, border-color .25s;
+      color: var(--text);
+    }
+    .manga-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 36px rgba(0,0,0,0.4);
+      border-color: rgba(124,111,239,0.28);
+    }
+    .manga-cover {
+      width: 100%; aspect-ratio: 2/3; object-fit: cover; display: block;
+      background: linear-gradient(135deg, #1e1e35, #2e1e4e);
+    }
+    .manga-cover-placeholder {
+      width: 100%; aspect-ratio: 2/3;
+      background: linear-gradient(135deg, #1e1e35 0%, #2e1e4e 100%);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2.5rem;
+    }
+    .manga-card-info { padding: 10px 12px 12px; }
+    .manga-card-title {
+      font-weight: 700; font-size: 0.85rem;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      margin-bottom: 6px;
+    }
+    .manga-card-meta { display: flex; flex-wrap: wrap; gap: 4px; }
+    .manga-statut {
+      font-size: 0.68rem; font-weight: 700; padding: 2px 7px; border-radius: 6px;
+    }
+    .manga-statut-en_cours { background: rgba(61,220,132,0.15); color: var(--green); }
+    .manga-statut-termine  { background: rgba(124,111,239,0.15); color: var(--purple2); }
+    .manga-statut-pause,
+    .manga-statut-hiatus   { background: rgba(245,166,35,0.15); color: var(--amber); }
+    .manga-genre {
+      font-size: 0.68rem; font-weight: 600; padding: 2px 7px; border-radius: 6px;
+      background: var(--surface2); color: var(--muted);
+    }
+    .empty-mangas {
+      grid-column: 1 / -1;
+      text-align: center; padding: 48px 20px;
+      color: var(--muted); font-size: 0.9rem;
+    }
+
+    /* ── TOAST ── */
+    .toast {
+      position: fixed; bottom: 80px; right: 20px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 13px 18px;
+      font-size: 0.85rem; font-weight: 600; z-index: 9999;
+      display: flex; align-items: center; gap: 8px;
+      transform: translateY(60px); opacity: 0;
+      transition: all .3s cubic-bezier(.34,1.56,.64,1);
+      box-shadow: 0 8px 28px rgba(0,0,0,0.3);
+      max-width: 280px;
+    }
+    .toast.show    { transform: translateY(0); opacity: 1; }
+    .toast.success { border-color: var(--green);  color: var(--green); }
+    .toast.error   { border-color: var(--accent); color: var(--accent); }
+    .toast.info    { border-color: var(--purple); color: var(--purple2); }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="univ-nav">
+  <a href="index.html" class="univ-nav-logo">INKRISE</a>
+  <div class="univ-nav-links-d">
+    <a href="index.html" class="univ-nav-lk">Accueil</a>
+    <a href="manga.html" class="univ-nav-lk">Mangas</a>
+    <a href="#" class="univ-nav-lk">Tutoriels</a>
+    <a href="#" class="univ-nav-lk">Premium ✨</a>
+  </div>
+  <div class="univ-nav-search">
+    <input type="text" id="navSearchInput" class="univ-nav-si" placeholder="Rechercher…" onkeydown="if(event.key==='Enter')doSearch()" />
+    <button class="univ-nav-sb" onclick="doSearch()">🔍</button>
+  </div>
+  <div class="nav-right">
+    <a href="auth.html" class="nav-connexion-btn" id="navConnexion">Connexion</a>
+    <a href="profil.html" class="nav-avatar-btn" id="navAvatar">?</a>
+    <a href="profil.html#notifications" class="nav-notif-link" id="navNotifLink" title="Notifications">🔔<span class="nav-notif-dot" id="navNotifDot"></span></a>
+    <button class="univ-nav-hbg" onclick="openDrawer()">☰</button>
+  </div>
+</nav>
+
+<!-- DRAWER -->
+<div class="univ-overlay" id="univOverlay" onclick="closeDrawer()"></div>
+<div class="univ-drawer" id="univDrawer">
+  <div class="univ-d-hdr">
+    <a href="index.html" class="univ-d-logo">INKRISE</a>
+    <button class="univ-d-close" onclick="closeDrawer()">✕</button>
+  </div>
+  <div class="univ-d-sec">Explorer</div>
+  <a href="index.html" class="univ-d-item"><div class="univ-d-icon">🏠</div>Accueil</a>
+  <a href="manga.html" class="univ-d-item"><div class="univ-d-icon">📖</div>Manga & BD</a>
+  <a href="#" class="univ-d-item"><div class="univ-d-icon">🎓</div>Tutoriels <span class="univ-d-badge teal">GRATUIT</span></a>
+  <a href="#" class="univ-d-item"><div class="univ-d-icon">💎</div>Premium <span class="univ-d-badge orange">PRO</span></a>
+  <div class="univ-d-divider"></div>
+  <div class="univ-d-sec">Mon compte</div>
+  <a href="profil.html" class="univ-d-item" id="drawerProfil" style="display:none;"><div class="univ-d-icon">🧑‍🎨</div>Mon profil</a>
+  <a href="upload-manga.html" class="univ-d-item" id="drawerPublier" style="display:none;"><div class="univ-d-icon">📤</div>Publier un manga</a>
+  <a href="auth.html" class="univ-d-item" id="drawerConnexion"><div class="univ-d-icon">🔑</div>Connexion / Inscription</a>
+  <button class="univ-d-item" id="drawerLogout" style="display:none;" onclick="doLogout()"><div class="univ-d-icon">🚪</div><span style="color:#f0522a;">Déconnexion</span></button>
+</div>
+
+<!-- LOADING -->
+<div class="page-loading" id="pageLoading">
+  <div class="loading-ring"></div>
+  <span>Chargement du profil…</span>
+</div>
+
+<!-- NOT FOUND -->
+<div id="notFound" style="display:none;">
+  <div class="main-wrap">
+    <div class="not-found">
+      <div class="not-found-icon">😕</div>
+      <h2>Profil introuvable</h2>
+      <p>Ce créateur n'existe pas ou a été supprimé.</p>
+      <a href="index.html" class="btn-home">← Retour à l'accueil</a>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div id="mainContent" style="display:none;">
+
+  <!-- Author Hero -->
+  <div class="author-hero">
+    <div class="author-hero-inner">
+      <div class="author-avatar-wrap">
+        <div class="author-avatar-el" id="authorAvatarEl">?</div>
+      </div>
+      <div class="author-hero-info">
+        <div class="author-badges">
+          <span class="badge-creator" id="creatorBadge">✏️ Créateur</span>
+        </div>
+        <h1 class="author-username" id="authorUsername">—</h1>
+        <p class="author-bio" id="authorBio"></p>
+        <div class="author-stats">
+          <div class="astat">
+            <span class="astat-num" id="statFollowers">0</span>
+            <span class="astat-label">Abonnés</span>
+          </div>
+          <div class="astat">
+            <span class="astat-num" id="statMangas">0</span>
+            <span class="astat-label">Mangas</span>
+          </div>
+        </div>
+        <div class="author-join-date" id="authorJoinDate"></div>
+        <div class="author-actions">
+          <button class="btn-follow-author" id="btnFollowAuthor">👤 Suivre</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mangas Section -->
+  <div class="main-wrap">
+    <div class="section-header">
+      <h2 class="section-title">📚 Publications</h2>
+    </div>
+    <div class="manga-grid" id="mangaGrid">
+      <div class="empty-mangas">Chargement des mangas…</div>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- BOTTOM NAV -->
+<div class="univ-bnav">
+  <a href="index.html" class="univ-bnav-item"><span class="univ-bnav-icon">🏠</span><span class="univ-bnav-label">Accueil</span></a>
+  <a href="manga.html" class="univ-bnav-item"><span class="univ-bnav-icon">📖</span><span class="univ-bnav-label">Manga</span></a>
+  <button class="univ-bnav-search" onclick="focusSearch()">🔍</button>
+  <a href="#" class="univ-bnav-item"><span class="univ-bnav-icon">🎓</span><span class="univ-bnav-label">Tutoriels</span></a>
+  <a href="#" class="univ-bnav-item"><span class="univ-bnav-icon">👥</span><span class="univ-bnav-label">Communauté</span></a>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://bsdcpwtimsgxcnaamwip.supabase.co';
+const SUPABASE_KEY = 'eyJhbG...fb44';
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let currentUser   = null;
+let auteurId      = null;
+let isFollowing   = false;
+let followerCount = 0;
+
+// ── INIT ──
+async function init() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) {
+    currentUser = session.user;
+    document.getElementById('navConnexion').style.display = 'none';
+    document.getElementById('navAvatar').classList.add('show');
+    document.getElementById('navNotifLink').classList.add('show');
+    document.getElementById('drawerConnexion').style.display = 'none';
+    document.getElementById('drawerProfil').style.display = 'flex';
+    document.getElementById('drawerPublier').style.display = 'flex';
+    document.getElementById('drawerLogout').style.display = 'flex';
+
+    const { data: myProfile } = await sb.from('profiles').select('username').eq('id', currentUser.id).single();
+    const name = myProfile?.username || currentUser.email.split('@')[0];
+    document.getElementById('navAvatar').textContent = name[0].toUpperCase();
+
+    const { count: unreadCount } = await sb.from('notifications')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', currentUser.id).eq('lu', false);
+    if (unreadCount > 0) {
+      const dot = document.getElementById('navNotifDot');
+      dot.textContent = unreadCount > 9 ? '9+' : unreadCount;
+      dot.classList.add('show');
+    }
+  }
+
+  const params = new URLSearchParams(window.location.search);
+  auteurId = params.get('id');
+  if (!auteurId) { showNotFound(); return; }
+
+  await loadProfile(auteurId);
+}
+
+// ── CHARGER PROFIL ──
+async function loadProfile(id) {
+  const [profileRes, followerRes, mangasRes] = await Promise.all([
+    sb.from('profiles').select('*').eq('id', id).single(),
+    sb.from('follows').select('id', { count: 'exact', head: true }).eq('followed_id', id),
+    sb.from('mangas').select('*').eq('auteur_id', id).order('created_at', { ascending: false })
+  ]);
+
+  if (profileRes.error || !profileRes.data) { showNotFound(); return; }
+
+  const profile = profileRes.data;
+  followerCount = followerRes.count || 0;
+  const mangas  = mangasRes.data || [];
+
+  if (currentUser && currentUser.id !== id) {
+    const { data: followData } = await sb.from('follows')
+      .select('id').eq('user_id', currentUser.id).eq('followed_id', id).maybeSingle();
+    isFollowing = !!followData;
+  }
+
+  document.getElementById('pageLoading').style.display = 'none';
+  document.getElementById('mainContent').style.display = 'block';
+  document.title = `${profile.username || 'Auteur'} — Inkrise`;
+
+  renderProfile(profile, mangas.length);
+  renderMangas(mangas);
+}
+
+// ── RENDER PROFIL ──
+function renderProfile(profile, mangaCount) {
+  const avatarEl = document.getElementById('authorAvatarEl');
+  if (profile.avatar_url) {
+    const img = document.createElement('img');
+    img.src = profile.avatar_url;
+    img.alt = profile.username || '';
+    avatarEl.textContent = '';
+    avatarEl.appendChild(img);
+  } else {
+    avatarEl.textContent = (profile.username?.[0] || '?').toUpperCase();
+  }
+
+  document.getElementById('authorUsername').textContent = profile.username || 'Utilisateur';
+
+  const bioEl = document.getElementById('authorBio');
+  if (profile.bio) {
+    bioEl.textContent = profile.bio;
+  } else {
+    bioEl.textContent = 'Aucune biographie disponible.';
+    bioEl.style.fontStyle = 'italic';
+    bioEl.style.color = 'var(--muted)';
+  }
+
+  if (profile.is_creator) {
+    document.getElementById('creatorBadge').classList.add('show');
+  }
+
+  document.getElementById('statFollowers').textContent = followerCount;
+  document.getElementById('statMangas').textContent    = mangaCount;
+
+  const joinDate = new Date(profile.created_at).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+  document.getElementById('authorJoinDate').textContent = `📅 Membre depuis ${joinDate}`;
+
+  if (currentUser && currentUser.id !== auteurId) {
+    const btn = document.getElementById('btnFollowAuthor');
+    btn.classList.add('show');
+    updateFollowBtn();
+  }
+}
+
+function updateFollowBtn() {
+  const btn = document.getElementById('btnFollowAuthor');
+  if (isFollowing) {
+    btn.textContent = '✅ Suivi';
+    btn.classList.add('following');
+  } else {
+    btn.textContent = '👤 Suivre';
+    btn.classList.remove('following');
+  }
+}
+
+// ── RENDER MANGAS ──
+const STATUT_LABELS = { en_cours: 'En cours', termine: 'Terminé', pause: 'En pause', hiatus: 'Hiatus' };
+
+function renderMangas(mangas) {
+  const grid = document.getElementById('mangaGrid');
+  if (mangas.length === 0) {
+    grid.innerHTML = '<div class="empty-mangas">📭 Aucun manga publié pour le moment.</div>';
+    return;
+  }
+  grid.innerHTML = '';
+  mangas.forEach(manga => grid.appendChild(createMangaCard(manga)));
+}
+
+function createMangaCard(manga) {
+  const card = document.createElement('a');
+  card.className = 'manga-card';
+  card.href = `manga.html?id=${manga.id}`;
+
+  const coverHtml = manga.couverture_url
+    ? `<img class="manga-cover" src="${manga.couverture_url}" alt="${manga.titre || ''}" loading="lazy" />`
+    : `<div class="manga-cover-placeholder">📖</div>`;
+
+  const statutHtml = manga.statut
+    ? `<span class="manga-statut manga-statut-${manga.statut}">${STATUT_LABELS[manga.statut] || manga.statut}</span>`
+    : '';
+
+  const genresHtml = (manga.genres || []).slice(0, 2)
+    .map(g => `<span class="manga-genre">${g}</span>`).join('');
+
+  card.innerHTML = `
+    ${coverHtml}
+    <div class="manga-card-info">
+      <div class="manga-card-title">${manga.titre || 'Sans titre'}</div>
+      <div class="manga-card-meta">${statutHtml}${genresHtml}</div>
+    </div>
+  `;
+  return card;
+}
+
+// ── SUIVRE / NE PLUS SUIVRE ──
+document.getElementById('btnFollowAuthor').addEventListener('click', async () => {
+  if (!currentUser) { showToast('Connecte-toi pour suivre un créateur !', 'info'); return; }
+  const btn = document.getElementById('btnFollowAuthor');
+  btn.disabled = true;
+
+  if (isFollowing) {
+    const { error } = await sb.from('follows').delete()
+      .eq('user_id', currentUser.id).eq('followed_id', auteurId);
+    if (!error) {
+      isFollowing = false;
+      followerCount = Math.max(0, followerCount - 1);
+      document.getElementById('statFollowers').textContent = followerCount;
+      showToast('Tu ne suis plus ce créateur', 'info');
+    } else {
+      showToast('Erreur : ' + error.message, 'error');
+    }
+  } else {
+    const { error } = await sb.from('follows').insert({ user_id: currentUser.id, followed_id: auteurId });
+    if (!error) {
+      isFollowing = true;
+      followerCount++;
+      document.getElementById('statFollowers').textContent = followerCount;
+      showToast('✅ Tu suis maintenant ce créateur !', 'success');
+    } else {
+      showToast('Erreur : ' + error.message, 'error');
+    }
+  }
+
+  updateFollowBtn();
+  btn.disabled = false;
+});
+
+// ── HELPERS ──
+function showNotFound() {
+  document.getElementById('pageLoading').style.display = 'none';
+  document.getElementById('notFound').style.display = 'block';
+}
+
+function showToast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast ${type} show`;
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ── NAV ──
+function openDrawer()  { document.getElementById('univDrawer').classList.add('open'); document.getElementById('univOverlay').classList.add('open'); document.body.style.overflow = 'hidden'; }
+function closeDrawer() { document.getElementById('univDrawer').classList.remove('open'); document.getElementById('univOverlay').classList.remove('open'); document.body.style.overflow = ''; }
+function doSearch()    { const q = document.getElementById('navSearchInput').value.trim(); if (q) window.location.href = 'manga.html?q=' + encodeURIComponent(q); }
+function focusSearch() { const i = document.getElementById('navSearchInput'); if (i) { i.focus(); window.scrollTo({ top: 0, behavior: 'smooth' }); } }
+function doLogout()    { sb.auth.signOut().then(() => window.location.href = 'index.html'); }
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDrawer(); });
+
+init();
+</script>
+</body>
+</html>
