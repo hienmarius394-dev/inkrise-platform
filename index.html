@@ -561,7 +561,7 @@ function closeModalOutside(e) { if(e.target===document.getElementById('modalOver
 document.addEventListener('keydown', e => { if(e.key==='Escape') { closeModal(); closeDrawer(); } })
 
 // SEARCH
-function doSearch(){const q=document.getElementById('navSearchInput').value.trim();if(q)window.location.href='manga.html?q='+encodeURIComponent(q);}
+function doSearch(){const q=document.getElementById('navSearchInput').value.trim();if(q)window.location.href='recherche.html?q='+encodeURIComponent(q);}
 function focusSearch(){const i=document.getElementById('navSearchInput');if(i){i.focus();window.scrollTo({top:0,behavior:'smooth'});}}
 
 // BOTTOM NAV

@@ -536,7 +536,7 @@ function togglePwd(id, btn) {
 // UNIVERSAL NAV
 function openDrawer(){document.getElementById('univDrawer').classList.add('open');document.getElementById('univOverlay').classList.add('open');document.body.style.overflow='hidden';}
 function closeDrawer(){document.getElementById('univDrawer').classList.remove('open');document.getElementById('univOverlay').classList.remove('open');document.body.style.overflow='';}
-function doSearch(){const q=document.getElementById('navSearchInput').value.trim();if(q)window.location.href='manga.html?q='+encodeURIComponent(q);}
+function doSearch(){const q=document.getElementById('navSearchInput').value.trim();if(q)window.location.href='recherche.html?q='+encodeURIComponent(q);}
 function focusSearch(){const i=document.getElementById('navSearchInput');if(i){i.focus();window.scrollTo({top:0,behavior:'smooth'});}}
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!['loginEmail','loginPassword','signupUsername','signupEmail','signupPassword'].includes(document.activeElement?.id))closeDrawer();});
 
