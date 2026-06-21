@@ -513,8 +513,8 @@ async function loadChapter() {
   // Charger les pages depuis Supabase storage (dossier chapitres/{chapitreId}/)
   // Si pas de pages → afficher placeholder élégant
   const { data: storageFiles } = await sb.storage
-    .from('manga-assets')
-    .list(`chapitres/${chapitre.id}`, { sortBy: { column: 'name', order: 'asc' } });
+      .from('pages')
+      .list(`chapitres/${chapitre.id}`, { sortBy: { column: 'name', order: 'asc' } });
 
   pages = [];
   if (storageFiles && storageFiles.length > 0) {
@@ -522,8 +522,8 @@ async function loadChapter() {
       .filter(f => f.name.match(/\.(jpg|jpeg|png|webp|gif)$/i))
       .map(f => {
         const { data: { publicUrl } } = sb.storage
-          .from('manga-assets')
-          .getPublicUrl(`chapitres/${chapitre.id}/${f.name}`);
+                  .from('pages')
+                  .getPublicUrl(`chapitres/${chapitre.id}/${f.name}`);
         return publicUrl;
       });
   }

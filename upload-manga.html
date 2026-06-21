@@ -954,9 +954,9 @@ async function publishManga(draft = false) {
     if (coverFile) {
       const ext  = coverFile.name.split('.').pop();
       const path = `covers/${currentUser.id}/${Date.now()}.${ext}`;
-      const { error: upErr } = await sb.storage.from('manga-assets').upload(path, coverFile, { upsert: true });
-      if (!upErr) {
-        const { data: { publicUrl } } = sb.storage.from('manga-assets').getPublicUrl(path);
+      const { error: upErr } = await sb.storage.from('covers').upload(path, coverFile, { upsert: true });
+            if (!upErr) {
+              const { data: { publicUrl } } = sb.storage.from('covers').getPublicUrl(path);
         coverUrl = publicUrl;
       }
     }
@@ -964,40 +964,63 @@ async function publishManga(draft = false) {
     // ÉTAPE 2 — Créer le manga
     setProgress(40, 'Enregistrement du manga…', 'Création dans la base de données', 'Étape 2/3');
     const mangaPayload = {
-      auteur_id:   currentUser.id,
-      titre,
-      description: desc,
-      type:        document.getElementById('inputType').value,
-      statut:      document.getElementById('inputStatut').value,
-      genres:      selectedGenres,
-      cover_url:   coverUrl,
-      public:      document.getElementById('togglePublic').checked,
-      commentaires: document.getElementById('toggleComments').checked,
-      adulte:      document.getElementById('toggleAdult').checked,
-      brouillon:   draft,
-      likes:       0,
-      created_at:  new Date().toISOString(),
-    };
+          auteur_id:   currentUser.id,
+          titre,
+          description: desc,
+          type:        document.getElementById('inputType').value,
+          statut:      document.getElementById('inputStatut').value,
+          genres:      selectedGenres,
+          cover_url:   coverUrl,
+          public:      document.getElementById('togglePublic').checked,
+          commentaires: document.getElementById('toggleComments').checked,
+          likes:       0,
+          created_at:  new Date().toISOString(),
+        };
 
     const { data: manga, error: mangaErr } = await sb.from('mangas').insert(mangaPayload).select().single();
     if (mangaErr) throw mangaErr;
 
-    // ÉTAPE 3 — Créer les chapitres
-    setProgress(70, 'Création des chapitres…', 'Enregistrement des chapitres', 'Étape 3/3');
-    const chapPayloads = chapitres.map((c, i) => ({
-      manga_id:   manga.id,
-      auteur_id:  currentUser.id,
-      titre:      c.titre || `Chapitre ${i + 1}`,
-      ordre:      i + 1,
-      created_at: new Date().toISOString(),
-    }));
+    // ÉTAPE 3 — Créer les chapitres + upload des pages
+        const totalPagesToUpload = chapitres.reduce((sum, c) => sum + (c.pages ? c.pages.length : 0), 0);
+        setProgress(70, 'Création des chapitres…', 'Enregistrement dans la base de données', 'Étape 3/3');
 
-    if (chapPayloads.length > 0) {
-      const { error: chapErr } = await sb.from('chapitres').insert(chapPayloads);
-      if (chapErr) console.warn('Chapitres:', chapErr.message);
-    }
+        const chapPayloads = chapitres.map((c, i) => ({
+          manga_id:   manga.id,
+          auteur_id:  currentUser.id,
+          titre:      c.titre || `Chapitre ${i + 1}`,
+          ordre:      i + 1,
+          created_at: new Date().toISOString(),
+        }));
 
-    setProgress(100, draft ? 'Brouillon sauvegardé !' : 'Manga publié ! 🎉', '', 'Terminé');
+        if (chapPayloads.length > 0) {
+          const { data: createdChaps, error: chapErr } = await sb.from('chapitres').insert(chapPayloads).select();
+          if (chapErr) throw chapErr;
+
+          // Upload des pages pour chaque chapitre
+          if (totalPagesToUpload > 0) {
+            let uploadedCount = 0;
+            for (let i = 0; i < chapitres.length; i++) {
+              const c = chapitres[i];
+              const createdChap = createdChaps[i];
+              if (!c.pages || c.pages.length === 0) continue;
+
+              for (let p = 0; p < c.pages.length; p++) {
+                const page = c.pages[p];
+                const ext = page.name.split('.').pop();
+                const pagePath = `chapitres/${createdChap.id}/page_${String(p + 1).padStart(4, '0')}.${ext}`;
+
+                const { error: pageErr } = await sb.storage.from('pages').upload(pagePath, page, { upsert: true });
+                if (pageErr) console.warn(`Page ${p + 1} ch.${i + 1}:`, pageErr.message);
+
+                uploadedCount++;
+                const pct = 70 + Math.round((uploadedCount / totalPagesToUpload) * 25);
+                setProgress(pct, 'Upload des pages…', `${uploadedCount}/${totalPagesToUpload} pages`, 'Upload ' + i + 1 + '/' + chapitres.length);
+              }
+            }
+          }
+        }
+
+        setProgress(100, draft ? 'Brouillon sauvegardé !' : 'Manga publié ! 🎉', '', 'Terminé');
 
     await new Promise(r => setTimeout(r, 800));
     document.getElementById('progressOverlay').classList.remove('show');
