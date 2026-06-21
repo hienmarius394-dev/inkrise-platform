@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pack tutoriel — Inkrise</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root {
+      --bg:      #0b0b10;
+      --surface: #13131c;
+      --surface2:#1c1c28;
+      --surface3:#22222f;
+      --purple:  #7c6fef;
+      --purple2: #a594f9;
+      --accent:  #f0522a;
+      --green:   #3ddc84;
+      --amber:   #f5a623;
+      --orange:  #ff6b35;
+      --text:    #ececf4;
+      --muted:   #6b6b8a;
+      --border:  rgba(255,255,255,0.07);
+      --border2: rgba(124,111,239,0.25);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding-bottom: 90px; }
+
+    /* ── NAV UNIVERSEL ── */
+    .univ-nav { position: sticky; top: 0; z-index: 100; background: rgba(11,11,16,0.96); backdrop-filter: blur(14px); border-bottom: 1px solid rgba(255,255,255,0.08); padding: 0 16px; height: 58px; display: flex; align-items: center; gap: 8px; }
+    .univ-nav-logo { font-family: 'Syne', sans-serif; font-size: 1.2rem; font-weight: 900; text-decoration: none; background: linear-gradient(135deg, #7c6fef, #a594f9); -webkit-background-clip: text; -webkit-text-fill-color: transparent; flex-shrink: 0; letter-spacing: 1px; }
+    .univ-nav-links-d { display: flex; align-items: center; gap: 2px; flex: 1; margin: 0 8px; }
+    @media (max-width: 680px) { .univ-nav-links-d { display: none; } }
+    .univ-nav-lk { color: rgba(240,239,254,0.6); font-size: .82rem; font-weight: 600; text-decoration: none; padding: 5px 10px; border-radius: 7px; transition: all .2s; white-space: nowrap; font-family: 'DM Sans', sans-serif; }
+    .univ-nav-lk:hover { color: #f0effe; background: rgba(255,255,255,0.06); }
+    .univ-nav-lk.active { color: var(--purple2); background: rgba(124,111,239,0.1); }
+    .univ-nav-search { display: flex; align-items: center; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1); border-radius: 18px; overflow: hidden; max-width: 200px; flex-shrink: 0; }
+    @media (max-width: 480px) { .univ-nav-search { max-width: 110px; } }
+    .univ-nav-si { background: none; border: none; outline: none; color: #f0effe; font-size: .8rem; padding: 7px 10px; width: 100%; font-family: 'DM Sans', sans-serif; }
+    .univ-nav-si::placeholder { color: rgba(240,239,254,.35); }
+    .univ-nav-sb { background: none; border: none; cursor: pointer; padding: 6px 8px; font-size: 13px; color: rgba(240,239,254,.5); flex-shrink: 0; }
+    .univ-nav-sb:hover { color: #7c6fef; }
+    .nav-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+    .nav-connexion-btn { color: rgba(255,255,255,0.7); font-size: .8rem; font-weight: 600; padding: 6px 13px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.15); text-decoration: none; transition: all .2s; white-space: nowrap; }
+    .nav-connexion-btn:hover { border-color: var(--purple); color: var(--purple2); }
+    .nav-avatar-btn { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #7c6fef, #5040c8); display: none; align-items: center; justify-content: center; font-size: .85rem; font-weight: 700; color: #fff; text-decoration: none; text-transform: uppercase; }
+    .nav-avatar-btn.show { display: flex; }
+    .nav-notif-link { position: relative; display: none; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 8px; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1); text-decoration: none; font-size: .95rem; transition: all .2s; }
+    .nav-notif-link.show { display: flex; }
+    .nav-notif-link:hover { background: rgba(255,255,255,0.13); }
+    .nav-notif-dot { position: absolute; top: -5px; right: -5px; min-width: 16px; height: 16px; border-radius: 8px; background: var(--accent); color: #fff; font-size: 9px; font-weight: 800; padding: 0 3px; display: none; align-items: center; justify-content: center; border: 2px solid var(--bg); }
+    .nav-notif-dot.show { display: flex; }
+    .univ-nav-hbg { width: 34px; height: 34px; border-radius: 8px; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; color: #f0effe; transition: background .2s; flex-shrink: 0; }
+    .univ-nav-hbg:hover { background: rgba(255,255,255,0.13); }
+
+    /* ── DRAWER ── */
+    .univ-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 150; backdrop-filter: blur(3px); }
+    .univ-overlay.open { display: block; }
+    .univ-drawer { position: fixed; top: 0; right: 0; width: 270px; height: 100%; background: #13131c; z-index: 151; overflow-y: auto; transform: translateX(100%); transition: transform .28s cubic-bezier(.4,0,.2,1); box-shadow: -4px 0 32px rgba(0,0,0,.4); border-left: 1px solid rgba(255,255,255,.07); }
+    .univ-drawer.open { transform: translateX(0); }
+    .univ-d-hdr { display: flex; align-items: center; justify-content: space-between; padding: 16px; border-bottom: 1px solid rgba(255,255,255,.07); }
+    .univ-d-logo { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 900; text-decoration: none; background: linear-gradient(135deg, #7c6fef, #a594f9); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .univ-d-close { width: 30px; height: 30px; border-radius: 50%; background: rgba(255,255,255,.08); border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; color: rgba(240,239,254,.7); }
+    .univ-d-sec { font-size: .65rem; font-weight: 800; color: rgba(240,239,254,.3); letter-spacing: 1.5px; text-transform: uppercase; padding: 14px 16px 5px; }
+    .univ-d-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; margin: 2px 8px; text-decoration: none; color: rgba(240,239,254,.85); font-weight: 600; font-size: .88rem; cursor: pointer; transition: background .15s; border: none; background: none; width: calc(100% - 16px); text-align: left; border-radius: 9px; font-family: 'DM Sans', sans-serif; }
+    .univ-d-item:hover { background: rgba(255,255,255,.06); }
+    .univ-d-icon { width: 34px; height: 34px; border-radius: 9px; background: rgba(255,255,255,.07); display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+    .univ-d-badge { font-size: .65rem; font-weight: 800; padding: 2px 7px; border-radius: 6px; margin-left: auto; }
+    .univ-d-badge.orange { background: rgba(255,107,53,.15); color: #ff6b35; }
+    .univ-d-badge.teal { background: rgba(0,201,167,.15); color: #00c9a7; }
+    .univ-d-divider { height: 1px; background: rgba(255,255,255,.07); margin: 8px 16px; }
+
+    /* ── BOTTOM NAV ── */
+    .univ-bnav { position: fixed; bottom: 0; left: 0; right: 0; z-index: 100; background: rgba(10,10,15,.97); border-top: 1px solid rgba(255,255,255,.07); display: flex; align-items: center; justify-content: space-around; padding: 8px 0 16px; backdrop-filter: blur(14px); }
+    .univ-bnav-item { display: flex; flex-direction: column; align-items: center; gap: 2px; text-decoration: none; color: rgba(240,239,254,.4); padding: 0 8px; transition: color .2s; border: none; background: none; cursor: pointer; }
+    .univ-bnav-item:hover { color: rgba(240,239,254,.9); }
+    .univ-bnav-item.active { color: var(--purple2); }
+    .univ-bnav-icon { font-size: 20px; }
+    .univ-bnav-label { font-size: .6rem; font-weight: 800; font-family: 'DM Sans', sans-serif; }
+    .univ-bnav-search { width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, #7c6fef, #5040c8); border: none; display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer; margin-top: -18px; box-shadow: 0 4px 18px rgba(124,111,239,.5); transition: transform .2s; flex-shrink: 0; }
+    .univ-bnav-search:hover { transform: scale(1.08); }
+
+    /* ── TOAST ── */
+    .toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; padding: 10px 20px; font-size: .88rem; font-weight: 600; opacity: 0; transition: all .3s; z-index: 200; pointer-events: none; white-space: nowrap; }
+    .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+    /* ── LOADING ── */
+    .page-loading { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; min-height: 60vh; color: var(--muted); }
+    .loading-ring { width: 36px; height: 36px; border: 3px solid rgba(124,111,239,.2); border-top-color: #7c6fef; border-radius: 50%; animation: spin .8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── NOT FOUND ── */
+    .not-found { text-align: center; padding: 80px 20px; }
+    .not-found-icon { font-size: 3.5rem; margin-bottom: 16px; }
+    .not-found h2 { font-family: 'Syne', sans-serif; font-size: 1.4rem; font-weight: 700; margin-bottom: 10px; }
+    .not-found p { color: var(--muted); margin-bottom: 24px; }
+    .btn-home { display: inline-block; padding: 10px 22px; background: rgba(124,111,239,.15); border: 1px solid rgba(124,111,239,.3); border-radius: 20px; color: var(--purple2); text-decoration: none; font-weight: 700; font-size: .9rem; transition: all .2s; }
+    .btn-home:hover { background: rgba(124,111,239,.25); }
+
+    /* ── HERO ── */
+    .pack-hero {
+      position: relative;
+      min-height: 320px;
+      display: flex; align-items: flex-end;
+      overflow: hidden;
+    }
+    .hero-bg {
+      position: absolute; inset: 0;
+      background-size: cover; background-position: center;
+      filter: brightness(0.35) saturate(1.1);
+    }
+    .hero-bg-placeholder {
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg, #1a1230, #0f0c2a);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 5rem; opacity: 0.3;
+    }
+    .hero-gradient {
+      position: absolute; inset: 0;
+      background: linear-gradient(to top, rgba(11,11,16,1) 0%, rgba(11,11,16,0.5) 60%, transparent 100%);
+    }
+    .hero-content {
+      position: relative; z-index: 2;
+      padding: 28px 24px 32px;
+      width: 100%; max-width: 960px; margin: 0 auto;
+    }
+    .hero-breadcrumb { font-size: .78rem; color: rgba(255,255,255,.4); margin-bottom: 12px; }
+    .hero-breadcrumb a { color: var(--purple2); text-decoration: none; }
+    .hero-breadcrumb a:hover { text-decoration: underline; }
+    .hero-title {
+      font-family: 'Syne', sans-serif; font-size: 2rem; font-weight: 800;
+      line-height: 1.2; margin-bottom: 10px;
+      text-shadow: 0 2px 12px rgba(0,0,0,.5);
+    }
+    .hero-meta { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+    .hero-author { font-size: .88rem; color: rgba(255,255,255,.55); }
+    .hero-author a { color: var(--purple2); text-decoration: none; font-weight: 600; }
+    .hero-author a:hover { text-decoration: underline; }
+    .hero-price {
+      font-family: 'Syne', sans-serif; font-size: 1.4rem; font-weight: 800;
+      color: var(--orange);
+    }
+    .hero-price.free { color: var(--green); }
+
+    /* ── MAIN GRID ── */
+    .main-wrap { max-width: 960px; margin: 0 auto; padding: 32px 16px 40px; }
+    .content-grid {
+      display: grid;
+      grid-template-columns: 1fr 290px;
+      gap: 24px;
+      align-items: start;
+    }
+    @media (max-width: 720px) {
+      .content-grid { grid-template-columns: 1fr; }
+      .sidebar { order: -1; }
+    }
+
+    /* ── SECTION CARD ── */
+    .section-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 22px 24px;
+      margin-bottom: 20px;
+    }
+    .section-title {
+      font-family: 'Syne', sans-serif; font-size: .95rem; font-weight: 700;
+      margin-bottom: 16px; display: flex; align-items: center; gap: 8px;
+      padding-bottom: 12px; border-bottom: 1px solid var(--border);
+    }
+
+    /* ── BUY CARD ── */
+    .buy-card {
+      background: linear-gradient(135deg, rgba(124,111,239,.12) 0%, rgba(80,64,200,.06) 100%);
+      border: 1px solid rgba(124,111,239,.3);
+      border-radius: 18px;
+      padding: 22px 24px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    .buy-price-display {
+      font-family: 'Syne', sans-serif; font-size: 2.2rem; font-weight: 800;
+      color: var(--orange); margin-bottom: 6px;
+    }
+    .buy-price-display.free { color: var(--green); }
+    .buy-price-sub { font-size: .78rem; color: var(--muted); margin-bottom: 20px; }
+    .btn-buy {
+      display: block; width: 100%;
+      background: linear-gradient(135deg, var(--orange), #e04a1a);
+      color: #fff; border: none; border-radius: 12px;
+      padding: 14px 20px;
+      font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 800;
+      cursor: pointer; transition: all .25s;
+      box-shadow: 0 4px 20px rgba(255,107,53,.35);
+      text-decoration: none;
+    }
+    .btn-buy:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(255,107,53,.5); }
+    .btn-buy:active { transform: translateY(0); }
+    .btn-buy.free-dl {
+      background: linear-gradient(135deg, var(--green), #22a85a);
+      color: #000;
+      box-shadow: 0 4px 20px rgba(61,220,132,.3);
+    }
+    .btn-buy.free-dl:hover { box-shadow: 0 8px 28px rgba(61,220,132,.45); }
+    .buy-guarantee {
+      margin-top: 14px; font-size: .75rem; color: var(--muted);
+      display: flex; align-items: center; justify-content: center; gap: 5px;
+    }
+
+    /* ── LEARN LIST ── */
+    .learn-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+    .learn-item {
+      display: flex; align-items: flex-start; gap: 10px;
+      font-size: .88rem; line-height: 1.5; color: #d0d0e0;
+    }
+    .learn-check {
+      width: 20px; height: 20px; border-radius: 50%;
+      background: rgba(61,220,132,.15); border: 1px solid rgba(61,220,132,.3);
+      display: flex; align-items: center; justify-content: center;
+      font-size: .65rem; color: var(--green); flex-shrink: 0; margin-top: 1px;
+    }
+
+    /* ── AVIS ── */
+    .rating-summary { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; }
+    .rating-big { font-family: 'Syne', sans-serif; font-size: 2.6rem; font-weight: 800; color: var(--amber); line-height: 1; }
+    .rating-stars { font-size: 1.1rem; color: var(--amber); letter-spacing: 2px; }
+    .rating-count { font-size: .8rem; color: var(--muted); margin-top: 3px; }
+    .avis-list { display: flex; flex-direction: column; gap: 14px; }
+    .avis-item { padding: 14px 16px; background: var(--surface2); border-radius: 12px; border: 1px solid var(--border); }
+    .avis-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+    .avis-avatar { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #7c6fef, #5040c8); display: flex; align-items: center; justify-content: center; font-size: .85rem; font-weight: 700; color: #fff; flex-shrink: 0; }
+    .avis-name { font-weight: 700; font-size: .88rem; }
+    .avis-stars { font-size: .8rem; color: var(--amber); margin-left: auto; }
+    .avis-text { font-size: .82rem; color: #b0b0c0; line-height: 1.55; }
+
+    /* ── SIDEBAR ── */
+    .creator-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 20px;
+      text-align: center;
+      margin-bottom: 16px;
+    }
+    .creator-avatar {
+      width: 64px; height: 64px; border-radius: 50%;
+      background: linear-gradient(135deg, #7c6fef, #5040c8);
+      margin: 0 auto 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.6rem; font-weight: 700; color: #fff;
+      border: 3px solid rgba(124,111,239,.3);
+      overflow: hidden;
+    }
+    .creator-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .creator-name { font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 700; margin-bottom: 4px; }
+    .creator-role { font-size: .75rem; color: var(--muted); margin-bottom: 10px; }
+    .creator-bio { font-size: .8rem; color: #b0b0c0; line-height: 1.55; margin-bottom: 14px; text-align: left; }
+    .btn-profile {
+      display: block; padding: 8px 16px;
+      background: rgba(124,111,239,.1); border: 1px solid rgba(124,111,239,.28);
+      border-radius: 20px; color: var(--purple2); text-decoration: none;
+      font-size: .82rem; font-weight: 700; transition: all .2s;
+    }
+    .btn-profile:hover { background: rgba(124,111,239,.2); }
+
+    .pack-infos {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 18px 20px;
+    }
+    .pack-infos-title { font-family: 'Syne', sans-serif; font-size: .85rem; font-weight: 700; margin-bottom: 14px; color: var(--muted); text-transform: uppercase; letter-spacing: .8px; }
+    .info-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: .82rem; }
+    .info-row:last-child { border-bottom: none; }
+    .info-key { color: var(--muted); }
+    .info-val { font-weight: 600; }
+
+    /* ── DESCRIPTION ── */
+    .desc-text { font-size: .88rem; line-height: 1.75; color: #c8c8d8; }
+
+    /* ── MODAL ── */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.65); z-index: 300; backdrop-filter: blur(6px); align-items: center; justify-content: center; }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: var(--surface); border: 1px solid rgba(124,111,239,.3);
+      border-radius: 20px; padding: 36px 32px; max-width: 400px; width: 90%;
+      text-align: center; position: relative;
+      box-shadow: 0 20px 60px rgba(0,0,0,.5);
+    }
+    .modal-icon { font-size: 3rem; margin-bottom: 14px; }
+    .modal-title { font-family: 'Syne', sans-serif; font-size: 1.3rem; font-weight: 800; margin-bottom: 10px; }
+    .modal-sub { font-size: .9rem; color: var(--muted); line-height: 1.6; margin-bottom: 24px; }
+    .modal-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(124,111,239,.12); border: 1px solid rgba(124,111,239,.3); border-radius: 20px; padding: 5px 16px; font-size: .8rem; font-weight: 700; color: var(--purple2); margin-bottom: 24px; }
+    .modal-close-btn {
+      display: block; width: 100%;
+      background: rgba(255,255,255,.07); border: 1px solid var(--border);
+      border-radius: 12px; padding: 12px;
+      color: var(--text); font-size: .9rem; font-weight: 700;
+      cursor: pointer; transition: background .2s;
+      font-family: 'DM Sans', sans-serif;
+    }
+    .modal-close-btn:hover { background: rgba(255,255,255,.13); }
+    .modal-x { position: absolute; top: 14px; right: 14px; width: 28px; height: 28px; border-radius: 50%; background: rgba(255,255,255,.08); border: none; cursor: pointer; font-size: 13px; color: rgba(255,255,255,.5); display: flex; align-items: center; justify-content: center; }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="univ-nav">
+  <a href="index.html" class="univ-nav-logo">INKRISE</a>
+  <div class="univ-nav-links-d">
+    <a href="index.html" class="univ-nav-lk">Accueil</a>
+    <a href="manga.html" class="univ-nav-lk">Mangas</a>
+    <a href="tutoriels.html" class="univ-nav-lk active">Tutoriels</a>
+    <a href="#" class="univ-nav-lk">Premium ✨</a>
+  </div>
+  <div class="univ-nav-search">
+    <input type="text" id="navSearchInput" class="univ-nav-si" placeholder="Rechercher…" onkeydown="if(event.key==='Enter')doSearch()" />
+    <button class="univ-nav-sb" onclick="doSearch()">🔍</button>
+  </div>
+  <div class="nav-right">
+    <a href="auth.html" class="nav-connexion-btn" id="navConnexion">Connexion</a>
+    <a href="profil.html" class="nav-avatar-btn" id="navAvatar">?</a>
+    <a href="profil.html#notifications" class="nav-notif-link" id="navNotifLink" title="Notifications">🔔<span class="nav-notif-dot" id="navNotifDot"></span></a>
+    <button class="univ-nav-hbg" onclick="openDrawer()">☰</button>
+  </div>
+</nav>
+
+<!-- DRAWER -->
+<div class="univ-overlay" id="univOverlay" onclick="closeDrawer()"></div>
+<div class="univ-drawer" id="univDrawer">
+  <div class="univ-d-hdr">
+    <a href="index.html" class="univ-d-logo">INKRISE</a>
+    <button class="univ-d-close" onclick="closeDrawer()">✕</button>
+  </div>
+  <div class="univ-d-sec">Explorer</div>
+  <a href="index.html" class="univ-d-item"><div class="univ-d-icon">🏠</div>Accueil</a>
+  <a href="manga.html" class="univ-d-item"><div class="univ-d-icon">📖</div>Manga & BD</a>
+  <a href="tutoriels.html" class="univ-d-item"><div class="univ-d-icon">🎓</div>Tutoriels <span class="univ-d-badge teal">NOUVEAU</span></a>
+  <a href="#" class="univ-d-item"><div class="univ-d-icon">💎</div>Premium <span class="univ-d-badge orange">PRO</span></a>
+  <div class="univ-d-divider"></div>
+  <div class="univ-d-sec">Mon compte</div>
+  <a href="profil.html" class="univ-d-item" id="drawerProfil" style="display:none;"><div class="univ-d-icon">🧑‍🎨</div>Mon profil</a>
+  <a href="upload-manga.html" class="univ-d-item" id="drawerPublier" style="display:none;"><div class="univ-d-icon">📤</div>Publier un manga</a>
+  <a href="auth.html" class="univ-d-item" id="drawerConnexion"><div class="univ-d-icon">🔑</div>Connexion / Inscription</a>
+  <button class="univ-d-item" id="drawerLogout" style="display:none;" onclick="doLogout()"><div class="univ-d-icon">🚪</div><span style="color:#f0522a;">Déconnexion</span></button>
+</div>
+
+<!-- LOADING -->
+<div id="pageLoading" class="page-loading">
+  <div class="loading-ring"></div>
+  <span>Chargement du pack…</span>
+</div>
+
+<!-- NOT FOUND -->
+<div id="notFound" style="display:none;">
+  <div class="not-found">
+    <div class="not-found-icon">😕</div>
+    <h2>Pack introuvable</h2>
+    <p>Ce pack tutoriel n'existe pas ou a été supprimé.</p>
+    <a href="tutoriels.html" class="btn-home">← Retour aux tutoriels</a>
+  </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div id="mainContent" style="display:none;">
+
+  <!-- Hero -->
+  <div class="pack-hero" id="packHero">
+    <div class="hero-bg" id="heroBg"></div>
+    <div class="hero-bg-placeholder" id="heroPlaceholder">🎓</div>
+    <div class="hero-gradient"></div>
+    <div class="hero-content">
+      <div class="hero-breadcrumb">
+        <a href="tutoriels.html">← Tutoriels</a>
+      </div>
+      <h1 class="hero-title" id="packTitle">—</h1>
+      <div class="hero-meta">
+        <span class="hero-author">par <a href="#" id="heroAuthorLink" id="heroAuthorLink">—</a></span>
+        <span class="hero-price" id="heroPrice">—</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main -->
+  <div class="main-wrap">
+    <div class="content-grid">
+
+      <!-- COLONNE GAUCHE -->
+      <div>
+
+        <!-- Buy card (mobile only — above fold) -->
+        <div class="buy-card" id="buyCardMobile" style="display:none;">
+          <div class="buy-price-display" id="buyPriceMobile">2€</div>
+          <div class="buy-price-sub">Accès à vie · Téléchargement inclus</div>
+          <button class="btn-buy" id="buyBtnMobile" onclick="handleBuy()">Acheter — 2€</button>
+          <div class="buy-guarantee">🔒 Paiement sécurisé</div>
+        </div>
+
+        <!-- Description -->
+        <div class="section-card">
+          <div class="section-title">📖 Description</div>
+          <div class="desc-text" id="packDesc">—</div>
+        </div>
+
+        <!-- Ce que tu vas apprendre -->
+        <div class="section-card">
+          <div class="section-title">✅ Ce que tu vas apprendre</div>
+          <ul class="learn-list" id="learnList">
+            <li class="learn-item"><span class="learn-check">✓</span><span>Maîtriser les bases du dessin manga professionnel</span></li>
+            <li class="learn-item"><span class="learn-check">✓</span><span>Construire des personnages expressifs et dynamiques</span></li>
+            <li class="learn-item"><span class="learn-check">✓</span><span>Techniques d'ombrage et de rendu pour donner du volume</span></li>
+            <li class="learn-item"><span class="learn-check">✓</span><span>Composer des cases efficaces pour raconter une histoire</span></li>
+            <li class="learn-item"><span class="learn-check">✓</span><span>Finitions professionnelles : encrage, couleur et effets</span></li>
+          </ul>
+        </div>
+
+        <!-- Avis -->
+        <div class="section-card">
+          <div class="section-title">⭐ Avis</div>
+          <div class="rating-summary">
+            <div class="rating-big">4.8</div>
+            <div>
+              <div class="rating-stars">★★★★★</div>
+              <div class="rating-count">12 avis</div>
+            </div>
+          </div>
+          <div class="avis-list">
+            <div class="avis-item">
+              <div class="avis-header">
+                <div class="avis-avatar">K</div>
+                <div>
+                  <div class="avis-name">KiraDraws</div>
+                  <div style="font-size:.72rem;color:var(--muted);">il y a 3 jours</div>
+                </div>
+                <div class="avis-stars">★★★★★</div>
+              </div>
+              <div class="avis-text">Contenu incroyable, très bien expliqué et progressif. J'ai appris plus en 2h qu'en 6 mois de tutos YouTube !</div>
+            </div>
+            <div class="avis-item">
+              <div class="avis-header">
+                <div class="avis-avatar">M</div>
+                <div>
+                  <div class="avis-name">Mangaka_Fr</div>
+                  <div style="font-size:.72rem;color:var(--muted);">il y a 1 semaine</div>
+                </div>
+                <div class="avis-stars">★★★★★</div>
+              </div>
+              <div class="avis-text">Parfait pour débuter. Les exercices pratiques sont vraiment utiles, le créateur explique chaque étape en détail.</div>
+            </div>
+            <div class="avis-item">
+              <div class="avis-header">
+                <div class="avis-avatar">S</div>
+                <div>
+                  <div class="avis-name">SakuraPen</div>
+                  <div style="font-size:.72rem;color:var(--muted);">il y a 2 semaines</div>
+                </div>
+                <div class="avis-stars">★★★★☆</div>
+              </div>
+              <div class="avis-text">Super pack, j'aurais aimé encore plus d'exercices sur les décors. Mais le reste est top !</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- SIDEBAR -->
+      <div class="sidebar">
+
+        <!-- Buy card (desktop) -->
+        <div class="buy-card" id="buyCardDesktop">
+          <div class="buy-price-display" id="buyPriceDesktop">2€</div>
+          <div class="buy-price-sub">Accès à vie · Téléchargement inclus</div>
+          <button class="btn-buy" id="buyBtnDesktop" onclick="handleBuy()">Acheter — 2€</button>
+          <div class="buy-guarantee">🔒 Paiement sécurisé</div>
+        </div>
+
+        <!-- Créateur -->
+        <div class="creator-card" id="creatorCard">
+          <div class="creator-avatar" id="creatorAvatar">?</div>
+          <div class="creator-name" id="creatorName">—</div>
+          <div class="creator-role">✏️ Créateur</div>
+          <div class="creator-bio" id="creatorBio"></div>
+          <a href="#" class="btn-profile" id="creatorProfileLink">Voir le profil →</a>
+        </div>
+
+        <!-- Infos pack -->
+        <div class="pack-infos">
+          <div class="pack-infos-title">Infos</div>
+          <div class="info-row">
+            <span class="info-key">Format</span>
+            <span class="info-val">Fichier PDF / ZIP</span>
+          </div>
+          <div class="info-row">
+            <span class="info-key">Accès</span>
+            <span class="info-val">À vie</span>
+          </div>
+          <div class="info-row">
+            <span class="info-key">Niveau</span>
+            <span class="info-val">Tous niveaux</span>
+          </div>
+          <div class="info-row">
+            <span class="info-key">Publié le</span>
+            <span class="info-val" id="infoDate">—</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PAIEMENT -->
+<div class="modal-overlay" id="stripeModal" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <button class="modal-x" onclick="closeModal()">✕</button>
+    <div class="modal-icon">💳</div>
+    <div class="modal-title">Paiement bientôt disponible</div>
+    <div class="modal-badge">🚀 Phase 3.3 — Stripe</div>
+    <div class="modal-sub">Le système de paiement sécurisé via Stripe sera disponible très prochainement. En attendant, contacte le créateur directement pour obtenir le pack.</div>
+    <button class="modal-close-btn" onclick="closeModal()">Fermer</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- BOTTOM NAV -->
+<div class="univ-bnav">
+  <a href="index.html" class="univ-bnav-item"><span class="univ-bnav-icon">🏠</span><span class="univ-bnav-label">Accueil</span></a>
+  <a href="manga.html" class="univ-bnav-item"><span class="univ-bnav-icon">📖</span><span class="univ-bnav-label">Manga</span></a>
+  <button class="univ-bnav-search" onclick="focusSearch()">🔍</button>
+  <a href="tutoriels.html" class="univ-bnav-item active"><span class="univ-bnav-icon">🎓</span><span class="univ-bnav-label">Tutoriels</span></a>
+  <a href="#" class="univ-bnav-item"><span class="univ-bnav-icon">👥</span><span class="univ-bnav-label">Communauté</span></a>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://bsdcpwtimsgxcnaamwip.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJzZGNwd3RpbXNneGNuYWFtd2lwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc2NjI0MTQsImV4cCI6MjA2MzIzODQxNH0.Aq1TMYRMCAbXHTDDv8nHAkWxuIDqHt7mBGrDFsufb44';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let currentPack = null;
+let currentUser = null;
+
+async function init() {
+  const params = new URLSearchParams(window.location.search);
+  const packId = params.get('id');
+
+  if (!packId) { showNotFound(); return; }
+
+  const { data: sessionData } = await sb.auth.getSession();
+  currentUser = sessionData?.session?.user || null;
+
+  if (currentUser) {
+    document.getElementById('navConnexion').style.display = 'none';
+    const avatarEl = document.getElementById('navAvatar');
+    avatarEl.textContent = (currentUser.email?.[0] || '?').toUpperCase();
+    avatarEl.classList.add('show');
+    document.getElementById('navNotifLink').classList.add('show');
+    document.getElementById('drawerProfil').style.display = 'flex';
+    document.getElementById('drawerPublier').style.display = 'flex';
+    document.getElementById('drawerConnexion').style.display = 'none';
+    document.getElementById('drawerLogout').style.display = 'flex';
+  }
+
+  await loadPack(packId);
+}
+
+async function loadPack(packId) {
+  const { data, error } = await sb
+    .from('packs_tutoriels')
+    .select('*')
+    .eq('id', packId)
+    .single();
+
+  if (error || !data) { showNotFound(); return; }
+
+  currentPack = data;
+  renderPack(data);
+}
+
+function renderPack(pack) {
+  document.title = `${pack.titre || 'Pack tutoriel'} — Inkrise`;
+
+  // Hero
+  if (pack.image_url) {
+    document.getElementById('heroBg').style.backgroundImage = `url('${pack.image_url}')`;
+    document.getElementById('heroPlaceholder').style.display = 'none';
+  }
+  document.getElementById('packTitle').textContent = pack.titre || 'Sans titre';
+
+  const prix = Number(pack.prix);
+  const isFree = prix === 0 || isNaN(prix);
+  const priceLabel = isFree ? 'GRATUIT' : `${prix % 1 === 0 ? prix : prix.toFixed(2)}€`;
+
+  const heroPriceEl = document.getElementById('heroPrice');
+  heroPriceEl.textContent = priceLabel;
+  if (isFree) heroPriceEl.classList.add('free');
+
+  // Author link hero
+  const authorLink = document.getElementById('heroAuthorLink');
+  authorLink.textContent = pack.auteur_nom || 'Créateur';
+  if (pack.auteur_id) authorLink.href = `auteur.html?id=${pack.auteur_id}`;
+
+  // Description
+  document.getElementById('packDesc').textContent = pack.description || 'Aucune description disponible.';
+
+  // Buy cards
+  const buyLabel = isFree ? 'Télécharger gratuitement' : `Acheter — ${priceLabel}`;
+  ['buyPriceMobile', 'buyPriceDesktop'].forEach(id => {
+    const el = document.getElementById(id);
+    el.textContent = priceLabel;
+    if (isFree) el.classList.add('free');
+  });
+  ['buyBtnMobile', 'buyBtnDesktop'].forEach(id => {
+    const btn = document.getElementById(id);
+    btn.textContent = buyLabel;
+    if (isFree) btn.classList.add('free-dl');
+  });
+
+  // Mobile buy card show
+  document.getElementById('buyCardMobile').style.display = 'block';
+
+  // Creator sidebar
+  const creatorAvatar = document.getElementById('creatorAvatar');
+  creatorAvatar.textContent = (pack.auteur_nom?.[0] || '?').toUpperCase();
+  document.getElementById('creatorName').textContent = pack.auteur_nom || 'Créateur';
+  document.getElementById('creatorBio').textContent = 'Artiste et créateur de contenu pédagogique sur Inkrise.';
+  if (pack.auteur_id) {
+    document.getElementById('creatorProfileLink').href = `auteur.html?id=${pack.auteur_id}`;
+    loadCreatorProfile(pack.auteur_id);
+  }
+
+  // Date
+  if (pack.created_at) {
+    const d = new Date(pack.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+    document.getElementById('infoDate').textContent = d;
+  }
+
+  // Show page
+  document.getElementById('pageLoading').style.display = 'none';
+  document.getElementById('mainContent').style.display = 'block';
+}
+
+async function loadCreatorProfile(auteurId) {
+  const { data } = await sb
+    .from('profiles')
+    .select('username, bio, avatar_url')
+    .eq('id', auteurId)
+    .single();
+
+  if (!data) return;
+
+  const creatorAvatar = document.getElementById('creatorAvatar');
+  if (data.avatar_url) {
+    creatorAvatar.innerHTML = `<img src="${data.avatar_url}" alt="${data.username || ''}" />`;
+  } else {
+    creatorAvatar.textContent = (data.username?.[0] || '?').toUpperCase();
+  }
+  if (data.username) document.getElementById('creatorName').textContent = data.username;
+  if (data.bio) document.getElementById('creatorBio').textContent = data.bio;
+}
+
+function handleBuy() {
+  if (currentPack && (Number(currentPack.prix) === 0 || currentPack.prix === null)) {
+    if (currentPack.contenu_url) {
+      window.open(currentPack.contenu_url, '_blank', 'noopener');
+    } else {
+      showToast('Lien de téléchargement non disponible', 'info');
+    }
+    return;
+  }
+  document.getElementById('stripeModal').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('stripeModal').classList.remove('open');
+}
+
+// ── HELPERS ──
+function showNotFound() {
+  document.getElementById('pageLoading').style.display = 'none';
+  document.getElementById('notFound').style.display = 'block';
+}
+function showToast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast ${type} show`;
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ── NAV ──
+function openDrawer()  { document.getElementById('univDrawer').classList.add('open'); document.getElementById('univOverlay').classList.add('open'); document.body.style.overflow = 'hidden'; }
+function closeDrawer() { document.getElementById('univDrawer').classList.remove('open'); document.getElementById('univOverlay').classList.remove('open'); document.body.style.overflow = ''; }
+function doSearch()    { const q = document.getElementById('navSearchInput').value.trim(); if (q) window.location.href = 'recherche.html?q=' + encodeURIComponent(q); }
+function focusSearch() { const i = document.getElementById('navSearchInput'); if (i) { i.focus(); window.scrollTo({ top: 0, behavior: 'smooth' }); } }
+function doLogout()    { sb.auth.signOut().then(() => window.location.href = 'index.html'); }
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(), closeDrawer(); });
+
+init();
+</script>
+</body>
+</html>

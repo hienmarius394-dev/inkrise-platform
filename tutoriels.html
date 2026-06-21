@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tutoriels — Inkrise</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root {
+      --bg:      #0b0b10;
+      --surface: #13131c;
+      --surface2:#1c1c28;
+      --surface3:#22222f;
+      --purple:  #7c6fef;
+      --purple2: #a594f9;
+      --accent:  #f0522a;
+      --green:   #3ddc84;
+      --amber:   #f5a623;
+      --orange:  #ff6b35;
+      --text:    #ececf4;
+      --muted:   #6b6b8a;
+      --border:  rgba(255,255,255,0.07);
+      --border2: rgba(124,111,239,0.25);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding-bottom: 90px; }
+
+    /* ── NAV UNIVERSEL ── */
+    .univ-nav { position: sticky; top: 0; z-index: 100; background: rgba(11,11,16,0.96); backdrop-filter: blur(14px); border-bottom: 1px solid rgba(255,255,255,0.08); padding: 0 16px; height: 58px; display: flex; align-items: center; gap: 8px; }
+    .univ-nav-logo { font-family: 'Syne', sans-serif; font-size: 1.2rem; font-weight: 900; text-decoration: none; background: linear-gradient(135deg, #7c6fef, #a594f9); -webkit-background-clip: text; -webkit-text-fill-color: transparent; flex-shrink: 0; letter-spacing: 1px; }
+    .univ-nav-links-d { display: flex; align-items: center; gap: 2px; flex: 1; margin: 0 8px; }
+    @media (max-width: 680px) { .univ-nav-links-d { display: none; } }
+    .univ-nav-lk { color: rgba(240,239,254,0.6); font-size: .82rem; font-weight: 600; text-decoration: none; padding: 5px 10px; border-radius: 7px; transition: all .2s; white-space: nowrap; font-family: 'DM Sans', sans-serif; }
+    .univ-nav-lk:hover { color: #f0effe; background: rgba(255,255,255,0.06); }
+    .univ-nav-lk.active { color: var(--purple2); background: rgba(124,111,239,0.1); }
+    .univ-nav-search { display: flex; align-items: center; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1); border-radius: 18px; overflow: hidden; max-width: 200px; flex-shrink: 0; }
+    @media (max-width: 480px) { .univ-nav-search { max-width: 110px; } }
+    .univ-nav-si { background: none; border: none; outline: none; color: #f0effe; font-size: .8rem; padding: 7px 10px; width: 100%; font-family: 'DM Sans', sans-serif; }
+    .univ-nav-si::placeholder { color: rgba(240,239,254,.35); }
+    .univ-nav-sb { background: none; border: none; cursor: pointer; padding: 6px 8px; font-size: 13px; color: rgba(240,239,254,.5); flex-shrink: 0; }
+    .univ-nav-sb:hover { color: #7c6fef; }
+    .nav-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+    .nav-connexion-btn { color: rgba(255,255,255,0.7); font-size: .8rem; font-weight: 600; padding: 6px 13px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.15); text-decoration: none; transition: all .2s; white-space: nowrap; }
+    .nav-connexion-btn:hover { border-color: var(--purple); color: var(--purple2); }
+    .nav-avatar-btn { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #7c6fef, #5040c8); display: none; align-items: center; justify-content: center; font-size: .85rem; font-weight: 700; color: #fff; text-decoration: none; text-transform: uppercase; }
+    .nav-avatar-btn.show { display: flex; }
+    .nav-notif-link { position: relative; display: none; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 8px; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1); text-decoration: none; font-size: .95rem; transition: all .2s; }
+    .nav-notif-link.show { display: flex; }
+    .nav-notif-link:hover { background: rgba(255,255,255,0.13); }
+    .nav-notif-dot { position: absolute; top: -5px; right: -5px; min-width: 16px; height: 16px; border-radius: 8px; background: var(--accent); color: #fff; font-size: 9px; font-weight: 800; padding: 0 3px; display: none; align-items: center; justify-content: center; border: 2px solid var(--bg); }
+    .nav-notif-dot.show { display: flex; }
+    .univ-nav-hbg { width: 34px; height: 34px; border-radius: 8px; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; color: #f0effe; transition: background .2s; flex-shrink: 0; }
+    .univ-nav-hbg:hover { background: rgba(255,255,255,0.13); }
+
+    /* ── DRAWER ── */
+    .univ-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 150; backdrop-filter: blur(3px); }
+    .univ-overlay.open { display: block; }
+    .univ-drawer { position: fixed; top: 0; right: 0; width: 270px; height: 100%; background: #13131c; z-index: 151; overflow-y: auto; transform: translateX(100%); transition: transform .28s cubic-bezier(.4,0,.2,1); box-shadow: -4px 0 32px rgba(0,0,0,.4); border-left: 1px solid rgba(255,255,255,.07); }
+    .univ-drawer.open { transform: translateX(0); }
+    .univ-d-hdr { display: flex; align-items: center; justify-content: space-between; padding: 16px; border-bottom: 1px solid rgba(255,255,255,.07); }
+    .univ-d-logo { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 900; text-decoration: none; background: linear-gradient(135deg, #7c6fef, #a594f9); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .univ-d-close { width: 30px; height: 30px; border-radius: 50%; background: rgba(255,255,255,.08); border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; color: rgba(240,239,254,.7); }
+    .univ-d-sec { font-size: .65rem; font-weight: 800; color: rgba(240,239,254,.3); letter-spacing: 1.5px; text-transform: uppercase; padding: 14px 16px 5px; }
+    .univ-d-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; margin: 2px 8px; text-decoration: none; color: rgba(240,239,254,.85); font-weight: 600; font-size: .88rem; cursor: pointer; transition: background .15s; border: none; background: none; width: calc(100% - 16px); text-align: left; border-radius: 9px; font-family: 'DM Sans', sans-serif; }
+    .univ-d-item:hover { background: rgba(255,255,255,.06); }
+    .univ-d-icon { width: 34px; height: 34px; border-radius: 9px; background: rgba(255,255,255,.07); display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+    .univ-d-badge { font-size: .65rem; font-weight: 800; padding: 2px 7px; border-radius: 6px; margin-left: auto; }
+    .univ-d-badge.orange { background: rgba(255,107,53,.15); color: #ff6b35; }
+    .univ-d-badge.teal { background: rgba(0,201,167,.15); color: #00c9a7; }
+    .univ-d-divider { height: 1px; background: rgba(255,255,255,.07); margin: 8px 16px; }
+
+    /* ── BOTTOM NAV ── */
+    .univ-bnav { position: fixed; bottom: 0; left: 0; right: 0; z-index: 100; background: rgba(10,10,15,.97); border-top: 1px solid rgba(255,255,255,.07); display: flex; align-items: center; justify-content: space-around; padding: 8px 0 16px; backdrop-filter: blur(14px); }
+    .univ-bnav-item { display: flex; flex-direction: column; align-items: center; gap: 2px; text-decoration: none; color: rgba(240,239,254,.4); padding: 0 8px; transition: color .2s; border: none; background: none; cursor: pointer; }
+    .univ-bnav-item:hover { color: rgba(240,239,254,.9); }
+    .univ-bnav-item.active { color: var(--purple2); }
+    .univ-bnav-icon { font-size: 20px; }
+    .univ-bnav-label { font-size: .6rem; font-weight: 800; font-family: 'DM Sans', sans-serif; }
+    .univ-bnav-search { width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, #7c6fef, #5040c8); border: none; display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer; margin-top: -18px; box-shadow: 0 4px 18px rgba(124,111,239,.5); transition: transform .2s; flex-shrink: 0; }
+    .univ-bnav-search:hover { transform: scale(1.08); }
+
+    /* ── TOAST ── */
+    .toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; padding: 10px 20px; font-size: .88rem; font-weight: 600; opacity: 0; transition: all .3s; z-index: 200; pointer-events: none; white-space: nowrap; }
+    .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+    /* ── HERO ── */
+    .hero {
+      background: linear-gradient(160deg, #0f0c1e 0%, #1a1230 50%, #0b0b10 100%);
+      padding: 52px 20px 44px;
+      text-align: center;
+      border-bottom: 1px solid rgba(124,111,239,0.12);
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -80px; left: 50%;
+      transform: translateX(-50%);
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(124,111,239,0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(124,111,239,0.12); border: 1px solid rgba(124,111,239,0.28);
+      border-radius: 20px; padding: 5px 16px; font-size: .75rem; font-weight: 700;
+      color: var(--purple2); margin-bottom: 16px; letter-spacing: .3px;
+    }
+    .hero-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 2.8rem; font-weight: 800;
+      line-height: 1.1; margin-bottom: 14px;
+    }
+    .hero-subtitle {
+      font-size: 1rem; color: var(--muted); max-width: 440px; margin: 0 auto 28px;
+      line-height: 1.65;
+    }
+    .hero-stats {
+      display: flex; justify-content: center; gap: 32px; flex-wrap: wrap;
+    }
+    .hero-stat { text-align: center; }
+    .hero-stat-num { font-family: 'Syne', sans-serif; font-size: 1.5rem; font-weight: 800; color: var(--purple2); }
+    .hero-stat-label { font-size: .7rem; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.6px; margin-top: 2px; }
+
+    /* ── FILTER TAGS ── */
+    .filters-wrap { padding: 24px 16px 0; max-width: 960px; margin: 0 auto; }
+    .filters { display: flex; gap: 8px; flex-wrap: wrap; }
+    .filter-btn {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 20px; padding: 7px 16px;
+      font-family: 'DM Sans', sans-serif; font-size: .82rem; font-weight: 600;
+      color: var(--muted); cursor: pointer; transition: all .2s; white-space: nowrap;
+    }
+    .filter-btn:hover { border-color: rgba(124,111,239,.5); color: var(--purple2); background: rgba(124,111,239,.07); }
+    .filter-btn.active { background: rgba(124,111,239,.15); border-color: var(--purple); color: var(--purple2); }
+
+    /* ── MAIN ── */
+    .main-wrap { max-width: 960px; margin: 0 auto; padding: 24px 16px 40px; }
+    .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+    .section-title { font-family: 'Syne', sans-serif; font-size: 1.05rem; font-weight: 700; }
+    .section-count { font-size: .8rem; color: var(--muted); font-weight: 600; }
+
+    /* ── PACKS GRID ── */
+    .packs-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+    @media (max-width: 560px) { .packs-grid { grid-template-columns: 1fr; } }
+
+    /* ── PACK CARD ── */
+    .pack-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      text-decoration: none;
+      color: var(--text);
+      transition: all .25s;
+      display: flex;
+      flex-direction: column;
+    }
+    .pack-card:hover {
+      border-color: rgba(124,111,239,0.4);
+      transform: translateY(-3px);
+      box-shadow: 0 10px 32px rgba(0,0,0,0.35);
+    }
+    .pack-cover {
+      width: 100%; aspect-ratio: 16/9; object-fit: cover;
+      display: block; background: var(--surface2);
+    }
+    .pack-cover-placeholder {
+      width: 100%; aspect-ratio: 16/9;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2.8rem;
+      background: linear-gradient(135deg, #1a1230 0%, #0f0c2a 100%);
+      border-bottom: 1px solid var(--border);
+    }
+    .pack-body {
+      padding: 14px 16px 16px;
+      flex: 1; display: flex; flex-direction: column; gap: 8px;
+    }
+    .pack-title {
+      font-family: 'Syne', sans-serif; font-size: .95rem; font-weight: 700;
+      line-height: 1.35;
+    }
+    .pack-desc {
+      font-size: .8rem; color: var(--muted); line-height: 1.55;
+      overflow: hidden; display: -webkit-box;
+      -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+    }
+    .pack-author {
+      font-size: .75rem; color: rgba(255,255,255,0.35);
+    }
+    .pack-author a {
+      color: var(--purple2); text-decoration: none; font-weight: 600;
+    }
+    .pack-author a:hover { text-decoration: underline; }
+    .pack-footer {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-top: auto; padding-top: 6px;
+    }
+    .pack-price {
+      font-family: 'Syne', sans-serif; font-size: 1.05rem; font-weight: 800;
+      color: var(--orange);
+    }
+    .pack-price.free { color: var(--green); }
+    .pack-btn {
+      background: rgba(124,111,239,0.1); border: 1px solid rgba(124,111,239,0.28);
+      border-radius: 20px; padding: 5px 14px; font-size: .78rem; font-weight: 700;
+      color: var(--purple2); cursor: pointer; text-decoration: none;
+      transition: all .2s; font-family: 'DM Sans', sans-serif; white-space: nowrap;
+    }
+    .pack-btn:hover { background: rgba(124,111,239,0.22); border-color: var(--purple); }
+
+    /* ── LOADING / EMPTY ── */
+    .loading-wrap { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 60px 20px; color: var(--muted); }
+    .loading-ring { width: 28px; height: 28px; border: 3px solid rgba(124,111,239,.2); border-top-color: #7c6fef; border-radius: 50%; animation: spin .8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .empty-state { text-align: center; padding: 60px 20px; color: var(--muted); }
+    .empty-icon { font-size: 3rem; margin-bottom: 14px; }
+    .empty-title { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+    .empty-sub { font-size: .88rem; }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="univ-nav">
+  <a href="index.html" class="univ-nav-logo">INKRISE</a>
+  <div class="univ-nav-links-d">
+    <a href="index.html" class="univ-nav-lk">Accueil</a>
+    <a href="manga.html" class="univ-nav-lk">Mangas</a>
+    <a href="tutoriels.html" class="univ-nav-lk active">Tutoriels</a>
+    <a href="#" class="univ-nav-lk">Premium ✨</a>
+  </div>
+  <div class="univ-nav-search">
+    <input type="text" id="navSearchInput" class="univ-nav-si" placeholder="Rechercher…" onkeydown="if(event.key==='Enter')doSearch()" />
+    <button class="univ-nav-sb" onclick="doSearch()">🔍</button>
+  </div>
+  <div class="nav-right">
+    <a href="auth.html" class="nav-connexion-btn" id="navConnexion">Connexion</a>
+    <a href="profil.html" class="nav-avatar-btn" id="navAvatar">?</a>
+    <a href="profil.html#notifications" class="nav-notif-link" id="navNotifLink" title="Notifications">🔔<span class="nav-notif-dot" id="navNotifDot"></span></a>
+    <button class="univ-nav-hbg" onclick="openDrawer()">☰</button>
+  </div>
+</nav>
+
+<!-- DRAWER -->
+<div class="univ-overlay" id="univOverlay" onclick="closeDrawer()"></div>
+<div class="univ-drawer" id="univDrawer">
+  <div class="univ-d-hdr">
+    <a href="index.html" class="univ-d-logo">INKRISE</a>
+    <button class="univ-d-close" onclick="closeDrawer()">✕</button>
+  </div>
+  <div class="univ-d-sec">Explorer</div>
+  <a href="index.html" class="univ-d-item"><div class="univ-d-icon">🏠</div>Accueil</a>
+  <a href="manga.html" class="univ-d-item"><div class="univ-d-icon">📖</div>Manga & BD</a>
+  <a href="tutoriels.html" class="univ-d-item"><div class="univ-d-icon">🎓</div>Tutoriels <span class="univ-d-badge teal">NOUVEAU</span></a>
+  <a href="#" class="univ-d-item"><div class="univ-d-icon">💎</div>Premium <span class="univ-d-badge orange">PRO</span></a>
+  <div class="univ-d-divider"></div>
+  <div class="univ-d-sec">Mon compte</div>
+  <a href="profil.html" class="univ-d-item" id="drawerProfil" style="display:none;"><div class="univ-d-icon">🧑‍🎨</div>Mon profil</a>
+  <a href="upload-manga.html" class="univ-d-item" id="drawerPublier" style="display:none;"><div class="univ-d-icon">📤</div>Publier un manga</a>
+  <a href="auth.html" class="univ-d-item" id="drawerConnexion"><div class="univ-d-icon">🔑</div>Connexion / Inscription</a>
+  <button class="univ-d-item" id="drawerLogout" style="display:none;" onclick="doLogout()"><div class="univ-d-icon">🚪</div><span style="color:#f0522a;">Déconnexion</span></button>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge">🎓 Formation manga</div>
+  <h1 class="hero-title">Tutoriels</h1>
+  <p class="hero-subtitle">Apprends le dessin manga pas à pas avec les meilleurs créateurs</p>
+  <div class="hero-stats">
+    <div class="hero-stat">
+      <div class="hero-stat-num" id="statTotal">—</div>
+      <div class="hero-stat-label">Packs dispo</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-num">2€</div>
+      <div class="hero-stat-label">À partir de</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-num">HD</div>
+      <div class="hero-stat-label">Qualité</div>
+    </div>
+  </div>
+</div>
+
+<!-- FILTERS -->
+<div class="filters-wrap">
+  <div class="filters" id="filterBtns">
+    <button class="filter-btn active" data-filter="all">Tout</button>
+    <button class="filter-btn" data-filter="dessin">🖌️ Dessin</button>
+    <button class="filter-btn" data-filter="digital">📱 Digital</button>
+    <button class="filter-btn" data-filter="couleur">🎨 Couleur</button>
+    <button class="filter-btn" data-filter="encrage">✏️ Encrage</button>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main-wrap">
+  <div class="section-header">
+    <span class="section-title">Packs disponibles</span>
+    <span class="section-count" id="packCount"></span>
+  </div>
+  <div id="packsGrid" class="packs-grid">
+    <div class="loading-wrap" style="grid-column:1/-1;">
+      <div class="loading-ring"></div>
+      <span>Chargement des packs…</span>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- BOTTOM NAV -->
+<div class="univ-bnav">
+  <a href="index.html" class="univ-bnav-item"><span class="univ-bnav-icon">🏠</span><span class="univ-bnav-label">Accueil</span></a>
+  <a href="manga.html" class="univ-bnav-item"><span class="univ-bnav-icon">📖</span><span class="univ-bnav-label">Manga</span></a>
+  <button class="univ-bnav-search" onclick="focusSearch()">🔍</button>
+  <a href="tutoriels.html" class="univ-bnav-item active"><span class="univ-bnav-icon">🎓</span><span class="univ-bnav-label">Tutoriels</span></a>
+  <a href="#" class="univ-bnav-item"><span class="univ-bnav-icon">👥</span><span class="univ-bnav-label">Communauté</span></a>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://bsdcpwtimsgxcnaamwip.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJzZGNwd3RpbXNneGNuYWFtd2lwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc2NjI0MTQsImV4cCI6MjA2MzIzODQxNH0.Aq1TMYRMCAbXHTDDv8nHAkWxuIDqHt7mBGrDFsufb44';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let allPacks = [];
+let currentFilter = 'all';
+
+const FILTER_KEYWORDS = {
+  dessin:  ['dessin', 'sketch', 'croquis', 'trait', 'pose', 'anatomy'],
+  digital: ['digital', 'numérique', 'tablette', 'procreate', 'clip studio', 'photoshop'],
+  couleur: ['couleur', 'colorisation', 'ombrage', 'teinte', 'shading'],
+  encrage: ['encrage', 'encre', 'liner', 'ink', 'inking']
+};
+
+async function init() {
+  const { data: sessionData } = await sb.auth.getSession();
+  const user = sessionData?.session?.user || null;
+
+  if (user) {
+    document.getElementById('navConnexion').style.display = 'none';
+    const avatarEl = document.getElementById('navAvatar');
+    avatarEl.textContent = (user.email?.[0] || '?').toUpperCase();
+    avatarEl.classList.add('show');
+    document.getElementById('navNotifLink').classList.add('show');
+    document.getElementById('drawerProfil').style.display = 'flex';
+    document.getElementById('drawerPublier').style.display = 'flex';
+    document.getElementById('drawerConnexion').style.display = 'none';
+    document.getElementById('drawerLogout').style.display = 'flex';
+  }
+
+  await loadPacks();
+}
+
+async function loadPacks() {
+  const { data, error } = await sb
+    .from('packs_tutoriels')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    document.getElementById('packsGrid').innerHTML = `
+      <div class="empty-state" style="grid-column:1/-1;">
+        <div class="empty-icon">⚠️</div>
+        <div class="empty-title">Erreur de chargement</div>
+        <div class="empty-sub">${error.message}</div>
+      </div>`;
+    return;
+  }
+
+  allPacks = data || [];
+  document.getElementById('statTotal').textContent = allPacks.length;
+  renderPacks();
+}
+
+function renderPacks() {
+  const grid = document.getElementById('packsGrid');
+  let packs = allPacks;
+
+  if (currentFilter !== 'all') {
+    const kws = FILTER_KEYWORDS[currentFilter] || [];
+    packs = allPacks.filter(p => {
+      const text = ((p.titre || '') + ' ' + (p.description || '')).toLowerCase();
+      return kws.some(kw => text.includes(kw));
+    });
+  }
+
+  const count = packs.length;
+  document.getElementById('packCount').textContent = `${count} pack${count > 1 ? 's' : ''}`;
+
+  if (count === 0) {
+    grid.innerHTML = `
+      <div class="empty-state" style="grid-column:1/-1;">
+        <div class="empty-icon">📭</div>
+        <div class="empty-title">Aucun pack dans cette catégorie</div>
+        <div class="empty-sub">D'autres tutoriels arrivent bientôt !</div>
+      </div>`;
+    return;
+  }
+
+  grid.innerHTML = '';
+  packs.forEach(pack => grid.appendChild(createPackCard(pack)));
+}
+
+function createPackCard(pack) {
+  const card = document.createElement('a');
+  card.className = 'pack-card';
+  card.href = `pack.html?id=${pack.id}`;
+
+  const coverHtml = pack.image_url
+    ? `<img class="pack-cover" src="${pack.image_url}" alt="${pack.titre || ''}" loading="lazy" />`
+    : `<div class="pack-cover-placeholder">🎓</div>`;
+
+  const prix = Number(pack.prix);
+  const priceHtml = prix === 0 || isNaN(prix)
+    ? `<span class="pack-price free">GRATUIT</span>`
+    : `<span class="pack-price">${prix % 1 === 0 ? prix : prix.toFixed(2)}€</span>`;
+
+  const raw = pack.description || '';
+  const desc = raw.length > 100 ? raw.slice(0, 100) + '…' : raw;
+
+  const authorHtml = pack.auteur_nom
+    ? `par <a href="auteur.html?id=${pack.auteur_id}" onclick="event.stopPropagation()">${pack.auteur_nom}</a>`
+    : '';
+
+  card.innerHTML = `
+    ${coverHtml}
+    <div class="pack-body">
+      <div class="pack-title">${pack.titre || 'Sans titre'}</div>
+      ${desc ? `<div class="pack-desc">${desc}</div>` : ''}
+      ${authorHtml ? `<div class="pack-author">${authorHtml}</div>` : ''}
+      <div class="pack-footer">
+        ${priceHtml}
+        <span class="pack-btn">Voir le pack →</span>
+      </div>
+    </div>`;
+
+  return card;
+}
+
+// ── FILTRES ──
+document.getElementById('filterBtns').addEventListener('click', e => {
+  const btn = e.target.closest('.filter-btn');
+  if (!btn) return;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentFilter = btn.dataset.filter;
+  renderPacks();
+});
+
+// ── NAV ──
+function openDrawer()  { document.getElementById('univDrawer').classList.add('open'); document.getElementById('univOverlay').classList.add('open'); document.body.style.overflow = 'hidden'; }
+function closeDrawer() { document.getElementById('univDrawer').classList.remove('open'); document.getElementById('univOverlay').classList.remove('open'); document.body.style.overflow = ''; }
+function doSearch()    { const q = document.getElementById('navSearchInput').value.trim(); if (q) window.location.href = 'recherche.html?q=' + encodeURIComponent(q); }
+function focusSearch() { const i = document.getElementById('navSearchInput'); if (i) { i.focus(); window.scrollTo({ top: 0, behavior: 'smooth' }); } }
+function doLogout()    { sb.auth.signOut().then(() => window.location.href = 'index.html'); }
+function showToast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast ${type} show`;
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDrawer(); });
+
+init();
+</script>
+</body>
+</html>
