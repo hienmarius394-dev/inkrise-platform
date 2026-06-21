@@ -524,6 +524,75 @@
       .btn-creator { width: 100%; }
     }
   
+/* Notif bell */
+.nav-notif-link {
+  position: relative; display: flex;
+  align-items: center; justify-content: center;
+  width: 32px; height: 32px; border-radius: 8px;
+  background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1);
+  text-decoration: none; font-size: 0.95rem; transition: all .2s;
+}
+.nav-notif-link:hover { background: rgba(255,255,255,0.13); }
+.nav-notif-dot {
+  position: absolute; top: -5px; right: -5px;
+  min-width: 16px; height: 16px; border-radius: 8px;
+  background: #f0522a; color: #fff; font-size: 9px; font-weight: 800;
+  padding: 0 3px; display: none; align-items: center; justify-content: center;
+  border: 2px solid var(--bg);
+}
+.nav-notif-dot.show { display: flex; }
+/* Créateurs suivis */
+.creator-item {
+  background: var(--card-bg); border: 1px solid var(--border);
+  border-radius: 12px; padding: 14px 18px;
+  display: flex; align-items: center; gap: 14px; margin-bottom: 10px;
+}
+.creator-avatar-sm {
+  width: 46px; height: 46px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--purple));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem; font-weight: 900; color: #fff;
+  text-transform: uppercase; flex-shrink: 0;
+}
+.creator-info { flex: 1; min-width: 0; }
+.creator-info-name { font-weight: 800; font-size: 0.92rem; margin-bottom: 2px; }
+.creator-info-since { font-size: 0.75rem; color: var(--muted); }
+.btn-unfollow {
+  background: none; border: 1px solid var(--border); color: var(--muted);
+  font-size: 0.78rem; font-weight: 700; padding: 6px 14px; border-radius: 8px;
+  cursor: pointer; transition: all .2s; white-space: nowrap; font-family: 'Nunito', sans-serif;
+}
+.btn-unfollow:hover { border-color: #f0522a; color: #f0522a; }
+/* Notifications */
+.notif-item {
+  background: var(--card-bg); border: 1px solid var(--border);
+  border-radius: 12px; padding: 14px 18px;
+  display: flex; align-items: flex-start; gap: 12px; margin-bottom: 8px;
+}
+.notif-item.unread { border-color: rgba(124,111,239,0.35); background: rgba(124,111,239,0.06); }
+.notif-icon { font-size: 1.4rem; flex-shrink: 0; }
+.notif-content { flex: 1; }
+.notif-msg { font-size: 0.88rem; font-weight: 600; margin-bottom: 4px; line-height: 1.4; }
+.notif-date { font-size: 0.73rem; color: var(--muted); }
+.btn-read {
+  background: none; border: 1px solid var(--border); color: var(--muted);
+  font-size: 0.72rem; font-weight: 700; padding: 4px 10px; border-radius: 6px;
+  cursor: pointer; transition: all .2s; white-space: nowrap; font-family: 'Nunito', sans-serif; flex-shrink: 0;
+}
+.btn-read:hover { border-color: var(--accent2); color: var(--accent2); }
+.notif-tab-count {
+  background: #f0522a; color: #fff; font-size: 9px; font-weight: 800;
+  padding: 2px 6px; border-radius: 10px; margin-left: 4px;
+  display: none; vertical-align: middle;
+}
+.notif-tab-count.show { display: inline; }
+.btn-mark-all {
+  background: none; border: 1px solid var(--border); color: var(--muted);
+  font-size: 0.8rem; font-weight: 700; padding: 7px 14px; border-radius: 8px;
+  cursor: pointer; transition: all .2s; font-family: 'Nunito', sans-serif;
+}
+.btn-mark-all:hover { border-color: var(--accent2); color: var(--accent2); }
+
 /* ── NAV LINKS + SEARCH (universel) ── */
 .univ-nav-links{display:flex;align-items:center;gap:2px;flex:1;margin:0 8px;}
 @media(max-width:680px){.univ-nav-links{display:none;}}
@@ -565,6 +634,7 @@
   <div style="display:flex;align-items:center;gap:8px;">
     <a href="auth.html" id="btnConnexion" style="display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#7c6fef,#5040c8);color:#fff;font-size:.8rem;font-weight:700;padding:7px 14px;border-radius:9px;text-decoration:none;flex-shrink:0;transition:transform .2s;font-family:'DM Sans',sans-serif;">Connexion</a>
     <a href="profil.html" id="avatarBtn" style="display:none;width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.1);align-items:center;justify-content:center;text-decoration:none;font-size:1rem;">🧑‍🎨</a>
+    <a href="#notifications" class="nav-notif-link" id="navNotifLink" title="Notifications" onclick="activateNotifTab()">🔔<span class="nav-notif-dot" id="navNotifDot"></span></a>
     <button class="nav-hamburger" onclick="openDrawer()" style="width:34px;height:34px;border-radius:8px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;cursor:pointer;color:#f0f0f4;font-size:1rem;transition:all .2s;">☰</button>
   </div>
 </nav>
@@ -605,6 +675,8 @@
       <button class="ptab active" data-tab="mangas">📚 Mes Mangas</button>
       <button class="ptab" data-tab="stats">📊 Statistiques</button>
       <button class="ptab" data-tab="infos">⚙️ Mon Compte</button>
+      <button class="ptab" data-tab="suivis">👥 Suivis</button>
+      <button class="ptab" data-tab="notifications">🔔 Notifs<span class="notif-tab-count" id="notifTabCount"></span></button>
     </div>
   </div>
 </div>
@@ -705,6 +777,37 @@
     </div>
   </div>
 
+
+  <!-- TAB : Créateurs suivis -->
+  <div class="tab-panel" id="tab-suivis">
+    <div class="section-header">
+      <div class="section-title">Créateurs suivis</div>
+    </div>
+    <div id="suivisLoading" class="loading-dots"><span></span><span></span><span></span></div>
+    <div id="suivisList" style="display:none; flex-direction:column;"></div>
+    <div id="suivisEmpty" class="empty-state" style="display:none;">
+      <div class="empty-icon">👥</div>
+      <h3>Tu ne suis aucun créateur</h3>
+      <p>Visite la page d'un manga et clique sur "Suivre" pour suivre un créateur.</p>
+    </div>
+  </div>
+
+  <!-- TAB : Notifications -->
+  <div class="tab-panel" id="tab-notifications">
+    <span id="notifications" style="display:block;position:relative;top:-80px;visibility:hidden;"></span>
+    <div class="section-header">
+      <div class="section-title">Notifications</div>
+      <button class="btn-mark-all" id="btnMarkAllRead">✓ Tout lire</button>
+    </div>
+    <div id="notifLoading" class="loading-dots"><span></span><span></span><span></span></div>
+    <div id="notifList" style="display:none; flex-direction:column;"></div>
+    <div id="notifEmpty" class="empty-state" style="display:none;">
+      <div class="empty-icon">🔔</div>
+      <h3>Aucune notification</h3>
+      <p>Tu n'as pas encore de notifications.</p>
+    </div>
+  </div>
+
 </div>
 
 <!-- ── MODAL PLANS ── -->
@@ -782,6 +885,8 @@
 
   let currentUser = null;
   let userProfile = null;
+  let userSuivis        = [];
+  let userNotifications = [];
 
   // ── INIT ──
   async function init() {
@@ -793,6 +898,9 @@
     currentUser = session.user;
     await loadProfile();
     await loadMangas();
+    await loadSuivis();
+    await loadNotifications();
+    if (window.location.hash === '#notifications') activateNotifTab();
   }
 
   // ── CHARGER PROFIL ──
@@ -809,8 +917,10 @@
     const initial  = username[0].toUpperCase();
 
     // Nav
-    document.getElementById('navInitial').textContent  = initial;
-    document.getElementById('navUsername').textContent = username;
+    const btnConnexionEl = document.getElementById('btnConnexion');
+    const avatarBtnEl    = document.getElementById('avatarBtn');
+    if (btnConnexionEl) btnConnexionEl.style.display = 'none';
+    if (avatarBtnEl)    { avatarBtnEl.style.display = 'flex'; avatarBtnEl.textContent = initial; }
 
     // Hero
     document.getElementById('avatarMain').textContent     = initial;
@@ -929,10 +1039,165 @@
   });
 
   // ── DÉCONNEXION ──
-  document.getElementById('btnLogout').addEventListener('click', async () => {
-    await sb.auth.signOut();
-    window.location.href = 'index.html';
-  });
+  const btnLogoutEl = document.getElementById('btnLogout');
+  if (btnLogoutEl) {
+    btnLogoutEl.addEventListener('click', async () => {
+      await sb.auth.signOut();
+      window.location.href = 'index.html';
+    });
+  }
+
+  // ── SUIVIS ──
+  async function loadSuivis() {
+    document.getElementById('suivisLoading').style.display = 'flex';
+    const { data: follows } = await sb.from('follows')
+      .select('followed_id, created_at').eq('user_id', currentUser.id)
+      .order('created_at', { ascending: false });
+    document.getElementById('suivisLoading').style.display = 'none';
+    if (!follows || follows.length === 0) {
+      document.getElementById('suivisEmpty').style.display = 'block'; return;
+    }
+    const followedIds = follows.map(f => f.followed_id);
+    const { data: profiles } = await sb.from('profiles').select('id, username').in('id', followedIds);
+    const profileMap = {};
+    if (profiles) profiles.forEach(p => profileMap[p.id] = p.username);
+    userSuivis = follows.map(f => ({ ...f, username: profileMap[f.followed_id] || 'Utilisateur' }));
+    renderSuivis();
+  }
+
+  function renderSuivis() {
+    const list  = document.getElementById('suivisList');
+    const empty = document.getElementById('suivisEmpty');
+    if (!userSuivis.length) { list.style.display = 'none'; empty.style.display = 'block'; return; }
+    empty.style.display = 'none';
+    list.style.display  = 'flex';
+    list.innerHTML = '';
+    userSuivis.forEach(f => {
+      const since = new Date(f.created_at).toLocaleDateString('fr-FR', { day:'numeric', month:'long', year:'numeric' });
+      const div = document.createElement('div');
+      div.className = 'creator-item';
+      div.innerHTML = `
+        <div class="creator-avatar-sm">${f.username[0].toUpperCase()}</div>
+        <div class="creator-info">
+          <div class="creator-info-name">${f.username}</div>
+          <div class="creator-info-since">Suivi depuis le ${since}</div>
+        </div>
+        <button class="btn-unfollow">Ne plus suivre</button>
+      `;
+      div.querySelector('.btn-unfollow').addEventListener('click', () => unfollow(f.followed_id, div));
+      list.appendChild(div);
+    });
+  }
+
+  async function unfollow(followedId, itemEl) {
+    const { error } = await sb.from('follows').delete()
+      .eq('user_id', currentUser.id).eq('followed_id', followedId);
+    if (!error) {
+      userSuivis = userSuivis.filter(f => f.followed_id !== followedId);
+      itemEl.remove();
+      if (!userSuivis.length) {
+        document.getElementById('suivisList').style.display = 'none';
+        document.getElementById('suivisEmpty').style.display = 'block';
+      }
+      showToast('Tu ne suis plus ce créateur', 'info');
+    } else showToast('Erreur: ' + error.message, 'error');
+  }
+
+  // ── NOTIFICATIONS ──
+  async function loadNotifications() {
+    document.getElementById('notifLoading').style.display = 'flex';
+    const { data } = await sb.from('notifications')
+      .select('*').eq('user_id', currentUser.id)
+      .order('created_at', { ascending: false }).limit(50);
+    document.getElementById('notifLoading').style.display = 'none';
+    userNotifications = data || [];
+    renderNotifications();
+    updateNotifBadge();
+  }
+
+  function renderNotifications() {
+    const list  = document.getElementById('notifList');
+    const empty = document.getElementById('notifEmpty');
+    const markAllBtn = document.getElementById('btnMarkAllRead');
+    if (!userNotifications.length) {
+      list.style.display = 'none'; empty.style.display = 'block';
+      if (markAllBtn) markAllBtn.style.display = 'none'; return;
+    }
+    empty.style.display = 'none';
+    list.style.display  = 'flex';
+    if (markAllBtn) markAllBtn.style.display = '';
+    list.innerHTML = '';
+    userNotifications.forEach(n => {
+      const date = new Date(n.created_at).toLocaleDateString('fr-FR', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' });
+      const div = document.createElement('div');
+      div.className = `notif-item${!n.lu ? ' unread' : ''}`;
+      div.innerHTML = `
+        <div class="notif-icon">${n.type === 'new_chapter' ? '📖' : '🔔'}</div>
+        <div class="notif-content">
+          <div class="notif-msg">${n.message || 'Nouvelle notification'}</div>
+          <div class="notif-date">${date}</div>
+        </div>
+        ${!n.lu ? `<button class="btn-read">✓ Lu</button>` : ''}
+      `;
+      if (!n.lu) {
+        div.querySelector('.btn-read').addEventListener('click', (e) => { e.stopPropagation(); markNotifRead(n, div); });
+      }
+      if (n.manga_id) {
+        div.style.cursor = 'pointer';
+        div.addEventListener('click', () => window.location.href = `manga.html?id=${n.manga_id}`);
+      }
+      list.appendChild(div);
+    });
+  }
+
+  async function markNotifRead(n, itemEl) {
+    const { error } = await sb.from('notifications').update({ lu: true }).eq('id', n.id);
+    if (!error) {
+      n.lu = true;
+      itemEl.classList.remove('unread');
+      const btn = itemEl.querySelector('.btn-read');
+      if (btn) btn.remove();
+      updateNotifBadge();
+    }
+  }
+
+  async function markAllNotifRead() {
+    const unread = userNotifications.filter(n => !n.lu);
+    if (!unread.length) return;
+    const { error } = await sb.from('notifications').update({ lu: true })
+      .in('id', unread.map(n => n.id));
+    if (!error) {
+      userNotifications.forEach(n => n.lu = true);
+      renderNotifications();
+      updateNotifBadge();
+      showToast('✅ Toutes les notifications lues', 'success');
+    }
+  }
+
+  function updateNotifBadge() {
+    const unread = userNotifications.filter(n => !n.lu).length;
+    const dot      = document.getElementById('navNotifDot');
+    const tabCount = document.getElementById('notifTabCount');
+    if (dot) {
+      if (unread > 0) { dot.textContent = unread > 9 ? '9+' : unread; dot.classList.add('show'); }
+      else dot.classList.remove('show');
+    }
+    if (tabCount) {
+      if (unread > 0) { tabCount.textContent = unread > 9 ? '9+' : unread; tabCount.classList.add('show'); }
+      else tabCount.classList.remove('show');
+    }
+  }
+
+  function activateNotifTab() {
+    document.querySelectorAll('.ptab').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    const tab = document.querySelector('.ptab[data-tab="notifications"]');
+    if (tab) tab.classList.add('active');
+    const panel = document.getElementById('tab-notifications');
+    if (panel) panel.classList.add('active');
+  }
+
+  document.getElementById('btnMarkAllRead').addEventListener('click', markAllNotifRead);
 
   // ── TOAST ──
   function showToast(msg, type = 'success') {

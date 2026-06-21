@@ -438,6 +438,7 @@ let manga       = null;
 let chapitres   = [];
 let deleteTargetId = null;
 let newPagesFiles  = null;
+let authorName     = '';
 
 // ── INIT ──
 async function init() {
@@ -452,7 +453,11 @@ async function init() {
 
   const { data: profile } = await sb.from('profiles').select('username').eq('id', currentUser.id).single();
   const name = profile?.username || currentUser.email.split('@')[0];
-  document.getElementById('navInitial').textContent = name[0].toUpperCase();
+  authorName = name;
+  const avatarBtnEl = document.getElementById('avatarBtn');
+  if (avatarBtnEl) { avatarBtnEl.style.display = 'flex'; avatarBtnEl.textContent = name[0].toUpperCase(); }
+  const btnConnexionEl = document.getElementById('btnConnexion');
+  if (btnConnexionEl) btnConnexionEl.style.display = 'none';
 
   await loadManga();
   await loadChapitres();
@@ -635,6 +640,7 @@ async function addChapitre() {
   if (error) { showToast('Erreur lors de l\'ajout', 'error'); return; }
 
   chapitres.push(data);
+  sendNewChapterNotifications(data); // fire & forget
   document.getElementById('newChapTitre').value = '';
   document.getElementById('newChapFileBtn').classList.remove('has-files');
   document.getElementById('newChapFileBtn').innerHTML = `
@@ -785,6 +791,25 @@ function bindNewChapFile() {
       bindNewChapFile();
     }
   });
+}
+
+// ── NOTIFICATIONS FOLLOWERS ──
+async function sendNewChapterNotifications(newChap) {
+  try {
+    const { data: follows } = await sb.from('follows')
+      .select('user_id').eq('followed_id', currentUser.id);
+    if (!follows || follows.length === 0) return;
+    const notifications = follows.map(f => ({
+      user_id:   f.user_id,
+      type:      'new_chapter',
+      message:   `${authorName} a publié "${newChap.titre}" dans ${manga.titre}`,
+      manga_id:  mangaId,
+      lu:        false
+    }));
+    await sb.from('notifications').insert(notifications);
+  } catch(e) {
+    console.error('Erreur notification:', e);
+  }
 }
 
 // ── TOAST ──

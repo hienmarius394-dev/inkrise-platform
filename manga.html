@@ -243,6 +243,38 @@
         }
         .btn-library.in-library { background: rgba(124,111,239,0.2); }
 
+    /* Suivre créateur */
+    .btn-follow {
+      display: none;
+      align-items: center; gap: 6px;
+      background: transparent; border: 1px solid var(--border);
+      color: var(--muted); padding: 12px 18px; border-radius: 12px;
+      font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight: 600;
+      cursor: pointer; transition: all .25s;
+    }
+    .btn-follow.visible { display: inline-flex; }
+    .btn-follow:hover, .btn-follow.following { border-color: var(--green); color: var(--green); background: rgba(61,220,132,0.1); }
+    .btn-follow.following { background: rgba(61,220,132,0.15); }
+
+    /* Notif bell */
+    .nav-notif-link {
+      position: relative; display: none;
+      align-items: center; justify-content: center;
+      width: 32px; height: 32px; border-radius: 8px;
+      background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1);
+      text-decoration: none; font-size: 0.95rem; transition: all .2s;
+    }
+    .nav-notif-link.show { display: flex; }
+    .nav-notif-link:hover { background: rgba(255,255,255,0.13); }
+    .nav-notif-dot {
+      position: absolute; top: -5px; right: -5px;
+      min-width: 16px; height: 16px; border-radius: 8px;
+      background: var(--accent); color: #fff; font-size: 9px; font-weight: 800;
+      padding: 0 3px; display: none; align-items: center; justify-content: center;
+      border: 2px solid var(--bg);
+    }
+    .nav-notif-dot.show { display: flex; }
+
     /* Bouton gérer (visible seulement par l'auteur) */
     .btn-manage {
       display: none;
@@ -480,6 +512,7 @@
   <div class="nav-right-btns">
     <a href="auth.html" class="nav-connexion-btn" id="navConnexion">Connexion</a>
     <a href="profil.html" class="nav-avatar-btn" id="navAvatar">?</a>
+    <a href="profil.html#notifications" class="nav-notif-link" id="navNotifLink" title="Notifications">🔔<span class="nav-notif-dot" id="navNotifDot"></span></a>
     <button class="nav-hamburger" onclick="openDrawer()">☰</button>
   </div>
 </nav>
@@ -564,6 +597,7 @@
       <a href="#" class="btn-read-first" id="btnReadFirst">▶ Lire le chapitre 1</a>
       <button class="btn-subscribe" id="btnSubscribe">🔔 S'abonner</button>
             <button class="btn-library" id="btnLibrary">📚 Bibliothèque</button>
+            <button class="btn-follow" id="btnFollow">👤 Suivre</button>
                   <a href="#" class="btn-manage" id="btnManage">⚙️ Gérer</a>
     </div>
 
@@ -664,6 +698,7 @@ let chapitres   = [];
 let currentPage = 0;
 const CHAPS_PER_PAGE = 20;
 let isSubscribed = false;
+let isFollowing  = false;
 
 const TYPE_LABELS  = { manga:'Manga', manhwa:'Manhwa', manhua:'Manhua', webtoon:'Webtoon', bd:'BD / Comic', roman:'Roman graphique' };
 const TYPE_CLASSES = { manga:'type-manga', manhwa:'type-manhwa', manhua:'type-manhua', webtoon:'type-webtoon', bd:'type-bd', roman:'type-roman' };
@@ -685,6 +720,16 @@ async function init() {
     const { data: profile } = await sb.from('profiles').select('username').eq('id', currentUser.id).single();
     const name = profile?.username || currentUser.email.split('@')[0];
     av.textContent = name[0].toUpperCase();
+    // Compteur notifications
+    const { count: unreadCount } = await sb.from('notifications')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', currentUser.id).eq('lu', false);
+    const notifLink = document.getElementById('navNotifLink');
+    if (notifLink) notifLink.classList.add('show');
+    if (unreadCount && unreadCount > 0) {
+      const notifDot = document.getElementById('navNotifDot');
+      if (notifDot) { notifDot.textContent = unreadCount > 9 ? '9+' : unreadCount; notifDot.classList.add('show'); }
+    }
   }
 
   const params = new URLSearchParams(window.location.search);
@@ -724,6 +769,7 @@ async function loadManga(mangaId) {
 
   renderManga();
   renderChapitres();
+  if (currentUser) await checkFollowState();
 }
 
 // ── RENDER MANGA ──
@@ -804,6 +850,10 @@ function renderManga() {
     btn.classList.add('visible');
     btn.href = `gestion-chapitres.html?manga_id=${manga.id}`;
   }
+  // Bouton suivre (si pas l'auteur)
+  if (currentUser && manga.auteur_id && manga.auteur_id !== currentUser.id) {
+    document.getElementById('btnFollow').classList.add('visible');
+  }
 
   // Bouton lire premier chapitre
   if (chapitres.length > 0) {
@@ -872,6 +922,19 @@ document.getElementById('btnMore').addEventListener('click', function() {
   }
 });
 
+// ── CHECK FOLLOW ──
+async function checkFollowState() {
+  if (!manga || !manga.auteur_id) return;
+  const { data } = await sb.from('follows').select('id')
+    .eq('user_id', currentUser.id).eq('followed_id', manga.auteur_id).maybeSingle();
+  isFollowing = !!data;
+  const btn = document.getElementById('btnFollow');
+  const authorN = manga.profiles?.username || '';
+  btn.textContent = isFollowing ? '✅ Suivi' : `👤 Suivre${authorN ? ' ' + authorN : ''}`;
+  if (isFollowing) btn.classList.add('following');
+  else btn.classList.remove('following');
+}
+
 // ── S'ABONNER ──
 document.getElementById('btnSubscribe').addEventListener('click', async () => {
   if (!currentUser) { showToast('Connecte-toi pour t\'abonner !', 'info'); return; }
@@ -885,6 +948,34 @@ document.getElementById('btnSubscribe').addEventListener('click', async () => {
     btn.classList.remove('active');
     btn.textContent = '🔔 S\'abonner';
     showToast('Désabonné', 'info');
+  }
+});
+
+// ── SUIVRE CRÉATEUR ──
+document.getElementById('btnFollow').addEventListener('click', async () => {
+  if (!currentUser) { showToast('Connecte-toi pour suivre un créateur !', 'info'); return; }
+  if (!manga || !manga.auteur_id) return;
+  const btn = document.getElementById('btnFollow');
+  const authorN = manga.profiles?.username || 'ce créateur';
+  if (isFollowing) {
+    const { error } = await sb.from('follows').delete()
+      .eq('user_id', currentUser.id).eq('followed_id', manga.auteur_id);
+    if (!error) {
+      isFollowing = false;
+      btn.classList.remove('following');
+      btn.textContent = `👤 Suivre ${authorN}`;
+      showToast('Tu ne suis plus ce créateur', 'info');
+    } else showToast('Erreur: ' + error.message, 'error');
+  } else {
+    const { error } = await sb.from('follows').insert({
+      user_id: currentUser.id, followed_id: manga.auteur_id
+    });
+    if (!error) {
+      isFollowing = true;
+      btn.classList.add('following');
+      btn.textContent = '✅ Suivi';
+      showToast(`✅ Tu suis maintenant ${authorN} !`, 'success');
+    } else showToast('Erreur: ' + error.message, 'error');
   }
 });
 
