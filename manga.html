@@ -26,36 +26,60 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
 
-    /* ── NAV ── */
+    /* ── NAV UNIVERSEL ── */
     nav {
       position: sticky; top: 0; z-index: 100;
-      background: rgba(11,11,16,0.92); backdrop-filter: blur(14px);
-      border-bottom: 1px solid var(--border);
-      padding: 0 28px; height: 62px;
-      display: flex; align-items: center; justify-content: space-between;
+      display: flex; align-items: center; gap: 8px;
+      padding: 0 16px; height: 56px;
+      background: rgba(11,11,16,0.96);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid rgba(255,255,255,0.07);
     }
-    .nav-logo {
-      font-family: 'Syne', sans-serif; font-size: 1.4rem; font-weight: 800;
-      letter-spacing: 2px;
-      background: linear-gradient(135deg, var(--purple), var(--purple2));
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-      text-decoration: none;
-    }
-    .nav-right { display: flex; align-items: center; gap: 12px; }
-    .nav-back {
-      display: flex; align-items: center; gap: 6px;
-      color: var(--muted); font-size: 0.85rem; font-weight: 500;
-      text-decoration: none; padding: 7px 14px;
-      border: 1px solid var(--border); border-radius: 8px; transition: all .2s;
-    }
-    .nav-back:hover { color: var(--text); border-color: var(--border2); }
-    .nav-avatar {
-      width: 34px; height: 34px; border-radius: 50%;
-      background: linear-gradient(135deg, var(--purple), #5040c8);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 0.85rem; font-weight: 700; color: #fff; text-transform: uppercase;
-      text-decoration: none;
-    }
+    .nav-logo { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 800; color: #f0f0f4; text-decoration: none; flex-shrink: 0; }
+    .nav-logo span { color: #7c6fef; }
+    .nav-links { display: flex; align-items: center; gap: 2px; flex: 1; margin-left: 8px; }
+    @media (max-width: 680px) { .nav-links { display: none; } }
+    .nav-link { color: rgba(255,255,255,0.6); font-size: 0.82rem; font-weight: 600; text-decoration: none; padding: 5px 9px; border-radius: 7px; transition: all .2s; background: none; border: none; cursor: pointer; font-family: inherit; white-space: nowrap; }
+    .nav-link:hover { color: #fff; background: rgba(255,255,255,0.07); }
+    .nav-search-wrap { display: flex; align-items: center; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; overflow: hidden; max-width: 200px; }
+    @media (max-width: 480px) { .nav-search-wrap { max-width: 110px; } }
+    .nav-search-input { background: none; border: none; outline: none; color: #f0f0f4; font-size: .8rem; padding: 7px 10px; width: 100%; font-family: inherit; }
+    .nav-search-input::placeholder { color: rgba(255,255,255,0.3); }
+    .nav-search-btn { background: none; border: none; cursor: pointer; padding: 6px 8px; font-size: 13px; color: rgba(255,255,255,0.5); flex-shrink: 0; }
+    .nav-right-btns { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+    .nav-connexion-btn { color: rgba(255,255,255,0.7); font-size: .8rem; font-weight: 600; padding: 6px 13px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.15); text-decoration: none; transition: all .2s; white-space: nowrap; }
+    .nav-connexion-btn:hover { border-color: #7c6fef; color: #a594f9; }
+    .nav-avatar-btn { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg,#7c6fef,#5040c8); display: none; align-items: center; justify-content: center; font-size: .85rem; font-weight: 700; color: #fff; text-decoration: none; text-transform: uppercase; }
+    .nav-avatar-btn.show { display: flex; }
+    .nav-hamburger { width: 34px; height: 34px; border-radius: 8px; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; cursor: pointer; color: #f0f0f4; font-size: 1rem; transition: all .2s; }
+    .nav-hamburger:hover { background: rgba(255,255,255,0.13); }
+    /* ── DRAWER ── */
+    .drawer-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 150; backdrop-filter: blur(4px); }
+    .drawer-overlay.open { display: block; }
+    .drawer { position: fixed; top: 0; right: 0; width: 280px; height: 100%; background: #13131c; z-index: 151; transform: translateX(100%); transition: transform 0.28s cubic-bezier(0.4,0,0.2,1); overflow-y: auto; box-shadow: -4px 0 32px rgba(0,0,0,0.4); border-left: 1px solid rgba(255,255,255,0.07); }
+    .drawer.open { transform: translateX(0); }
+    .drawer-header { display: flex; align-items: center; justify-content: space-between; padding: 16px; border-bottom: 1px solid rgba(255,255,255,0.07); }
+    .drawer-logo { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 800; text-decoration: none; color: #f0f0f4; }
+    .drawer-logo span { color: #7c6fef; }
+    .drawer-close { width: 30px; height: 30px; border-radius: 7px; background: rgba(255,255,255,0.07); border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: .82rem; color: rgba(255,255,255,0.6); }
+    .drawer-section-title { font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.3); letter-spacing: 1.5px; text-transform: uppercase; padding: 14px 16px 5px; }
+    .drawer-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; margin: 2px 8px; text-decoration: none; color: rgba(240,240,244,0.85); font-weight: 600; font-size: .88rem; cursor: pointer; transition: background .15s; border: none; background: none; width: calc(100% - 16px); text-align: left; border-radius: 10px; font-family: inherit; }
+    .drawer-item:hover { background: rgba(255,255,255,0.06); }
+    .drawer-item-icon { width: 36px; height: 36px; border-radius: 9px; background: rgba(255,255,255,0.07); display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; }
+    .drawer-item-label { flex: 1; }
+    .drawer-item-badge { font-size: 9px; font-weight: 800; padding: 2px 7px; border-radius: 8px; }
+    .drawer-divider { height: 1px; background: rgba(255,255,255,0.07); margin: 8px 16px; }
+    /* ── BOTTOM NAV ── */
+    body { padding-bottom: 90px; }
+    .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; z-index: 100; background: rgba(11,11,16,0.97); border-top: 1px solid rgba(255,255,255,0.07); display: flex; align-items: center; justify-content: space-around; padding: 8px 0 16px; box-shadow: 0 -2px 16px rgba(0,0,0,0.3); }
+    .bottom-nav-item { display: flex; flex-direction: column; align-items: center; gap: 2px; cursor: pointer; text-decoration: none; color: #f0f0f4; opacity: 0.4; border: none; background: none; padding: 0 8px; transition: opacity .2s; font-family: inherit; }
+    .bottom-nav-item.active { opacity: 1; }
+    .bottom-nav-item:hover { opacity: 0.7; }
+    .bottom-nav-icon { font-size: 20px; }
+    .bottom-nav-label { font-size: 9px; font-weight: 700; color: rgba(255,255,255,0.35); }
+    .bottom-nav-item.active .bottom-nav-label { color: #7c6fef; }
+    .bottom-nav-search { width: 46px; height: 46px; border-radius: 50%; background: #7c6fef; border: none; display: flex; align-items: center; justify-content: center; font-size: 18px; cursor: pointer; margin-top: -14px; box-shadow: 0 4px 16px rgba(124,111,239,0.5); transition: all .2s; flex-shrink: 0; }
+    .bottom-nav-search:hover { background: #9b8ff7; transform: scale(1.06); }
 
     /* ── HERO BANNER ── */
     .hero-banner {
@@ -429,12 +453,43 @@
 
 <!-- NAV -->
 <nav>
-  <a href="index.html" class="nav-logo">INKRISE</a>
-  <div class="nav-right">
-    <a href="index.html" class="nav-back">← Accueil</a>
-    <a href="profil.html" class="nav-avatar" id="navAvatar" style="display:none;">?</a>
+  <a href="index.html" class="nav-logo">INK<span>RISE</span></a>
+  <div class="nav-links">
+    <a href="index.html" class="nav-link">Accueil</a>
+    <a href="manga.html" class="nav-link">Mangas</a>
+    <a href="#" class="nav-link">Tutoriels</a>
+    <button class="nav-link" onclick="openModal()">Premium ✨</button>
+  </div>
+  <div class="nav-search-wrap">
+    <input type="text" id="navSearchInput" class="nav-search-input" placeholder="Rechercher…" onkeydown="if(event.key==='Enter')doSearch()" />
+    <button class="nav-search-btn" onclick="doSearch()">🔍</button>
+  </div>
+  <div class="nav-right-btns">
+    <a href="auth.html" class="nav-connexion-btn" id="navConnexion">Connexion</a>
+    <a href="profil.html" class="nav-avatar-btn" id="navAvatar">?</a>
+    <button class="nav-hamburger" onclick="openDrawer()">☰</button>
   </div>
 </nav>
+
+<!-- DRAWER -->
+<div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-header">
+    <a href="index.html" class="drawer-logo">INK<span>RISE</span></a>
+    <button class="drawer-close" onclick="closeDrawer()">✕</button>
+  </div>
+  <div class="drawer-section-title">Explorer</div>
+  <a href="index.html" class="drawer-item"><div class="drawer-item-icon">🏠</div><span class="drawer-item-label">Accueil</span></a>
+  <a href="manga.html" class="drawer-item"><div class="drawer-item-icon">📖</div><span class="drawer-item-label">Manga & BD</span></a>
+  <a href="#" class="drawer-item"><div class="drawer-item-icon">🎓</div><span class="drawer-item-label">Tutoriels</span><span class="drawer-item-badge" style="background:rgba(45,212,160,.12);color:#2dd4a0;">GRATUIT</span></a>
+  <a href="#" class="drawer-item" onclick="openModal();closeDrawer();return false;"><div class="drawer-item-icon">💎</div><span class="drawer-item-label">Espace Premium</span><span class="drawer-item-badge" style="background:rgba(124,111,239,.15);color:#a594f9;">PRO</span></a>
+  <div class="drawer-divider"></div>
+  <div class="drawer-section-title">Mon compte</div>
+  <a href="profil.html" class="drawer-item" id="drawerProfil" style="display:none;"><div class="drawer-item-icon">🧑‍🎨</div><span class="drawer-item-label">Mon profil</span></a>
+  <a href="upload-manga.html" class="drawer-item" id="drawerPublier" style="display:none;"><div class="drawer-item-icon">📤</div><span class="drawer-item-label">Publier un manga</span></a>
+  <a href="auth.html" class="drawer-item" id="drawerConnexion"><div class="drawer-item-icon">🔑</div><span class="drawer-item-label">Connexion / Inscription</span></a>
+  <button class="drawer-item" id="drawerLogout" style="display:none;" onclick="doLogout()"><div class="drawer-item-icon">🚪</div><span class="drawer-item-label" style="color:#f0522a;">Déconnexion</span></button>
+</div>
 
 <!-- LOADING -->
 <div class="page-loading" id="pageLoading">
@@ -574,6 +629,15 @@
 
 <div class="toast" id="toast"></div>
 
+<!-- BOTTOM NAV -->
+<div class="univ-bnav">
+  <a href="index.html" class="univ-bnav-item"><span class="univ-bnav-icon">🏠</span><span class="univ-bnav-label">Accueil</span></a>
+  <a href="manga.html" class="univ-bnav-item"><span class="univ-bnav-icon">📖</span><span class="univ-bnav-label">Manga</span></a>
+  <button class="univ-bnav-search" onclick="focusSearch()">🔍</button>
+  <a href="#" class="univ-bnav-item"><span class="univ-bnav-icon">🎓</span><span class="univ-bnav-label">Tutoriels</span></a>
+  <a href="#" class="univ-bnav-item"><span class="univ-bnav-icon">👥</span><span class="univ-bnav-label">Communauté</span></a>
+</div>
+
 <script>
 const SUPABASE_URL = 'https://bsdcpwtimsgxcnaamwip.supabase.co';
 const SUPABASE_KEY = 'eyJhbG...fb44';
@@ -601,6 +665,9 @@ async function init() {
     currentUser = session.user;
     const av = document.getElementById('navAvatar');
     av.style.display = 'flex';
+    document.getElementById('navConnexion').style.display = 'none';
+    const d=document.getElementById('dProfil'),c=document.getElementById('dConnexion'),l=document.getElementById('dLogout');
+    if(d)d.style.display='flex';if(c)c.style.display='none';if(l)l.style.display='flex';
     const { data: profile } = await sb.from('profiles').select('username').eq('id', currentUser.id).single();
     const name = profile?.username || currentUser.email.split('@')[0];
     av.textContent = name[0].toUpperCase();
@@ -828,6 +895,14 @@ function showToast(msg, type = 'success') {
   t.className = `toast ${type} show`;
   setTimeout(() => t.classList.remove('show'), 3000);
 }
+
+// UNIVERSAL NAV
+function openDrawer(){document.getElementById('univDrawer').classList.add('open');document.getElementById('univOverlay').classList.add('open');document.body.style.overflow='hidden';}
+function closeDrawer(){document.getElementById('univDrawer').classList.remove('open');document.getElementById('univOverlay').classList.remove('open');document.body.style.overflow='';}
+function doSearch(){const q=document.getElementById('navSearchInput').value.trim();if(q)window.location.href='manga.html?q='+encodeURIComponent(q);}
+function focusSearch(){const i=document.getElementById('navSearchInput');if(i){i.focus();window.scrollTo({top:0,behavior:'smooth'});}}
+function doLogout(){sb.auth.signOut().then(()=>window.location.href='index.html');}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeDrawer();});
 
 init();
 </script>

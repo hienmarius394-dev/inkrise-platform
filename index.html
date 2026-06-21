@@ -40,13 +40,16 @@ h1,h2,h3,.logo { font-family: 'Nunito', sans-serif; }
 nav {
   position: fixed; top: 0; left: 0; right: 0; z-index: 100;
   display: flex; align-items: center; justify-content: space-between;
-  padding: 0 16px; height: 54px;
-  background: var(--bg-2);
-  border-bottom: 1px solid var(--border);
-  box-shadow: 0 1px 8px rgba(0,0,0,0.05);
+  padding: 0 16px; height: 58px;
+  background: rgba(10,10,15,0.96);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  box-shadow: 0 1px 20px rgba(0,0,0,0.3);
+  backdrop-filter: blur(14px);
+  gap: 8px;
 }
-.logo { font-size: 20px; font-weight: 900; letter-spacing: -0.5px; color: var(--text); text-decoration: none; }
-.logo span { color: var(--orange); }
+.logo { font-size: 20px; font-weight: 900; letter-spacing: -0.5px; text-decoration: none;
+  background: linear-gradient(135deg,#7c6fef,#a594f9); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+.logo span { -webkit-text-fill-color: transparent; }
 .nav-right { display: flex; align-items: center; gap: 8px; }
 
 .btn-publier {
@@ -81,17 +84,19 @@ nav {
 
 .btn-connexion {
   font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 700;
-  padding: 7px 14px; border-radius: 20px; border: 1.5px solid var(--border);
-  background: transparent; color: var(--text-2); cursor: pointer; text-decoration: none; transition: all 0.2s;
+  padding: 7px 14px; border-radius: 20px; border: 1.5px solid rgba(255,255,255,0.15);
+  background: transparent; color: rgba(240,239,254,0.8); cursor: pointer; text-decoration: none; transition: all 0.2s;
+  white-space: nowrap;
 }
-.btn-connexion:hover { border-color: var(--orange); color: var(--orange); }
+.btn-connexion:hover { border-color: #7c6fef; color: #a594f9; }
 
 .hamburger {
-  width: 36px; height: 36px; border-radius: 50%; background: var(--bg-3); border: none;
-  display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 18px;
-  color: var(--text); transition: background 0.2s;
+  width: 34px; height: 34px; border-radius: 8px;
+  background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1);
+  display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px;
+  color: #f0effe; transition: background 0.2s;
 }
-.hamburger:hover { background: var(--border); }
+.hamburger:hover { background: rgba(255,255,255,0.13); }
 
 /* ── MENU DRAWER ── */
 .drawer-overlay {
@@ -102,36 +107,39 @@ nav {
 
 .drawer {
   position: fixed; top: 0; right: 0; width: 280px; height: 100%;
-  background: var(--bg-2); z-index: 151;
+  background: #13131c; z-index: 151;
   transform: translateX(100%);
   transition: transform 0.28s cubic-bezier(0.4,0,0.2,1);
-  overflow-y: auto; box-shadow: -4px 0 32px rgba(0,0,0,0.12);
+  overflow-y: auto; box-shadow: -4px 0 32px rgba(0,0,0,0.4);
+  border-left: 1px solid rgba(255,255,255,0.07);
 }
 .drawer.open { transform: translateX(0); }
 
 .drawer-header {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 16px; border-bottom: 1px solid var(--border);
+  padding: 16px; border-bottom: 1px solid rgba(255,255,255,0.07);
 }
-.drawer-logo { font-family: 'Nunito', sans-serif; font-size: 18px; font-weight: 900; text-decoration: none; color: var(--text); }
-.drawer-logo span { color: var(--orange); }
+.drawer-logo { font-family: 'Nunito', sans-serif; font-size: 18px; font-weight: 900; text-decoration: none;
+  background: linear-gradient(135deg,#7c6fef,#a594f9); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+.drawer-logo span { -webkit-text-fill-color: transparent; }
 .drawer-close {
-  width: 32px; height: 32px; border-radius: 50%; background: var(--bg-3); border: none;
-  display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; color: var(--text-2);
+  width: 32px; height: 32px; border-radius: 50%; background: rgba(255,255,255,0.08); border: none;
+  display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; color: rgba(240,239,254,0.7);
 }
 .drawer-section-title {
-  font-size: 10px; font-weight: 800; color: var(--text-3);
+  font-size: 10px; font-weight: 800; color: rgba(240,239,254,0.3);
   letter-spacing: 1.5px; text-transform: uppercase; padding: 16px 16px 6px;
 }
 .drawer-item {
   display: flex; align-items: center; gap: 12px; padding: 10px 12px; margin: 2px 8px;
-  text-decoration: none; color: var(--text); font-weight: 600; font-size: 14px;
+  text-decoration: none; color: rgba(240,239,254,0.85); font-weight: 600; font-size: 14px;
   cursor: pointer; transition: background 0.15s; border: none; background: none;
   width: calc(100% - 16px); text-align: left; border-radius: 10px;
 }
-.drawer-item:hover { background: var(--bg); }
+.drawer-item:hover { background: rgba(255,255,255,0.06); }
 .drawer-item-icon {
   width: 38px; height: 38px; border-radius: 10px;
+  background: rgba(255,255,255,0.07);
   display: flex; align-items: center; justify-content: center; font-size: 19px; flex-shrink: 0;
 }
 .drawer-item-label { flex: 1; font-family: 'Nunito', sans-serif; }
@@ -139,7 +147,7 @@ nav {
   font-size: 9px; font-weight: 800; padding: 2px 8px; border-radius: 8px;
   letter-spacing: 0.5px; font-family: 'Nunito', sans-serif;
 }
-.drawer-divider { height: 1px; background: var(--border); margin: 8px 16px; }
+.drawer-divider { height: 1px; background: rgba(255,255,255,0.07); margin: 8px 16px; }
 
 /* ── BANNIERE ── */
 .hero-banner {
@@ -311,17 +319,38 @@ nav {
 .creators-section { animation: fadeUp 0.4s 0.05s ease both; }
 .manga-grid-2 { animation: fadeUp 0.4s 0.1s ease both; }
 @media(max-width:600px){ .plans-grid{ grid-template-columns:1fr; } }
+
+/* ── NAV LINKS + SEARCH (universel) ── */
+.univ-nav-links{display:flex;align-items:center;gap:2px;flex:1;margin:0 8px;}
+@media(max-width:680px){.univ-nav-links{display:none;}}
+.univ-nav-link{color:rgba(240,239,254,0.6);font-size:.82rem;font-weight:600;text-decoration:none;padding:5px 10px;border-radius:7px;transition:all .2s;white-space:nowrap;font-family:'DM Sans',sans-serif;}
+.univ-nav-link:hover{color:#f0effe;background:rgba(255,255,255,0.06);}
+.univ-search-wrap{display:flex;align-items:center;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);border-radius:18px;overflow:hidden;max-width:200px;flex-shrink:0;}
+@media(max-width:480px){.univ-search-wrap{max-width:120px;}}
+.univ-search-input{background:none;border:none;outline:none;color:#f0effe;font-size:.8rem;padding:7px 10px;width:100%;font-family:'DM Sans',sans-serif;}
+.univ-search-input::placeholder{color:rgba(240,239,254,.35);}
+.univ-search-btn{background:none;border:none;cursor:pointer;padding:6px 8px;font-size:13px;color:rgba(240,239,254,.5);flex-shrink:0;transition:color .2s;}
+.univ-search-btn:hover{color:#7c6fef;}
+.drawer-overlay { background: rgba(0,0,0,0.5) !important; }
 </style>
 </head>
 <body>
 
 <!-- TOP NAV -->
 <nav>
-  <a href="index.html" class="logo">INK<span>RISE</span></a>
+  <a href="index.html" class="logo">INKRISE</a>
+  <div class="univ-nav-links">
+    <a href="index.html" class="univ-nav-link">Accueil</a>
+    <a href="manga.html" class="univ-nav-link">Mangas</a>
+    <a href="#" class="univ-nav-link">Tutoriels</a>
+    <a href="#" class="univ-nav-link" onclick="openModal();return false;">Premium</a>
+  </div>
+  <div class="univ-search-wrap">
+    <input type="text" id="navSearchInput" class="univ-search-input" placeholder="Rechercher…" onkeydown="if(event.key==='Enter')doSearch()" />
+    <button class="univ-search-btn" onclick="doSearch()">🔍</button>
+  </div>
   <div class="nav-right">
     <a href="auth.html" class="btn-connexion" id="btnConnexion">Connexion</a>
-    <a href="upload-manga.html" class="btn-publier" id="btnPublier">📤 Publier</a>
-    <div class="nav-icon-btn" id="notifBtn" style="display:none;">🔔<div class="notif-dot" id="notifDot"></div></div>
     <a href="profil.html" class="avatar-btn" id="avatarBtn">🧑‍🎨</a>
     <button class="hamburger" onclick="openDrawer()">☰</button>
   </div>
@@ -339,25 +368,25 @@ nav {
 
   <div class="drawer-section-title">Explorer</div>
   <a href="index.html" class="drawer-item">
-    <div class="drawer-item-icon" style="background:#fff3ee;">🏠</div>
+    <div class="drawer-item-icon">🏠</div>
     <span class="drawer-item-label">Accueil</span>
   </a>
   <a href="manga.html" class="drawer-item">
-    <div class="drawer-item-icon" style="background:#f0effe;">📖</div>
+    <div class="drawer-item-icon">📖</div>
     <span class="drawer-item-label">Manga & BD</span>
   </a>
   <a href="#" class="drawer-item">
-    <div class="drawer-item-icon" style="background:#edfdf8;">🎓</div>
+    <div class="drawer-item-icon">🎓</div>
     <span class="drawer-item-label">Tutoriels</span>
-    <span class="drawer-item-badge" style="background:#edfdf8;color:#00c9a7;">GRATUIT</span>
+    <span class="drawer-item-badge" style="background:rgba(0,201,167,.15);color:#00c9a7;">GRATUIT</span>
   </a>
   <a href="#" class="drawer-item" onclick="openModal();closeDrawer();">
-    <div class="drawer-item-icon" style="background:#fff3ee;">💎</div>
+    <div class="drawer-item-icon">💎</div>
     <span class="drawer-item-label">Espace Premium</span>
-    <span class="drawer-item-badge" style="background:#fff3ee;color:var(--orange);">PRO</span>
+    <span class="drawer-item-badge" style="background:rgba(255,107,53,.15);color:#ff6b35;">PRO</span>
   </a>
   <a href="#" class="drawer-item">
-    <div class="drawer-item-icon" style="background:#f0effe;">👥</div>
+    <div class="drawer-item-icon">👥</div>
     <span class="drawer-item-label">Communauté Créateur</span>
   </a>
 
@@ -365,19 +394,19 @@ nav {
   <div class="drawer-section-title">Mon compte</div>
 
   <a href="profil.html" class="drawer-item" id="drawerProfil" style="display:none;">
-    <div class="drawer-item-icon" style="background:#f4f4ef;">🧑‍🎨</div>
+    <div class="drawer-item-icon">🧑‍🎨</div>
     <span class="drawer-item-label">Mon profil</span>
   </a>
   <a href="upload-manga.html" class="drawer-item" id="drawerPublier" style="display:none;">
-    <div class="drawer-item-icon" style="background:#fff3ee;">📤</div>
+    <div class="drawer-item-icon">📤</div>
     <span class="drawer-item-label">Publier un manga</span>
   </a>
   <a href="auth.html" class="drawer-item" id="drawerConnexion">
-    <div class="drawer-item-icon" style="background:#f4f4ef;">🔑</div>
+    <div class="drawer-item-icon">🔑</div>
     <span class="drawer-item-label">Connexion / Inscription</span>
   </a>
   <button class="drawer-item" id="drawerLogout" style="display:none;" onclick="logout()">
-    <div class="drawer-item-icon" style="background:#fff0f3;">🚪</div>
+    <div class="drawer-item-icon">🚪</div>
     <span class="drawer-item-label" style="color:#ff3d71;">Déconnexion</span>
   </button>
 </div>
@@ -453,7 +482,7 @@ nav {
     <span class="bottom-nav-icon">📖</span>
     <span class="bottom-nav-label">Manga</span>
   </button>
-  <button class="bottom-nav-search">🔍</button>
+  <button class="bottom-nav-search" onclick="focusSearch()">🔍</button>
   <button class="bottom-nav-item" onclick="setActiveNav(this)">
     <span class="bottom-nav-icon">🎓</span>
     <span class="bottom-nav-label">Tutoriels</span>
@@ -529,6 +558,10 @@ function openModal() { document.getElementById('modalOverlay').classList.add('op
 function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); document.body.style.overflow=''; }
 function closeModalOutside(e) { if(e.target===document.getElementById('modalOverlay')) closeModal(); }
 document.addEventListener('keydown', e => { if(e.key==='Escape') { closeModal(); closeDrawer(); } })
+
+// SEARCH
+function doSearch(){const q=document.getElementById('navSearchInput').value.trim();if(q)window.location.href='manga.html?q='+encodeURIComponent(q);}
+function focusSearch(){const i=document.getElementById('navSearchInput');if(i){i.focus();window.scrollTo({top:0,behavior:'smooth'});}}
 
 // BOTTOM NAV
 function setActiveNav(el) {

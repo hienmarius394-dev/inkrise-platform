@@ -336,6 +336,16 @@
       .topbar-manga { display: none; }
       .chap-select { max-width: 110px; }
     }
+    /* BOTTOM NAV UNIVERSEL */
+    .univ-bnav{position:fixed;bottom:0;left:0;right:0;z-index:100;background:rgba(8,8,16,.97);border-top:1px solid rgba(255,255,255,.07);display:flex;align-items:center;justify-content:space-around;padding:8px 0 16px;backdrop-filter:blur(14px);}
+    .univ-bnav-item{display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none;color:rgba(240,239,254,.4);padding:0 8px;transition:color .2s;border:none;background:none;cursor:pointer;}
+    .univ-bnav-item:hover{color:rgba(240,239,254,.9);}
+    .univ-bnav-icon{font-size:20px;}
+    .univ-bnav-label{font-size:.6rem;font-weight:800;font-family:'DM Sans',sans-serif;}
+    .univ-bnav-search{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#7c6fef,#5040c8);border:none;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;margin-top:-18px;box-shadow:0 4px 18px rgba(124,111,239,.5);transition:transform .2s;flex-shrink:0;}
+    .univ-bnav-search:hover{transform:scale(1.08);}
+    /* push content above bottom nav in scroll mode */
+    .scroll-viewer{padding-bottom:100px;}
   </style>
 </head>
 <body>
@@ -786,7 +796,18 @@ function showToast(msg) {
   setTimeout(() => t.classList.remove('show'), 2500);
 }
 
+function focusSearch(){window.location.href='manga.html';}
+
 init();
 </script>
+
+<!-- BOTTOM NAV -->
+<div class="univ-bnav">
+  <a href="index.html" class="univ-bnav-item"><span class="univ-bnav-icon">🏠</span><span class="univ-bnav-label">Accueil</span></a>
+  <a href="manga.html" class="univ-bnav-item"><span class="univ-bnav-icon">📖</span><span class="univ-bnav-label">Manga</span></a>
+  <button class="univ-bnav-search" onclick="focusSearch()">🔍</button>
+  <a href="#" class="univ-bnav-item"><span class="univ-bnav-icon">🎓</span><span class="univ-bnav-label">Tutoriels</span></a>
+  <a href="#" class="univ-bnav-item"><span class="univ-bnav-icon">👥</span><span class="univ-bnav-label">Communauté</span></a>
+</div>
 </body>
 </html>
