@@ -571,8 +571,8 @@ function emptyState(msg) { return `<div class="empty-state">${msg}</div>` }
 // FEATURED
 async function loadFeatured() {
   const { data: mangas } = await supabaseClient.from('mangas')
-    .select('id, titre, type, vues, likes, created_at, cover_url, profiles(username)')
-    .eq('public', true).eq('brouillon', false).order('likes', { ascending: false }).limit(6)
+    .select('id, titre, type, vues, created_at, couverture_url, profiles(username)')
+        .limit(6)
   const row = document.getElementById('featuredRow')
   if (!mangas || mangas.length === 0) {
     row.innerHTML = `<div style="padding:20px 0;color:var(--text-3);font-size:13px;">Aucun manga en avant pour l'instant.</div>`
@@ -586,8 +586,8 @@ async function loadFeatured() {
   row.innerHTML = mangas.map((m, i) => {
     const badge = badges[i % 3]
     const views = m.vues > 999 ? (m.vues/1000).toFixed(1)+'k' : m.vues || 0
-    const bg = m.cover_url ? `background:url('${m.cover_url}') center/cover no-repeat;` : ''
-    const colorBg = !m.cover_url ? colorClass(i) : ''
+    const bg = m.couverture_url ? `background:url('${m.couverture_url}') center/cover no-repeat;` : ''
+    const colorBg = !m.couverture_url ? colorClass(i) : ''
     return `<a href="manga.html?id=${m.id}" class="featured-card-h">
       <div class="featured-cover-h ${colorBg}" style="${bg}">
         <div class="featured-badge-h" style="background:${badge.bg};color:${badge.color};">${badge.text}</div>
@@ -604,40 +604,39 @@ async function loadFeatured() {
 // POPULAIRES
 async function loadPopulaires() {
   const { data: mangas } = await supabaseClient.from('mangas')
-    .select('id, titre, type, genres, vues, likes, created_at, cover_url')
-    .eq('public', true).eq('brouillon', false).order('likes', { ascending: false }).limit(6)
+    .select('id, titre, type, genres, vues, created_at, couverture_url')
+        .limit(6)
   const grid = document.getElementById('populairesGrid')
   if (!mangas || mangas.length === 0) { grid.innerHTML = emptyState('Aucun manga populaire pour l\'instant.'); return }
   grid.innerHTML = mangas.map((m, i) => {
-    const likes = m.likes > 999 ? (m.likes/1000).toFixed(1)+'k' : m.likes || 0
-    const bg = m.cover_url ? `background:url('${m.cover_url}') center/cover no-repeat;` : ''
-    const colorBg = !m.cover_url ? colorClass(i) : ''
-    return `<a href="manga.html?id=${m.id}" class="manga-card-2">
-      <div class="manga-cover ${colorBg}" style="${bg}">
-        <div class="manga-time-badge">🕐 ${timeAgo(m.created_at)}</div>
-        <div class="manga-cover-deco">📖</div>
-      </div>
-      <div class="manga-card-body">
-        <div class="manga-card-title">${m.titre || 'Sans titre'}</div>
-        <div class="manga-card-footer">
-          <span class="manga-card-genre">${TYPE_LABELS[m.type]||'Manga'}</span>
-          <span class="manga-card-likes">♥ ${likes}</span>
+      const bg = m.couverture_url ? `background:url('${m.couverture_url}') center/cover no-repeat;` : ''
+      const colorBg = !m.couverture_url ? colorClass(i) : ''
+      return `<a href="manga.html?id=${m.id}" class="manga-card-2">
+        <div class="manga-cover ${colorBg}" style="${bg}">
+          <div class="manga-time-badge">🕐 ${timeAgo(m.created_at)}</div>
+          <div class="manga-cover-deco">📖</div>
         </div>
-      </div>
-    </a>`
-  }).join('')
+        <div class="manga-card-body">
+          <div class="manga-card-title">${m.titre || 'Sans titre'}</div>
+          <div class="manga-card-footer">
+            <span class="manga-card-genre">${TYPE_LABELS[m.type]||'Manga'}</span>
+            <span class="manga-card-likes">♥ ${m.vues || 0}</span>
+          </div>
+        </div>
+      </a>`
+    }).join('')
 }
 
 // DERNIERS
 async function loadDerniers() {
   const { data: mangas } = await supabaseClient.from('mangas')
-    .select('id, titre, type, genres, created_at, cover_url')
-    .eq('public', true).eq('brouillon', false).order('created_at', { ascending: false }).limit(6)
+    .select('id, titre, type, genres, created_at, couverture_url')
+        .order('created_at', { ascending: false }).limit(6)
   const grid = document.getElementById('derniersGrid')
   if (!mangas || mangas.length === 0) { grid.innerHTML = emptyState('Aucune mise à jour récente.'); return }
   grid.innerHTML = mangas.map((m, i) => {
-    const bg = m.cover_url ? `background:url('${m.cover_url}') center/cover no-repeat;` : ''
-    const colorBg = !m.cover_url ? colorClass(i+2) : ''
+    const bg = m.couverture_url ? `background:url('${m.couverture_url}') center/cover no-repeat;` : ''
+    const colorBg = !m.couverture_url ? colorClass(i+2) : ''
     return `<a href="manga.html?id=${m.id}" class="manga-card-2">
       <div class="manga-cover ${colorBg}" style="${bg}">
         <div class="manga-time-badge">✨ ${timeAgo(m.created_at)}</div>

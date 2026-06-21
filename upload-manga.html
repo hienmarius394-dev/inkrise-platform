@@ -966,14 +966,11 @@ async function publishManga(draft = false) {
     const mangaPayload = {
           auteur_id:   currentUser.id,
           titre,
-          description: desc,
+          synopsis:    desc,
           type:        document.getElementById('inputType').value,
           statut:      document.getElementById('inputStatut').value,
           genres:      selectedGenres,
-          cover_url:   coverUrl,
-          public:      document.getElementById('togglePublic').checked,
-          commentaires: document.getElementById('toggleComments').checked,
-          likes:       0,
+          couverture_url: coverUrl,
           created_at:  new Date().toISOString(),
         };
 
@@ -986,9 +983,8 @@ async function publishManga(draft = false) {
 
         const chapPayloads = chapitres.map((c, i) => ({
           manga_id:   manga.id,
-          auteur_id:  currentUser.id,
           titre:      c.titre || `Chapitre ${i + 1}`,
-          ordre:      i + 1,
+          numero:     i + 1,
           created_at: new Date().toISOString(),
         }));
 

@@ -562,13 +562,9 @@
             <div class="stat-num" id="statVues">0</div>
             <div class="stat-label">Vues</div>
           </div>
-          <div class="stat-item">
-            <div class="stat-num" id="statLikes">0</div>
-            <div class="stat-label">Likes</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-num" id="statChapitres">0</div>
-            <div class="stat-label">Chapitres</div>
+                    <div class="stat-item">
+                      <div class="stat-num" id="statChapitres">0</div>
+                      <div class="stat-label">Chapitres</div>
           </div>
         </div>
       </div>
@@ -628,11 +624,7 @@
         <div class="stat-card-num orange" id="statsVues">0</div>
       </div>
       <div class="stat-card">
-        <div class="stat-card-label">Likes reçus</div>
-        <div class="stat-card-num purple" id="statsLikes">0</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-card-label">Mangas publiés</div>
+              <div class="stat-card-label">Mangas publiés</div>
         <div class="stat-card-num gold" id="statsMangas">0</div>
       </div>
       <div class="stat-card">
@@ -815,7 +807,6 @@
 
     const totalMangas = mangas?.length || 0;
     let   totalVues   = 0;
-    let   totalLikes  = 0;
     let   totalChaps  = 0;
 
     if (mangas && mangas.length > 0) {
@@ -829,10 +820,8 @@
       mangas.forEach(m => {
         const chaps = m.chapitres?.[0]?.count || 0;
         const vues  = m.vues?.[0]?.count     || 0;
-        const likes = m.likes                 || 0;
         totalChaps += chaps;
         totalVues  += vues;
-        totalLikes += likes;
 
         const card = document.createElement('div');
         card.className = 'manga-card';
@@ -842,8 +831,7 @@
             <div class="manga-title">${m.titre || 'Sans titre'}</div>
             <div class="manga-meta">
               <span>👁 ${vues}</span>
-              <span>❤️ ${likes}</span>
-              <span>📄 ${chaps}</span>
+                            <span>📄 ${chaps}</span>
             </div>
           </div>
           <div style="padding:0 12px 12px; display:flex; gap:8px;">
@@ -862,12 +850,10 @@
     // Stats
     document.getElementById('statMangas').textContent   = totalMangas;
     document.getElementById('statVues').textContent     = totalVues;
-    document.getElementById('statLikes').textContent    = totalLikes;
-    document.getElementById('statChapitres').textContent = totalChaps;
+        document.getElementById('statChapitres').textContent = totalChaps;
 
     document.getElementById('statsVues').textContent     = totalVues;
-    document.getElementById('statsLikes').textContent    = totalLikes;
-    document.getElementById('statsMangas').textContent   = totalMangas;
+        document.getElementById('statsMangas').textContent   = totalMangas;
     document.getElementById('statsChapitres').textContent = totalChaps;
   }
 

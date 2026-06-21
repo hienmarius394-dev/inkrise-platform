@@ -465,7 +465,7 @@ async function init() {
   manga = m;
 
   // Charger tous les chapitres
-  const { data: chaps } = await sb.from('chapitres').select('*').eq('manga_id', mangaId).order('ordre', { ascending: true });
+  const { data: chaps } = await sb.from('chapitres').select('*').eq('manga_id', mangaId).order('numero', { ascending: true });
   allChaps = chaps || [];
 
   // Chapitre actuel
@@ -500,7 +500,7 @@ async function loadChapter() {
   document.getElementById('noPages').style.display = 'none';
 
   // Titre
-  const chapTitle = chapitre.titre || `Chapitre ${chapitre.ordre}`;
+  const chapTitle = chapitre.titre || `Chapitre ${chapitre.numero}`;
   document.getElementById('topbarChap').textContent = chapTitle;
   document.title = `${chapTitle} — ${manga?.titre || ''} — Inkrise`;
 
@@ -545,7 +545,7 @@ async function loadChapter() {
 
 // ── PLACEHOLDER (pas de pages uploadées) ──
 function showPlaceholder() {
-  const chapTitle = chapitre.titre || `Chapitre ${chapitre.ordre}`;
+  const chapTitle = chapitre.titre || `Chapitre ${chapitre.numero}`;
 
   if (readMode === 'pages') {
     document.getElementById('pagesViewer').classList.remove('hidden');
@@ -651,7 +651,7 @@ function showEndScreen() {
     endSub.innerHTML = `Tu as terminé ce chapitre !<br>Le prochain t'attend…`;
     nextBtn.style.display = 'inline-flex';
     nextBtn.href = `lecteur.html?manga_id=${mangaId}&chapitre=${nextChap.id}`;
-    nextBtn.textContent = `${nextChap.titre || 'Chapitre ' + nextChap.ordre} →`;
+    nextBtn.textContent = `${nextChap.titre || 'Chapitre ' + nextChap.numero} →`;
   } else {
     endSub.innerHTML = `Tu as terminé le dernier chapitre disponible !<br>Reviens bientôt pour la suite 🌟`;
     nextBtn.style.display = 'none';
@@ -681,7 +681,7 @@ function setMode(mode, reload = true) {
 function buildChapSelect() {
   const sel = document.getElementById('chapSelect');
   sel.innerHTML = allChaps.map(c =>
-    `<option value="${c.id}" ${c.id === chapitre.id ? 'selected' : ''}>${c.titre || 'Chapitre ' + c.ordre}</option>`
+    `<option value="${c.id}" ${c.id === chapitre.id ? 'selected' : ''}>${c.titre || 'Chapitre ' + c.numero}</option>`
   ).join('');
 }
 
@@ -691,8 +691,8 @@ function buildSidebar() {
     <a href="lecteur.html?manga_id=${mangaId}&chapitre=${c.id}"
        class="sidebar-chap-item ${c.id === chapitre.id ? 'current' : ''}"
        id="sidebarItem-${c.id}">
-      <span class="sidebar-chap-num">Ch. ${c.ordre}</span>
-      ${c.titre || 'Chapitre ' + c.ordre}
+      <span class="sidebar-chap-num">Ch. ${c.numero}</span>
+      ${c.titre || 'Chapitre ' + c.numero}
     </a>
   `).join('');
 }

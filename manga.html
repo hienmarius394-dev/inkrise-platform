@@ -476,11 +476,7 @@
             <div class="hstat-label">Vues</div>
           </div>
           <div class="hstat">
-            <div class="hstat-num" id="statLikes">0</div>
-            <div class="hstat-label">Likes</div>
-          </div>
-          <div class="hstat">
-            <div class="hstat-num" id="statChaps">0</div>
+                      <div class="hstat-num" id="statChaps">0</div>
             <div class="hstat-label">Chapitres</div>
           </div>
           <div class="hstat">
@@ -499,8 +495,7 @@
     <div class="action-bar">
       <a href="#" class="btn-read-first" id="btnReadFirst">▶ Lire le chapitre 1</a>
       <button class="btn-subscribe" id="btnSubscribe">🔔 S'abonner</button>
-      <button class="btn-like" id="btnLike">❤️ <span id="likeCount">0</span></button>
-      <a href="#" class="btn-manage" id="btnManage">⚙️ Gérer</a>
+            <a href="#" class="btn-manage" id="btnManage">⚙️ Gérer</a>
     </div>
 
     <div class="content-grid">
@@ -591,7 +586,6 @@ let chapitres   = [];
 let currentPage = 0;
 const CHAPS_PER_PAGE = 20;
 let isSubscribed = false;
-let isLiked      = false;
 
 const TYPE_LABELS  = { manga:'Manga', manhwa:'Manhwa', manhua:'Manhua', webtoon:'Webtoon', bd:'BD / Comic', roman:'Roman graphique' };
 const TYPE_CLASSES = { manga:'type-manga', manhwa:'type-manhwa', manhua:'type-manhua', webtoon:'type-webtoon', bd:'type-bd', roman:'type-roman' };
@@ -635,7 +629,7 @@ async function loadManga(mangaId) {
     .from('chapitres')
     .select('*')
     .eq('manga_id', mangaId)
-    .order('ordre', { ascending: true });
+    .order('numero', { ascending: true });
   chapitres = chaps || [];
 
   // Enregistrer une vue
@@ -654,14 +648,14 @@ async function loadManga(mangaId) {
 // ── RENDER MANGA ──
 function renderManga() {
   // Hero background flou
-  if (manga.cover_url) {
-    document.getElementById('heroBg').style.backgroundImage = `url('${manga.cover_url}')`;
+  if (manga.couverture_url) {
+    document.getElementById('heroBg').style.backgroundImage = `url('${manga.couverture_url}')`;
   }
 
   // Cover
   const coverEl = document.getElementById('coverEl');
-  if (manga.cover_url) {
-    coverEl.outerHTML = `<img id="coverEl" class="cover-img" src="${manga.cover_url}" alt="${manga.titre}" />`;
+  if (manga.couverture_url) {
+    coverEl.outerHTML = `<img id="coverEl" class="cover-img" src="${manga.couverture_url}" alt="${manga.titre}" />`;
   }
 
   // Type badge sur cover
@@ -694,14 +688,12 @@ function renderManga() {
   document.getElementById('authorAvatar').textContent   = authorName[0].toUpperCase();
 
   // Stats
-  document.getElementById('statVues').textContent  = manga.vues   || 0;
-  document.getElementById('statLikes').textContent = manga.likes  || 0;
-  document.getElementById('statChaps').textContent = chapitres.length;
-  document.getElementById('statAbonnes').textContent = manga.abonnes || 0;
-  document.getElementById('likeCount').textContent  = manga.likes  || 0;
+    document.getElementById('statVues').textContent  = manga.vues   || 0;
+    document.getElementById('statChaps').textContent = chapitres.length;
+    document.getElementById('statAbonnes').textContent = manga.abonnes || 0;
 
   // Description
-  const desc = manga.description || 'Aucune description disponible.';
+  const desc = manga.synopsis || 'Aucune description disponible.';
   document.getElementById('descText').textContent = desc;
   if (desc.length > 300) {
     document.getElementById('btnMore').style.display = 'block';
@@ -766,9 +758,9 @@ function renderChapitres() {
     a.className = `chap-item${isNew ? ' new-chap' : ''}`;
     a.href = `lecteur.html?manga_id=${manga.id}&chapitre=${chap.id}`;
     a.innerHTML = `
-      <div class="chap-num-badge">Ch. ${chap.ordre}</div>
+      <div class="chap-num-badge">Ch. ${chap.numero}</div>
       <div class="chap-info">
-        <div class="chap-name">${chap.titre || `Chapitre ${chap.ordre}`}</div>
+        <div class="chap-name">${chap.titre || `Chapitre ${chap.numero}`}</div>
         <div class="chap-date-small">${date}${isNew ? ' · <span style="color:var(--purple2);font-weight:700;">Nouveau</span>' : ''}</div>
       </div>
       <div class="chap-read-btn">Lire →</div>
@@ -813,27 +805,6 @@ document.getElementById('btnSubscribe').addEventListener('click', async () => {
     btn.textContent = '🔔 S\'abonner';
     showToast('Désabonné', 'info');
   }
-});
-
-// ── LIKER ──
-document.getElementById('btnLike').addEventListener('click', async () => {
-  if (!currentUser) { showToast('Connecte-toi pour liker !', 'info'); return; }
-  isLiked = !isLiked;
-  const btn   = document.getElementById('btnLike');
-  const count = document.getElementById('likeCount');
-  let n = parseInt(count.textContent) || 0;
-  if (isLiked) {
-    btn.classList.add('liked');
-    n++;
-    await sb.from('mangas').update({ likes: n }).eq('id', manga.id);
-    showToast('❤️ Manga liké !', 'success');
-  } else {
-    btn.classList.remove('liked');
-    n = Math.max(0, n - 1);
-    await sb.from('mangas').update({ likes: n }).eq('id', manga.id);
-  }
-  count.textContent = n;
-  document.getElementById('statLikes').textContent = n;
 });
 
 // ── PAGINATION CHAPITRES ──

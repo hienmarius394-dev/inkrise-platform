@@ -444,8 +444,8 @@ async function loadManga() {
   document.getElementById('mangaType').textContent   = typeLabels[data.type]   || data.type   || '—';
   document.getElementById('mangaStatut').textContent = statutLabels[data.statut] || data.statut || '—';
 
-  if (data.cover_url) {
-    document.getElementById('mangaCover').innerHTML = `<img src="${data.cover_url}" alt="cover" />`;
+  if (data.couverture_url) {
+    document.getElementById('mangaCover').innerHTML = `<img src="${data.couverture_url}" alt="cover" />`;
   }
 
   // Titre de la page
@@ -462,7 +462,7 @@ async function loadChapitres() {
     .from('chapitres')
     .select('*')
     .eq('manga_id', mangaId)
-    .order('ordre', { ascending: true });
+    .order('numero', { ascending: true });
 
   document.getElementById('loadingEl').style.display = 'none';
 
@@ -494,7 +494,7 @@ function renderChapitres() {
   chapitres.forEach((chap, index) => {
     const date = new Date(chap.created_at).toLocaleDateString('fr-FR', { day:'numeric', month:'short', year:'numeric' });
     const hasTitle = chap.titre && chap.titre.trim() !== '' && !chap.titre.startsWith('Chapitre ');
-    const titleDisplay = chap.titre || `Chapitre ${chap.ordre}`;
+    const titleDisplay = chap.titre || `Chapitre ${chap.numero}`;
 
     const row = document.createElement('div');
     row.className = 'chap-row';
@@ -506,14 +506,14 @@ function renderChapitres() {
       <div class="drag-handle" title="Glisser pour réordonner">
         <span></span><span></span><span></span>
       </div>
-      <div class="chap-num">Ch. ${chap.ordre}</div>
+      <div class="chap-num">Ch. ${chap.numero}</div>
       <div class="chap-title-display ${!hasTitle ? 'no-title' : ''}">${titleDisplay}</div>
       <input class="chap-title-input" type="text" value="${chap.titre || ''}" placeholder="Titre du chapitre" maxlength="80" />
       <div class="chap-date">${date}</div>
       <div class="chap-actions">
         <div class="show-view" style="display:flex;gap:6px;">
           <button class="chap-btn edit" title="Modifier le titre" data-id="${chap.id}">✏️</button>
-          <button class="chap-btn delete" title="Supprimer" data-id="${chap.id}" data-titre="${chap.titre || 'Chapitre ' + chap.ordre}">🗑️</button>
+          <button class="chap-btn delete" title="Supprimer" data-id="${chap.id}" data-titre="${chap.titre || 'Chapitre ' + chap.numero}">🗑️</button>
         </div>
         <div class="show-edit" style="display:none;gap:6px;">
           <button class="chap-btn save" title="Sauvegarder" data-id="${chap.id}">✅</button>
@@ -555,7 +555,7 @@ function renderChapitres() {
     row.querySelector('.chap-btn.delete').addEventListener('click', () => {
       deleteTargetId = chap.id;
       document.getElementById('deleteModalSub').textContent =
-        `"${chap.titre || 'Chapitre ' + chap.ordre}" sera définitivement supprimé. Cette action est irréversible.`;
+        `"${chap.titre || 'Chapitre ' + chap.numero}" sera définitivement supprimé. Cette action est irréversible.`;
       document.getElementById('deleteModal').classList.add('open');
     });
 
@@ -572,7 +572,7 @@ function renderChapitres() {
 
 // ── SAVE TITLE ──
 async function saveChapTitle(chapId, newTitre, row) {
-  const finalTitre = newTitre || `Chapitre ${chapitres.find(c=>c.id===chapId)?.ordre || ''}`;
+  const finalTitre = newTitre || `Chapitre ${chapitres.find(c=>c.id===chapId)?.numero || ''}`;
   const { error } = await sb.from('chapitres').update({ titre: finalTitre }).eq('id', chapId);
   if (error) { showToast('Erreur de sauvegarde', 'error'); return; }
 
@@ -593,11 +593,10 @@ async function addChapitre() {
   const finalTitre = titre || `Chapitre ${nextOrdre}`;
 
   const { data, error } = await sb.from('chapitres').insert({
-    manga_id:   mangaId,
-    auteur_id:  currentUser.id,
-    titre:      finalTitre,
-    ordre:      nextOrdre,
-    created_at: new Date().toISOString(),
+      manga_id:   mangaId,
+      titre:      finalTitre,
+      numero:     nextOrdre,
+      created_at: new Date().toISOString(),
   }).select().single();
 
   if (error) { showToast('Erreur lors de l\'ajout', 'error'); return; }
@@ -635,11 +634,11 @@ async function deleteChap() {
   chapitres = chapitres.filter(c => c.id !== deleteTargetId);
 
   // Réordonner localement les numéros
-  chapitres.forEach((c, i) => { c.ordre = i + 1; });
+  chapitres.forEach((c, i) => { c.numero = i + 1; });
 
-  // Mettre à jour les ordres en base
-  await Promise.all(chapitres.map(c =>
-    sb.from('chapitres').update({ ordre: c.ordre }).eq('id', c.id)
+  // Mettre à jour les numéros en base
+    await Promise.all(chapitres.map(c =>
+      sb.from('chapitres').update({ numero: c.numero }).eq('id', c.id)
   ));
 
   deleteTargetId = null;
@@ -671,7 +670,7 @@ async function onDrop(e) {
   // Réordonner localement
   const moved = chapitres.splice(dragSrcIndex, 1)[0];
   chapitres.splice(targetIndex, 0, moved);
-  chapitres.forEach((c, i) => { c.ordre = i + 1; });
+  chapitres.forEach((c, i) => { c.numero = i + 1; });
 
   renderChapitres();
 
