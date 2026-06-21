@@ -462,6 +462,18 @@ let readMode   = 'pages'; // 'pages' | 'scroll'
 let uiVisible  = true;
 let hideTimer  = null;
 
+// ── PROGRESSION BIBLIOTHÈQUE ──
+async function saveProgress() {
+  if (!mangaId || !chapitreId) return;
+  const { data: { user } } = await sb.auth.getUser();
+  if (!user) return;
+  const totalChaps = allChaps.length;
+  await sb.from('bibliotheque').upsert(
+    { user_id: user.id, manga_id: parseInt(mangaId), chapitre: parseInt(chapitreId), total_chapitres: totalChaps },
+    { onConflict: 'user_id,manga_id' }
+  );
+}
+
 // ── INIT ──
 async function init() {
   const params = new URLSearchParams(window.location.search);
@@ -496,8 +508,11 @@ async function init() {
   document.getElementById('btnBackManga2').href = `manga.html?id=${mangaId}`;
 
   buildChapSelect();
-  buildSidebar();
-  loadChapter();
+    buildSidebar();
+    loadChapter();
+
+    // Sauvegarder la progression dans la bibliothèque
+    saveProgress();
   bindEvents();
 }
 

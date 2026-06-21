@@ -226,9 +226,22 @@
       cursor: pointer; transition: all .25s;
     }
     .btn-like:hover, .btn-like.liked {
-      border-color: var(--accent); color: var(--accent);
-      background: rgba(240,82,42,0.1);
-    }
+          border-color: var(--accent); color: var(--accent);
+          background: rgba(240,82,42,0.1);
+        }
+
+        .btn-library {
+          display: inline-flex; align-items: center; gap: 6px;
+          background: transparent; border: 1px solid var(--border);
+          color: var(--muted); padding: 12px 18px; border-radius: 12px;
+          font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight: 600;
+          cursor: pointer; transition: all .25s;
+        }
+        .btn-library:hover, .btn-library.in-library {
+          border-color: var(--purple); color: var(--purple2);
+          background: rgba(124,111,239,0.12);
+        }
+        .btn-library.in-library { background: rgba(124,111,239,0.2); }
 
     /* Bouton gérer (visible seulement par l'auteur) */
     .btn-manage {
@@ -550,7 +563,8 @@
     <div class="action-bar">
       <a href="#" class="btn-read-first" id="btnReadFirst">▶ Lire le chapitre 1</a>
       <button class="btn-subscribe" id="btnSubscribe">🔔 S'abonner</button>
-            <a href="#" class="btn-manage" id="btnManage">⚙️ Gérer</a>
+            <button class="btn-library" id="btnLibrary">📚 Bibliothèque</button>
+                  <a href="#" class="btn-manage" id="btnManage">⚙️ Gérer</a>
     </div>
 
     <div class="content-grid">
@@ -871,6 +885,37 @@ document.getElementById('btnSubscribe').addEventListener('click', async () => {
     btn.classList.remove('active');
     btn.textContent = '🔔 S\'abonner';
     showToast('Désabonné', 'info');
+  }
+});
+
+// ── BIBLIOTHÈQUE ──
+let inLibrary = false;
+document.getElementById('btnLibrary').addEventListener('click', async () => {
+  if (!currentUser) { showToast('Connecte-toi pour ajouter à ta bibliothèque !', 'info'); return; }
+  if (!manga) return;
+  const btn = document.getElementById('btnLibrary');
+  if (inLibrary) {
+    const { error } = await supabase
+      .from('bibliotheque')
+      .delete()
+      .eq('user_id', currentUser.id)
+      .eq('manga_id', manga.id);
+    if (!error) {
+      inLibrary = false;
+      btn.classList.remove('in-library');
+      btn.textContent = '📚 Bibliothèque';
+      showToast('Retiré de ta bibliothèque', 'info');
+    } else showToast('Erreur: ' + error.message, 'error');
+  } else {
+    const { error } = await supabase
+      .from('bibliotheque')
+      .upsert({ user_id: currentUser.id, manga_id: manga.id }, { onConflict: 'user_id,manga_id' });
+    if (!error) {
+      inLibrary = true;
+      btn.classList.add('in-library');
+      btn.textContent = '📚 Dans ta bibliothèque ✓';
+      showToast('✅ Ajouté à ta bibliothèque !', 'success');
+    } else showToast('Erreur: ' + error.message, 'error');
   }
 });
 

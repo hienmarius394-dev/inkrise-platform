@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ma bibliothèque — Inkrise</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root {
+  --ink: #0a0a0f; --ink-2: #13131c; --surface: #1e1e2e; --surface-2: #252538;
+  --border: rgba(255,255,255,0.07); --text: #f0f0f4; --text-2: rgba(255,255,255,0.6);
+  --text-3: rgba(255,255,255,0.35); --purple: #7c6fef; --purple-dark: #5040c8;
+  --radius: 10px; --radius-lg: 14px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--ink); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; padding: 70px 0 100px; }
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  display: flex; align-items: center; gap: 8px; padding: 10px 14px;
+  background: rgba(10,10,15,0.92); backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--border);
+}
+.univ-nav-links{display:flex;align-items:center;gap:2px;flex:1;margin:0 8px;}
+@media(max-width:680px){.univ-nav-links{display:none;}}
+.univ-nav-link{color:rgba(240,239,254,0.6);font-size:.82rem;font-weight:600;text-decoration:none;padding:5px 10px;border-radius:7px;transition:all .2s;white-space:nowrap;font-family:'DM Sans',sans-serif;}
+.univ-nav-link:hover{color:#f0effe;background:rgba(255,255,255,0.06);}
+.univ-nav-link.active{color:#f0effe;}
+.univ-search-wrap{display:flex;align-items:center;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);border-radius:18px;overflow:hidden;max-width:200px;flex-shrink:0;}
+@media(max-width:480px){.univ-search-wrap{max-width:120px;}}
+.univ-search-input{background:none;border:none;outline:none;color:#f0effe;font-size:.8rem;padding:7px 10px;width:100%;font-family:'DM Sans',sans-serif;}
+.univ-search-input::placeholder{color:rgba(240,239,254,.35);}
+.univ-search-btn{background:none;border:none;cursor:pointer;padding:6px 8px;font-size:13px;color:rgba(240,239,254,.5);flex-shrink:0;transition:color .2s;}
+.univ-search-btn:hover{color:#7c6fef;}
+.nav-hamburger{width:34px;height:34px;border-radius:8px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;cursor:pointer;color:#f0f0f4;font-size:1rem;transition:all .2s;flex-shrink:0;}
+.nav-hamburger:hover{background:rgba(255,255,255,0.13);}
+
+/* DRAWER */
+.drawer-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:150;backdrop-filter:blur(4px);}
+.drawer-overlay.open{display:block;}
+.drawer{position:fixed;top:0;right:0;width:280px;height:100%;background:#13131c;z-index:151;transform:translateX(100%);transition:transform 0.28s cubic-bezier(0.4,0,0.2,1);overflow-y:auto;box-shadow:-4px 0 32px rgba(0,0,0,0.4);border-left:1px solid rgba(255,255,255,0.07);}
+.drawer.open{transform:translateX(0);}
+.drawer-header{display:flex;align-items:center;justify-content:space-between;padding:16px;border-bottom:1px solid rgba(255,255,255,0.07);}
+.drawer-logo{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:800;text-decoration:none;color:#f0f0f4;}
+.drawer-logo span{color:#7c6fef;}
+.drawer-close{width:30px;height:30px;border-radius:7px;background:rgba(255,255,255,0.07);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.82rem;color:rgba(255,255,255,0.6);}
+.drawer-section-title{font-size:10px;font-weight:700;color:rgba(255,255,255,0.3);letter-spacing:1.5px;text-transform:uppercase;padding:14px 16px 5px;}
+.drawer-item{display:flex;align-items:center;gap:12px;padding:10px 12px;margin:2px 8px;text-decoration:none;color:rgba(240,240,244,0.85);font-weight:600;font-size:.88rem;cursor:pointer;transition:background .15s;border:none;background:none;width:calc(100% - 16px);text-align:left;border-radius:10px;font-family:inherit;}
+.drawer-item:hover{background:rgba(255,255,255,0.06);}
+.drawer-item-icon{width:36px;height:36px;border-radius:9px;background:rgba(255,255,255,0.07);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;}
+.drawer-divider{height:1px;background:rgba(255,255,255,0.07);margin:8px 16px;}
+
+/* BOTTOM NAV */
+.univ-bnav{position:fixed;bottom:0;left:0;right:0;z-index:100;background:rgba(10,10,15,.97);border-top:1px solid rgba(255,255,255,.07);display:flex;align-items:center;justify-content:space-around;padding:8px 0 16px;backdrop-filter:blur(14px);}
+.univ-bnav-item{display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none;color:rgba(240,239,254,.4);padding:0 8px;transition:color .2s;border:none;background:none;cursor:pointer;}
+.univ-bnav-item:hover,.univ-bnav-item.active{color:rgba(240,239,254,.9);}
+.univ-bnav-icon{font-size:20px;}
+.univ-bnav-label{font-size:.6rem;font-weight:800;font-family:'DM Sans',sans-serif;}
+.univ-bnav-search{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#7c6fef,#5040c8);border:none;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;margin-top:-18px;box-shadow:0 4px 18px rgba(124,111,239,.5);transition:transform .2s;flex-shrink:0;}
+.univ-bnav-search:hover{transform:scale(1.08);}
+
+/* CONTENU */
+.page-header{padding:0 14px 16px;}
+.page-title{font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:800;}
+.page-sub{color:var(--text-3);font-size:.82rem;margin-top:4px;}
+
+.library-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;text-align:center;}
+.library-empty-icon{font-size:48px;margin-bottom:16px;opacity:0.3;}
+.library-empty-title{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:700;margin-bottom:6px;}
+.library-empty-text{color:var(--text-3);font-size:.85rem;max-width:280px;line-height:1.5;margin-bottom:20px;}
+.btn-primary{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,#7c6fef,#5040c8);color:#fff;font-size:.85rem;font-weight:700;padding:10px 20px;border-radius:10px;text-decoration:none;transition:transform .2s;}
+.btn-primary:hover{transform:scale(1.03);}
+
+.library-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;padding:0 14px 20px;}
+.lib-card{background:var(--surface);border-radius:var(--radius-lg);overflow:hidden;cursor:pointer;text-decoration:none;color:inherit;transition:transform .2s;display:block;position:relative;}
+.lib-card:hover{transform:translateY(-3px);}
+.lib-cover{width:100%;aspect-ratio:3/4;background:var(--surface-2);display:flex;align-items:center;justify-content:center;font-size:2.5rem;position:relative;overflow:hidden;}
+.lib-cover img{width:100%;height:100%;object-fit:cover;}
+.lib-cover-fallback{font-size:2rem;opacity:0.3;}
+.lib-info{padding:10px 10px 12px;}
+.lib-title{font-size:.85rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.lib-meta{font-size:.72rem;color:var(--text-3);margin-top:3px;}
+.lib-continue{position:absolute;bottom:48px;left:8px;right:8px;background:linear-gradient(135deg,#7c6fef,#5040c8);color:#fff;font-size:.72rem;font-weight:700;padding:6px 10px;border-radius:7px;text-align:center;border:none;cursor:pointer;transition:transform .2s;text-decoration:none;display:none;}
+.lib-card:hover .lib-continue{display:block;}
+.lib-continue:hover{transform:scale(1.03);}
+.lib-new-badge{position:absolute;top:6px;left:6px;background:var(--purple);color:#fff;font-size:9px;font-weight:800;padding:3px 7px;border-radius:5px;}
+
+.loading{text-align:center;padding:40px;color:var(--text-3);font-size:.85rem;}
+.error-state{text-align:center;padding:40px;color:#ff6b6b;font-size:.85rem;}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;text-decoration:none;color:#f0f0f4;white-space:nowrap;flex-shrink:0;">INKRISE</a>
+  <div class="univ-nav-links">
+    <a href="index.html" class="univ-nav-link">Accueil</a>
+    <a href="manga.html" class="univ-nav-link">Mangas</a>
+    <a href="bibliotheque.html" class="univ-nav-link active">Bibliothèque</a>
+    <a href="#" class="univ-nav-link">Tutoriels</a>
+    <a href="#" class="univ-nav-link" onclick="openModal();return false;">Premium</a>
+  </div>
+  <div class="univ-search-wrap">
+    <input type="text" id="navSearchInput" class="univ-search-input" placeholder="Rechercher&hellip;" onkeydown="if(event.key==='Enter')doSearch()" />
+    <button class="univ-search-btn" onclick="doSearch()">🔍</button>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;">
+    <a href="auth.html" id="btnConnexion" style="display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#7c6fef,#5040c8);color:#fff;font-size:.8rem;font-weight:700;padding:7px 14px;border-radius:9px;text-decoration:none;flex-shrink:0;transition:transform .2s;font-family:'DM Sans',sans-serif;">Connexion</a>
+    <a href="profil.html" id="avatarBtn" style="display:none;width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.1);align-items:center;justify-content:center;text-decoration:none;font-size:1rem;">🧑‍🎨</a>
+    <button class="nav-hamburger" onclick="openDrawer()">☰</button>
+  </div>
+</nav>
+
+<!-- DRAWER -->
+<div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
+<div class="drawer" id="drawer">
+  <div class="drawer-header">
+    <a href="index.html" class="drawer-logo">INK<span>RISE</span></a>
+    <button class="drawer-close" onclick="closeDrawer()">✕</button>
+  </div>
+  <div class="drawer-section-title">Explorer</div>
+  <a href="index.html" class="drawer-item"><div class="drawer-item-icon" style="background:#fff3ee;">🏠</div><span class="drawer-item-label">Accueil</span></a>
+  <a href="manga.html" class="drawer-item"><div class="drawer-item-icon" style="background:#f0effe;">📖</div><span class="drawer-item-label">Manga & BD</span></a>
+  <a href="#" class="drawer-item"><div class="drawer-item-icon" style="background:#edfdf8;">🎓</div><span class="drawer-item-label">Tutoriels</span><span class="drawer-item-badge" style="background:#edfdf8;color:#00c9a7;">GRATUIT</span></a>
+  <a href="#" class="drawer-item" onclick="openModal();closeDrawer();"><div class="drawer-item-icon" style="background:#fff3ee;">💎</div><span class="drawer-item-label">Espace Premium</span><span class="drawer-item-badge" style="background:#fff3ee;color:var(--orange);">PRO</span></a>
+  <a href="#" class="drawer-item"><div class="drawer-item-icon" style="background:#f0effe;">👥</div><span class="drawer-item-label">Communauté Créateur</span></a>
+  <div class="drawer-divider"></div>
+  <div class="drawer-section-title">Mon compte</div>
+  <a href="profil.html" class="drawer-item" id="drawerProfil" style="display:none;"><div class="drawer-item-icon" style="background:#f4f4ef;">🧑‍🎨</div><span class="drawer-item-label">Mon profil</span></a>
+  <a href="bibliotheque.html" class="drawer-item"><div class="drawer-item-icon" style="background:#f4f4ef;">📚</div><span class="drawer-item-label">Ma bibliothèque</span></a>
+  <a href="upload-manga.html" class="drawer-item" id="drawerPublier" style="display:none;"><div class="drawer-item-icon" style="background:#fff3ee;">📤</div><span class="drawer-item-label">Publier un manga</span></a>
+  <a href="auth.html" class="drawer-item" id="drawerConnexion"><div class="drawer-item-icon" style="background:#f4f4ef;">🔑</div><span class="drawer-item-label">Connexion / Inscription</span></a>
+  <button class="drawer-item" id="drawerLogout" style="display:none;" onclick="logout()"><div class="drawer-item-icon" style="background:#f4f4ef;">🚪</div><span class="drawer-item-label">Déconnexion</span></button>
+</div>
+
+<!-- CONTENU -->
+<div class="page-header">
+  <div class="page-title">📚 Ma bibliothèque</div>
+  <div class="page-sub" id="libSub">Tes mangas sauvegardés</div>
+</div>
+
+<div id="libraryContent">
+  <div class="loading" id="libLoading">Chargement de ta bibliothèque…</div>
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="univ-bnav">
+  <a href="index.html" class="univ-bnav-item"><span class="univ-bnav-icon">🏠</span><span class="univ-bnav-label">Accueil</span></a>
+  <a href="manga.html" class="univ-bnav-item"><span class="univ-bnav-icon">📖</span><span class="univ-bnav-label">Manga</span></a>
+  <button class="univ-bnav-search" onclick="focusSearch()">🔍</button>
+  <a href="bibliotheque.html" class="univ-bnav-item active"><span class="univ-bnav-icon">📚</span><span class="univ-bnav-label">Bibliothèque</span></a>
+  <a href="#" class="univ-bnav-item"><span class="univ-bnav-icon">👥</span><span class="univ-bnav-label">Compte</span></a>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://bsdcpwtimsgxcnaamwip.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJzZGNwd3RpbXNneGNuYWFtd2lwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY0MDQ3MzMsImV4cCI6MjA2MTk4MDczM30.kRGfc5j2MHqNRZTl43t5cI11zBIPkCSCzBNFbqyTvkk';
+const supabase = SUPABASE_URL && SUPABASE_ANON_KEY ? supabaseJs.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+
+function doSearch(){
+  const q=document.getElementById('navSearchInput');
+  if(q&&q.value.trim())window.location.href='manga.html?q='+encodeURIComponent(q.value.trim());
+  else if(q)q.focus();
+}
+function focusSearch(){
+  const i=document.getElementById('navSearchInput');
+  if(i){i.focus();window.scrollTo({top:0,behavior:'smooth'});}
+}
+function openDrawer(){document.getElementById('drawer').classList.add('open');document.getElementById('drawerOverlay').classList.add('open');}
+function closeDrawer(){document.getElementById('drawer').classList.remove('open');document.getElementById('drawerOverlay').classList.remove('open');}
+function openModal(){alert('Premium - bientôt disponible !');}
+
+async function loadLibrary(){
+  const content = document.getElementById('libraryContent');
+  
+  if(!supabase){
+    content.innerHTML = '<div class="error-state">Erreur de configuration</div>';
+    return;
+  }
+
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+  
+  if(!user){
+    content.innerHTML = `
+      <div class="library-empty">
+        <div class="library-empty-icon">🔒</div>
+        <div class="library-empty-title">Connecte-toi</div>
+        <div class="library-empty-text">Connecte-toi à ton compte pour retrouver ta bibliothèque et reprendre ta lecture.</div>
+        <a href="auth.html" class="btn-primary">Se connecter</a>
+      </div>`;
+    updateAuthUI(null);
+    return;
+  }
+
+  updateAuthUI(user);
+
+  const { data: library, error } = await supabase
+    .from('bibliotheque')
+    .select('manga_id, chapitre, page, total_chapitres, added_at, mangas:titre, mangas:couverture_url, mangas:auteur_nom')
+    .eq('user_id', user.id)
+    .order('added_at', { ascending: false });
+
+  if(error){
+    content.innerHTML = `<div class="error-state">Erreur: ${error.message}</div>`;
+    return;
+  }
+
+  document.getElementById('libSub').textContent = library.length + ' manga' + (library.length > 1 ? 's' : '') + ' dans ta bibliothèque';
+
+  if(!library || library.length === 0){
+    content.innerHTML = `
+      <div class="library-empty">
+        <div class="library-empty-icon">📚</div>
+        <div class="library-empty-title">Ta bibliothèque est vide</div>
+        <div class="library-empty-text">Ajoute des mangas à ta bibliothèque pour les retrouver ici et reprendre ta lecture où tu t'es arrêté.</div>
+        <a href="manga.html" class="btn-primary">Parcourir les mangas</a>
+      </div>`;
+    return;
+  }
+
+  let html = '<div class="library-grid">';
+  for(const item of library){
+    const manga = item.mangas || {};
+    const titre = manga.titre || 'Manga #' + item.manga_id;
+    const cover = manga.couverture_url || '';
+    const auteur = manga.auteur_nom || '';
+    const chapitre = item.chapitre || 0;
+    const totalChaps = item.total_chapitres || '?';
+    const progress = chapitre > 0 ? `Ch. ${chapitre}/${totalChaps}` : 'Ajouté';
+    const continueUrl = chapitre > 0 ? `lecteur.html?id=${item.manga_id}&chapitre=${chapitre}` : `manga.html?id=${item.manga_id}`;
+
+    html += `
+      <div class="lib-card" onclick="window.location.href='${continueUrl}'">
+        <div class="lib-cover">
+          ${cover ? `<img src="${cover}" alt="${titre}" />` : `<span class="lib-cover-fallback">📖</span>`}
+        </div>
+        ${chapitre > 0 ? `<a href="${continueUrl}" class="lib-continue">▶ Reprendre (Ch.${chapitre})</a>` : '<div class="lib-new-badge">NOUVEAU</div>'}
+        <div class="lib-info">
+          <div class="lib-title">${titre}</div>
+          <div class="lib-meta">${auteur} · ${progress}</div>
+        </div>
+      </div>`;
+  }
+  html += '</div>';
+  content.innerHTML = html;
+}
+
+function updateAuthUI(user){
+  const btn = document.getElementById('btnConnexion');
+  const avatar = document.getElementById('avatarBtn');
+  const profil = document.getElementById('drawerProfil');
+  const publier = document.getElementById('drawerPublier');
+  const connexion = document.getElementById('drawerConnexion');
+  const logout = document.getElementById('drawerLogout');
+  
+  if(user){
+    if(btn) btn.style.display = 'none';
+    if(avatar) { avatar.style.display = 'flex'; }
+    if(profil) profil.style.display = 'flex';
+    if(publier) publier.style.display = 'flex';
+    if(connexion) connexion.style.display = 'none';
+    if(logout) logout.style.display = 'flex';
+  } else {
+    if(btn) btn.style.display = 'inline-flex';
+    if(avatar) avatar.style.display = 'none';
+    if(profil) profil.style.display = 'none';
+    if(publier) publier.style.display = 'none';
+    if(connexion) connexion.style.display = 'flex';
+    if(logout) logout.style.display = 'none';
+  }
+}
+
+async function logout(){
+  if(supabase) await supabase.auth.signOut();
+  location.reload();
+}
+
+loadLibrary();
+</script>
+</body>
+</html>
