@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mon Espace Créateur — InkRise</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root {
+      --bg: #0b0b10;
+      --surface: #13131c;
+      --surface2: #1a1a27;
+      --purple: #7c6fef;
+      --purple-light: #a99ef5;
+      --accent: #f0522a;
+      --text: #e8e8f0;
+      --text-muted: #8888aa;
+      --border: #2a2a3d;
+      --success: #3ecf8e;
+      --warning: #f5a623;
+      --radius: 12px;
+      --radius-sm: 8px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      min-height: 100vh;
+      padding-bottom: 80px;
+    }
+
+    /* ── HEADER ── */
+    .univ-header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(11, 11, 16, 0.95);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 20px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .univ-header .logo {
+      font-size: 1.4rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--purple), var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-decoration: none;
+    }
+
+    .univ-header nav {
+      display: flex;
+      gap: 20px;
+      align-items: center;
+    }
+
+    .univ-header nav a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.875rem;
+      transition: color 0.2s;
+    }
+
+    .univ-header nav a:hover { color: var(--text); }
+
+    .header-avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--purple), var(--accent));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: white;
+      cursor: pointer;
+      text-decoration: none;
+      overflow: hidden;
+    }
+
+    .header-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* ── BOTTOM NAV ── */
+    .univ-bnav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      background: rgba(19, 19, 28, 0.98);
+      backdrop-filter: blur(12px);
+      border-top: 1px solid var(--border);
+      display: flex;
+      height: 60px;
+    }
+
+    .univ-bnav a {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      text-decoration: none;
+      color: var(--text-muted);
+      font-size: 0.65rem;
+      transition: color 0.2s;
+    }
+
+    .univ-bnav a.active { color: var(--purple); }
+    .univ-bnav a:hover { color: var(--text); }
+
+    .univ-bnav .bnav-icon { font-size: 1.2rem; }
+
+    /* ── MAIN ── */
+    .main {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px 16px;
+    }
+
+    /* ── BIENVENUE ── */
+    .welcome-section {
+      margin-bottom: 28px;
+    }
+
+    .welcome-greeting {
+      font-size: 1.6rem;
+      font-weight: 800;
+      margin-bottom: 10px;
+    }
+
+    .welcome-badges {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+
+    .badge-creator {
+      background: rgba(124, 111, 239, 0.2);
+      color: var(--purple-light);
+      border: 1px solid rgba(124, 111, 239, 0.4);
+    }
+
+    .badge-premium {
+      background: rgba(240, 82, 42, 0.15);
+      color: #f5a623;
+      border: 1px solid rgba(245, 166, 35, 0.4);
+    }
+
+    /* ── CREATOR NAV ── */
+    .creator-nav {
+      display: flex;
+      gap: 10px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      margin-bottom: 32px;
+      scrollbar-width: none;
+    }
+
+    .creator-nav::-webkit-scrollbar { display: none; }
+
+    .creator-nav-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      padding: 14px 18px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      text-decoration: none;
+      font-size: 0.75rem;
+      font-weight: 600;
+      white-space: nowrap;
+      cursor: pointer;
+      transition: all 0.2s;
+      min-width: 90px;
+    }
+
+    .creator-nav-btn:hover {
+      background: var(--surface2);
+      border-color: var(--purple);
+      color: var(--purple-light);
+    }
+
+    .creator-nav-btn .cnav-icon { font-size: 1.4rem; }
+
+    /* ── SECTIONS ── */
+    .section {
+      margin-bottom: 36px;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .section-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-link {
+      font-size: 0.8rem;
+      color: var(--purple);
+      text-decoration: none;
+    }
+
+    .section-link:hover { text-decoration: underline; }
+
+    /* ── STATS ── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+
+    @media (min-width: 600px) {
+      .stats-grid { grid-template-columns: repeat(6, 1fr); }
+    }
+
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 10px;
+      text-align: center;
+    }
+
+    .stat-icon { font-size: 1.4rem; margin-bottom: 6px; }
+
+    .stat-value {
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: var(--purple-light);
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+
+    .stat-label {
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    /* ── MANGA GRID ── */
+    .manga-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 14px;
+    }
+
+    .manga-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+
+    .manga-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--purple);
+    }
+
+    .manga-cover {
+      width: 100%;
+      aspect-ratio: 2/3;
+      background: var(--surface2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.5rem;
+      overflow: hidden;
+    }
+
+    .manga-cover img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .manga-info {
+      padding: 10px;
+    }
+
+    .manga-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+
+    .manga-meta {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+
+    .manga-tag {
+      font-size: 0.65rem;
+      padding: 2px 7px;
+      border-radius: 4px;
+      background: var(--surface2);
+      color: var(--text-muted);
+    }
+
+    .manga-tag.statut-publié { color: var(--success); }
+    .manga-tag.statut-en-cours { color: var(--warning); }
+
+    .manga-numbers {
+      display: flex;
+      gap: 10px;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+    }
+
+    .manga-actions {
+      display: flex;
+      gap: 6px;
+    }
+
+    .btn-sm {
+      flex: 1;
+      padding: 6px 4px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: var(--surface2);
+      color: var(--text);
+      font-size: 0.7rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+      transition: all 0.2s;
+    }
+
+    .btn-sm:hover {
+      border-color: var(--purple);
+      color: var(--purple-light);
+    }
+
+    .btn-sm.primary {
+      background: rgba(124, 111, 239, 0.15);
+      border-color: rgba(124, 111, 239, 0.4);
+      color: var(--purple-light);
+    }
+
+    /* ── EMPTY STATE ── */
+    .empty-state {
+      text-align: center;
+      padding: 48px 24px;
+      background: var(--surface);
+      border: 1px dashed var(--border);
+      border-radius: var(--radius);
+    }
+
+    .empty-icon { font-size: 3rem; margin-bottom: 12px; }
+
+    .empty-title {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .empty-text {
+      color: var(--text-muted);
+      font-size: 0.875rem;
+      margin-bottom: 16px;
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 20px;
+      background: linear-gradient(135deg, var(--purple), #5a4fd6);
+      color: white;
+      text-decoration: none;
+      border-radius: var(--radius-sm);
+      font-weight: 700;
+      font-size: 0.875rem;
+      transition: opacity 0.2s;
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn-primary:hover { opacity: 0.85; }
+
+    /* ── NOTIFICATIONS ── */
+    .notif-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .notif-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 12px 14px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      border-left: 3px solid var(--purple);
+    }
+
+    .notif-type-icon { font-size: 1.1rem; margin-top: 1px; }
+
+    .notif-message {
+      font-size: 0.85rem;
+      line-height: 1.4;
+      flex: 1;
+    }
+
+    .notif-time {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    .notif-empty {
+      text-align: center;
+      padding: 24px;
+      color: var(--text-muted);
+      font-size: 0.875rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+    }
+
+    /* ── QUICK ACTIONS ── */
+    .quick-actions {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 12px;
+    }
+
+    .quick-action {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      padding: 20px 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      text-decoration: none;
+      color: var(--text);
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .quick-action:not(.disabled):hover {
+      background: var(--surface2);
+      border-color: var(--purple);
+      color: var(--purple-light);
+    }
+
+    .quick-action.disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    .quick-action .qa-icon { font-size: 1.8rem; }
+
+    .qa-soon {
+      font-size: 0.6rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* ── LOADER ── */
+    .loader {
+      display: flex;
+      justify-content: center;
+      padding: 40px;
+    }
+
+    .spinner {
+      width: 32px;
+      height: 32px;
+      border: 3px solid var(--border);
+      border-top-color: var(--purple);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── AUTH GUARD ── */
+    .auth-guard {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 60vh;
+      text-align: center;
+      padding: 24px;
+    }
+
+    .auth-guard h2 { margin-bottom: 8px; font-size: 1.2rem; }
+    .auth-guard p { color: var(--text-muted); font-size: 0.875rem; margin-bottom: 20px; }
+
+    #loading-screen, #auth-screen, #creator-check-screen { display: none; }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="univ-header">
+  <a href="index.html" class="logo">InkRise</a>
+  <nav>
+    <a href="index.html">Accueil</a>
+    <a href="mangas.html">Mangas</a>
+    <a href="bibliotheque.html">Biblio</a>
+    <a href="profil.html" class="header-avatar" id="header-avatar-link">
+      <span id="header-avatar-initials">?</span>
+    </a>
+  </nav>
+</header>
+
+<!-- MAIN CONTENT -->
+<main class="main">
+
+  <!-- Loading -->
+  <div id="loading-screen" class="loader" style="display:flex;">
+    <div class="spinner"></div>
+  </div>
+
+  <!-- Not logged in -->
+  <div id="auth-screen" class="auth-guard">
+    <div style="font-size:3rem;margin-bottom:16px;">🔒</div>
+    <h2>Connexion requise</h2>
+    <p>Connecte-toi pour accéder à ton espace créateur.</p>
+    <a href="connexion.html" class="btn-primary">Se connecter</a>
+  </div>
+
+  <!-- Not a creator -->
+  <div id="creator-check-screen" class="auth-guard">
+    <div style="font-size:3rem;margin-bottom:16px;">🎨</div>
+    <h2>Tu n'es pas encore créateur</h2>
+    <p>Active ton compte créateur pour publier des mangas et accéder à cet espace.</p>
+    <a href="profil.html" class="btn-primary">Activer mon espace créateur</a>
+  </div>
+
+  <!-- Creator dashboard -->
+  <div id="dashboard" style="display:none;">
+
+    <!-- Bienvenue -->
+    <section class="welcome-section">
+      <div class="welcome-greeting" id="greeting">Bonjour 👋</div>
+      <div class="welcome-badges" id="badges"></div>
+    </section>
+
+    <!-- Creator Nav -->
+    <div class="creator-nav" id="creator-nav">
+      <a href="upload-manga.html" class="creator-nav-btn">
+        <span class="cnav-icon">📝</span>
+        Publier un manga
+      </a>
+      <button class="creator-nav-btn" onclick="scrollToSection('section-mangas')">
+        <span class="cnav-icon">📚</span>
+        Mes mangas
+      </button>
+      <a href="premium.html" class="creator-nav-btn">
+        <span class="cnav-icon">🎓</span>
+        Mes formations
+      </a>
+      <button class="creator-nav-btn" onclick="scrollToSection('section-stats')">
+        <span class="cnav-icon">📊</span>
+        Statistiques
+      </button>
+      <a href="#" class="creator-nav-btn" id="profil-public-link">
+        <span class="cnav-icon">👤</span>
+        Mon profil public
+      </a>
+    </div>
+
+    <!-- Stats -->
+    <section class="section" id="section-stats">
+      <div class="section-header">
+        <h2 class="section-title">📊 Statistiques rapides</h2>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon">📖</div>
+          <div class="stat-value" id="stat-mangas">—</div>
+          <div class="stat-label">Mangas</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">📄</div>
+          <div class="stat-value" id="stat-chapitres">—</div>
+          <div class="stat-label">Chapitres</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">👁️</div>
+          <div class="stat-value" id="stat-vues">—</div>
+          <div class="stat-label">Vues</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">👥</div>
+          <div class="stat-value" id="stat-abonnes">—</div>
+          <div class="stat-label">Abonnés</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🎓</div>
+          <div class="stat-value" id="stat-formations">—</div>
+          <div class="stat-label">Formations</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">💬</div>
+          <div class="stat-value" id="stat-notifs">—</div>
+          <div class="stat-label">Non lues</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Mes mangas -->
+    <section class="section" id="section-mangas">
+      <div class="section-header">
+        <h2 class="section-title">📚 Mes mangas</h2>
+        <a href="upload-manga.html" class="section-link">+ Nouveau</a>
+      </div>
+      <div id="mangas-container">
+        <div class="loader"><div class="spinner"></div></div>
+      </div>
+    </section>
+
+    <!-- Notifications -->
+    <section class="section" id="section-notifs">
+      <div class="section-header">
+        <h2 class="section-title">🔔 Notifications récentes</h2>
+        <a href="notifications.html" class="section-link">Tout voir</a>
+      </div>
+      <div id="notifs-container">
+        <div class="loader"><div class="spinner"></div></div>
+      </div>
+    </section>
+
+    <!-- Actions rapides -->
+    <section class="section">
+      <div class="section-header">
+        <h2 class="section-title">⚡ Actions rapides</h2>
+      </div>
+      <div class="quick-actions">
+        <a href="gestion-chapitres.html" class="quick-action">
+          <span class="qa-icon">✍️</span>
+          Nouveau chapitre
+        </a>
+        <a href="upload-manga.html" class="quick-action">
+          <span class="qa-icon">🆕</span>
+          Nouveau manga
+        </a>
+        <div class="quick-action disabled">
+          <span class="qa-icon">📢</span>
+          Poster dans la communauté
+          <span class="qa-soon">Bientôt</span>
+        </div>
+      </div>
+    </section>
+
+  </div><!-- /dashboard -->
+</main>
+
+<!-- BOTTOM NAV -->
+<nav class="univ-bnav">
+  <a href="index.html">
+    <span class="bnav-icon">🏠</span>
+    Accueil
+  </a>
+  <a href="mangas.html">
+    <span class="bnav-icon">📚</span>
+    Mangas
+  </a>
+  <a href="bibliotheque.html">
+    <span class="bnav-icon">🔖</span>
+    Biblio
+  </a>
+  <a href="tutoriels.html">
+    <span class="bnav-icon">🎓</span>
+    Tutos
+  </a>
+  <a href="profil.html" class="active">
+    <span class="bnav-icon">👤</span>
+    Profil
+  </a>
+</nav>
+
+<script>
+  const SUPABASE_URL = 'https://bsdcpwtimsgxcnaamwip.supabase.co';
+  const SUPABASE_KEY = 'eyJhbG...fb44';
+  const { createClient } = supabase;
+  const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  function scrollToSection(id) {
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function formatNumber(n) {
+    if (n == null) return '0';
+    if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
+    if (n >= 1000) return (n / 1000).toFixed(1) + 'k';
+    return String(n);
+  }
+
+  function timeAgo(dateStr) {
+    const diff = Date.now() - new Date(dateStr).getTime();
+    const mins = Math.floor(diff / 60000);
+    if (mins < 1) return 'À l\'instant';
+    if (mins < 60) return `Il y a ${mins} min`;
+    const hrs = Math.floor(mins / 60);
+    if (hrs < 24) return `Il y a ${hrs}h`;
+    const days = Math.floor(hrs / 24);
+    return `Il y a ${days}j`;
+  }
+
+  function notifTypeIcon(type) {
+    const icons = {
+      follow: '👥', like: '❤️', comment: '💬', chapter: '📄',
+      purchase: '💰', system: 'ℹ️', mention: '📢'
+    };
+    return icons[type] || '🔔';
+  }
+
+  function renderMangas(mangas, chapitresCount) {
+    const container = document.getElementById('mangas-container');
+    if (!mangas || mangas.length === 0) {
+      container.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-icon">📖</div>
+          <div class="empty-title">Aucun manga publié</div>
+          <div class="empty-text">Tu n'as pas encore publié de manga.<br>Lance-toi et partage ton univers !</div>
+          <a href="upload-manga.html" class="btn-primary">✨ Publier mon premier manga</a>
+        </div>`;
+      return;
+    }
+
+    const cards = mangas.map(m => {
+      const chapCount = chapitresCount[m.id] || 0;
+      const coverHtml = m.couverture_url
+        ? `<img src="${m.couverture_url}" alt="${m.titre}" loading="lazy" onerror="this.parentElement.innerHTML='📖'">`
+        : '📖';
+      const statutClass = m.statut === 'Publié' ? 'statut-publié' : 'statut-en-cours';
+
+      return `
+        <div class="manga-card">
+          <div class="manga-cover">${coverHtml}</div>
+          <div class="manga-info">
+            <div class="manga-title">${m.titre || 'Sans titre'}</div>
+            <div class="manga-meta">
+              <span class="manga-tag">${m.type || 'Manga'}</span>
+              <span class="manga-tag ${statutClass}">${m.statut || 'Brouillon'}</span>
+            </div>
+            <div class="manga-numbers">
+              <span>👁️ ${formatNumber(m.vues || 0)}</span>
+              <span>📄 ${chapCount} ch.</span>
+            </div>
+            <div class="manga-actions">
+              <a href="gestion-chapitres.html?id=${m.id}" class="btn-sm primary">📂 Gérer</a>
+              <a href="upload-manga.html?edit=${m.id}" class="btn-sm">✏️ Modifier</a>
+            </div>
+          </div>
+        </div>`;
+    });
+
+    container.innerHTML = `<div class="manga-grid">${cards.join('')}</div>`;
+  }
+
+  function renderNotifs(notifs) {
+    const container = document.getElementById('notifs-container');
+    if (!notifs || notifs.length === 0) {
+      container.innerHTML = `<div class="notif-empty">✅ Aucune notification non lue</div>`;
+      return;
+    }
+
+    const items = notifs.map(n => `
+      <div class="notif-item">
+        <span class="notif-type-icon">${notifTypeIcon(n.type)}</span>
+        <span class="notif-message">${n.message || 'Nouvelle notification'}</span>
+        <span class="notif-time">${timeAgo(n.created_at)}</span>
+      </div>`);
+
+    container.innerHTML = `<div class="notif-list">${items.join('')}</div>`;
+  }
+
+  async function init() {
+    const loadingScreen = document.getElementById('loading-screen');
+    const authScreen = document.getElementById('auth-screen');
+    const creatorScreen = document.getElementById('creator-check-screen');
+    const dashboard = document.getElementById('dashboard');
+
+    // Auth check
+    const { data: { session } } = await db.auth.getSession();
+    if (!session) {
+      loadingScreen.style.display = 'none';
+      authScreen.style.display = 'flex';
+      return;
+    }
+
+    const userId = session.user.id;
+
+    // Profile check
+    const { data: profile } = await db
+      .from('profiles')
+      .select('username, bio, avatar_url, is_creator, espace_premium')
+      .eq('id', userId)
+      .single();
+
+    if (!profile || !profile.is_creator) {
+      loadingScreen.style.display = 'none';
+      creatorScreen.style.display = 'flex';
+      return;
+    }
+
+    // Show dashboard
+    loadingScreen.style.display = 'none';
+    dashboard.style.display = 'block';
+
+    // Greeting + badges
+    const username = profile.username || 'Créateur';
+    document.getElementById('greeting').textContent = `Bonjour, ${username} 👋`;
+
+    const badgesEl = document.getElementById('badges');
+    badgesEl.innerHTML = `<span class="badge badge-creator">✍️ Créateur</span>`;
+    if (profile.espace_premium) {
+      badgesEl.innerHTML += `<span class="badge badge-premium">💎 Premium</span>`;
+    }
+
+    // Header avatar
+    const avatarLink = document.getElementById('header-avatar-link');
+    const initialsEl = document.getElementById('header-avatar-initials');
+    if (profile.avatar_url) {
+      initialsEl.innerHTML = `<img src="${profile.avatar_url}" alt="avatar" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+    } else {
+      initialsEl.textContent = username.charAt(0).toUpperCase();
+    }
+
+    // Profil public link
+    document.getElementById('profil-public-link').href = `auteur.html?id=${userId}`;
+
+    // Fetch mangas
+    const { data: mangas } = await db
+      .from('mangas')
+      .select('id, titre, couverture_url, type, statut, vues')
+      .eq('auteur_id', userId)
+      .order('created_at', { ascending: false });
+
+    // Fetch chapitres count per manga
+    let chapitresCount = {};
+    let totalChapitres = 0;
+    if (mangas && mangas.length > 0) {
+      const mangaIds = mangas.map(m => m.id);
+      const { data: chapitres } = await db
+        .from('chapitres')
+        .select('manga_id')
+        .in('manga_id', mangaIds);
+
+      if (chapitres) {
+        totalChapitres = chapitres.length;
+        chapitres.forEach(c => {
+          chapitresCount[c.manga_id] = (chapitresCount[c.manga_id] || 0) + 1;
+        });
+      }
+    }
+
+    renderMangas(mangas, chapitresCount);
+
+    // Fetch stats in parallel
+    const [followsRes, formationsRes, notifsRes] = await Promise.all([
+      db.from('follows').select('id', { count: 'exact', head: true }).eq('followed_id', userId),
+      db.from('packs_tutoriels').select('id', { count: 'exact', head: true }).eq('auteur_id', userId),
+      db.from('notifications').select('id, type, message, created_at').eq('user_id', userId).eq('lu', false).order('created_at', { ascending: false }).limit(5)
+    ]);
+
+    const totalVues = mangas ? mangas.reduce((acc, m) => acc + (m.vues || 0), 0) : 0;
+    const unreadCount = notifsRes.data ? notifsRes.data.length : 0;
+
+    document.getElementById('stat-mangas').textContent = formatNumber(mangas ? mangas.length : 0);
+    document.getElementById('stat-chapitres').textContent = formatNumber(totalChapitres);
+    document.getElementById('stat-vues').textContent = formatNumber(totalVues);
+    document.getElementById('stat-abonnes').textContent = formatNumber(followsRes.count || 0);
+    document.getElementById('stat-formations').textContent = formatNumber(formationsRes.count || 0);
+    document.getElementById('stat-notifs').textContent = formatNumber(unreadCount);
+
+    renderNotifs(notifsRes.data);
+  }
+
+  init().catch(err => {
+    console.error('Erreur init:', err);
+    document.getElementById('loading-screen').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+  });
+</script>
+</body>
+</html>
