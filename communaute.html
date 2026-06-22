@@ -25,7 +25,7 @@
 body {
   background: var(--bg);
   color: var(--text);
-  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'DM Sans', sans-serif;
   min-height: 100vh;
   padding-bottom: 80px;
   line-height: 1.5;
@@ -35,21 +35,21 @@ img { max-width: 100%; display: block; }
 
 /* ── STANDARD NAV (universel) ── */
 .univ-nav { position: sticky; top: 0; z-index: 100; background: rgba(11,11,16,0.96); backdrop-filter: blur(14px); border-bottom: 1px solid rgba(255,255,255,0.08); padding: 0 16px; height: 58px; display: flex; align-items: center; gap: 8px; }
-.univ-nav-logo { font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; font-size: 1.2rem; font-weight: 900; text-decoration: none; background: linear-gradient(135deg, #7c6fef, #a594f9); -webkit-background-clip: text; -webkit-text-fill-color: transparent; flex-shrink: 0; letter-spacing: 1px; }
+.univ-nav-logo { font-family: 'Syne', sans-serif; font-size: 1.2rem; font-weight: 900; text-decoration: none; background: linear-gradient(135deg, #7c6fef, #a594f9); -webkit-background-clip: text; -webkit-text-fill-color: transparent; flex-shrink: 0; letter-spacing: 1px; }
 .univ-nav-links-d { display: flex; align-items: center; gap: 2px; flex: 1; margin: 0 8px; }
 @media (max-width: 680px) { .univ-nav-links-d { display: none; } }
-.univ-nav-lk { color: rgba(240,239,254,0.6); font-size: .82rem; font-weight: 600; text-decoration: none; padding: 5px 10px; border-radius: 7px; transition: all .2s; white-space: nowrap; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
+.univ-nav-lk { color: rgba(240,239,254,0.6); font-size: .82rem; font-weight: 600; text-decoration: none; padding: 5px 10px; border-radius: 7px; transition: all .2s; white-space: nowrap; font-family: 'DM Sans', sans-serif; }
 .univ-nav-lk:hover { color: #f0effe; background: rgba(255,255,255,0.06); }
 .univ-nav-lk.active { color: var(--purple); background: rgba(124,111,239,0.1); }
 .univ-nav-search { display: flex; align-items: center; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1); border-radius: 18px; overflow: hidden; max-width: 200px; flex-shrink: 0; }
 @media (max-width: 480px) { .univ-nav-search { max-width: 110px; } }
-.univ-nav-si { background: none; border: none; outline: none; color: #f0effe; font-size: .8rem; padding: 7px 10px; width: 100%; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
+.univ-nav-si { background: none; border: none; outline: none; color: #f0effe; font-size: .8rem; padding: 7px 10px; width: 100%; font-family: 'DM Sans', sans-serif; }
 .univ-nav-si::placeholder { color: rgba(240,239,254,.35); }
 .univ-nav-sb { background: none; border: none; cursor: pointer; padding: 6px 8px; font-size: 13px; color: rgba(240,239,254,.5); flex-shrink: 0; }
 .univ-nav-sb:hover { color: #7c6fef; }
 .nav-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-.nav-connexion-btn { color: rgba(255,255,255,0.7); font-size: .8rem; font-weight: 600; padding: 6px 13px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.15); text-decoration: none; transition: all .2s; white-space: nowrap; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
-.nav-connexion-btn:hover { border-color: var(--purple); color: var(--purple2); }
+.nav-connexion-btn { color: rgba(255,255,255,0.7); font-size: .8rem; font-weight: 600; padding: 6px 13px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.15); text-decoration: none; transition: all .2s; white-space: nowrap; font-family: 'DM Sans', sans-serif; }
+.nav-connexion-btn:hover { border-color: var(--purple); color: var(--purple); }
 .nav-avatar-btn { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #7c6fef, #5040c8); display: none; align-items: center; justify-content: center; font-size: .85rem; font-weight: 700; color: #fff; text-decoration: none; text-transform: uppercase; }
 .nav-avatar-btn.show { display: flex; }
 .nav-notif-link { position: relative; display: none; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 8px; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1); text-decoration: none; font-size: .95rem; transition: all .2s; }
@@ -66,10 +66,10 @@ img { max-width: 100%; display: block; }
 .univ-drawer { position: fixed; top: 0; right: 0; width: 270px; height: 100%; background: #13131c; z-index: 151; overflow-y: auto; transform: translateX(100%); transition: transform .28s cubic-bezier(.4,0,.2,1); box-shadow: -4px 0 32px rgba(0,0,0,.4); border-left: 1px solid rgba(255,255,255,.07); }
 .univ-drawer.open { transform: translateX(0); }
 .univ-d-hdr { display: flex; align-items: center; justify-content: space-between; padding: 16px; border-bottom: 1px solid rgba(255,255,255,.07); }
-.univ-d-logo { font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; font-size: 1.1rem; font-weight: 900; text-decoration: none; background: linear-gradient(135deg, #7c6fef, #a594f9); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.univ-d-logo { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 900; text-decoration: none; background: linear-gradient(135deg, #7c6fef, #a594f9); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 .univ-d-close { width: 30px; height: 30px; border-radius: 50%; background: rgba(255,255,255,.08); border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; color: rgba(240,239,254,.7); }
 .univ-d-sec { font-size: .65rem; font-weight: 800; color: rgba(240,239,254,.3); letter-spacing: 1.5px; text-transform: uppercase; padding: 14px 16px 5px; }
-.univ-d-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; margin: 2px 8px; text-decoration: none; color: rgba(240,239,254,.85); font-weight: 600; font-size: .88rem; cursor: pointer; transition: background .15s; border: none; background: none; width: calc(100% - 16px); text-align: left; border-radius: 9px; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
+.univ-d-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; margin: 2px 8px; text-decoration: none; color: rgba(240,239,254,.85); font-weight: 600; font-size: .88rem; cursor: pointer; transition: background .15s; border: none; background: none; width: calc(100% - 16px); text-align: left; border-radius: 9px; font-family: 'DM Sans', sans-serif; }
 .univ-d-item:hover { background: rgba(255,255,255,.06); }
 .univ-d-icon { width: 34px; height: 34px; border-radius: 9px; background: rgba(255,255,255,.07); display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
 .univ-d-badge { font-size: .65rem; font-weight: 800; padding: 2px 7px; border-radius: 6px; margin-left: auto; }
@@ -83,7 +83,7 @@ img { max-width: 100%; display: block; }
 .univ-bnav-item:hover { color: rgba(240,239,254,.9); }
 .univ-bnav-item.active { color: var(--purple); }
 .univ-bnav-icon { font-size: 20px; }
-.univ-bnav-label { font-size: .6rem; font-weight: 800; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
+.univ-bnav-label { font-size: .6rem; font-weight: 800; font-family: 'DM Sans', sans-serif; }
 .univ-bnav-search { width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, #7c6fef, #5040c8); border: none; display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer; margin-top: -18px; box-shadow: 0 4px 18px rgba(124,111,239,.5); transition: transform .2s; flex-shrink: 0; }
 .univ-bnav-search:hover { transform: scale(1.08); }
 
@@ -564,6 +564,35 @@ function doSearch(){var q=document.getElementById('navSearchInput').value.trim()
 function focusSearch(){document.getElementById('navSearchInput').focus()}
 function doLogout(){sb.auth.signOut().then(function(){window.location.href='index.html'})}
 
+/* ── NAV AUTH — update connexion/avatar buttons based on session ── */
+function updateNavAuth(session) {
+  var navConn = document.getElementById('navConnexion');
+  var navAv = document.getElementById('navAvatar');
+  var dp = document.getElementById('drawerProfil');
+  var dpu = document.getElementById('drawerPublier');
+  var dc = document.getElementById('drawerConnexion');
+  var dl = document.getElementById('drawerLogout');
+  if (session) {
+    if (navConn) navConn.style.display = 'none';
+    if (navAv) {
+      navAv.classList.add('show');
+      var initial = (session.user?.user_metadata?.username || session.user?.email || '?')[0].toUpperCase();
+      navAv.textContent = initial;
+    }
+    if (dp) dp.style.display = 'flex';
+    if (dpu) dpu.style.display = 'flex';
+    if (dc) dc.style.display = 'none';
+    if (dl) dl.style.display = 'flex';
+  } else {
+    if (navConn) navConn.style.display = '';
+    if (navAv) { navAv.classList.remove('show'); navAv.textContent = '🧑‍🎨'; }
+    if (dp) dp.style.display = 'none';
+    if (dpu) dpu.style.display = 'none';
+    if (dc) dc.style.display = 'flex';
+    if (dl) dl.style.display = 'none';
+  }
+}
+
 /* ── Overlay safety: ensure it starts hidden ── */
 document.addEventListener('DOMContentLoaded', function() {
   var ol = document.getElementById('univOverlay');
@@ -579,8 +608,30 @@ document.addEventListener('DOMContentLoaded', function() {
   if (!state.creatorId) {
     /* If logged in, go to their own community */
     const { data: { session } } = await sb.auth.getSession();
+    updateNavAuth(session);
     if (session && session.user) {
-      window.location.href = 'communaute.html?id=' + session.user.id;
+      /* Verify the user has a profile before redirecting */
+      const { data: myProfile } = await sb.from('profiles').select('id').eq('id', session.user.id).maybeSingle();
+      if (myProfile) {
+        window.location.href = 'communaute.html?id=' + session.user.id;
+        return;
+      }
+      /* No profile yet — show setup prompt */
+      state.loading = false;
+      const app = document.getElementById('app');
+      app.innerHTML = '' +
+        '<div class="empty-state" style="padding:80px 20px;">' +
+          '<div class="empty-state-icon" style="font-size:4rem;margin-bottom:16px;">👤</div>' +
+          '<div style="font-size:1.2rem;font-weight:700;color:var(--text);margin-bottom:12px;">Bienvenue sur Inkrise !</div>' +
+          '<div style="font-size:0.9rem;color:var(--text-muted);max-width:420px;margin:0 auto 28px;line-height:1.7;">' +
+            'Tu es connecté mais tu n\'as pas encore de profil public. ' +
+            'Rends-toi sur ton profil pour le configurer, puis reviens ici.' +
+          '</div>' +
+          '<div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">' +
+            '<a href="profil.html" style="display:inline-flex;align-items:center;gap:8px;padding:12px 28px;background:var(--purple);color:#fff;border-radius:var(--radius-sm);font-weight:700;font-size:0.9rem;text-decoration:none;">⚙️ Mon profil</a>' +
+            '<a href="index.html" style="display:inline-flex;align-items:center;gap:8px;padding:12px 28px;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:var(--radius-sm);font-weight:600;font-size:0.9rem;text-decoration:none;">🏠 Accueil</a>' +
+          '</div>' +
+        '</div>';
       return;
     }
     state.loading = false;
@@ -604,38 +655,45 @@ document.addEventListener('DOMContentLoaded', function() {
   /* ── Load creator data (public page: no session required to VIEW) ── */
   const { data: { session } } = await sb.auth.getSession();
   state.visitor = session ? session.user : null;
+  updateNavAuth(session);
 
   try {
-    const creatorRes = await sb.from('profiles').select('id, username, bio, avatar_url, espace_premium').eq('id', state.creatorId).single();
+    const creatorRes = await sb.from('profiles').select('id, username, bio, avatar_url, espace_premium').eq('id', state.creatorId).maybeSingle();
     if (creatorRes.error) throw creatorRes.error;
+    if (!creatorRes.data) throw new Error('PROFILE_NOT_FOUND');
     state.creator = creatorRes.data;
 
-    /* If visitor is logged in, also fetch their profile */
+    /* If visitor is logged in, also fetch their profile for avatar/name */
     if (state.visitor) {
-      const visitorRes = await sb.from('profiles').select('id, username, avatar_url').eq('id', state.visitor.id).single();
-      if (!visitorRes.error) {
+      const visitorRes = await sb.from('profiles').select('id, username, avatar_url').eq('id', state.visitor.id).maybeSingle();
+      if (!visitorRes.error && visitorRes.data) {
         state.visitor = visitorRes.data;
         state.isCreator = state.visitor.id === state.creator.id;
+        /* Update nav avatar with actual username/avatar */
+        const navAv = document.getElementById('navAvatar');
+        if (navAv) {
+          if (state.visitor.avatar_url) {
+            navAv.innerHTML = '<img src="' + state.visitor.avatar_url + '" style="width:32px;height:32px;border-radius:50%;object-fit:cover;" alt="" />';
+          } else {
+            navAv.textContent = state.visitor.username[0].toUpperCase();
+          }
+        }
       }
-    }
-
-    /* Show avatar if logged in */
-    if (state.visitor) {
-      document.getElementById('navConnexion').style.display = 'none';
-      document.getElementById('navAvatar').classList.add('show');
-      document.getElementById('drawerProfil').style.display = 'flex';
-      document.getElementById('drawerPublier').style.display = 'flex';
-      document.getElementById('drawerConnexion').style.display = 'none';
-      document.getElementById('drawerLogout').style.display = 'flex';
     }
 
     await loadPosts();
     await loadSondageVotes();
   } catch (err) {
-    /* Creator not found */
+    /* Creator not found — show helpful message */
     state.loading = false;
     const app = document.getElementById('app');
-    app.innerHTML = '<div class="empty-state"><div class="empty-state-icon">😕</div><div class="empty-state-text">Créateur introuvable</div><div style="margin-top:16px;font-size:0.85rem;color:var(--text-muted);">Le lien que vous avez suivi est peut-être invalide.</div></div>';
+    var isOwnProfile = state.visitor && state.creatorId === (state.visitor.id || state.visitor?.id);
+    var errorMsg = err.message === 'PROFILE_NOT_FOUND'
+      ? 'Cet espace communauté n\'existe pas. Le créateur n\'a pas de profil public.'
+      : 'Erreur lors du chargement : ' + (err.message || 'erreur inconnue');
+    app.innerHTML = isOwnProfile
+      ? '<div class="empty-state" style="padding:80px 20px;"><div class="empty-state-icon" style="font-size:3.5rem;margin-bottom:16px;">👤</div><div style="font-size:1.15rem;font-weight:700;margin-bottom:10px;">Configure ton profil</div><div style="font-size:0.85rem;color:var(--text-muted);margin-bottom:20px;">Tu dois d\'abord créer ton profil public avant d\'accéder à ton espace communauté.</div><a href="profil.html" style="display:inline-flex;padding:12px 28px;background:var(--purple);color:#fff;border-radius:var(--radius-sm);font-weight:700;text-decoration:none;">⚙️ Aller sur mon profil</a></div>'
+      : '<div class="empty-state"><div class="empty-state-icon">😕</div><div class="empty-state-text">Créateur introuvable</div><div style="margin-top:12px;font-size:0.85rem;color:var(--text-muted);">' + errorMsg + '</div><a href="index.html" style="display:inline-flex;margin-top:20px;padding:10px 24px;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:var(--radius-sm);font-weight:600;text-decoration:none;">🏠 Retour à l\'accueil</a></div>';
     return;
   }
 
