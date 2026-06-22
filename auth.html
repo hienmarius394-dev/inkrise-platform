@@ -8,6 +8,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root {
+  --bg: #0a0a0f;
   --ink: #0a0a0f;
   --ink-2: #13131c;
   --surface: #1e1e2e;
@@ -520,10 +521,16 @@ async function handleSignup() {
 
   // Créer le profil dans la table profiles
   if (data.user) {
-    await supabaseClient.from('profiles').insert({
-      id: data.user.id,
-      username: username
-    })
+    try {
+      await supabaseClient.from('profiles').upsert({
+        id: data.user.id,
+        username: username,
+        bio: '',
+        created_at: new Date().toISOString()
+      })
+    } catch (e) {
+      console.warn('Profile creation warning:', e);
+    }
   }
 
   document.getElementById('signupFields').style.display = 'none'

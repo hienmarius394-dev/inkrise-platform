@@ -14,7 +14,7 @@
       --surface3: #22222f;
       --purple:   #7c6fef;
       --purple2:  #a594f9;
-      --accent:   #f0522a;
+      --accent:   #7c6fef;
       --green:    #3ddc84;
       --text:     #ececf4;
       --muted:    #6b6b8a;
@@ -95,16 +95,16 @@
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: 14px;
-      overflow: hidden;
+      overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch;
     }
     .step-item {
-      flex: 1; display: flex; align-items: center; gap: 10px;
+      flex-shrink: 0; display: flex; align-items: center; gap: 10px;
       padding: 14px 18px;
       font-size: 0.82rem; font-weight: 600;
       color: var(--muted);
       border-right: 1px solid var(--border);
       transition: all .3s;
-      cursor: default;
+      cursor: pointer;
     }
     .step-item:last-child { border-right: none; }
     .step-item.active { color: var(--purple2); background: rgba(124,111,239,0.08); }
@@ -575,19 +575,19 @@
 
   <!-- Steps -->
   <div class="steps-bar">
-    <div class="step-item active" id="step1">
+    <div class="step-item active" id="step1" onclick="document.getElementById('inputTitre').scrollIntoView({behavior:'smooth',block:'center'});">
       <div class="step-num">1</div>
       <span>Informations</span>
     </div>
-    <div class="step-item" id="step2">
+    <div class="step-item" id="step2" onclick="document.getElementById('btnAddChapitre').scrollIntoView({behavior:'smooth',block:'center'});">
       <div class="step-num">2</div>
       <span>Chapitres</span>
     </div>
-    <div class="step-item" id="step3">
+    <div class="step-item" id="step3" onclick="document.getElementById('btnDraft').scrollIntoView({behavior:'smooth',block:'center'});">
       <div class="step-num">3</div>
       <span>Options</span>
     </div>
-    <div class="step-item" id="step4">
+    <div class="step-item" id="step4" onclick="document.getElementById('btnSubmit').scrollIntoView({behavior:'smooth',block:'center'});">
       <div class="step-num">✓</div>
       <span>Publication</span>
     </div>
