@@ -1,0 +1,1339 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Communauté · InkRise</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root {
+  --bg: #0b0b10;
+  --surface: #13131c;
+  --surface2: #1a1a27;
+  --purple: #7c6fef;
+  --purple-dim: #5f53d6;
+  --text: #e8e8f0;
+  --text-muted: #8888aa;
+  --border: #2a2a3d;
+  --radius: 12px;
+  --radius-sm: 8px;
+  --success: #3ecf8e;
+  --danger: #ef476f;
+  --warning: #ffd166;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  min-height: 100vh;
+  padding-bottom: 80px;
+  line-height: 1.5;
+}
+a { color: var(--purple); text-decoration: none; }
+img { max-width: 100%; display: block; }
+
+/* ===== HEADER ===== */
+.univ-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 20px; background: var(--surface);
+  border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100;
+}
+.univ-nav-logo { font-size: 1.4rem; font-weight: 800; color: var(--purple); letter-spacing: -0.5px; }
+.univ-nav-links-d { display: none; gap: 8px; }
+@media (min-width: 768px) {
+  .univ-nav-links-d { display: flex; }
+}
+.univ-nav-links-d a {
+  padding: 6px 14px; border-radius: var(--radius-sm);
+  color: var(--text-muted); font-size: 0.9rem; font-weight: 500;
+  transition: background 0.2s, color 0.2s;
+}
+.univ-nav-links-d a:hover { background: var(--surface2); color: var(--text); }
+.univ-nav-links-d a.active { color: var(--purple); background: rgba(124,111,239,0.12); }
+.univ-header-right { display: flex; align-items: center; gap: 12px; }
+.univ-header-avatar {
+  width: 34px; height: 34px; border-radius: 50%; object-fit: cover;
+  border: 2px solid var(--border); cursor: pointer;
+}
+.univ-header-avatar-fallback {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: var(--purple); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.75rem; font-weight: 700; cursor: pointer;
+}
+
+/* ===== BOTTOM NAV ===== */
+.univ-bnav {
+  display: flex; justify-content: space-around; align-items: center;
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+  background: var(--surface); border-top: 1px solid var(--border);
+  padding: 6px 0 env(safe-area-inset-bottom,6px) 0;
+}
+.univ-bnav a {
+  display: flex; flex-direction: column; align-items: center;
+  gap: 2px; padding: 6px 12px; color: var(--text-muted);
+  font-size: 0.65rem; font-weight: 500; transition: color 0.2s;
+}
+.univ-bnav a:hover, .univ-bnav a.active { color: var(--purple); }
+.univ-bnav-icon { font-size: 1.3rem; line-height: 1; }
+.univ-bnav-label { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.3px; }
+
+/* ===== COMMUNAUTE LAYOUT ===== */
+.comm-container {
+  max-width: 680px; margin: 0 auto; padding: 20px 16px;
+}
+
+/* Creator Header */
+.creator-header {
+  display: flex; align-items: center; gap: 16px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 20px;
+  margin-bottom: 20px;
+}
+.creator-avatar {
+  width: 60px; height: 60px; border-radius: 50%; object-fit: cover;
+  border: 3px solid var(--purple); flex-shrink: 0;
+}
+.creator-avatar-fallback {
+  width: 60px; height: 60px; border-radius: 50%;
+  background: var(--purple); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.3rem; font-weight: 700; flex-shrink: 0;
+}
+.creator-info { flex: 1; min-width: 0; }
+.creator-name-row {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+}
+.creator-username { font-size: 1.15rem; font-weight: 700; }
+.creator-badge {
+  font-size: 0.7rem; background: rgba(124,111,239,0.15);
+  color: var(--purple); padding: 2px 10px; border-radius: 20px;
+  font-weight: 600;
+}
+.creator-premium {
+  font-size: 0.7rem; background: linear-gradient(135deg,#7c6fef,#3ecf8e);
+  color: #fff; padding: 2px 10px; border-radius: 20px; font-weight: 600;
+}
+.creator-bio {
+  color: var(--text-muted); font-size: 0.85rem;
+  margin-top: 4px; white-space: pre-wrap;
+}
+
+/* Tabs */
+.tabs {
+  display: flex; gap: 4px; background: var(--surface);
+  border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 4px; margin-bottom: 20px;
+}
+.tab-btn {
+  flex: 1; padding: 10px 16px; border: none; border-radius: var(--radius-sm);
+  background: transparent; color: var(--text-muted); font-size: 0.9rem;
+  font-weight: 600; cursor: pointer; transition: all 0.2s;
+}
+.tab-btn:hover { color: var(--text); background: var(--surface2); }
+.tab-btn.active { background: var(--purple); color: #fff; }
+
+/* Create Post */
+.create-post {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 16px; margin-bottom: 20px;
+}
+.create-post textarea {
+  width: 100%; min-height: 80px; padding: 12px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); color: var(--text); font-size: 0.9rem;
+  font-family: inherit; resize: vertical;
+  outline: none; transition: border-color 0.2s;
+}
+.create-post textarea:focus { border-color: var(--purple); }
+.create-post textarea::placeholder { color: var(--text-muted); }
+.create-post-actions {
+  display: flex; align-items: center; gap: 10px; margin-top: 12px;
+  flex-wrap: wrap;
+}
+.create-post-btn {
+  padding: 8px 20px; background: var(--purple); color: #fff;
+  border: none; border-radius: var(--radius-sm); font-size: 0.85rem;
+  font-weight: 600; cursor: pointer; transition: opacity 0.2s;
+}
+.create-post-btn:hover { opacity: 0.9; }
+.create-post-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.create-post-btn-sm {
+  padding: 8px 14px; background: var(--surface2); color: var(--text);
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  font-size: 0.8rem; font-weight: 500; cursor: pointer;
+  transition: background 0.2s;
+}
+.create-post-btn-sm:hover { background: var(--border); }
+.create-post-file-label {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 14px; background: var(--surface2); color: var(--text-muted);
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  font-size: 0.8rem; cursor: pointer; transition: background 0.2s;
+}
+.create-post-file-label:hover { background: var(--border); }
+.create-post-file-label.has-file { color: var(--success); border-color: var(--success); }
+#create-post-file { display: none; }
+.create-post-preview {
+  margin-top: 10px; max-width: 240px; border-radius: var(--radius-sm);
+  overflow: hidden; position: relative;
+}
+.create-post-preview img { width: 100%; border-radius: var(--radius-sm); }
+.create-post-preview-remove {
+  position: absolute; top: 6px; right: 6px;
+  width: 26px; height: 26px; border-radius: 50%;
+  background: rgba(0,0,0,0.7); border: none; color: #fff;
+  font-size: 1rem; cursor: pointer; display: flex;
+  align-items: center; justify-content: center;
+}
+
+/* Sondage options builder */
+.sondage-options {
+  margin-top: 10px; display: flex; flex-direction: column; gap: 8px;
+}
+.sondage-option-row {
+  display: flex; align-items: center; gap: 8px;
+}
+.sondage-option-row input {
+  flex: 1; padding: 8px 12px; background: var(--surface2);
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  color: var(--text); font-size: 0.85rem; outline: none;
+}
+.sondage-option-row input:focus { border-color: var(--purple); }
+.sondage-option-remove {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: transparent; border: 1px solid var(--border);
+  color: var(--danger); cursor: pointer; font-size: 1rem;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.2s;
+}
+.sondage-option-remove:hover { background: rgba(239,71,111,0.12); }
+
+/* Post Card */
+.post-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 16px; margin-bottom: 14px;
+  transition: border-color 0.2s;
+}
+.post-card.pinned { border-color: var(--purple); }
+.post-card-header {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 10px;
+}
+.post-card-avatar {
+  width: 36px; height: 36px; border-radius: 50%; object-fit: cover;
+}
+.post-card-avatar-fallback {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--purple); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.8rem; font-weight: 700; flex-shrink: 0;
+}
+.post-card-author { font-weight: 600; font-size: 0.85rem; }
+.post-card-date { color: var(--text-muted); font-size: 0.7rem; margin-left: auto; }
+.post-card-badge {
+  font-size: 0.65rem; padding: 2px 8px; border-radius: 20px;
+  background: rgba(124,111,239,0.12); color: var(--purple); font-weight: 600;
+  margin-left: 6px;
+}
+.post-card-content {
+  font-size: 0.9rem; line-height: 1.6; margin-bottom: 10px;
+  white-space: pre-wrap; word-break: break-word;
+}
+.post-card-image {
+  border-radius: var(--radius-sm); margin-bottom: 12px;
+  width: 100%; max-height: 400px; object-fit: cover; cursor: pointer;
+}
+
+/* Reactions */
+.post-card-reactions {
+  display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 10px;
+}
+.reaction-btn {
+  display: flex; align-items: center; gap: 4px;
+  padding: 4px 10px; border-radius: 20px; border: 1px solid var(--border);
+  background: transparent; color: var(--text-muted); font-size: 0.85rem;
+  cursor: pointer; transition: all 0.2s;
+}
+.reaction-btn:hover { background: var(--surface2); border-color: var(--text-muted); }
+.reaction-btn.active { background: rgba(124,111,239,0.12); border-color: var(--purple); color: var(--purple); }
+.reaction-emoji { font-size: 1rem; line-height: 1; }
+.reaction-count { font-size: 0.75rem; font-weight: 600; }
+
+/* Post footer */
+.post-card-footer {
+  display: flex; align-items: center; gap: 16px;
+  padding-top: 10px; border-top: 1px solid var(--border);
+}
+.post-card-footer button {
+  background: transparent; border: none; color: var(--text-muted);
+  font-size: 0.8rem; cursor: pointer; display: flex; align-items: center;
+  gap: 6px; padding: 4px 8px; border-radius: var(--radius-sm);
+  transition: background 0.2s, color 0.2s;
+}
+.post-card-footer button:hover { background: var(--surface2); color: var(--text); }
+.post-card-footer .creator-btn { color: var(--warning); }
+.post-card-footer .creator-btn:hover { background: rgba(255,209,102,0.12); }
+.post-card-footer .delete-btn { color: var(--danger); }
+.post-card-footer .delete-btn:hover { background: rgba(239,71,111,0.12); }
+
+/* Comments section */
+.comments-section {
+  margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border);
+}
+.comments-section textarea {
+  width: 100%; min-height: 52px; padding: 10px; margin-bottom: 8px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); color: var(--text); font-size: 0.85rem;
+  font-family: inherit; resize: vertical; outline: none;
+}
+.comments-section textarea:focus { border-color: var(--purple); }
+.comment-input-actions {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 12px;
+}
+.comment-submit-btn {
+  padding: 6px 16px; background: var(--purple); color: #fff;
+  border: none; border-radius: var(--radius-sm); font-size: 0.8rem;
+  font-weight: 600; cursor: pointer; transition: opacity 0.2s;
+}
+.comment-submit-btn:hover { opacity: 0.9; }
+.comment-submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.comment-file-label {
+  font-size: 0.8rem; color: var(--text-muted); cursor: pointer;
+  padding: 6px 10px; border-radius: var(--radius-sm);
+  background: var(--surface2); border: 1px solid var(--border);
+  transition: background 0.2s;
+}
+.comment-file-label:hover { background: var(--border); }
+.comment-file-input { display: none; }
+.comment-preview { max-width: 120px; border-radius: var(--radius-sm); margin-bottom: 8px; }
+
+/* Individual comment */
+.comment {
+  display: flex; gap: 8px; padding: 8px 0;
+}
+.comment-avatar { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
+.comment-avatar-fallback {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--purple); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.6rem; font-weight: 700; flex-shrink: 0;
+}
+.comment-body { flex: 1; min-width: 0; }
+.comment-author { font-weight: 600; font-size: 0.8rem; }
+.comment-text { font-size: 0.82rem; margin: 2px 0; white-space: pre-wrap; word-break: break-word; }
+.comment-date { color: var(--text-muted); font-size: 0.65rem; }
+.comment-reply-btn {
+  background: transparent; border: none; color: var(--text-muted);
+  font-size: 0.7rem; cursor: pointer; padding: 2px 0;
+}
+.comment-reply-btn:hover { color: var(--purple); }
+.comment-image { max-width: 160px; border-radius: var(--radius-sm); margin-top: 4px; }
+.comment.reply { margin-left: 36px; padding-left: 8px; border-left: 2px solid var(--border); }
+.comments-empty { color: var(--text-muted); font-size: 0.8rem; text-align: center; padding: 12px 0; }
+
+/* Sondage display */
+.sondage-display { margin: 12px 0; }
+.sondage-option-display {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px; margin-bottom: 8px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: var(--radius-sm); cursor: pointer;
+  transition: border-color 0.2s; position: relative; overflow: hidden;
+}
+.sondage-option-display:hover { border-color: var(--purple); }
+.sondage-option-display.voted { border-color: var(--purple); }
+.sondage-option-bar {
+  position: absolute; top: 0; left: 0; bottom: 0;
+  background: rgba(124,111,239,0.12);
+  transition: width 0.5s ease; border-radius: var(--radius-sm);
+}
+.sondage-option-radio {
+  width: 18px; height: 18px; border: 2px solid var(--text-muted);
+  border-radius: 50%; flex-shrink: 0; position: relative; z-index: 1;
+  display: flex; align-items: center; justify-content: center;
+}
+.sondage-option-radio.selected {
+  border-color: var(--purple);
+  background: var(--purple);
+}
+.sondage-option-text { position: relative; z-index: 1; font-size: 0.85rem; flex: 1; }
+.sondage-option-pct { position: relative; z-index: 1; font-size: 0.8rem; color: var(--text-muted); font-weight: 600; }
+.sondage-vote-btn {
+  padding: 8px 20px; background: var(--purple); color: #fff;
+  border: none; border-radius: var(--radius-sm); font-size: 0.85rem;
+  font-weight: 600; cursor: pointer; width: 100%; margin-top: 4px;
+}
+.sondage-vote-btn:hover { opacity: 0.9; }
+.sondage-vote-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.sondage-total { color: var(--text-muted); font-size: 0.75rem; text-align: center; margin-top: 6px; }
+
+/* About tab */
+.about-content {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 24px;
+}
+.about-content h3 { font-size: 1rem; margin-bottom: 12px; }
+.about-content p { color: var(--text-muted); font-size: 0.85rem; margin-bottom: 8px; line-height: 1.7; }
+.about-content ul { color: var(--text-muted); font-size: 0.85rem; padding-left: 20px; line-height: 1.9; }
+
+/* Loading & States */
+.loading-spinner {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; padding: 60px 0; gap: 16px;
+}
+.spinner {
+  width: 36px; height: 36px; border: 3px solid var(--border);
+  border-top-color: var(--purple); border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-text { color: var(--text-muted); font-size: 0.85rem; }
+.empty-state {
+  text-align: center; padding: 60px 20px; color: var(--text-muted);
+}
+.empty-state-icon { font-size: 3rem; margin-bottom: 12px; }
+.empty-state-text { font-size: 0.95rem; }
+
+/* Toast */
+.toast-container {
+  position: fixed; top: 20px; right: 20px; z-index: 9999;
+  display: flex; flex-direction: column; gap: 8px; max-width: 360px;
+}
+.toast {
+  padding: 12px 18px; border-radius: var(--radius-sm);
+  font-size: 0.85rem; font-weight: 500; color: #fff;
+  animation: toastIn 0.3s ease; box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+}
+.toast.success { background: var(--success); }
+.toast.error { background: var(--danger); }
+.toast.info { background: var(--purple); }
+@keyframes toastIn {
+  from { opacity: 0; transform: translateX(40px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .comm-container { padding: 12px; }
+  .creator-header { padding: 14px; flex-wrap: wrap; }
+  .creator-avatar, .creator-avatar-fallback { width: 48px; height: 48px; }
+  .post-card { padding: 12px; }
+  .create-post { padding: 12px; }
+  .tabs { padding: 3px; }
+  .tab-btn { padding: 8px 10px; font-size: 0.8rem; }
+}
+</style>
+</head>
+<body>
+
+<header class="univ-header">
+  <a href="index.html" class="univ-nav-logo">InkRise</a>
+  <nav class="univ-nav-links-d">
+    <a href="index.html">Accueil</a>
+    <a href="manga.html">Mangas</a>
+    <a href="bibliotheque.html">Biblio</a>
+    <a href="tutoriels.html">Tutos</a>
+  </nav>
+  <div class="univ-header-right" id="header-right">
+    <a href="profil.html" id="header-profile-link">
+      <div class="univ-header-avatar-fallback" id="header-avatar-fallback">?</div>
+    </a>
+  </div>
+</header>
+
+<div class="comm-container" id="app">
+  <div class="loading-spinner" id="global-loader">
+    <div class="spinner"></div>
+    <div class="loading-text">Chargement de la communauté...</div>
+  </div>
+</div>
+
+<nav class="univ-bnav">
+  <a href="index.html"><span class="univ-bnav-icon">🏠</span><span class="univ-bnav-label">Accueil</span></a>
+  <a href="manga.html"><span class="univ-bnav-icon">📚</span><span class="univ-bnav-label">Mangas</span></a>
+  <a href="bibliotheque.html"><span class="univ-bnav-icon">📖</span><span class="univ-bnav-label">Biblio</span></a>
+  <a href="tutoriels.html"><span class="univ-bnav-icon">🎨</span><span class="univ-bnav-label">Tutos</span></a>
+  <a href="profil.html"><span class="univ-bnav-icon">👤</span><span class="univ-bnav-label">Profil</span></a>
+</nav>
+
+<div class="toast-container" id="toast-container"></div>
+
+<script>
+const SUPABASE_URL = 'https://bsdcpwtimsgxcnaamwip.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJzZGNwd3RpbXNneGNuYWFtd2lwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTA0ODMyMDAsImV4cCI6MjAyNjA1OTIwMH0.fb44';
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+/* ===== HELPERS ===== */
+function escHtml(str) {
+  if (!str) return '';
+  const d = document.createElement('div');
+  d.textContent = str;
+  return d.innerHTML;
+}
+
+function timeAgo(dateStr) {
+  const now = Date.now();
+  const then = new Date(dateStr).getTime();
+  const diff = Math.max(0, now - then);
+  const seconds = Math.floor(diff / 1000);
+  if (seconds < 10) return "a l'instant";
+  if (seconds < 60) return 'il y a ' + seconds + ' s';
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return 'il y a ' + minutes + ' min';
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return 'il y a ' + hours + ' h';
+  const days = Math.floor(hours / 24);
+  if (days < 30) return 'il y a ' + days + ' j';
+  const months = Math.floor(days / 30);
+  if (months < 12) return 'il y a ' + months + ' mois';
+  return 'il y a ' + Math.floor(months / 12) + ' ans';
+}
+
+function showToast(msg, type) {
+  const c = document.getElementById('toast-container');
+  const t = document.createElement('div');
+  t.className = 'toast ' + (type || 'info');
+  t.textContent = msg;
+  c.appendChild(t);
+  setTimeout(() => { t.style.transition = 'opacity 0.3s'; t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 3000);
+}
+
+function getInitials(name) {
+  if (!name) return '?';
+  return name.split(' ').filter(Boolean).map(w => w[0]).join('').toUpperCase().slice(0, 2) || '?';
+}
+
+/* ===== STATE ===== */
+let state = {
+  creatorId: null,
+  creator: null,
+  visitor: null,
+  isCreator: false,
+  posts: [],
+  reactions: {},
+  comments: {},
+  sondageVotes: {},
+  selectedOption: {},
+  activeTab: 'posts',
+  loading: true
+};
+
+/* ===== MAIN INIT ===== */
+(async function init() {
+  const params = new URLSearchParams(window.location.search);
+  state.creatorId = params.get('id');
+  if (!state.creatorId) { showToast('ID créateur manquant', 'error'); state.loading = false; render(); return; }
+
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) { window.location.href = '/auth.html'; return; }
+
+  state.visitor = session.user;
+
+  try {
+    const [creatorRes, visitorRes] = await Promise.all([
+      sb.from('profiles').select('id, username, bio, avatar_url, espace_premium').eq('id', state.creatorId).single(),
+      sb.from('profiles').select('id, username, avatar_url').eq('id', state.visitor.id).single()
+    ]);
+    if (creatorRes.error) throw creatorRes.error;
+    state.creator = creatorRes.data;
+    state.visitor = visitorRes.data;
+    state.isCreator = state.visitor && state.visitor.id === state.creator.id;
+
+    /* Load header avatar */
+    const hr = document.getElementById('header-right');
+    hr.innerHTML = '';
+    const link = document.createElement('a');
+    link.href = 'profil.html';
+    if (state.visitor.avatar_url) {
+      const img = document.createElement('img');
+      img.src = state.visitor.avatar_url;
+      img.className = 'univ-header-avatar';
+      img.alt = '';
+      link.appendChild(img);
+    } else {
+      const fb = document.createElement('div');
+      fb.className = 'univ-header-avatar-fallback';
+      fb.textContent = getInitials(state.visitor.username);
+      link.appendChild(fb);
+    }
+    hr.appendChild(link);
+
+    await loadPosts();
+    await loadSondageVotes();
+  } catch (err) {
+    showToast('Erreur chargement profil: ' + err.message, 'error');
+  }
+
+  state.loading = false;
+  render();
+})();
+
+async function loadPosts() {
+  const { data, error } = await sb.from('posts_communaute')
+    .select('*')
+    .eq('creator_id', state.creatorId)
+    .order('est_epingle', { ascending: false })
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+  state.posts = data || [];
+
+  /* Load reactions for all posts */
+  const postIds = state.posts.map(p => p.id);
+  if (postIds.length) {
+    const { data: rData } = await sb.from('reactions')
+      .select('*')
+      .in('post_id', postIds);
+    if (rData) {
+      state.reactions = {};
+      rData.forEach(r => {
+        if (!state.reactions[r.post_id]) state.reactions[r.post_id] = [];
+        state.reactions[r.post_id].push(r);
+      });
+    }
+  }
+
+  /* Load comments for all posts */
+  if (postIds.length) {
+    const { data: cData } = await sb.from('commentaires_communaute')
+      .select('*')
+      .in('post_id', postIds)
+      .order('created_at', { ascending: true });
+    if (cData) {
+      state.comments = {};
+      cData.forEach(c => {
+        if (!state.comments[c.post_id]) state.comments[c.post_id] = [];
+        state.comments[c.post_id].push(c);
+      });
+    }
+  }
+}
+
+async function loadSondageVotes() {
+  const postIds = state.posts.filter(p => p.type === 'sondage').map(p => p.id);
+  if (!postIds.length) return;
+  const { data: opts } = await sb.from('sondage_options')
+    .select('*')
+    .in('post_id', postIds)
+    .order('position', { ascending: true });
+  if (opts) {
+    state.sondageOptions = state.sondageOptions || {};
+    opts.forEach(o => {
+      if (!state.sondageOptions[o.post_id]) state.sondageOptions[o.post_id] = [];
+      state.sondageOptions[o.post_id].push(o);
+    });
+  }
+  const optIds = opts ? opts.map(o => o.id) : [];
+  if (optIds.length) {
+    const { data: votes } = await sb.from('sondage_votes')
+      .select('*')
+      .in('option_id', optIds);
+    if (votes) {
+      state.sondageVotes = {};
+      votes.forEach(v => {
+        if (!state.sondageVotes[v.option_id]) state.sondageVotes[v.option_id] = 0;
+        state.sondageVotes[v.option_id]++;
+      });
+    }
+  }
+}
+
+/* ===== RENDER ===== */
+function render() {
+  const app = document.getElementById('app');
+  if (state.loading) {
+    app.innerHTML = '<div class="loading-spinner"><div class="spinner"></div><div class="loading-text">Chargement de la communauté...</div></div>';
+    return;
+  }
+
+  if (!state.creator) {
+    app.innerHTML = '<div class="empty-state"><div class="empty-state-icon">😕</div><div class="empty-state-text">Créateur introuvable</div></div>';
+    return;
+  }
+
+  let html = '';
+
+  /* Creator header */
+  html += '<div class="creator-header">';
+  if (state.creator.avatar_url) {
+    html += '<img src="' + escHtml(state.creator.avatar_url) + '" alt="" class="creator-avatar">';
+  } else {
+    html += '<div class="creator-avatar-fallback">' + getInitials(state.creator.username) + '</div>';
+  }
+  html += '<div class="creator-info">';
+  html += '<div class="creator-name-row">';
+  html += '<span class="creator-username">' + escHtml(state.creator.username) + '</span>';
+  html += '<span class="creator-badge">Créateur</span>';
+  if (state.creator.espace_premium) {
+    html += '<span class="creator-premium">💎 Premium</span>';
+  }
+  html += '</div>';
+  if (state.creator.bio) {
+    html += '<div class="creator-bio">' + escHtml(state.creator.bio) + '</div>';
+  }
+  html += '</div></div>';
+
+  /* Tabs */
+  html += '<div class="tabs">';
+  html += '<button class="tab-btn' + (state.activeTab === 'posts' ? ' active' : '') + '" data-tab="posts">Posts</button>';
+  html += '<button class="tab-btn' + (state.activeTab === 'sondages' ? ' active' : '') + '" data-tab="sondages">Sondages</button>';
+  html += '<button class="tab-btn' + (state.activeTab === 'about' ? ' active' : '') + '" data-tab="about">À propos</button>';
+  html += '</div>';
+
+  if (state.activeTab === 'about') {
+    html += '<div class="about-content">';
+    html += '<h3>📜 Règles de la communauté</h3>';
+    html += '<p>Bienvenue dans l\'espace communauté de <strong>' + escHtml(state.creator.username) + '</strong> !</p>';
+    html += '<ul>';
+    html += '<li>Respectez les autres membres — pas de harcèlement ni d\'insultes.</li>';
+    html += '<li>Pas de spam ou de contenu promotionnel non sollicité.</li>';
+    html += '<li>Restez dans le thème manga et création artistique.</li>';
+    html += '<li>Les spoilers doivent être signalés clairement.</li>';
+    html += '<li>Le créateur se réserve le droit de supprimer tout contenu inapproprié.</li>';
+    html += '</ul>';
+    html += '<p style="margin-top:12px">Merci de faire de cet espace un lieu agréable pour tous ! 🎨</p>';
+    html += '</div>';
+    app.innerHTML = html;
+    bindTabs();
+    return;
+  }
+
+  /* Create post zone (only for creator) */
+  if (state.isCreator && state.activeTab !== 'sondages') {
+    html += '<div class="create-post" id="create-post-zone">';
+    html += '<textarea id="create-post-text" placeholder="Partagez quelque chose avec votre communauté..." maxlength="2000"></textarea>';
+    html += '<div class="create-post-actions">';
+    html += '<button class="create-post-btn" id="create-post-submit">Publier</button>';
+    html += '<label class="create-post-file-label" id="create-post-file-label">📷 Image</label>';
+    html += '<input type="file" accept="image/*" id="create-post-file">';
+    html += '<button class="create-post-btn-sm" id="create-sondage-btn">+ Sondage</button>';
+    html += '</div>';
+    html += '<div id="create-post-preview" class="create-post-preview" style="display:none"></div>';
+    html += '<div id="sondage-options-area" class="sondage-options" style="display:none">';
+    html += '<div class="sondage-option-row"><input type="text" placeholder="Option 1" class="sondage-opt-input" maxlength="100"><button class="sondage-option-remove" data-opt="0">✕</button></div>';
+    html += '<div class="sondage-option-row"><input type="text" placeholder="Option 2" class="sondage-opt-input" maxlength="100"><button class="sondage-option-remove" data-opt="1">✕</button></div>';
+    html += '<button class="create-post-btn-sm" id="add-option-btn">+ Ajouter une option</button>';
+    html += '<small style="color:var(--text-muted);display:block;margin-top:4px">Minimum 2 options, maximum 4</small>';
+    html += '</div>';
+    html += '</div>';
+  }
+
+  /* Post filter */
+  let filteredPosts = state.posts;
+  if (state.activeTab === 'sondages') {
+    filteredPosts = state.posts.filter(p => p.type === 'sondage');
+  }
+
+  if (!filteredPosts.length) {
+    html += '<div class="empty-state"><div class="empty-state-icon">📝</div><div class="empty-state-text">Aucun post pour le moment</div></div>';
+    app.innerHTML = html;
+    bindTabs();
+    if (state.isCreator) bindCreatePost();
+    return;
+  }
+
+  /* Render posts */
+  filteredPosts.forEach(post => {
+    html += renderPost(post);
+  });
+
+  app.innerHTML = html;
+  bindTabs();
+  if (state.isCreator) bindCreatePost();
+  bindReactions();
+  bindComments();
+  bindSondageVote();
+}
+
+function renderPost(post) {
+  const isPinned = post.est_epingle;
+  const postReactions = state.reactions[post.id] || [];
+  const userReacted = postReactions.find(r => r.user_id === state.visitor?.id);
+  const reactionCounts = {};
+  const reactionEmojis = { heart: '❤️', clap: '👏', fire: '🔥', surprise: '😮' };
+  ['heart','clap','fire','surprise'].forEach(t => {
+    reactionCounts[t] = postReactions.filter(r => r.type === t).length;
+  });
+
+  const postComments = state.comments[post.id] || [];
+  const topComments = postComments.filter(c => !c.parent_id);
+  const replyComments = postComments.filter(c => c.parent_id);
+
+  let html = '<div class="post-card' + (isPinned ? ' pinned' : '') + '" data-post-id="' + post.id + '">';
+
+  /* Header */
+  html += '<div class="post-card-header">';
+  if (state.creator.avatar_url) {
+    html += '<img src="' + escHtml(state.creator.avatar_url) + '" alt="" class="post-card-avatar">';
+  } else {
+    html += '<div class="post-card-avatar-fallback">' + getInitials(state.creator.username) + '</div>';
+  }
+  html += '<span class="post-card-author">' + escHtml(state.creator.username) + '</span>';
+  if (isPinned) html += '<span class="post-card-badge">📌 Épinglé</span>';
+  html += '<span class="post-card-date">' + timeAgo(post.created_at) + '</span>';
+  html += '</div>';
+
+  /* Content */
+  if (post.contenu) {
+    html += '<div class="post-card-content">' + escHtml(post.contenu) + '</div>';
+  }
+
+  /* Image */
+  if (post.image_url) {
+    html += '<img src="' + escHtml(post.image_url) + '" alt="" class="post-card-image" onclick="window.open(this.src)" loading="lazy">';
+  }
+
+  /* Sondage */
+  if (post.type === 'sondage') {
+    html += renderSondage(post);
+  }
+
+  /* Reactions */
+  html += '<div class="post-card-reactions">';
+  ['heart','clap','fire','surprise'].forEach(type => {
+    const active = userReacted && userReacted.type === type;
+    html += '<button class="reaction-btn' + (active ? ' active' : '') + '" data-post="' + post.id + '" data-type="' + type + '">';
+    html += '<span class="reaction-emoji">' + reactionEmojis[type] + '</span>';
+    html += '<span class="reaction-count">' + (reactionCounts[type] || 0) + '</span>';
+    html += '</button>';
+  });
+  html += '</div>';
+
+  /* Footer */
+  html += '<div class="post-card-footer">';
+  html += '<button class="comment-toggle-btn" data-post="' + post.id + '">💬 <span>' + postComments.length + '</span></button>';
+  html += '<button onclick="navigator.clipboard.writeText(window.location.origin+\'/communaute.html?id=' + state.creatorId + '\');showToast(\'Lien copié !\',\'success\')">🔗 Partager</button>';
+  if (state.isCreator) {
+    html += '<button class="creator-btn pin-btn" data-post="' + post.id + '" data-pinned="' + (isPinned ? '1' : '0') + '">' + (isPinned ? '📌 Désépingler' : '📌 Épingler') + '</button>';
+    html += '<button class="delete-btn delete-post-btn" data-post="' + post.id + '">🗑️ Supprimer</button>';
+  }
+  html += '</div>';
+
+  /* Comments section (hidden by default) */
+  html += '<div class="comments-section" id="comments-' + post.id + '" style="display:none">';
+  if (state.visitor) {
+    html += '<textarea placeholder="Écrire un commentaire..." class="comment-textarea" data-post="' + post.id + '" maxlength="1000"></textarea>';
+    html += '<div class="comment-input-actions">';
+    html += '<button class="comment-submit-btn" data-post="' + post.id + '">Envoyer</button>';
+    html += '<label class="comment-file-label">📷 <input type="file" accept="image/*" class="comment-file-input" data-post="' + post.id + '"></label>';
+    html += '</div>';
+    html += '<div class="comment-preview" id="comment-preview-' + post.id + '" style="display:none"></div>';
+  }
+
+  if (!topComments.length) {
+    html += '<div class="comments-empty">Aucun commentaire</div>';
+  } else {
+    topComments.forEach(c => {
+      html += renderComment(c, postComments, post);
+    });
+  }
+  html += '</div>';
+
+  html += '</div>';
+  return html;
+}
+
+function renderComment(comment, allComments, post) {
+  const replies = allComments.filter(c => c.parent_id === comment.id);
+  const hasPreview = state.visitor && state.visitor.avatar_url;
+  let html = '<div class="comment" data-comment-id="' + comment.id + '">';
+  if (hasPreview) {
+    html += '<img src="' + escHtml(state.visitor.avatar_url) + '" alt="" class="comment-avatar">';
+  } else {
+    html += '<div class="comment-avatar-fallback">' + getInitials(state.visitor?.username) + '</div>';
+  }
+  html += '<div class="comment-body">';
+  html += '<span class="comment-author">' + escHtml(state.visitor?.username || 'Anonyme') + '</span>';
+  html += '<div class="comment-text">' + escHtml(comment.contenu) + '</div>';
+  if (comment.image_url) {
+    html += '<img src="' + escHtml(comment.image_url) + '" alt="" class="comment-image" loading="lazy">';
+  }
+  html += '<span class="comment-date">' + timeAgo(comment.created_at) + '</span>';
+  html += ' <button class="comment-reply-btn" data-comment="' + comment.id + '" data-post="' + comment.post_id + '">Répondre</button>';
+  if (state.isCreator) {
+    html += ' <button class="comment-reply-btn delete-comment-btn" data-comment="' + comment.id + '" style="color:var(--danger)">Supprimer</button>';
+  }
+  html += '</div></div>';
+
+  replies.forEach(r => {
+    html += '<div class="comment reply">';
+    html += '<div class="comment-avatar-fallback" style="width:24px;height:24px;font-size:0.5rem">' + getInitials(state.visitor?.username) + '</div>';
+    html += '<div class="comment-body">';
+    html += '<span class="comment-author">' + escHtml(state.visitor?.username || 'Anonyme') + '</span>';
+    html += '<div class="comment-text">' + escHtml(r.contenu) + '</div>';
+    if (r.image_url) {
+      html += '<img src="' + escHtml(r.image_url) + '" alt="" class="comment-image" loading="lazy">';
+    }
+    html += '<span class="comment-date">' + timeAgo(r.created_at) + '</span>';
+    html += '</div></div>';
+  });
+
+  return html;
+}
+
+function renderSondage(post) {
+  const options = state.sondageOptions[post.id] || [];
+  if (!options.length) return '<p style="color:var(--text-muted);font-size:0.85rem">Sondage sans options</p>';
+
+  const totalVotes = options.reduce((sum, o) => sum + (state.sondageVotes[o.id] || 0), 0);
+  const userVotedOption = options.find(o => {
+    /* Check if visitor voted for this option — we use a set approach */
+    return false; /* simplified — we track per-option in state */
+  });
+
+  let html = '<div class="sondage-display" data-post="' + post.id + '">';
+
+  options.forEach((opt, idx) => {
+    const count = state.sondageVotes[opt.id] || 0;
+    const pct = totalVotes > 0 ? Math.round((count / totalVotes) * 100) : 0;
+    html += '<div class="sondage-option-display" data-optid="' + opt.id + '" data-post="' + post.id + '">';
+    /* Always show bars now — we determine if user can vote */
+    html += '<div class="sondage-option-bar" style="width:' + pct + '%"></div>';
+    html += '<div class="sondage-option-radio" data-optid="' + opt.id + '"></div>';
+    html += '<span class="sondage-option-text">' + escHtml(opt.option_text) + '</span>';
+    html += '<span class="sondage-option-pct">' + pct + '%</span>';
+    html += '</div>';
+  });
+
+  html += '<button class="sondage-vote-btn" data-post="' + post.id + '" disabled>Voter</button>';
+  html += '<div class="sondage-total">' + totalVotes + ' vote' + (totalVotes !== 1 ? 's' : '') + '</div>';
+  html += '</div>';
+  return html;
+}
+
+/* ===== BINDINGS ===== */
+function bindTabs() {
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      state.activeTab = this.getAttribute('data-tab');
+      render();
+    });
+  });
+}
+
+function bindCreatePost() {
+  const textarea = document.getElementById('create-post-text');
+  const submitBtn = document.getElementById('create-post-submit');
+  const fileInput = document.getElementById('create-post-file');
+  const fileLabel = document.getElementById('create-post-file-label');
+  const preview = document.getElementById('create-post-preview');
+  const sondageArea = document.getElementById('sondage-options-area');
+  const sondageBtn = document.getElementById('create-sondage-btn');
+  const addOptBtn = document.getElementById('add-option-btn');
+  let isSondage = false;
+  let selectedFile = null;
+  let blobUrl = null;
+
+  if (fileLabel && fileInput) {
+    fileLabel.addEventListener('click', function(e) {
+      if (e.target !== fileInput) fileInput.click();
+    });
+    fileInput.addEventListener('change', function() {
+      handleFileSelect(this.files[0]);
+    });
+  }
+
+  function handleFileSelect(file) {
+    if (blobUrl) { URL.revokeObjectURL(blobUrl); blobUrl = null; }
+    if (file) {
+      selectedFile = file;
+      blobUrl = URL.createObjectURL(file);
+      preview.innerHTML = '<img src="' + blobUrl + '" alt=""><button class="create-post-preview-remove" id="remove-preview-btn">✕</button>';
+      preview.style.display = 'block';
+      fileLabel.classList.add('has-file');
+      document.getElementById('remove-preview-btn').addEventListener('click', function() {
+        selectedFile = null;
+        if (blobUrl) { URL.revokeObjectURL(blobUrl); blobUrl = null; }
+        preview.style.display = 'none';
+        preview.innerHTML = '';
+        fileInput.value = '';
+        fileLabel.classList.remove('has-file');
+      });
+    }
+  }
+
+  if (sondageBtn) {
+    sondageBtn.addEventListener('click', function() {
+      isSondage = !isSondage;
+      sondageArea.style.display = isSondage ? 'flex' : 'none';
+      sondageArea.style.flexDirection = 'column';
+      sondageBtn.textContent = isSondage ? '− Retirer sondage' : '+ Sondage';
+      if (!isSondage) {
+        /* Reset options */
+        const rows = sondageArea.querySelectorAll('.sondage-option-row');
+        if (rows.length >= 2) {
+          rows[0].querySelector('input').value = '';
+          rows[1].querySelector('input').value = '';
+        }
+        while (sondageArea.querySelectorAll('.sondage-option-row').length > 2) {
+          const rows2 = sondageArea.querySelectorAll('.sondage-option-row');
+          rows2[rows2.length - 1].remove();
+        }
+      }
+    });
+  }
+
+  if (addOptBtn) {
+    addOptBtn.addEventListener('click', function() {
+      const rows = sondageArea.querySelectorAll('.sondage-option-row');
+      if (rows.length >= 4) { showToast('Maximum 4 options', 'error'); return; }
+      const idx = rows.length;
+      const row = document.createElement('div');
+      row.className = 'sondage-option-row';
+      row.innerHTML = '<input type="text" placeholder="Option ' + (idx + 1) + '" class="sondage-opt-input" maxlength="100"><button class="sondage-option-remove" data-opt="' + idx + '">✕</button>';
+      sondageArea.insertBefore(row, addOptBtn);
+      row.querySelector('.sondage-option-remove').addEventListener('click', function() {
+        const allRows = sondageArea.querySelectorAll('.sondage-option-row');
+        if (allRows.length <= 2) { showToast('Minimum 2 options', 'error'); return; }
+        row.remove();
+        /* Renumber placeholders */
+        sondageArea.querySelectorAll('.sondage-option-row').forEach((r, i) => {
+          r.querySelector('input').placeholder = 'Option ' + (i + 1);
+        });
+      });
+    });
+    /* Bind initial remove buttons */
+    sondageArea.querySelectorAll('.sondage-option-remove').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const allRows = sondageArea.querySelectorAll('.sondage-option-row');
+        if (allRows.length <= 2) { showToast('Minimum 2 options', 'error'); return; }
+        this.closest('.sondage-option-row').remove();
+        sondageArea.querySelectorAll('.sondage-option-row').forEach((r, i) => {
+          r.querySelector('input').placeholder = 'Option ' + (i + 1);
+        });
+      });
+    });
+  }
+
+  if (submitBtn && textarea) {
+    submitBtn.addEventListener('click', async function() {
+      const content = textarea.value.trim();
+      if (!content && !selectedFile && !isSondage) { showToast('Écrivez quelque chose ou ajoutez une image', 'error'); return; }
+      if (isSondage) {
+        const inputs = sondageArea.querySelectorAll('.sondage-opt-input');
+        const vals = [];
+        let valid = true;
+        inputs.forEach(inp => {
+          const v = inp.value.trim();
+          if (!v) valid = false;
+          else vals.push(v);
+        });
+        if (!valid || vals.length < 2) { showToast('Remplissez au moins 2 options', 'error'); return; }
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Publication...';
+
+      try {
+        let imageUrl = null;
+        if (selectedFile) {
+          const ext = selectedFile.name.split('.').pop() || 'jpg';
+          const fileName = 'communaute/' + state.visitor.id + '/' + Date.now() + '.' + ext;
+          const { data: uplData, error: uplErr } = await sb.storage.from('community').upload(fileName, selectedFile);
+          if (!uplErr && uplData) {
+            const { data: pubData } = sb.storage.from('community').getPublicUrl(fileName);
+            imageUrl = pubData?.publicUrl || null;
+          } else {
+            /* Fallback: use blob URL (won't persist but shows immediately) */
+            imageUrl = blobUrl;
+          }
+        }
+
+        if (isSondage) {
+          /* Create sondage post first */
+          const { data: postData, error: postErr } = await sb.from('posts_communaute').insert({
+            creator_id: state.creatorId,
+            auteur_id: state.visitor.id,
+            contenu: content || null,
+            image_url: imageUrl,
+            type: 'sondage',
+            est_epingle: false
+          }).select().single();
+          if (postErr) throw postErr;
+
+          /* Insert options */
+          const inputs = sondageArea.querySelectorAll('.sondage-opt-input');
+          const options = [];
+          inputs.forEach((inp, idx) => {
+            options.push({
+              post_id: postData.id,
+              option_text: inp.value.trim(),
+              position: idx
+            });
+          });
+          const { error: optErr } = await sb.from('sondage_options').insert(options);
+          if (optErr) throw optErr;
+        } else {
+          const { error: postErr } = await sb.from('posts_communaute').insert({
+            creator_id: state.creatorId,
+            auteur_id: state.visitor.id,
+            contenu: content || null,
+            image_url: imageUrl,
+            type: 'post',
+            est_epingle: false
+          });
+          if (postErr) throw postErr;
+        }
+
+        showToast('Post publié !', 'success');
+        textarea.value = '';
+        selectedFile = null;
+        if (blobUrl) { URL.revokeObjectURL(blobUrl); blobUrl = null; }
+        preview.style.display = 'none';
+        preview.innerHTML = '';
+        fileInput.value = '';
+        fileLabel.classList.remove('has-file');
+        if (isSondage) {
+          sondageArea.style.display = 'none';
+          sondageBtn.textContent = '+ Sondage';
+          isSondage = false;
+          sondageArea.querySelectorAll('.sondage-opt-input').forEach(inp => inp.value = '');
+        }
+        await loadPosts();
+        await loadSondageVotes();
+        render();
+      } catch (err) {
+        showToast('Erreur: ' + err.message, 'error');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Publier';
+      }
+    });
+  }
+
+  /* Pin/Delete buttons */
+  document.querySelectorAll('.pin-btn').forEach(btn => {
+    btn.addEventListener('click', async function() {
+      const postId = parseInt(this.getAttribute('data-post'));
+      const isPinned = this.getAttribute('data-pinned') === '1';
+      try {
+        const { error } = await sb.from('posts_communaute').update({ est_epingle: !isPinned }).eq('id', postId);
+        if (error) throw error;
+        await loadPosts();
+        render();
+        showToast(isPinned ? 'Post désépinglé' : 'Post épinglé !', 'success');
+      } catch (err) {
+        showToast('Erreur: ' + err.message, 'error');
+      }
+    });
+  });
+
+  document.querySelectorAll('.delete-post-btn').forEach(btn => {
+    btn.addEventListener('click', async function() {
+      if (!confirm('Supprimer ce post définitivement ?')) return;
+      const postId = parseInt(this.getAttribute('data-post'));
+      try {
+        /* Delete related data first */
+        await sb.from('reactions').delete().eq('post_id', postId);
+        await sb.from('commentaires_communaute').delete().eq('post_id', postId);
+
+        /* Delete sondage data if exists */
+        const opts = await sb.from('sondage_options').select('id').eq('post_id', postId);
+        if (opts.data && opts.data.length) {
+          const optIds = opts.data.map(o => o.id);
+          await sb.from('sondage_votes').delete().in('option_id', optIds);
+          await sb.from('sondage_options').delete().eq('post_id', postId);
+        }
+
+        await sb.from('posts_communaute').delete().eq('id', postId);
+        showToast('Post supprimé', 'success');
+        state.posts = state.posts.filter(p => p.id !== postId);
+        render();
+      } catch (err) {
+        showToast('Erreur: ' + err.message, 'error');
+      }
+    });
+  });
+}
+
+function bindReactions() {
+  document.querySelectorAll('.reaction-btn').forEach(btn => {
+    btn.addEventListener('click', async function() {
+      if (!state.visitor) { showToast('Connectez-vous pour réagir', 'error'); return; }
+      const postId = parseInt(this.getAttribute('data-post'));
+      const type = this.getAttribute('data-type');
+      const existing = state.reactions[postId]?.find(r => r.user_id === state.visitor.id);
+
+      try {
+        if (existing && existing.type === type) {
+          /* Remove reaction */
+          const { error } = await sb.from('reactions').delete()
+            .eq('post_id', postId).eq('user_id', state.visitor.id);
+          if (error) throw error;
+          /* Optimistic update */
+          state.reactions[postId] = (state.reactions[postId] || []).filter(r => r.user_id !== state.visitor.id);
+          render();
+        } else {
+          if (existing) {
+            /* Change reaction type — delete old first */
+            await sb.from('reactions').delete()
+              .eq('post_id', postId).eq('user_id', state.visitor.id);
+          }
+          const { error } = await sb.from('reactions').insert({
+            post_id: postId, user_id: state.visitor.id, type: type
+          });
+          if (error) throw error;
+          /* Optimistic update */
+          state.reactions[postId] = (state.reactions[postId] || []).filter(r => r.user_id !== state.visitor.id);
+          state.reactions[postId].push({ post_id: postId, user_id: state.visitor.id, type: type });
+          render();
+        }
+      } catch (err) {
+        showToast('Erreur réaction: ' + err.message, 'error');
+      }
+    });
+  });
+}
+
+function bindComments() {
+  /* Toggle comments section */
+  document.querySelectorAll('.comment-toggle-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const postId = this.getAttribute('data-post');
+      const section = document.getElementById('comments-' + postId);
+      if (section) {
+        section.style.display = section.style.display === 'none' ? 'block' : 'none';
+      }
+    });
+  });
+
+  /* Submit comment */
+  document.querySelectorAll('.comment-submit-btn').forEach(btn => {
+    btn.addEventListener('click', async function() {
+      const postId = parseInt(this.getAttribute('data-post'));
+      const textarea = document.querySelector('.comment-textarea[data-post="' + postId + '"]');
+      const content = textarea.value.trim();
+      if (!content) { showToast('Écrivez un commentaire', 'error'); return; }
+
+      this.disabled = true;
+      this.textContent = 'Envoi...';
+
+      try {
+        const { error } = await sb.from('commentaires_communaute').insert({
+          post_id: postId,
+          user_id: state.visitor.id,
+          contenu: content
+        });
+        if (error) throw error;
+        textarea.value = '';
+        showToast('Commentaire ajouté', 'success');
+        await loadPosts();
+        render();
+      } catch (err) {
+        showToast('Erreur: ' + err.message, 'error');
+        this.disabled = false;
+        this.textContent = 'Envoyer';
+      }
+    });
+  });
+
+  /* Comment file preview */
+  document.querySelectorAll('.comment-file-input').forEach(inp => {
+    inp.addEventListener('change', function() {
+      const postId = this.getAttribute('data-post');
+      const preview = document.getElementById('comment-preview-' + postId);
+      if (this.files[0]) {
+        const url = URL.createObjectURL(this.files[0]);
+        preview.innerHTML = '<img src="' + url + '" style="max-width:120px;border-radius:6px">';
+        preview.style.display = 'block';
+      } else {
+        preview.style.display = 'none';
+        preview.innerHTML = '';
+      }
+    });
+  });
+
+  /* Reply button */
+  document.querySelectorAll('.comment-reply-btn').forEach(btn => {
+    btn.addEventListener('click', async function() {
+      if (this.classList.contains('delete-comment-btn')) {
+        const commentId = parseInt(this.getAttribute('data-comment'));
+        if (!confirm('Supprimer ce commentaire ?')) return;
+        try {
+          await sb.from('commentaires_communaute').delete().eq('id', commentId);
+          await loadPosts();
+          render();
+          showToast('Commentaire supprimé', 'success');
+        } catch (err) {
+          showToast('Erreur: ' + err.message, 'error');
+        }
+        return;
+      }
+
+      const parentId = parseInt(this.getAttribute('data-comment'));
+      const postId = parseInt(this.getAttribute('data-post'));
+      const replyText = prompt('Votre réponse :');
+      if (!replyText || !replyText.trim()) return;
+      try {
+        const { error } = await sb.from('commentaires_communaute').insert({
+          post_id: postId,
+          user_id: state.visitor.id,
+          contenu: replyText.trim(),
+          parent_id: parentId
+        });
+        if (error) throw error;
+        showToast('Réponse ajoutée', 'success');
+        await loadPosts();
+        render();
+      } catch (err) {
+        showToast('Erreur: ' + err.message, 'error');
+      }
+    });
+  });
+}
+
+function bindSondageVote() {
+  /* Select option */
+  document.querySelectorAll('.sondage-option-display').forEach(el => {
+    el.addEventListener('click', function() {
+      const postId = this.getAttribute('data-post');
+      const optId = parseInt(this.getAttribute('data-optid'));
+      const parent = this.closest('.sondage-display');
+      parent.querySelectorAll('.sondage-option-radio').forEach(r => {
+        r.classList.remove('selected');
+      });
+      this.querySelector('.sondage-option-radio').classList.add('selected');
+      const voteBtn = parent.querySelector('.sondage-vote-btn');
+      voteBtn.disabled = false;
+      voteBtn.dataset.optid = optId;
+    });
+  });
+
+  /* Submit vote */
+  document.querySelectorAll('.sondage-vote-btn').forEach(btn => {
+    btn.addEventListener('click', async function() {
+      const optId = parseInt(this.dataset.optid);
+      if (!optId) { showToast('Sélectionnez une option', 'error'); return; }
+      try {
+        const { error } = await sb.from('sondage_votes').insert({
+          option_id: optId,
+          user_id: state.visitor.id
+        });
+        if (error) throw error;
+        showToast('Vote enregistré !', 'success');
+        await loadSondageVotes();
+        render();
+      } catch (err) {
+        showToast('Erreur: ' + err.message, 'error');
+      }
+    });
+  });
+}
+
+/* Handle storage fallback for comment file uploads */
+/* The comment file upload uses blob URL fallback */
+document.addEventListener('change', function(e) {
+  if (e.target.classList.contains('comment-file-input') && e.target.files[0]) {
+    const postId = e.target.getAttribute('data-post');
+    const preview = document.getElementById('comment-preview-' + postId);
+    if (preview) {
+      const url = URL.createObjectURL(e.target.files[0]);
+      preview.innerHTML = '<img src="' + url + '" style="max-width:120px;border-radius:6px">';
+      preview.style.display = 'block';
+    }
+  }
+});
+</script>
+</body>
+</html>
