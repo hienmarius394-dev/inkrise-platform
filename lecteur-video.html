@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lecteur vidéo — InkRise</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root {
+      --bg:      #0b0b10;
+      --surface: #13131c;
+      --surface2:#1c1c28;
+      --purple:  #7c6fef;
+      --purple2: #a594f9;
+      --accent:  #f0522a;
+      --green:   #3ddc84;
+      --text:    #ececf4;
+      --muted:   #6b6b8a;
+      --border:  rgba(255,255,255,0.07);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding-bottom: 90px; }
+
+    /* ── NAV ── */
+    .univ-nav { position: sticky; top: 0; z-index: 100; background: rgba(11,11,16,0.96); backdrop-filter: blur(14px); border-bottom: 1px solid rgba(255,255,255,0.08); padding: 0 16px; height: 58px; display: flex; align-items: center; gap: 8px; }
+    .univ-nav-logo { font-family: 'Syne', sans-serif; font-size: 1.2rem; font-weight: 900; text-decoration: none; background: linear-gradient(135deg, #7c6fef, #a594f9); -webkit-background-clip: text; -webkit-text-fill-color: transparent; flex-shrink: 0; letter-spacing: 1px; }
+    .univ-nav-links-d { display: flex; align-items: center; gap: 2px; flex: 1; margin: 0 8px; }
+    @media (max-width: 680px) { .univ-nav-links-d { display: none; } }
+    .univ-nav-lk { color: rgba(240,239,254,0.6); font-size: .82rem; font-weight: 600; text-decoration: none; padding: 5px 10px; border-radius: 7px; transition: all .2s; white-space: nowrap; font-family: 'DM Sans', sans-serif; }
+    .univ-nav-lk:hover { color: #f0effe; background: rgba(255,255,255,0.06); }
+    .univ-nav-lk.active { color: var(--purple2); background: rgba(124,111,239,0.1); }
+    .nav-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+    .nav-connexion-btn { color: rgba(255,255,255,0.7); font-size: .8rem; font-weight: 600; padding: 6px 13px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.15); text-decoration: none; transition: all .2s; white-space: nowrap; }
+    .nav-connexion-btn:hover { border-color: var(--purple); color: var(--purple2); }
+    .nav-avatar-btn { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #7c6fef, #5040c8); display: none; align-items: center; justify-content: center; font-size: .85rem; font-weight: 700; color: #fff; text-decoration: none; text-transform: uppercase; }
+    .nav-avatar-btn.show { display: flex; }
+
+    /* ── BOTTOM NAV ── */
+    .univ-bnav { position: fixed; bottom: 0; left: 0; right: 0; z-index: 100; background: rgba(10,10,15,.97); border-top: 1px solid rgba(255,255,255,.07); display: flex; align-items: center; justify-content: space-around; padding: 8px 0 16px; backdrop-filter: blur(14px); }
+    .univ-bnav-item { display: flex; flex-direction: column; align-items: center; gap: 2px; text-decoration: none; color: rgba(240,239,254,.4); padding: 0 8px; transition: color .2s; }
+    .univ-bnav-item:hover { color: rgba(240,239,254,.9); }
+    .univ-bnav-item.active { color: var(--purple2); }
+    .univ-bnav-icon { font-size: 20px; }
+    .univ-bnav-label { font-size: .6rem; font-weight: 800; font-family: 'DM Sans', sans-serif; }
+    .univ-bnav-search { width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, #7c6fef, #5040c8); border: none; display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer; margin-top: -18px; box-shadow: 0 4px 18px rgba(124,111,239,.5); transition: transform .2s; flex-shrink: 0; text-decoration: none; color: #fff; }
+    .univ-bnav-search:hover { transform: scale(1.08); }
+
+    /* ── LOADING ── */
+    .page-loading { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; min-height: 60vh; color: var(--muted); }
+    .loading-ring { width: 36px; height: 36px; border: 3px solid rgba(124,111,239,.2); border-top-color: #7c6fef; border-radius: 50%; animation: spin .8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── ACCÈS REFUSÉ ── */
+    .access-denied { text-align: center; padding: 80px 20px; }
+    .access-denied-icon { font-size: 3.5rem; margin-bottom: 16px; }
+    .access-denied h2 { font-family: 'Syne', sans-serif; font-size: 1.4rem; font-weight: 700; margin-bottom: 10px; }
+    .access-denied p { color: var(--muted); margin-bottom: 24px; line-height: 1.6; }
+    .btn-back { display: inline-block; padding: 10px 22px; background: rgba(124,111,239,.15); border: 1px solid rgba(124,111,239,.3); border-radius: 20px; color: var(--purple2); text-decoration: none; font-weight: 700; font-size: .9rem; transition: all .2s; }
+    .btn-back:hover { background: rgba(124,111,239,.25); }
+
+    /* ── MAIN ── */
+    .main-wrap { max-width: 900px; margin: 0 auto; padding: 28px 16px 40px; }
+
+    /* ── BREADCRUMB ── */
+    .breadcrumb { font-size: .8rem; color: var(--muted); margin-bottom: 20px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+    .breadcrumb a { color: var(--purple2); text-decoration: none; transition: color .2s; }
+    .breadcrumb a:hover { text-decoration: underline; }
+    .breadcrumb span { color: var(--muted); }
+
+    /* ── PLAYER ── */
+    .video-container {
+      position: relative;
+      width: 100%;
+      padding-top: 56.25%;
+      background: #000;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 12px 48px rgba(0,0,0,.6);
+      border: 1px solid rgba(124,111,239,.2);
+      margin-bottom: 28px;
+    }
+    .video-container iframe,
+    .video-container video {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border: none;
+      border-radius: 16px;
+    }
+    .video-container video { object-fit: contain; background: #000; }
+
+    /* ── INFOS ── */
+    .video-info {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 22px 24px;
+      margin-bottom: 20px;
+    }
+    .video-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.4rem;
+      font-weight: 800;
+      line-height: 1.3;
+      margin-bottom: 10px;
+    }
+    .video-creator {
+      font-size: .85rem;
+      color: var(--muted);
+      margin-bottom: 16px;
+    }
+    .video-creator a { color: var(--purple2); text-decoration: none; font-weight: 600; }
+    .video-creator a:hover { text-decoration: underline; }
+    .video-desc {
+      font-size: .88rem;
+      line-height: 1.75;
+      color: #c0c0d8;
+    }
+    .divider { height: 1px; background: var(--border); margin: 16px 0; }
+
+    /* ── TOAST ── */
+    .toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; padding: 10px 20px; font-size: .88rem; font-weight: 600; opacity: 0; transition: all .3s; z-index: 200; pointer-events: none; white-space: nowrap; }
+    .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="univ-nav">
+  <a href="index.html" class="univ-nav-logo">INKRISE</a>
+  <div class="univ-nav-links-d">
+    <a href="index.html" class="univ-nav-lk">Accueil</a>
+    <a href="manga.html" class="univ-nav-lk">Mangas</a>
+    <a href="tutoriels.html" class="univ-nav-lk active">Tutoriels</a>
+    <a href="premium.html" class="univ-nav-lk">Premium ✨</a>
+  </div>
+  <div class="nav-right">
+    <a href="auth.html" class="nav-connexion-btn" id="navConnexion">Connexion</a>
+    <a href="profil.html" class="nav-avatar-btn" id="navAvatar">?</a>
+  </div>
+</nav>
+
+<!-- LOADING -->
+<div id="pageLoading" class="page-loading">
+  <div class="loading-ring"></div>
+  <span>Chargement du lecteur…</span>
+</div>
+
+<!-- ACCÈS REFUSÉ -->
+<div id="accessDenied" style="display:none;">
+  <div class="access-denied">
+    <div class="access-denied-icon">🔒</div>
+    <h2>Accès refusé</h2>
+    <p>Tu dois acheter cette formation pour accéder à la vidéo.</p>
+    <a href="#" class="btn-back" id="backToPackBtn">← Voir la formation</a>
+  </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div id="mainContent" style="display:none;">
+  <div class="main-wrap">
+
+    <div class="breadcrumb">
+      <a href="tutoriels.html">Tutoriels</a>
+      <span>›</span>
+      <a href="#" id="breadcrumbPack">Formation</a>
+      <span>›</span>
+      <span>Lecteur vidéo</span>
+    </div>
+
+    <!-- Player -->
+    <div class="video-container" id="videoContainer">
+      <!-- injecté dynamiquement -->
+    </div>
+
+    <!-- Infos -->
+    <div class="video-info">
+      <div class="video-title" id="videoTitle">—</div>
+      <div class="video-creator">par <a href="#" id="videoCreatorLink">—</a></div>
+      <div class="divider"></div>
+      <div class="video-desc" id="videoDesc">—</div>
+    </div>
+
+    <a href="#" class="btn-back" id="backBtn" style="display:inline-block; margin-top: 4px;">← Retour à la formation</a>
+
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- BOTTOM NAV -->
+<div class="univ-bnav">
+  <a href="index.html" class="univ-bnav-item"><span class="univ-bnav-icon">🏠</span><span class="univ-bnav-label">Accueil</span></a>
+  <a href="manga.html" class="univ-bnav-item"><span class="univ-bnav-icon">📖</span><span class="univ-bnav-label">Manga</span></a>
+  <a href="recherche.html" class="univ-bnav-search">🔍</a>
+  <a href="tutoriels.html" class="univ-bnav-item active"><span class="univ-bnav-icon">🎓</span><span class="univ-bnav-label">Tutoriels</span></a>
+  <a href="profil.html" class="univ-bnav-item"><span class="univ-bnav-icon">👤</span><span class="univ-bnav-label">Profil</span></a>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://bsdcpwtimsgxcnaamwip.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJzZGNwd3RpbXNneGNuYWFtd2lwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc2NjI0MTQsImV4cCI6MjA2MzIzODQxNH0.Aq1TMYRMCAbXHTDDv8nHAkWxuIDqHt7mBGrDFsufb44';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+async function init() {
+  const params = new URLSearchParams(window.location.search);
+  const packId = params.get('id');
+
+  if (!packId) { window.location.href = 'tutoriels.html'; return; }
+
+  const { data: sessionData } = await sb.auth.getSession();
+  const currentUser = sessionData?.session?.user || null;
+
+  if (currentUser) {
+    document.getElementById('navConnexion').style.display = 'none';
+    const av = document.getElementById('navAvatar');
+    av.textContent = (currentUser.email?.[0] || '?').toUpperCase();
+    av.classList.add('show');
+  }
+
+  // Charger le pack
+  const { data: pack, error } = await sb
+    .from('packs_tutoriels')
+    .select('*')
+    .eq('id', packId)
+    .single();
+
+  if (error || !pack) { window.location.href = 'tutoriels.html'; return; }
+
+  // Vérifier accès
+  let hasAccess = false;
+  if (currentUser) {
+    const isCreator = currentUser.id === pack.auteur_id;
+    if (isCreator) {
+      hasAccess = true;
+    } else {
+      const { data: achat } = await sb
+        .from('achats_packs')
+        .select('id')
+        .eq('user_id', currentUser.id)
+        .eq('pack_id', packId)
+        .maybeSingle();
+      hasAccess = !!achat;
+    }
+  }
+
+  document.getElementById('backToPackBtn').href = `pack.html?id=${packId}`;
+  document.getElementById('backBtn').href = `pack.html?id=${packId}`;
+  document.getElementById('breadcrumbPack').href = `pack.html?id=${packId}`;
+  document.getElementById('breadcrumbPack').textContent = pack.titre || 'Formation';
+
+  document.getElementById('pageLoading').style.display = 'none';
+
+  if (!hasAccess) {
+    document.getElementById('accessDenied').style.display = 'block';
+    return;
+  }
+
+  if (!pack.contenu_url) {
+    document.getElementById('accessDenied').style.display = 'block';
+    document.querySelector('#accessDenied h2').textContent = 'Vidéo non disponible';
+    document.querySelector('#accessDenied p').textContent = 'Le créateur n\'a pas encore ajouté de vidéo à cette formation.';
+    return;
+  }
+
+  renderPlayer(pack);
+}
+
+function getYouTubeId(url) {
+  const m = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([^&?/\s]{11})/);
+  return m ? m[1] : null;
+}
+
+function getVimeoId(url) {
+  const m = url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
+  return m ? m[1] : null;
+}
+
+function renderPlayer(pack) {
+  const url = pack.contenu_url;
+  const container = document.getElementById('videoContainer');
+  let playerHtml = '';
+
+  const ytId = getYouTubeId(url);
+  const vmId = getVimeoId(url);
+
+  if (ytId) {
+    playerHtml = `<iframe src="https://www.youtube.com/embed/${ytId}?rel=0&modestbranding=1" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`;
+  } else if (vmId) {
+    playerHtml = `<iframe src="https://player.vimeo.com/video/${vmId}?title=0&byline=0&portrait=0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>`;
+  } else {
+    playerHtml = `<video controls preload="metadata"><source src="${escHtml(url)}" /><p style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;">Ton navigateur ne supporte pas la lecture vidéo.</p></video>`;
+  }
+
+  container.innerHTML = playerHtml;
+
+  document.title = `${pack.titre || 'Vidéo'} — InkRise`;
+  document.getElementById('videoTitle').textContent = pack.titre || 'Formation';
+  document.getElementById('videoDesc').textContent = pack.description || 'Aucune description.';
+
+  const creatorLink = document.getElementById('videoCreatorLink');
+  creatorLink.textContent = pack.auteur_nom || 'Créateur';
+  if (pack.auteur_id) creatorLink.href = `auteur.html?id=${pack.auteur_id}`;
+
+  document.getElementById('mainContent').style.display = 'block';
+}
+
+function escHtml(str) {
+  if (!str) return '';
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+init();
+</script>
+</body>
+</html>

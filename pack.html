@@ -202,6 +202,16 @@
       box-shadow: 0 4px 20px rgba(61,220,132,.3);
     }
     .btn-buy.free-dl:hover { box-shadow: 0 8px 28px rgba(61,220,132,.45); }
+    .btn-watch {
+      display: block; width: 100%;
+      background: linear-gradient(135deg, #7c6fef, #5040c8);
+      color: #fff; border: none; border-radius: 12px;
+      padding: 12px 20px; margin-top: 10px;
+      font-family: 'Syne', sans-serif; font-size: .95rem; font-weight: 800;
+      cursor: pointer; transition: all .25s; text-decoration: none;
+      text-align: center; box-shadow: 0 4px 18px rgba(124,111,239,.35);
+    }
+    .btn-watch:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(124,111,239,.5); }
     .buy-guarantee {
       margin-top: 14px; font-size: .75rem; color: var(--muted);
       display: flex; align-items: center; justify-content: center; gap: 5px;
@@ -394,6 +404,7 @@
           <div class="buy-price-display" id="buyPriceMobile">2€</div>
           <div class="buy-price-sub">Accès à vie · Téléchargement inclus</div>
           <button class="btn-buy" id="buyBtnMobile" onclick="handleBuy()">Acheter — 2€</button>
+          <a href="#" class="btn-watch" id="watchBtnMobile" style="display:none;">▶ Regarder la vidéo</a>
           <div class="buy-guarantee">🔒 Paiement sécurisé</div>
         </div>
 
@@ -472,6 +483,7 @@
           <div class="buy-price-display" id="buyPriceDesktop">2€</div>
           <div class="buy-price-sub">Accès à vie · Téléchargement inclus</div>
           <button class="btn-buy" id="buyBtnDesktop" onclick="handleBuy()">Acheter — 2€</button>
+          <a href="#" class="btn-watch" id="watchBtnDesktop" style="display:none;">▶ Regarder la vidéo</a>
           <div class="buy-guarantee">🔒 Paiement sécurisé</div>
         </div>
 
@@ -595,6 +607,14 @@ async function loadPack(packId) {
         btn.classList.add('free-dl');
         btn.onclick = handleDownload;
       });
+      if (data.contenu_url && isVideoUrl(data.contenu_url)) {
+        const videoUrl = `lecteur-video.html?id=${data.id}`;
+        ['watchBtnMobile', 'watchBtnDesktop'].forEach(id => {
+          const btn = document.getElementById(id);
+          btn.href = videoUrl;
+          btn.style.display = 'block';
+        });
+      }
     }
   }
 }
@@ -693,9 +713,15 @@ function handleBuy() {
   document.getElementById('stripeModal').classList.add('open');
 }
 
+function isVideoUrl(url) {
+  return /youtube\.com|youtu\.be|vimeo\.com/i.test(url) || /\.(mp4|webm|ogg)$/i.test(url);
+}
+
 function handleDownload() {
-  if (currentPack && currentPack.contenu_url) {
+  if (currentPack && currentPack.contenu_url && !isVideoUrl(currentPack.contenu_url)) {
     window.open(currentPack.contenu_url, '_blank', 'noopener');
+  } else if (currentPack && currentPack.contenu_url && isVideoUrl(currentPack.contenu_url)) {
+    window.location.href = `lecteur-video.html?id=${currentPack.id}`;
   } else {
     showToast('Fichier bientôt disponible', 'info');
   }

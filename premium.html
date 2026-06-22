@@ -566,6 +566,11 @@
         <label class="form-label" for="f-image">URL de l'image (optionnelle)</label>
         <input class="form-input" type="url" id="f-image" placeholder="https://..." />
       </div>
+      <div class="form-group">
+        <label class="form-label" for="f-video">Lien vidéo (optionnel)</label>
+        <input class="form-input" type="url" id="f-video" placeholder="URL YouTube, Vimeo, ou fichier vidéo..." />
+        <div class="form-hint">Ex : https://www.youtube.com/watch?v=... ou https://vimeo.com/...</div>
+      </div>
       <div class="form-footer">
         <button type="button" class="btn btn-ghost" id="modal-cancel">Annuler</button>
         <button type="submit" class="btn btn-primary" id="modal-submit">
@@ -762,6 +767,7 @@
     document.getElementById('f-desc').value = pack.description || '';
     document.getElementById('f-prix').value = pack.prix != null ? pack.prix : '2.00';
     document.getElementById('f-image').value = pack.image_url || '';
+    document.getElementById('f-video').value = pack.contenu_url || '';
     document.getElementById('modal-overlay').classList.add('open');
   }
 
@@ -776,13 +782,14 @@
     const description = document.getElementById('f-desc').value.trim();
     const prix = parseFloat(document.getElementById('f-prix').value) || 0;
     const image_url = document.getElementById('f-image').value.trim() || null;
+    const contenu_url = document.getElementById('f-video').value.trim() || null;
     const editId = document.getElementById('edit-pack-id').value;
 
     try {
       if (editId) {
         const { error } = await sb
           .from('packs_tutoriels')
-          .update({ titre, description, prix, image_url })
+          .update({ titre, description, prix, image_url, contenu_url })
           .eq('id', editId)
           .eq('auteur_id', currentUser.id);
         if (error) throw error;
@@ -790,7 +797,7 @@
       } else {
         const { error } = await sb
           .from('packs_tutoriels')
-          .insert({ titre, description, prix, image_url, auteur_id: currentUser.id, auteur_nom: userProfile.username });
+          .insert({ titre, description, prix, image_url, contenu_url, auteur_id: currentUser.id, auteur_nom: userProfile.username });
         if (error) throw error;
         showToast('Formation créée !', 'success');
       }
