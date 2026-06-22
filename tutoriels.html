@@ -348,7 +348,8 @@ async function init() {
   if (user) {
     document.getElementById('btnConnexion').style.display = 'none';
     const avatarEl = document.getElementById('avatarBtn');
-    avatarEl.textContent = (user.email?.[0] || '?').toUpperCase();
+    const displayName = user.user_metadata?.username || user.email || '?';
+    avatarEl.textContent = displayName[0].toUpperCase();
     avatarEl.style.display = 'flex';
     document.getElementById('drawerProfil').style.display = 'flex';
     document.getElementById('drawerPublier').style.display = 'flex';
