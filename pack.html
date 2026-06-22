@@ -576,6 +576,27 @@ async function loadPack(packId) {
 
   currentPack = data;
   renderPack(data);
+
+  // Vérifier accès (achat ou créateur)
+  if (currentUser && currentUser.id) {
+    const { data: achat } = await sb
+      .from('achats_packs')
+      .select('id')
+      .eq('user_id', currentUser.id)
+      .eq('pack_id', packId)
+      .maybeSingle();
+    const isCreator = currentUser.id === data.auteur_id;
+    currentPack.accesAutorise = !!(achat || isCreator);
+    if (currentPack.accesAutorise) {
+      const buyLabel = data.contenu_url ? '📥 Télécharger le pack' : 'Bientôt disponible';
+      ['buyBtnMobile', 'buyBtnDesktop'].forEach(id => {
+        const btn = document.getElementById(id);
+        btn.textContent = buyLabel;
+        btn.classList.add('free-dl');
+        btn.onclick = handleDownload;
+      });
+    }
+  }
 }
 
 function renderPack(pack) {
@@ -661,15 +682,23 @@ async function loadCreatorProfile(auteurId) {
 }
 
 function handleBuy() {
+  if (currentPack && currentPack.accesAutorise) {
+    handleDownload();
+    return;
+  }
   if (currentPack && (Number(currentPack.prix) === 0 || currentPack.prix === null)) {
-    if (currentPack.contenu_url) {
-      window.open(currentPack.contenu_url, '_blank', 'noopener');
-    } else {
-      showToast('Lien de téléchargement non disponible', 'info');
-    }
+    handleDownload();
     return;
   }
   document.getElementById('stripeModal').classList.add('open');
+}
+
+function handleDownload() {
+  if (currentPack && currentPack.contenu_url) {
+    window.open(currentPack.contenu_url, '_blank', 'noopener');
+  } else {
+    showToast('Fichier bientôt disponible', 'info');
+  }
 }
 
 function closeModal() {
