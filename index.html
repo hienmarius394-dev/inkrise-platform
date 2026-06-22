@@ -458,7 +458,8 @@ async function checkAuth() {
   if (data.session) {
     document.getElementById('navConnexion').style.display = 'none'
     document.getElementById('navAvatar').classList.add('show')
-    document.getElementById('navAvatar').textContent = (data.session.user.email||'?')[0].toUpperCase()
+    const displayName = data.session.user.user_metadata?.username || data.session.user.email || '?';
+    document.getElementById('navAvatar').textContent = displayName[0].toUpperCase()
     document.getElementById('navNotifLink').classList.add('show')
     document.getElementById('drawerProfil').style.display = 'flex'
     document.getElementById('drawerPublier').style.display = 'flex'
