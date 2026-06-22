@@ -36,118 +36,59 @@ body {
 }
 h1,h2,h3,.logo { font-family: 'Nunito', sans-serif; }
 
-/* ── TOP NAV ── */
-nav {
-  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 0 16px; height: 58px;
-  background: rgba(10,10,15,0.96);
-  border-bottom: 1px solid rgba(255,255,255,0.08);
-  box-shadow: 0 1px 20px rgba(0,0,0,0.3);
-  backdrop-filter: blur(14px);
-  gap: 8px;
-}
-.logo { font-size: 20px; font-weight: 900; letter-spacing: -0.5px; text-decoration: none;
-  background: linear-gradient(135deg,#7c6fef,#a594f9); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
-.logo span { -webkit-text-fill-color: transparent; }
-.nav-right { display: flex; align-items: center; gap: 8px; }
+/* ── NAV UNIVERSEL ── */
+    .univ-nav { position: sticky; top: 0; z-index: 100; background: rgba(11,11,16,0.96); backdrop-filter: blur(14px); border-bottom: 1px solid rgba(255,255,255,0.08); padding: 0 16px; height: 58px; display: flex; align-items: center; gap: 8px; }
+    .univ-nav-logo { font-family: 'Syne', sans-serif; font-size: 1.2rem; font-weight: 900; text-decoration: none; background: linear-gradient(135deg, #7c6fef, #a594f9); -webkit-background-clip: text; -webkit-text-fill-color: transparent; flex-shrink: 0; letter-spacing: 1px; }
+    .univ-nav-links-d { display: flex; align-items: center; gap: 2px; flex: 1; margin: 0 8px; }
+    @media (max-width: 680px) { .univ-nav-links-d { display: none; } }
+    .univ-nav-lk { color: rgba(240,239,254,0.6); font-size: .82rem; font-weight: 600; text-decoration: none; padding: 5px 10px; border-radius: 7px; transition: all .2s; white-space: nowrap; font-family: 'DM Sans', sans-serif; }
+    .univ-nav-lk:hover { color: #f0effe; background: rgba(255,255,255,0.06); }
+    .univ-nav-lk.active { color: var(--purple2); background: rgba(124,111,239,0.1); }
+    .univ-nav-search { display: flex; align-items: center; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1); border-radius: 18px; overflow: hidden; max-width: 200px; flex-shrink: 0; }
+    @media (max-width: 480px) { .univ-nav-search { max-width: 110px; } }
+    .univ-nav-si { background: none; border: none; outline: none; color: #f0effe; font-size: .8rem; padding: 7px 10px; width: 100%; font-family: 'DM Sans', sans-serif; }
+    .univ-nav-si::placeholder { color: rgba(240,239,254,.35); }
+    .univ-nav-sb { background: none; border: none; cursor: pointer; padding: 6px 8px; font-size: 13px; color: rgba(240,239,254,.5); flex-shrink: 0; }
+    .univ-nav-sb:hover { color: #7c6fef; }
+    .nav-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+    .nav-connexion-btn { color: rgba(255,255,255,0.7); font-size: .8rem; font-weight: 600; padding: 6px 13px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.15); text-decoration: none; transition: all .2s; white-space: nowrap; }
+    .nav-connexion-btn:hover { border-color: var(--purple); color: var(--purple2); }
+    .nav-avatar-btn { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #7c6fef, #5040c8); display: none; align-items: center; justify-content: center; font-size: .85rem; font-weight: 700; color: #fff; text-decoration: none; text-transform: uppercase; }
+    .nav-avatar-btn.show { display: flex; }
+    .nav-notif-link { position: relative; display: none; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 8px; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1); text-decoration: none; font-size: .95rem; transition: all .2s; }
+    .nav-notif-link.show { display: flex; }
+    .nav-notif-link:hover { background: rgba(255,255,255,0.13); }
+    .nav-notif-dot { position: absolute; top: -5px; right: -5px; min-width: 16px; height: 16px; border-radius: 8px; background: var(--accent); color: #fff; font-size: 9px; font-weight: 800; padding: 0 3px; display: none; align-items: center; justify-content: center; border: 2px solid var(--bg); }
+    .nav-notif-dot.show { display: flex; }
+    .univ-nav-hbg { width: 34px; height: 34px; border-radius: 8px; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; color: #f0effe; transition: background .2s; flex-shrink: 0; }
+    .univ-nav-hbg:hover { background: rgba(255,255,255,0.13); }
 
-.btn-publier {
-  background: var(--orange); color: #fff; border: none; border-radius: 20px;
-  padding: 7px 16px; font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 13px;
-  cursor: pointer; text-decoration: none; transition: all 0.2s; display: none; align-items: center; gap: 5px;
-}
-.btn-publier:hover { background: var(--orange-light); }
-.btn-publier.show { display: inline-flex; }
+    /* ── DRAWER ── */
+    .univ-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 150; backdrop-filter: blur(3px); }
+    .univ-overlay.open { display: block; }
+    .univ-drawer { position: fixed; top: 0; right: 0; width: 270px; height: 100%; background: #13131c; z-index: 151; overflow-y: auto; transform: translateX(100%); transition: transform .28s cubic-bezier(.4,0,.2,1); box-shadow: -4px 0 32px rgba(0,0,0,.4); border-left: 1px solid rgba(255,255,255,.07); }
+    .univ-drawer.open { transform: translateX(0); }
+    .univ-d-hdr { display: flex; align-items: center; justify-content: space-between; padding: 16px; border-bottom: 1px solid rgba(255,255,255,.07); }
+    .univ-d-logo { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 900; text-decoration: none; background: linear-gradient(135deg, #7c6fef, #a594f9); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .univ-d-close { width: 30px; height: 30px; border-radius: 50%; background: rgba(255,255,255,.08); border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; color: rgba(240,239,254,.7); }
+    .univ-d-sec { font-size: .65rem; font-weight: 800; color: rgba(240,239,254,.3); letter-spacing: 1.5px; text-transform: uppercase; padding: 14px 16px 5px; }
+    .univ-d-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; margin: 2px 8px; text-decoration: none; color: rgba(240,239,254,.85); font-weight: 600; font-size: .88rem; cursor: pointer; transition: background .15s; border: none; background: none; width: calc(100% - 16px); text-align: left; border-radius: 9px; font-family: 'DM Sans', sans-serif; }
+    .univ-d-item:hover { background: rgba(255,255,255,.06); }
+    .univ-d-icon { width: 34px; height: 34px; border-radius: 9px; background: rgba(255,255,255,.07); display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+    .univ-d-badge { font-size: .65rem; font-weight: 800; padding: 2px 7px; border-radius: 6px; margin-left: auto; }
+    .univ-d-badge.orange { background: rgba(255,107,53,.15); color: #ff6b35; }
+    .univ-d-badge.teal { background: rgba(0,201,167,.15); color: #00c9a7; }
+    .univ-d-divider { height: 1px; background: rgba(255,255,255,.07); margin: 8px 16px; }
 
-.nav-icon-btn {
-  width: 36px; height: 36px; border-radius: 50%; background: var(--bg-3); border: none;
-  display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px;
-  position: relative; text-decoration: none; transition: background 0.2s;
-}
-.nav-icon-btn:hover { background: var(--border); }
-.notif-dot {
-  position: absolute; top: 1px; right: 1px; width: 9px; height: 9px;
-  background: #ff3d71; border-radius: 50%; border: 2px solid var(--bg-2); display: none;
-}
-.notif-dot.show { display: block; }
-
-.avatar-btn {
-  width: 36px; height: 36px; border-radius: 50%;
-  background: linear-gradient(135deg, var(--orange), var(--purple));
-  border: 2px solid var(--bg-2); box-shadow: 0 2px 8px rgba(124,111,239,0.25);
-  display: none; align-items: center; justify-content: center; font-size: 17px;
-  cursor: pointer; text-decoration: none; transition: transform 0.2s;
-}
-.avatar-btn:hover { transform: scale(1.05); }
-.avatar-btn.show { display: flex; }
-
-.btn-connexion {
-  font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 700;
-  padding: 7px 14px; border-radius: 20px; border: 1.5px solid rgba(255,255,255,0.15);
-  background: transparent; color: rgba(240,239,254,0.8); cursor: pointer; text-decoration: none; transition: all 0.2s;
-  white-space: nowrap;
-}
-.btn-connexion:hover { border-color: #7c6fef; color: #a594f9; }
-
-.hamburger {
-  width: 34px; height: 34px; border-radius: 8px;
-  background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1);
-  display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px;
-  color: #f0effe; transition: background 0.2s;
-}
-.hamburger:hover { background: rgba(255,255,255,0.13); }
-
-/* ── MENU DRAWER ── */
-.drawer-overlay {
-  display: none; position: fixed; inset: 0;
-  background: rgba(0,0,0,0.35); z-index: 150; backdrop-filter: blur(3px);
-}
-.drawer-overlay.open { display: block; }
-
-.drawer {
-  position: fixed; top: 0; right: 0; width: 280px; height: 100%;
-  background: #13131c; z-index: 151;
-  transform: translateX(100%);
-  transition: transform 0.28s cubic-bezier(0.4,0,0.2,1);
-  overflow-y: auto; box-shadow: -4px 0 32px rgba(0,0,0,0.4);
-  border-left: 1px solid rgba(255,255,255,0.07);
-}
-.drawer.open { transform: translateX(0); }
-
-.drawer-header {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 16px; border-bottom: 1px solid rgba(255,255,255,0.07);
-}
-.drawer-logo { font-family: 'Nunito', sans-serif; font-size: 18px; font-weight: 900; text-decoration: none;
-  background: linear-gradient(135deg,#7c6fef,#a594f9); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
-.drawer-logo span { -webkit-text-fill-color: transparent; }
-.drawer-close {
-  width: 32px; height: 32px; border-radius: 50%; background: rgba(255,255,255,0.08); border: none;
-  display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; color: rgba(240,239,254,0.7);
-}
-.drawer-section-title {
-  font-size: 10px; font-weight: 800; color: rgba(240,239,254,0.3);
-  letter-spacing: 1.5px; text-transform: uppercase; padding: 16px 16px 6px;
-}
-.drawer-item {
-  display: flex; align-items: center; gap: 12px; padding: 10px 12px; margin: 2px 8px;
-  text-decoration: none; color: rgba(240,239,254,0.85); font-weight: 600; font-size: 14px;
-  cursor: pointer; transition: background 0.15s; border: none; background: none;
-  width: calc(100% - 16px); text-align: left; border-radius: 10px;
-}
-.drawer-item:hover { background: rgba(255,255,255,0.06); }
-.drawer-item-icon {
-  width: 38px; height: 38px; border-radius: 10px;
-  background: rgba(255,255,255,0.07);
-  display: flex; align-items: center; justify-content: center; font-size: 19px; flex-shrink: 0;
-}
-.drawer-item-label { flex: 1; font-family: 'Nunito', sans-serif; }
-.drawer-item-badge {
-  font-size: 9px; font-weight: 800; padding: 2px 8px; border-radius: 8px;
-  letter-spacing: 0.5px; font-family: 'Nunito', sans-serif;
-}
-.drawer-divider { height: 1px; background: rgba(255,255,255,0.07); margin: 8px 16px; }
+    /* ── BOTTOM NAV ── */
+    .univ-bnav { position: fixed; bottom: 0; left: 0; right: 0; z-index: 100; background: rgba(10,10,15,.97); border-top: 1px solid rgba(255,255,255,.07); display: flex; align-items: center; justify-content: space-around; padding: 8px 0 16px; backdrop-filter: blur(14px); }
+    .univ-bnav-item { display: flex; flex-direction: column; align-items: center; gap: 2px; text-decoration: none; color: rgba(240,239,254,.4); padding: 0 8px; transition: color .2s; border: none; background: none; cursor: pointer; }
+    .univ-bnav-item:hover { color: rgba(240,239,254,.9); }
+    .univ-bnav-item.active { color: var(--purple2); }
+    .univ-bnav-icon { font-size: 20px; }
+    .univ-bnav-label { font-size: .6rem; font-weight: 800; font-family: 'DM Sans', sans-serif; }
+    .univ-bnav-search { width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, #7c6fef, #5040c8); border: none; display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer; margin-top: -18px; box-shadow: 0 4px 18px rgba(124,111,239,.5); transition: transform .2s; flex-shrink: 0; }
+    .univ-bnav-search:hover { transform: scale(1.08); }
 
 /* ── BANNIERE ── */
 .hero-banner {
@@ -320,96 +261,53 @@ nav {
 .manga-grid-2 { animation: fadeUp 0.4s 0.1s ease both; }
 @media(max-width:600px){ .plans-grid{ grid-template-columns:1fr; } }
 
-/* ── NAV LINKS + SEARCH (universel) ── */
-.univ-nav-links{display:flex;align-items:center;gap:2px;flex:1;margin:0 8px;}
-@media(max-width:680px){.univ-nav-links{display:none;}}
-.univ-nav-link{color:rgba(240,239,254,0.6);font-size:.82rem;font-weight:600;text-decoration:none;padding:5px 10px;border-radius:7px;transition:all .2s;white-space:nowrap;font-family:'DM Sans',sans-serif;}
-.univ-nav-link:hover{color:#f0effe;background:rgba(255,255,255,0.06);}
-.univ-search-wrap{display:flex;align-items:center;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);border-radius:18px;overflow:hidden;max-width:200px;flex-shrink:0;}
-@media(max-width:480px){.univ-search-wrap{max-width:120px;}}
-.univ-search-input{background:none;border:none;outline:none;color:#f0effe;font-size:.8rem;padding:7px 10px;width:100%;font-family:'DM Sans',sans-serif;}
-.univ-search-input::placeholder{color:rgba(240,239,254,.35);}
-.univ-search-btn{background:none;border:none;cursor:pointer;padding:6px 8px;font-size:13px;color:rgba(240,239,254,.5);flex-shrink:0;transition:color .2s;}
-.univ-search-btn:hover{color:#7c6fef;}
-.drawer-overlay { background: rgba(0,0,0,0.5) !important; }
+/* ── BOTTOM NAV ── */
 </style>
 </head>
 <body>
 
 <!-- TOP NAV -->
-<nav>
-  <a href="index.html" class="logo">INKRISE</a>
-  <div class="univ-nav-links">
-    <a href="index.html" class="univ-nav-link">Accueil</a>
-    <a href="manga.html" class="univ-nav-link">Mangas</a>
-    <a href="tutoriels.html" class="univ-nav-link">Tutoriels</a>
-    <a href="#" class="univ-nav-link" onclick="openModal();return false;">Premium</a>
+<nav class="univ-nav">
+  <a href="index.html" class="univ-nav-logo">INKRISE</a>
+  <div class="univ-nav-links-d">
+    <a href="index.html" class="univ-nav-lk">Accueil</a>
+    <a href="manga.html" class="univ-nav-lk">Mangas</a>
+    <a href="tutoriels.html" class="univ-nav-lk">Tutoriels</a>
+    <a href="#" class="univ-nav-lk" onclick="openModal();return false;">Premium</a>
   </div>
-  <div class="univ-search-wrap">
-    <input type="text" id="navSearchInput" class="univ-search-input" placeholder="Rechercher…" onkeydown="if(event.key==='Enter')doSearch()" />
-    <button class="univ-search-btn" onclick="doSearch()">🔍</button>
+  <div class="univ-nav-search">
+    <input type="text" id="navSearchInput" class="univ-nav-si" placeholder="Rechercher…" onkeydown="if(event.key==='Enter')doSearch()" />
+    <button class="univ-nav-sb" onclick="doSearch()">🔍</button>
   </div>
   <div class="nav-right">
-    <a href="auth.html" class="btn-connexion" id="btnConnexion">Connexion</a>
-    <a href="profil.html" class="avatar-btn" id="avatarBtn">🧑‍🎨</a>
-    <button class="hamburger" onclick="openDrawer()">☰</button>
+    <a href="auth.html" class="nav-connexion-btn" id="navConnexion">Connexion</a>
+    <a href="profil.html" class="nav-avatar-btn" id="navAvatar">?</a>
+    <a href="profil.html#notifications" class="nav-notif-link" id="navNotifLink" title="Notifications">🔔<span class="nav-notif-dot" id="navNotifDot"></span></a>
+    <button class="univ-nav-hbg" onclick="openDrawer()">☰</button>
   </div>
 </nav>
 
 <!-- DRAWER OVERLAY -->
-<div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
+<div class="univ-overlay" id="univOverlay" onclick="closeDrawer()"></div>
 
 <!-- MENU DRAWER -->
-<div class="drawer" id="drawer">
-  <div class="drawer-header">
-    <a href="index.html" class="drawer-logo">INK<span>RISE</span></a>
-    <button class="drawer-close" onclick="closeDrawer()">✕</button>
+<div class="univ-drawer" id="univDrawer">
+  <div class="univ-d-hdr">
+    <a href="index.html" class="univ-d-logo">INKRISE</a>
+    <button class="univ-d-close" onclick="closeDrawer()">✕</button>
   </div>
-
-  <div class="drawer-section-title">Explorer</div>
-  <a href="index.html" class="drawer-item">
-    <div class="drawer-item-icon">🏠</div>
-    <span class="drawer-item-label">Accueil</span>
-  </a>
-  <a href="manga.html" class="drawer-item">
-    <div class="drawer-item-icon">📖</div>
-    <span class="drawer-item-label">Manga & BD</span>
-  </a>
-  <a href="tutoriels.html" class="drawer-item">
-    <div class="drawer-item-icon">🎓</div>
-    <span class="drawer-item-label">Tutoriels</span>
-    <span class="drawer-item-badge" style="background:rgba(0,201,167,.15);color:#00c9a7;">GRATUIT</span>
-  </a>
-  <a href="#" class="drawer-item" onclick="openModal();closeDrawer();">
-    <div class="drawer-item-icon">💎</div>
-    <span class="drawer-item-label">Premium</span>
-    <span class="drawer-item-badge" style="background:rgba(255,107,53,.15);color:#ff6b35;">PRO</span>
-  </a>
-  <a href="communaute.html" class="drawer-item">
-    <div class="drawer-item-icon">👥</div>
-    <span class="drawer-item-label">Communauté</span>
-  </a>
-
-  <div class="drawer-divider"></div>
-  <div class="drawer-section-title">Mon compte</div>
-
-  <a href="bibliotheque.html" class="drawer-item"><div class="drawer-item-icon" style="background:#edfdf8;">📚</div><span class="drawer-item-label">Ma bibliothèque</span></a>
-  <a href="profil.html" class="drawer-item" id="drawerProfil" style="display:none;">
-    <div class="drawer-item-icon">🧑‍🎨</div>
-    <span class="drawer-item-label">Mon profil</span>
-  </a>
-  <a href="upload-manga.html" class="drawer-item" id="drawerPublier" style="display:none;">
-    <div class="drawer-item-icon">📤</div>
-    <span class="drawer-item-label">Publier un manga</span>
-  </a>
-  <a href="auth.html" class="drawer-item" id="drawerConnexion">
-    <div class="drawer-item-icon">🔑</div>
-    <span class="drawer-item-label">Connexion / Inscription</span>
-  </a>
-  <button class="drawer-item" id="drawerLogout" style="display:none;" onclick="logout()">
-    <div class="drawer-item-icon">🚪</div>
-    <span class="drawer-item-label" style="color:#ff3d71;">Déconnexion</span>
-  </button>
+  <div class="univ-d-sec">Explorer</div>
+  <a href="index.html" class="univ-d-item"><div class="univ-d-icon">🏠</div>Accueil</a>
+  <a href="manga.html" class="univ-d-item"><div class="univ-d-icon">📖</div>Manga &amp; BD</a>
+  <a href="tutoriels.html" class="univ-d-item"><div class="univ-d-icon">🎓</div>Tutoriels <span class="univ-d-badge teal">GRATUIT</span></a>
+  <a href="#" class="univ-d-item" onclick="openModal();closeDrawer();"><div class="univ-d-icon">💎</div>Premium <span class="univ-d-badge orange">PRO</span></a>
+  <a href="communaute.html" class="univ-d-item"><div class="univ-d-icon">👥</div>Communauté</a>
+  <div class="univ-d-divider"></div>
+  <div class="univ-d-sec">Mon compte</div>
+  <a href="profil.html" class="univ-d-item" id="drawerProfil" style="display:none;"><div class="univ-d-icon">🧑‍🎨</div>Mon profil</a>
+  <a href="upload-manga.html" class="univ-d-item" id="drawerPublier" style="display:none;"><div class="univ-d-icon">📤</div>Publier un manga</a>
+  <a href="auth.html" class="univ-d-item" id="drawerConnexion"><div class="univ-d-icon">🔑</div>Connexion / Inscription</a>
+  <button class="univ-d-item" id="drawerLogout" style="display:none;" onclick="doLogout()"><div class="univ-d-icon">🚪</div><span style="color:#f0522a;">Déconnexion</span></button>
 </div>
 
 <!-- BANNIERE -->
@@ -474,24 +372,12 @@ nav {
 </div>
 
 <!-- BOTTOM NAV -->
-<div class="bottom-nav">
-  <button class="bottom-nav-item active" onclick="setActiveNav(this)">
-    <span class="bottom-nav-icon">🏠</span>
-    <span class="bottom-nav-label">Accueil</span>
-  </button>
-  <button class="bottom-nav-item" onclick="window.location.href='manga.html'">
-    <span class="bottom-nav-icon">📖</span>
-    <span class="bottom-nav-label">Manga</span>
-  </button>
-  <button class="bottom-nav-search" onclick="focusSearch()">🔍</button>
-  <a href="tutoriels.html" class="bottom-nav-item">
-    <span class="bottom-nav-icon">🎓</span>
-    <span class="bottom-nav-label">Tutoriels</span>
-  </a>
-  <button class="bottom-nav-item" onclick="setActiveNav(this)">
-    <span class="bottom-nav-icon">👥</span>
-    <span class="bottom-nav-label">Communauté</span>
-  </button>
+<div class="univ-bnav">
+  <a href="index.html" class="univ-bnav-item active"><span class="univ-bnav-icon">🏠</span><span class="univ-bnav-label">Accueil</span></a>
+  <a href="manga.html" class="univ-bnav-item"><span class="univ-bnav-icon">📖</span><span class="univ-bnav-label">Manga</span></a>
+  <button class="univ-bnav-search" onclick="if(typeof doSearch==='function'){focusSearch()}else{window.location.href='recherche.html'}">🔍</button>
+  <a href="tutoriels.html" class="univ-bnav-item"><span class="univ-bnav-icon">🎓</span><span class="univ-bnav-label">Tutoriels</span></a>
+  <a href="communaute.html" class="univ-bnav-item"><span class="univ-bnav-icon">👥</span><span class="univ-bnav-label">Communauté</span></a>
 </div>
 
 <!-- MODAL PLANS -->
@@ -544,13 +430,13 @@ const TYPE_LABELS = { manga:'Manga', manhwa:'Manhwa', manhua:'Manhua', webtoon:'
 
 // DRAWER
 function openDrawer() {
-  document.getElementById('drawer').classList.add('open')
-  document.getElementById('drawerOverlay').classList.add('open')
+  document.getElementById('univOverlay').classList.add('open')
+  document.getElementById('univDrawer').classList.add('open')
   document.body.style.overflow = 'hidden'
 }
 function closeDrawer() {
-  document.getElementById('drawer').classList.remove('open')
-  document.getElementById('drawerOverlay').classList.remove('open')
+  document.getElementById('univOverlay').classList.remove('open')
+  document.getElementById('univDrawer').classList.remove('open')
   document.body.style.overflow = ''
 }
 
@@ -560,31 +446,27 @@ function closeModal() { document.getElementById('modalOverlay').classList.remove
 function closeModalOutside(e) { if(e.target===document.getElementById('modalOverlay')) closeModal(); }
 document.addEventListener('keydown', e => { if(e.key==='Escape') { closeModal(); closeDrawer(); } })
 
+// BOTTOM NAV
+
 // SEARCH
 function doSearch(){const q=document.getElementById('navSearchInput').value.trim();if(q)window.location.href='recherche.html?q='+encodeURIComponent(q);}
 function focusSearch(){const i=document.getElementById('navSearchInput');if(i){i.focus();window.scrollTo({top:0,behavior:'smooth'});}}
-
-// BOTTOM NAV
-function setActiveNav(el) {
-  document.querySelectorAll('.bottom-nav-item').forEach(i => i.classList.remove('active'))
-  el.classList.add('active')
-}
 
 // AUTH
 async function checkAuth() {
   const { data } = await supabaseClient.auth.getSession()
   if (data.session) {
-    document.getElementById('btnConnexion').style.display = 'none'
-    document.getElementById('btnPublier').classList.add('show')
-    document.getElementById('avatarBtn').classList.add('show')
-    document.getElementById('notifBtn').style.display = 'flex'
+    document.getElementById('navConnexion').style.display = 'none'
+    document.getElementById('navAvatar').classList.add('show')
+    document.getElementById('navAvatar').textContent = (data.session.user.email||'?')[0].toUpperCase()
+    document.getElementById('navNotifLink').classList.add('show')
     document.getElementById('drawerProfil').style.display = 'flex'
     document.getElementById('drawerPublier').style.display = 'flex'
     document.getElementById('drawerConnexion').style.display = 'none'
     document.getElementById('drawerLogout').style.display = 'flex'
   }
 }
-async function logout() {
+async function doLogout() {
   await supabaseClient.auth.signOut()
   window.location.reload()
 }
