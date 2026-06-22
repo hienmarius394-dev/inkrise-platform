@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Mon Profil — Inkrise</title>
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     :root {
@@ -24,7 +24,7 @@
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
-      font-family: 'Nunito', sans-serif;
+      font-family: 'DM Sans', sans-serif;
       background: var(--bg);
       color: var(--text);
       min-height: 100vh;
@@ -938,12 +938,39 @@
       return;
     }
     currentUser = session.user;
+    /* Update nav immediately */
+    updateNav(session);
     await loadProfile();
     await loadMangas();
     await loadSuivis();
     await loadNotifications();
     if (window.location.hash === '#notifications') activateNotifTab();
   }
+
+  /* ── NAV UPDATE ── */
+  function updateNav(session) {
+    const navConn = document.getElementById('navConnexion');
+    const navAv = document.getElementById('navAvatar');
+    if (session) {
+      if (navConn) navConn.style.display = 'none';
+      if (navAv) {
+        navAv.style.display = 'flex';
+        const name = session.user?.user_metadata?.username || session.user?.email?.split('@')[0] || '?';
+        navAv.textContent = name[0].toUpperCase();
+      }
+    } else {
+      if (navConn) navConn.style.display = '';
+      if (navAv) navAv.style.display = 'none';
+    }
+  }
+
+  /* Listen for auth changes */
+  sb.auth.onAuthStateChange((event, session) => {
+    updateNav(session);
+    if (event === 'SIGNED_OUT') {
+      window.location.href = 'index.html';
+    }
+  });
 
   // ── CHARGER PROFIL ──
   async function loadProfile() {
@@ -1158,8 +1185,7 @@
       const updateData = {
         id: currentUser.id,
         username: newName,
-        bio: bio,
-        updated_at: new Date().toISOString()
+        bio: bio
       };
       if (avatar_url) updateData.avatar_url = avatar_url;
 
