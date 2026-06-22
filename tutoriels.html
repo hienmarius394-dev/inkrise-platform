@@ -228,44 +228,45 @@
 <body>
 
 <!-- NAV -->
-<nav>
-  <a href="index.html" class="logo">INKRISE</a>
-  <div class="univ-nav-links">
-    <a href="index.html" class="univ-nav-link">Accueil</a>
-    <a href="manga.html" class="univ-nav-link">Mangas</a>
-    <a href="tutoriels.html" class="univ-nav-link">Tutoriels</a>
-    <a href="#" class="univ-nav-link" onclick="openModal();return false;">Premium</a>
+<nav class="univ-nav">
+  <a href="index.html" class="univ-nav-logo">INKRISE</a>
+  <div class="univ-nav-links-d">
+    <a href="index.html" class="univ-nav-lk">Accueil</a>
+    <a href="manga.html" class="univ-nav-lk">Mangas</a>
+    <a href="tutoriels.html" class="univ-nav-lk active">Tutoriels</a>
+    <a href="#" class="univ-nav-lk" onclick="openModal();return false;">Premium</a>
   </div>
-  <div class="univ-search-wrap">
-    <input type="text" id="navSearchInput" class="univ-search-input" placeholder="Rechercher..." onkeydown="if(event.key==='Enter')doSearch()" />
-    <button class="univ-search-btn" onclick="doSearch()">🔍</button>
+  <div class="univ-nav-search">
+    <input type="text" id="navSearchInput" class="univ-nav-si" placeholder="Rechercher…" onkeydown="if(event.key==='Enter')doSearch()" />
+    <button class="univ-nav-sb" onclick="doSearch()">🔍</button>
   </div>
   <div class="nav-right">
-    <a href="auth.html" class="btn-connexion" id="btnConnexion">Connexion</a>
-    <a href="profil.html" class="avatar-btn" id="avatarBtn">🧑‍🎨</a>
-    <button class="hamburger" onclick="openDrawer()">☰</button>
+    <a href="auth.html" class="nav-connexion-btn" id="navConnexion">Connexion</a>
+    <a href="profil.html" class="nav-avatar-btn" id="navAvatar">?</a>
+    <a href="profil.html#notifications" class="nav-notif-link" id="navNotifLink" title="Notifications">🔔<span class="nav-notif-dot" id="navNotifDot"></span></a>
+    <button class="univ-nav-hbg" onclick="openDrawer()">☰</button>
   </div>
 </nav>
 
 <!-- DRAWER -->
-<div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
-<div class="drawer" id="drawer">
-  <div class="drawer-header">
-    <a href="index.html" class="drawer-logo">INK<span>RISE</span></a>
-    <button class="drawer-close" onclick="closeDrawer()">✕</button>
+<div class="univ-overlay" id="univOverlay" onclick="closeDrawer()"></div>
+<div class="univ-drawer" id="univDrawer">
+  <div class="univ-d-hdr">
+    <a href="index.html" class="univ-d-logo">INKRISE</a>
+    <button class="univ-d-close" onclick="closeDrawer()">✕</button>
   </div>
-  <div class="drawer-section-title">Explorer</div>
-  <a href="index.html" class="drawer-item"><div class="drawer-item-icon">🏠</div><span class="drawer-item-label">Accueil</span></a>
-  <a href="manga.html" class="drawer-item"><div class="drawer-item-icon">📖</div><span class="drawer-item-label">Manga &amp; BD</span></a>
-  <a href="tutoriels.html" class="drawer-item"><div class="drawer-item-icon">🎓</div><span class="drawer-item-label">Tutoriels</span><span class="drawer-item-badge" style="background:rgba(0,201,167,.15);color:#00c9a7;">GRATUIT</span></a>
-  <a href="#" class="drawer-item" onclick="openModal();closeDrawer();"><div class="drawer-item-icon">💎</div><span class="drawer-item-label">Premium</span><span class="drawer-item-badge" style="background:rgba(255,107,53,.15);color:#ff6b35;">PRO</span></a>
-  <a href="communaute.html" class="drawer-item"><div class="drawer-item-icon">👥</div><span class="drawer-item-label">Communauté</span></a>
-  <div class="drawer-divider"></div>
-  <div class="drawer-section-title">Mon compte</div>
-  <a href="profil.html" class="drawer-item" id="drawerProfil" style="display:none;"><div class="drawer-item-icon">🧑‍🎨</div><span class="drawer-item-label">Mon profil</span></a>
-  <a href="upload-manga.html" class="drawer-item" id="drawerPublier" style="display:none;"><div class="drawer-item-icon">📤</div><span class="drawer-item-label">Publier un manga</span></a>
-  <a href="auth.html" class="drawer-item" id="drawerConnexion"><div class="drawer-item-icon">🔑</div><span class="drawer-item-label">Connexion / Inscription</span></a>
-  <button class="drawer-item" id="drawerLogout" style="display:none;" onclick="doLogout()"><div class="drawer-item-icon">🚪</div><span class="drawer-item-label" style="color:#ff3d71;">Déconnexion</span></button>
+  <div class="univ-d-sec">Explorer</div>
+  <a href="index.html" class="univ-d-item"><div class="univ-d-icon">🏠</div>Accueil</a>
+  <a href="manga.html" class="univ-d-item"><div class="univ-d-icon">📖</div>Manga & BD</a>
+  <a href="tutoriels.html" class="univ-d-item"><div class="univ-d-icon">🎓</div>Tutoriels <span class="univ-d-badge teal">GRATUIT</span></a>
+  <a href="#" class="univ-d-item" onclick="openModal();closeDrawer();"><div class="univ-d-icon">💎</div>Premium <span class="univ-d-badge orange">PRO</span></a>
+  <a href="communaute.html" class="univ-d-item"><div class="univ-d-icon">👥</div>Communauté</a>
+  <div class="univ-d-divider"></div>
+  <div class="univ-d-sec">Mon compte</div>
+  <a href="profil.html" class="univ-d-item" id="drawerProfil" style="display:none;"><div class="univ-d-icon">🧑‍🎨</div>Mon profil</a>
+  <a href="upload-manga.html" class="univ-d-item" id="drawerPublier" style="display:none;"><div class="univ-d-icon">📤</div>Publier un manga</a>
+  <a href="auth.html" class="univ-d-item" id="drawerConnexion"><div class="univ-d-icon">🔑</div>Connexion / Inscription</a>
+  <button class="univ-d-item" id="drawerLogout" style="display:none;" onclick="doLogout()"><div class="univ-d-icon">🚪</div><span style="color:#f0522a;">Déconnexion</span></button>
 </div>
 
 <!-- HERO -->
@@ -317,20 +318,12 @@
 <div class="toast" id="toast"></div>
 
 <!-- BOTTOM NAV -->
-<div class="bottom-nav">
-  <button class="bottom-nav-item" onclick="window.location.href='index.html'">
-    <span class="bottom-nav-icon">🏠</span><span class="bottom-nav-label">Accueil</span>
-  </button>
-  <button class="bottom-nav-item" onclick="window.location.href='manga.html'">
-    <span class="bottom-nav-icon">📖</span><span class="bottom-nav-label">Manga</span>
-  </button>
-  <button class="bottom-nav-search" onclick="if(typeof doSearch==='function'){focusSearch()}else{window.location.href='recherche.html'}">🔍</button>
-  <a href="tutoriels.html" class="bottom-nav-item active">
-    <span class="bottom-nav-icon">🎓</span><span class="bottom-nav-label">Tutoriels</span>
-  </a>
-  <button class="bottom-nav-item" onclick="window.location.href='communaute.html'">
-    <span class="bottom-nav-icon">👥</span><span class="bottom-nav-label">Communauté</span>
-  </button>
+<div class="univ-bnav">
+  <a href="index.html" class="univ-bnav-item"><span class="univ-bnav-icon">🏠</span><span class="univ-bnav-label">Accueil</span></a>
+  <a href="manga.html" class="univ-bnav-item"><span class="univ-bnav-icon">📖</span><span class="univ-bnav-label">Manga</span></a>
+  <button class="univ-bnav-search" onclick="if(typeof doSearch==='function'){focusSearch()}else{window.location.href='recherche.html'}">🔍</button>
+  <a href="tutoriels.html" class="univ-bnav-item active"><span class="univ-bnav-icon">🎓</span><span class="univ-bnav-label">Tutoriels</span></a>
+  <a href="communaute.html" class="univ-bnav-item"><span class="univ-bnav-icon">👥</span><span class="univ-bnav-label">Communauté</span></a>
 </div>
 
 <script>
@@ -463,8 +456,8 @@ document.getElementById('filterBtns').addEventListener('click', e => {
 });
 
 // ── NAV ──
-function openDrawer()  { document.getElementById('drawerOverlay').classList.add('open'); document.getElementById('drawer').classList.add('open'); document.body.style.overflow = 'hidden'; }
-function closeDrawer() { document.getElementById('drawerOverlay').classList.remove('open'); document.getElementById('drawer').classList.remove('open'); document.body.style.overflow = ''; }
+function openDrawer()  { document.getElementById('univOverlay').classList.add('open'); document.getElementById('univDrawer').classList.add('open'); document.body.style.overflow = 'hidden'; }
+function closeDrawer() { document.getElementById('univOverlay').classList.remove('open'); document.getElementById('univDrawer').classList.remove('open'); document.body.style.overflow = ''; }
 function doSearch()    { const q = document.getElementById('navSearchInput').value.trim(); if (q) window.location.href = 'recherche.html?q=' + encodeURIComponent(q); }
 function focusSearch() { const i = document.getElementById('navSearchInput'); if (i) { i.focus(); window.scrollTo({ top: 0, behavior: 'smooth' }); } }
 function doLogout()    { sb.auth.signOut().then(() => window.location.href = 'index.html'); }
