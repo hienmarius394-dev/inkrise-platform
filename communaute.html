@@ -577,6 +577,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
   /* ── Welcome / empty state when no creator ID ── */
   if (!state.creatorId) {
+    /* If logged in, go to their own community */
+    const { data: { session } } = await sb.auth.getSession();
+    if (session && session.user) {
+      window.location.href = 'communaute.html?id=' + session.user.id;
+      return;
+    }
     state.loading = false;
     const app = document.getElementById('app');
     app.innerHTML = '' +
@@ -766,8 +772,8 @@ function render() {
     return;
   }
 
-  /* Create post zone (only for creator) */
-  if (state.isCreator && state.activeTab !== 'sondages') {
+  /* Create post zone (only for logged-in users) */
+  if (state.visitor && state.activeTab !== 'sondages') {
     html += '<div class="create-post" id="create-post-zone">';
     html += '<textarea id="create-post-text" placeholder="Partagez quelque chose avec votre communauté..." maxlength="2000"></textarea>';
     html += '<div class="create-post-actions">';
@@ -796,7 +802,7 @@ function render() {
     html += '<div class="empty-state"><div class="empty-state-icon">📝</div><div class="empty-state-text">Aucun post pour le moment</div></div>';
     app.innerHTML = html;
     bindTabs();
-    if (state.isCreator) bindCreatePost();
+    if (state.visitor) bindCreatePost();
     return;
   }
 
@@ -807,7 +813,7 @@ function render() {
 
   app.innerHTML = html;
   bindTabs();
-  if (state.isCreator) bindCreatePost();
+  if (state.visitor) bindCreatePost();
   bindReactions();
   bindComments();
   bindSondageVote();

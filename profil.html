@@ -163,7 +163,11 @@
       display: flex; gap: 0;
       border-bottom: 1px solid var(--border);
       margin-top: 8px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
     }
+    .profile-tabs::-webkit-scrollbar { display: none; }
     .ptab {
       padding: 14px 22px;
       font-weight: 700; font-size: 0.88rem;
@@ -173,6 +177,8 @@
       transition: all .2s;
       font-family: 'Nunito', sans-serif;
       letter-spacing: 0.3px;
+      white-space: nowrap;
+      flex-shrink: 0;
     }
     .ptab:hover { color: var(--text); }
     .ptab.active { color: var(--accent); border-bottom-color: var(--accent); }
@@ -404,6 +410,8 @@
       width: 100%;
       position: relative;
       animation: slideUp .3s ease;
+      max-height: 90vh;
+      overflow-y: auto;
     }
     @keyframes slideUp {
       from { opacity: 0; transform: translateY(30px); }
@@ -655,6 +663,7 @@
       </div>
       <div class="profile-info">
         <div class="profile-username" id="profileUsername">Chargement…</div>
+        <div id="profileBio" style="color:var(--muted);font-size:0.85rem;margin-bottom:10px;"></div>
         <div class="profile-plan">
           <span class="plan-dot"></span>
           <span id="planName">Débutant gratuit</span>
@@ -673,6 +682,7 @@
                       <div class="stat-label">Chapitres</div>
           </div>
         </div>
+        <button class="btn-save" id="btnEditProfile" style="margin-top:12px;padding:8px 18px;font-size:0.8rem;">✏️ Modifier le profil</button>
       </div>
     </div>
 
@@ -758,6 +768,19 @@
       <div class="info-row">
         <label>Nom d'affichage</label>
         <input type="text" id="inputUsername" placeholder="Ton nom d'utilisateur" />
+      </div>
+      <div class="info-row">
+        <label>Bio</label>
+        <textarea id="inputBio" placeholder="Parle-nous un peu de toi..." style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-size:0.88rem;font-family:'Nunito',sans-serif;outline:none;resize:vertical;min-height:60px;transition:border-color .2s;" maxlength="500"></textarea>
+      </div>
+      <div class="info-row">
+        <label>Photo de profil</label>
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+          <img id="avatarPreview" src="" alt="" style="width:48px;height:48px;border-radius:50%;object-fit:cover;display:none;border:2px solid var(--border);background:var(--surface2);" />
+          <label class="btn-save" style="padding:8px 16px;font-size:0.8rem;cursor:pointer;margin:0;">📷 Choisir une image</label>
+          <input type="file" id="avatarUploadInput" accept="image/*" style="display:none;" />
+          <span id="avatarFileName" style="font-size:0.75rem;color:var(--muted);"></span>
+        </div>
       </div>
       <div class="info-row">
         <label>Email</label>
@@ -941,12 +964,37 @@
     if (btnConnexionEl) btnConnexionEl.style.display = 'none';
     if (avatarBtnEl)    { avatarBtnEl.style.display = 'flex'; avatarBtnEl.textContent = initial; }
 
-    // Hero
-    document.getElementById('avatarMain').textContent     = initial;
+    // Hero avatar
+    const avatarMain = document.getElementById('avatarMain');
+    if (profile?.avatar_url) {
+      avatarMain.innerHTML = '<img src="' + profile.avatar_url + '" style="width:100%;height:100%;border-radius:50%;object-fit:cover;" alt="" />';
+      avatarMain.style.fontSize = '0';
+      avatarMain.style.background = 'none';
+    } else {
+      avatarMain.textContent = initial;
+      avatarMain.style.fontSize = '';
+      avatarMain.style.background = '';
+    }
     document.getElementById('profileUsername').textContent = username;
+
+    // Bio
+    const bioEl = document.getElementById('profileBio');
+    if (profile?.bio) {
+      bioEl.textContent = profile.bio;
+      bioEl.style.display = '';
+    } else {
+      bioEl.style.display = 'none';
+    }
 
     // Compte
         document.getElementById('inputUsername').value = username;
+        if (profile?.bio) document.getElementById('inputBio').value = profile.bio;
+        // Show avatar preview in edit form
+        if (profile?.avatar_url) {
+          const preview = document.getElementById('avatarPreview');
+          preview.src = profile.avatar_url;
+          preview.style.display = '';
+        }
         document.getElementById('displayEmail').textContent = currentUser.email;
         const joined = new Date(currentUser.created_at).toLocaleDateString('fr-FR', { year:'numeric', month:'long', day:'numeric' });
         document.getElementById('displayJoined').textContent = joined;
@@ -1044,21 +1092,118 @@
     if (e.target === e.currentTarget) closePlans();
   });
 
-  // ── SAUVEGARDER NOM ──
+  // ── SAUVEGARDER PROFIL (nom + bio + avatar) ──
+  let pendingAvatarFile = null;
+  let pendingAvatarPreview = null;
+
+  // Avatar file selection
+  document.getElementById('avatarUploadInput').addEventListener('change', function() {
+    const file = this.files[0];
+    if (!file) return;
+    pendingAvatarFile = file;
+    document.getElementById('avatarFileName').textContent = file.name;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const preview = document.getElementById('avatarPreview');
+      preview.src = e.target.result;
+      preview.style.display = '';
+      pendingAvatarPreview = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+
+  // "Modifier le profil" button → switch to infos tab
+  document.getElementById('btnEditProfile').addEventListener('click', () => {
+    document.querySelectorAll('.ptab').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelector('.ptab[data-tab="infos"]').classList.add('active');
+    document.getElementById('tab-infos').classList.add('active');
+    window.scrollTo({ top: 400, behavior: 'smooth' });
+  });
+
+  // Save profile
   document.getElementById('btnSave').addEventListener('click', async () => {
     const newName = document.getElementById('inputUsername').value.trim();
     if (!newName) { showToast('Le nom ne peut pas être vide.', 'error'); return; }
 
-    const { error } = await sb
-      .from('profiles')
-      .upsert({ id: currentUser.id, username: newName, updated_at: new Date().toISOString() });
+    const bio = document.getElementById('inputBio').value.trim() || null;
 
-    if (error) {
-      showToast('Erreur lors de la sauvegarde.', 'error');
-    } else {
+    btnSave.disabled = true;
+    btnSave.textContent = 'Enregistrement...';
+
+    try {
+      let avatar_url = userProfile?.avatar_url || null;
+
+      // Upload avatar if a new file was selected
+      if (pendingAvatarFile) {
+        try {
+          const ext = pendingAvatarFile.name.split('.').pop() || 'jpg';
+          const fileName = 'avatars/' + currentUser.id + '_' + Date.now() + '.' + ext;
+          const { data: uplData, error: uplErr } = await sb.storage.from('avatars').upload(fileName, pendingAvatarFile, { upsert: true });
+          if (!uplErr && uplData) {
+            const { data: pubData } = sb.storage.from('avatars').getPublicUrl(fileName);
+            avatar_url = pubData?.publicUrl || pendingAvatarPreview;
+          } else {
+            // Fallback: store as data URL directly in the profile
+            avatar_url = pendingAvatarPreview;
+          }
+        } catch (stgErr) {
+          // If storage fails, store base64 in the profile
+          avatar_url = pendingAvatarPreview;
+        }
+        pendingAvatarFile = null;
+        document.getElementById('avatarFileName').textContent = '';
+      }
+
+      const updateData = {
+        id: currentUser.id,
+        username: newName,
+        bio: bio,
+        updated_at: new Date().toISOString()
+      };
+      if (avatar_url) updateData.avatar_url = avatar_url;
+
+      const { error } = await sb.from('profiles').upsert(updateData);
+
+      if (error) throw error;
+
+      // Update UI immediately
       document.getElementById('profileUsername').textContent = newName;
-      document.getElementById('avatarMain').textContent = newName[0].toUpperCase();
+      const avatarMain = document.getElementById('avatarMain');
+      if (avatar_url) {
+        avatarMain.innerHTML = '<img src="' + avatar_url + '" style="width:100%;height:100%;border-radius:50%;object-fit:cover;" alt="" />';
+        avatarMain.style.fontSize = '0';
+        avatarMain.style.background = 'none';
+      } else {
+        avatarMain.textContent = newName[0].toUpperCase();
+        avatarMain.style.fontSize = '';
+        avatarMain.style.background = '';
+      }
+      const bioEl = document.getElementById('profileBio');
+      if (bio) {
+        bioEl.textContent = bio;
+        bioEl.style.display = '';
+      } else {
+        bioEl.style.display = 'none';
+      }
+      // Update nav avatar
+      const navAvatar = document.getElementById('navAvatar');
+      if (navAvatar) {
+        if (avatar_url) {
+          navAvatar.innerHTML = '<img src="' + avatar_url + '" style="width:32px;height:32px;border-radius:50%;object-fit:cover;" alt="" />';
+        } else {
+          navAvatar.textContent = newName[0].toUpperCase();
+          navAvatar.style.background = '';
+        }
+      }
+
+      userProfile = { ...userProfile, ...updateData, avatar_url: avatar_url };
       showToast('✅ Profil mis à jour !', 'success');
+    } catch (err) {
+      showToast('Erreur: ' + (err.message || 'inconnue'), 'error');
+    } finally {
+      btnSave.disabled = false;
+      btnSave.textContent = '💾 Sauvegarder';
     }
   });
 
