@@ -28,51 +28,52 @@
       background: var(--bg);
       color: var(--text);
       min-height: 100vh;
+      padding-bottom: 90px;
     }
 
-    /* ── NAV ── */
-    nav {
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      background: rgba(13,13,18,0.92);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--border);
-      padding: 0 24px;
-      height: 60px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    .nav-logo {
-      font-family: 'Syne', sans-serif;
-      font-size: 1.2rem;
-      font-weight: 800;
-      letter-spacing: -0.5px;
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      text-decoration: none;
-    }
-    .nav-right { display: flex; align-items: center; gap: 14px; }
-    .nav-user {
-      display: flex; align-items: center; gap: 8px;
-      font-weight: 700; font-size: 0.9rem; color: var(--text);
-    }
-    .nav-avatar-sm {
-      width: 32px; height: 32px; border-radius: 50%;
-      background: linear-gradient(135deg, var(--accent), var(--purple));
-      display: flex; align-items: center; justify-content: center;
-      font-size: 0.85rem; font-weight: 900; color: #fff;
-      text-transform: uppercase;
-    }
-    .btn-logout {
-      background: transparent; border: 1px solid var(--border);
-      color: var(--muted); padding: 6px 14px; border-radius: 8px;
-      cursor: pointer; font-size: 0.82rem; font-family: 'Nunito', sans-serif;
-      transition: all .2s;
-    }
-    .btn-logout:hover { border-color: var(--accent); color: var(--accent); }
+    /* ── NAV UNIVERSEL ── */
+        .univ-nav { position: sticky; top: 0; z-index: 100; background: rgba(11,11,16,0.96); backdrop-filter: blur(14px); border-bottom: 1px solid rgba(255,255,255,0.08); padding: 0 16px; height: 58px; display: flex; align-items: center; gap: 8px; }
+        .univ-nav-logo { font-family: 'Syne', sans-serif; font-size: 1.2rem; font-weight: 900; text-decoration: none; background: linear-gradient(135deg, #7c6fef, #a594f9); -webkit-background-clip: text; -webkit-text-fill-color: transparent; flex-shrink: 0; letter-spacing: 1px; }
+        .univ-nav-links-d { display: flex; align-items: center; gap: 2px; flex: 1; margin: 0 8px; }
+        @media (max-width: 680px) { .univ-nav-links-d { display: none; } }
+        .univ-nav-lk { color: rgba(240,239,254,0.6); font-size: .82rem; font-weight: 600; text-decoration: none; padding: 5px 10px; border-radius: 7px; transition: all .2s; white-space: nowrap; font-family: 'DM Sans', sans-serif; }
+        .univ-nav-lk:hover { color: #f0effe; background: rgba(255,255,255,0.06); }
+        .univ-nav-lk.active { color: var(--purple2); background: rgba(124,111,239,0.1); }
+        .univ-nav-search { display: flex; align-items: center; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1); border-radius: 18px; overflow: hidden; max-width: 200px; flex-shrink: 0; }
+        @media (max-width: 480px) { .univ-nav-search { max-width: 110px; } }
+        .univ-nav-si { background: none; border: none; outline: none; color: #f0effe; font-size: .8rem; padding: 7px 10px; width: 100%; font-family: 'DM Sans', sans-serif; }
+        .univ-nav-si::placeholder { color: rgba(240,239,254,.35); }
+        .univ-nav-sb { background: none; border: none; cursor: pointer; padding: 6px 8px; font-size: 13px; color: rgba(240,239,254,.5); flex-shrink: 0; }
+        .univ-nav-sb:hover { color: #7c6fef; }
+        .nav-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+        .nav-connexion-btn { color: rgba(255,255,255,0.7); font-size: .8rem; font-weight: 600; padding: 6px 13px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.15); text-decoration: none; transition: all .2s; white-space: nowrap; }
+        .nav-connexion-btn:hover { border-color: var(--purple); color: var(--purple2); }
+        .nav-avatar-btn { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #7c6fef, #5040c8); display: none; align-items: center; justify-content: center; font-size: .85rem; font-weight: 700; color: #fff; text-decoration: none; text-transform: uppercase; }
+        .nav-avatar-btn.show { display: flex; }
+        .nav-notif-link { position: relative; display: none; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 8px; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1); text-decoration: none; font-size: .95rem; transition: all .2s; }
+        .nav-notif-link.show { display: flex; }
+        .nav-notif-link:hover { background: rgba(255,255,255,0.13); }
+        .nav-notif-dot { position: absolute; top: -5px; right: -5px; min-width: 16px; height: 16px; border-radius: 8px; background: var(--accent); color: #fff; font-size: 9px; font-weight: 800; padding: 0 3px; display: none; align-items: center; justify-content: center; border: 2px solid var(--bg); }
+        .nav-notif-dot.show { display: flex; }
+        .univ-nav-hbg { width: 34px; height: 34px; border-radius: 8px; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; color: #f0effe; transition: background .2s; flex-shrink: 0; }
+        .univ-nav-hbg:hover { background: rgba(255,255,255,0.13); }
+
+        /* ── DRAWER ── */
+        .univ-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 150; backdrop-filter: blur(3px); }
+        .univ-overlay.open { display: block; }
+        .univ-drawer { position: fixed; top: 0; right: 0; width: 270px; height: 100%; background: #13131c; z-index: 151; overflow-y: auto; transform: translateX(100%); transition: transform .28s cubic-bezier(.4,0,.2,1); box-shadow: -4px 0 32px rgba(0,0,0,.4); border-left: 1px solid rgba(255,255,255,.07); }
+        .univ-drawer.open { transform: translateX(0); }
+        .univ-d-hdr { display: flex; align-items: center; justify-content: space-between; padding: 16px; border-bottom: 1px solid rgba(255,255,255,.07); }
+        .univ-d-logo { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 900; text-decoration: none; background: linear-gradient(135deg, #7c6fef, #a594f9); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .univ-d-close { width: 30px; height: 30px; border-radius: 50%; background: rgba(255,255,255,.08); border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; color: rgba(240,239,254,.7); }
+        .univ-d-sec { font-size: .65rem; font-weight: 800; color: rgba(240,239,254,.3); letter-spacing: 1.5px; text-transform: uppercase; padding: 14px 16px 5px; }
+        .univ-d-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; margin: 2px 8px; text-decoration: none; color: rgba(240,239,254,.85); font-weight: 600; font-size: .88rem; cursor: pointer; transition: background .15s; border: none; background: none; width: calc(100% - 16px); text-align: left; border-radius: 9px; font-family: 'DM Sans', sans-serif; }
+        .univ-d-item:hover { background: rgba(255,255,255,.06); }
+        .univ-d-icon { width: 34px; height: 34px; border-radius: 9px; background: rgba(255,255,255,.07); display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+        .univ-d-badge { font-size: .65rem; font-weight: 800; padding: 2px 7px; border-radius: 6px; margin-left: auto; }
+        .univ-d-badge.orange { background: rgba(255,107,53,.15); color: #ff6b35; }
+        .univ-d-badge.teal { background: rgba(0,201,167,.15); color: #00c9a7; }
+        .univ-d-divider { height: 1px; background: rgba(255,255,255,.07); margin: 8px 16px; }
 
     /* ── HERO PROFIL ── */
     .profile-hero {
@@ -524,23 +525,6 @@
       .btn-creator { width: 100%; }
     }
   
-/* Notif bell */
-.nav-notif-link {
-  position: relative; display: flex;
-  align-items: center; justify-content: center;
-  width: 32px; height: 32px; border-radius: 8px;
-  background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1);
-  text-decoration: none; font-size: 0.95rem; transition: all .2s;
-}
-.nav-notif-link:hover { background: rgba(255,255,255,0.13); }
-.nav-notif-dot {
-  position: absolute; top: -5px; right: -5px;
-  min-width: 16px; height: 16px; border-radius: 8px;
-  background: #f0522a; color: #fff; font-size: 9px; font-weight: 800;
-  padding: 0 3px; display: none; align-items: center; justify-content: center;
-  border: 2px solid var(--bg);
-}
-.nav-notif-dot.show { display: flex; }
 /* Créateurs suivis */
 .creator-item {
   background: var(--card-bg); border: 1px solid var(--border);
@@ -593,17 +577,6 @@
 }
 .btn-mark-all:hover { border-color: var(--accent2); color: var(--accent2); }
 
-/* ── NAV LINKS + SEARCH (universel) ── */
-.univ-nav-links{display:flex;align-items:center;gap:2px;flex:1;margin:0 8px;}
-@media(max-width:680px){.univ-nav-links{display:none;}}
-.univ-nav-link{color:rgba(240,239,254,0.6);font-size:.82rem;font-weight:600;text-decoration:none;padding:5px 10px;border-radius:7px;transition:all .2s;white-space:nowrap;font-family:'DM Sans',sans-serif;}
-.univ-nav-link:hover{color:#f0effe;background:rgba(255,255,255,0.06);}
-.univ-search-wrap{display:flex;align-items:center;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);border-radius:18px;overflow:hidden;max-width:200px;flex-shrink:0;}
-@media(max-width:480px){.univ-search-wrap{max-width:120px;}}
-.univ-search-input{background:none;border:none;outline:none;color:#f0effe;font-size:.8rem;padding:7px 10px;width:100%;font-family:'DM Sans',sans-serif;}
-.univ-search-input::placeholder{color:rgba(240,239,254,.35);}
-.univ-search-btn{background:none;border:none;cursor:pointer;padding:6px 8px;font-size:13px;color:rgba(240,239,254,.5);flex-shrink:0;transition:color .2s;}
-.univ-search-btn:hover{color:#7c6fef;}
 /* ── BOTTOM NAV UNIVERSEL ── */
 .univ-bnav{position:fixed;bottom:0;left:0;right:0;z-index:100;background:rgba(10,10,15,.97);border-top:1px solid rgba(255,255,255,.07);display:flex;align-items:center;justify-content:space-around;padding:8px 0 16px;backdrop-filter:blur(14px);}
 .univ-bnav-item{display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none;color:rgba(240,239,254,.4);padding:0 8px;transition:color .2s;border:none;background:none;cursor:pointer;}
@@ -631,26 +604,46 @@
 <body>
 
 <!-- ── NAV ── -->
-<!-- TOP NAV -->
-<nav>
-  <a href="index.html" style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;text-decoration:none;color:#f0f0f4;white-space:nowrap;flex-shrink:0;">INKRISE</a>
-  <div class="univ-nav-links">
-    <a href="index.html" class="univ-nav-link">Accueil</a>
-    <a href="manga.html" class="univ-nav-link">Mangas</a>
-    <a href="tutoriels.html" class="univ-nav-link">Tutoriels</a>
-    <a href="#" class="univ-nav-link" onclick="openModal();return false;">Premium</a>
+<nav class="univ-nav">
+  <a href="index.html" class="univ-nav-logo">INKRISE</a>
+  <div class="univ-nav-links-d">
+    <a href="index.html" class="univ-nav-lk">Accueil</a>
+    <a href="manga.html" class="univ-nav-lk">Mangas</a>
+    <a href="tutoriels.html" class="univ-nav-lk">Tutoriels</a>
+    <a href="#" class="univ-nav-lk" onclick="openModal();return false;">Premium</a>
   </div>
-  <div class="univ-search-wrap">
-    <input type="text" id="navSearchInput" class="univ-search-input" placeholder="Rechercher&hellip;" onkeydown="if(event.key==='Enter')doSearch()" />
-    <button class="univ-search-btn" onclick="doSearch()">🔍</button>
+  <div class="univ-nav-search">
+    <input type="text" id="navSearchInput" class="univ-nav-si" placeholder="Rechercher…" onkeydown="if(event.key==='Enter')doSearch()" />
+    <button class="univ-nav-sb" onclick="doSearch()">🔍</button>
   </div>
-  <div style="display:flex;align-items:center;gap:8px;">
-    <a href="auth.html" id="btnConnexion" style="display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#7c6fef,#5040c8);color:#fff;font-size:.8rem;font-weight:700;padding:7px 14px;border-radius:9px;text-decoration:none;flex-shrink:0;transition:transform .2s;font-family:'DM Sans',sans-serif;">Connexion</a>
-    <a href="profil.html" id="avatarBtn" style="display:none;width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.1);align-items:center;justify-content:center;text-decoration:none;font-size:1rem;">🧑‍🎨</a>
-    <a href="#notifications" class="nav-notif-link" id="navNotifLink" title="Notifications" onclick="activateNotifTab()">🔔<span class="nav-notif-dot" id="navNotifDot"></span></a>
-    <button class="nav-hamburger" onclick="openDrawer()" style="width:34px;height:34px;border-radius:8px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;cursor:pointer;color:#f0f0f4;font-size:1rem;transition:all .2s;">☰</button>
+  <div class="nav-right">
+    <a href="auth.html" class="nav-connexion-btn" id="navConnexion">Connexion</a>
+    <a href="profil.html" class="nav-avatar-btn" id="navAvatar">?</a>
+    <a href="profil.html#notifications" class="nav-notif-link" id="navNotifLink" title="Notifications">🔔<span class="nav-notif-dot" id="navNotifDot"></span></a>
+    <button class="univ-nav-hbg" onclick="openDrawer()">☰</button>
   </div>
 </nav>
+
+<!-- DRAWER -->
+<div class="univ-overlay" id="univOverlay" onclick="closeDrawer()"></div>
+<div class="univ-drawer" id="univDrawer">
+  <div class="univ-d-hdr">
+    <a href="index.html" class="univ-d-logo">INKRISE</a>
+    <button class="univ-d-close" onclick="closeDrawer()">✕</button>
+  </div>
+  <div class="univ-d-sec">Explorer</div>
+  <a href="index.html" class="univ-d-item"><div class="univ-d-icon">🏠</div>Accueil</a>
+  <a href="manga.html" class="univ-d-item"><div class="univ-d-icon">📖</div>Manga & BD</a>
+  <a href="tutoriels.html" class="univ-d-item"><div class="univ-d-icon">🎓</div>Tutoriels <span class="univ-d-badge teal">GRATUIT</span></a>
+  <a href="#" class="univ-d-item" onclick="openModal();closeDrawer();"><div class="univ-d-icon">💎</div>Premium <span class="univ-d-badge orange">PRO</span></a>
+  <a href="communaute.html" class="univ-d-item"><div class="univ-d-icon">👥</div>Communauté</a>
+  <div class="univ-d-divider"></div>
+  <div class="univ-d-sec">Mon compte</div>
+  <a href="profil.html" class="univ-d-item" id="drawerProfil" style="display:none;"><div class="univ-d-icon">🧑‍🎨</div>Mon profil</a>
+  <a href="upload-manga.html" class="univ-d-item" id="drawerPublier" style="display:none;"><div class="univ-d-icon">📤</div>Publier un manga</a>
+  <a href="auth.html" class="univ-d-item" id="drawerConnexion"><div class="univ-d-icon">🔑</div>Connexion / Inscription</a>
+  <button class="univ-d-item" id="drawerLogout" style="display:none;" onclick="doLogout()"><div class="univ-d-icon">🚪</div><span style="color:#f0522a;">Déconnexion</span></button>
+</div>
 
 <!-- ── HERO ── -->
 <div class="profile-hero">
@@ -943,8 +936,8 @@
     const initial  = username[0].toUpperCase();
 
     // Nav
-    const btnConnexionEl = document.getElementById('btnConnexion');
-    const avatarBtnEl    = document.getElementById('avatarBtn');
+        const btnConnexionEl = document.getElementById('navConnexion');
+        const avatarBtnEl    = document.getElementById('navAvatar');
     if (btnConnexionEl) btnConnexionEl.style.display = 'none';
     if (avatarBtnEl)    { avatarBtnEl.style.display = 'flex'; avatarBtnEl.textContent = initial; }
 
@@ -1041,6 +1034,7 @@
 
   // ── MODAL PLANS ──
   function openPlans() { document.getElementById('plansModal').classList.add('open'); }
+  function openModal() { openPlans(); }
   function closePlans() { document.getElementById('plansModal').classList.remove('open'); }
 
   document.getElementById('btnOpenPlans').addEventListener('click', openPlans);
@@ -1062,9 +1056,7 @@
     if (error) {
       showToast('Erreur lors de la sauvegarde.', 'error');
     } else {
-      document.getElementById('navUsername').textContent = newName;
       document.getElementById('profileUsername').textContent = newName;
-      document.getElementById('navInitial').textContent = newName[0].toUpperCase();
       document.getElementById('avatarMain').textContent = newName[0].toUpperCase();
       showToast('✅ Profil mis à jour !', 'success');
     }
@@ -1241,6 +1233,10 @@
 
   // ── LANCER ──
   init();
+
+function openDrawer(){document.getElementById('univDrawer').classList.add('open');document.getElementById('univOverlay').classList.add('open');}
+function closeDrawer(){document.getElementById('univDrawer').classList.remove('open');document.getElementById('univOverlay').classList.remove('open');}
+function doLogout(){ sb.auth.signOut().then(()=>{ window.location.href='index.html'; }); }
 
 function doSearch(){
   const q=document.getElementById('navSearchInput');
