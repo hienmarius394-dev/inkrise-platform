@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Espace Premium — InkRise</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root {
+      --bg: #0d0d12;
+      --surface: #16161f;
+      --surface2: #1e1e2e;
+      --accent: #7c6fef;
+      --accent2: #a89af7;
+      --purple: #9b59f5;
+      --text: #f0f0f0;
+      --muted: #7a7a9a;
+      --border: rgba(255,255,255,0.07);
+      --card-bg: #1a1a27;
+      --gold: #f5c842;
+      --danger: #e05c6e;
+      --success: #4caf82;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Nunito', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding-bottom: 90px;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(13,13,18,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .nav-logo {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.2rem;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-decoration: none;
+    }
+    .nav-right { display: flex; align-items: center; gap: 14px; }
+    .nav-link {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.88rem;
+      font-weight: 600;
+      transition: color .2s;
+    }
+    .nav-link:hover { color: var(--text); }
+    .nav-link.active { color: var(--accent2); }
+
+    /* ── BOTTOM NAV ── */
+    .bnav {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      z-index: 100;
+      background: rgba(22,22,31,0.97);
+      backdrop-filter: blur(16px);
+      border-top: 1px solid var(--border);
+      display: flex;
+      height: 66px;
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    .bnav-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      text-decoration: none;
+      color: var(--muted);
+      font-size: 0.62rem;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      transition: color .2s;
+    }
+    .bnav-item svg { width: 22px; height: 22px; }
+    .bnav-item:hover, .bnav-item.active { color: var(--accent2); }
+
+    /* ── TOAST ── */
+    #toast {
+      position: fixed;
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--surface2);
+      color: var(--text);
+      padding: 12px 22px;
+      border-radius: 12px;
+      font-size: 0.88rem;
+      font-weight: 700;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+      border: 1px solid var(--border);
+      opacity: 0;
+      transition: opacity .3s, transform .3s;
+      pointer-events: none;
+      z-index: 9999;
+      white-space: nowrap;
+      max-width: 90vw;
+    }
+    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    #toast.success { border-color: var(--success); }
+    #toast.error { border-color: var(--danger); }
+
+    /* ── MAIN ── */
+    .main { max-width: 860px; margin: 0 auto; padding: 28px 18px; }
+
+    /* ── HERO ── */
+    .hero {
+      background: linear-gradient(135deg, #1a1530 0%, #1e1a3a 100%);
+      border: 1px solid rgba(124,111,239,0.25);
+      border-radius: 20px;
+      padding: 28px 28px 24px;
+      margin-bottom: 28px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -40px; right: -40px;
+      width: 200px; height: 200px;
+      background: radial-gradient(circle, rgba(124,111,239,0.18) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.6rem;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+    .hero-title span { color: var(--gold); }
+    .badge-premium {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: linear-gradient(135deg, rgba(245,200,66,0.18), rgba(245,200,66,0.08));
+      border: 1px solid rgba(245,200,66,0.35);
+      color: var(--gold);
+      padding: 5px 14px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      margin-top: 8px;
+    }
+    .hero-stats {
+      display: flex;
+      gap: 24px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+    .stat-box {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 20px;
+      min-width: 100px;
+    }
+    .stat-num {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--accent2);
+    }
+    .stat-label {
+      font-size: 0.75rem;
+      color: var(--muted);
+      font-weight: 600;
+      margin-top: 2px;
+    }
+
+    /* ── SECTION ── */
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .section-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.15rem;
+      font-weight: 800;
+    }
+
+    /* ── BTN ── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 10px 20px;
+      border-radius: 10px;
+      font-family: 'Nunito', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 800;
+      cursor: pointer;
+      border: none;
+      transition: opacity .2s, transform .15s;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), var(--purple));
+      color: #fff;
+    }
+    .btn-primary:hover { opacity: 0.88; }
+    .btn-ghost {
+      background: rgba(255,255,255,0.06);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    .btn-ghost:hover { background: rgba(255,255,255,0.1); }
+    .btn-danger {
+      background: rgba(224,92,110,0.14);
+      color: var(--danger);
+      border: 1px solid rgba(224,92,110,0.3);
+    }
+    .btn-danger:hover { background: rgba(224,92,110,0.24); }
+    .btn-sm { padding: 7px 14px; font-size: 0.8rem; }
+
+    /* ── CARDS ── */
+    .packs-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 18px;
+    }
+    .pack-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: border-color .2s, transform .2s;
+    }
+    .pack-card:hover { border-color: rgba(124,111,239,0.3); transform: translateY(-2px); }
+    .pack-img {
+      width: 100%;
+      height: 160px;
+      object-fit: cover;
+      background: var(--surface2);
+    }
+    .pack-img-fallback {
+      width: 100%;
+      height: 160px;
+      background: linear-gradient(135deg, #1a1530, #252045);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.5rem;
+    }
+    .pack-body { padding: 16px; flex: 1; display: flex; flex-direction: column; gap: 8px; }
+    .pack-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      line-height: 1.3;
+    }
+    .pack-desc {
+      font-size: 0.82rem;
+      color: var(--muted);
+      line-height: 1.5;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .pack-meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 4px;
+    }
+    .pack-price {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: var(--gold);
+    }
+    .pack-buyers {
+      font-size: 0.78rem;
+      color: var(--muted);
+      font-weight: 600;
+    }
+    .pack-actions {
+      display: flex;
+      gap: 8px;
+      padding: 12px 16px;
+      border-top: 1px solid var(--border);
+    }
+
+    /* ── EMPTY STATE ── */
+    .empty-state {
+      text-align: center;
+      padding: 56px 24px;
+      color: var(--muted);
+    }
+    .empty-state .icon { font-size: 3rem; margin-bottom: 14px; }
+    .empty-state p { font-size: 0.95rem; margin-bottom: 20px; line-height: 1.6; }
+
+    /* ── MODAL ── */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.72);
+      backdrop-filter: blur(4px);
+      z-index: 500;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .25s;
+    }
+    .modal-overlay.open { opacity: 1; pointer-events: all; }
+    .modal {
+      background: var(--surface);
+      border: 1px solid rgba(124,111,239,0.2);
+      border-radius: 20px;
+      width: 100%;
+      max-width: 480px;
+      padding: 28px;
+      transform: translateY(20px);
+      transition: transform .25s;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .modal-overlay.open .modal { transform: translateY(0); }
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+    }
+    .modal-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 800;
+    }
+    .modal-close {
+      width: 32px; height: 32px;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.06);
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background .2s;
+    }
+    .modal-close:hover { background: rgba(255,255,255,0.12); color: var(--text); }
+
+    /* ── FORM ── */
+    .form-group { margin-bottom: 18px; }
+    .form-label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--muted);
+      margin-bottom: 7px;
+      letter-spacing: 0.3px;
+    }
+    .form-label span { color: var(--danger); margin-left: 2px; }
+    .form-input, .form-textarea {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-family: 'Nunito', sans-serif;
+      font-size: 0.9rem;
+      padding: 11px 14px;
+      transition: border-color .2s;
+      outline: none;
+    }
+    .form-input:focus, .form-textarea:focus {
+      border-color: var(--accent);
+    }
+    .form-textarea { resize: vertical; min-height: 90px; }
+    .form-hint { font-size: 0.75rem; color: var(--muted); margin-top: 5px; }
+    .form-footer { display: flex; gap: 10px; justify-content: flex-end; margin-top: 6px; }
+
+    /* ── LOADING ── */
+    .spinner {
+      width: 18px; height: 18px;
+      border: 2px solid rgba(255,255,255,0.2);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      display: inline-block;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .loading-state {
+      text-align: center;
+      padding: 48px 24px;
+      color: var(--muted);
+    }
+
+    /* ── CONFIRM OVERLAY ── */
+    .confirm-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.75);
+      backdrop-filter: blur(4px);
+      z-index: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .2s;
+    }
+    .confirm-overlay.open { opacity: 1; pointer-events: all; }
+    .confirm-box {
+      background: var(--surface);
+      border: 1px solid rgba(224,92,110,0.3);
+      border-radius: 16px;
+      padding: 28px;
+      max-width: 360px;
+      width: 100%;
+      text-align: center;
+      transform: scale(0.96);
+      transition: transform .2s;
+    }
+    .confirm-overlay.open .confirm-box { transform: scale(1); }
+    .confirm-icon { font-size: 2rem; margin-bottom: 12px; }
+    .confirm-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 1rem;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+    .confirm-msg { font-size: 0.85rem; color: var(--muted); margin-bottom: 22px; line-height: 1.5; }
+    .confirm-actions { display: flex; gap: 10px; justify-content: center; }
+
+    @media (max-width: 520px) {
+      .hero { padding: 22px 18px 20px; }
+      .hero-title { font-size: 1.3rem; }
+      .hero-stats { gap: 12px; }
+      .packs-grid { grid-template-columns: 1fr; }
+      nav .nav-right .nav-link { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── NAV ── -->
+<nav>
+  <a href="index.html" class="nav-logo">InkRise</a>
+  <div class="nav-right">
+    <a href="index.html" class="nav-link">Accueil</a>
+    <a href="tutoriels.html" class="nav-link">Tutoriels</a>
+    <a href="createurs.html" class="nav-link">Créateurs</a>
+    <a href="profil.html" class="nav-link">Profil</a>
+  </div>
+</nav>
+
+<!-- ── MAIN ── -->
+<div class="main">
+
+  <!-- HERO -->
+  <div class="hero" id="hero" style="display:none">
+    <div class="hero-title">Bienvenue, <span id="hero-username">...</span> ✨</div>
+    <div class="badge-premium">💎 Espace Premium Créateur</div>
+    <div class="hero-stats">
+      <div class="stat-box">
+        <div class="stat-num" id="stat-formations">0</div>
+        <div class="stat-label">Formation(s)</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-num" id="stat-acheteurs">0</div>
+        <div class="stat-label">Acheteur(s)</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION MES FORMATIONS -->
+  <div id="section-formations" style="display:none">
+    <div class="section-header">
+      <div class="section-title">Mes formations</div>
+      <button class="btn btn-primary" id="btn-new-pack">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Nouvelle formation
+      </button>
+    </div>
+    <div id="packs-container">
+      <div class="loading-state"><div class="spinner"></div></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ── BOTTOM NAV ── -->
+<nav class="bnav">
+  <a href="index.html" class="bnav-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1z"/><path d="M9 21V12h6v9"/></svg>
+    Accueil
+  </a>
+  <a href="recherche.html" class="bnav-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    Mangas
+  </a>
+  <a href="bibliotheque.html" class="bnav-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+    Biblio
+  </a>
+  <a href="tutoriels.html" class="bnav-item active">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+    Tuto
+  </a>
+  <a href="profil.html" class="bnav-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    Profil
+  </a>
+</nav>
+
+<!-- ── MODAL NOUVELLE / ÉDITION FORMATION ── -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-title">Nouvelle formation</div>
+      <button class="modal-close" id="modal-close">✕</button>
+    </div>
+    <form id="pack-form">
+      <input type="hidden" id="edit-pack-id" value="" />
+      <div class="form-group">
+        <label class="form-label" for="f-titre">Titre <span>*</span></label>
+        <input class="form-input" type="text" id="f-titre" placeholder="Ex: Dessiner les visages manga" required />
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="f-desc">Description</label>
+        <textarea class="form-textarea" id="f-desc" placeholder="Décris ta formation en quelques phrases..."></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="f-prix">Prix (€) <span>*</span></label>
+        <input class="form-input" type="number" id="f-prix" min="0" step="0.01" placeholder="2.00" value="2.00" required />
+        <div class="form-hint">Mets 0 pour une formation gratuite.</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="f-image">URL de l'image (optionnelle)</label>
+        <input class="form-input" type="url" id="f-image" placeholder="https://..." />
+      </div>
+      <div class="form-footer">
+        <button type="button" class="btn btn-ghost" id="modal-cancel">Annuler</button>
+        <button type="submit" class="btn btn-primary" id="modal-submit">
+          <span id="submit-label">Créer la formation</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ── CONFIRM SUPPRESSION ── -->
+<div class="confirm-overlay" id="confirm-overlay">
+  <div class="confirm-box">
+    <div class="confirm-icon">🗑️</div>
+    <div class="confirm-title">Supprimer cette formation ?</div>
+    <div class="confirm-msg">Cette action est irréversible. La formation sera supprimée définitivement.</div>
+    <div class="confirm-actions">
+      <button class="btn btn-ghost btn-sm" id="confirm-cancel">Annuler</button>
+      <button class="btn btn-danger btn-sm" id="confirm-ok">Supprimer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── TOAST ── -->
+<div id="toast"></div>
+
+<script>
+  const SUPABASE_URL = 'https://bsdcpwtimsgxcnaamwip.supabase.co';
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJzZGNwd3RpbXNneGNuYWFtd2lwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc2NjI0MTQsImV4cCI6MjA2MzIzODQxNH0.Aq1TMYRMCAbXHTDDv8nHAkWxuIDqHt7mBGrDFsufb44';
+  const { createClient } = supabase;
+  const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  let currentUser = null;
+  let userProfile = null;
+  let deletePackId = null;
+
+  /* ── TOAST ── */
+  function showToast(msg, type) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = 'show' + (type ? ' ' + type : '');
+    clearTimeout(t._timer);
+    t._timer = setTimeout(() => { t.className = ''; }, 3200);
+  }
+
+  /* ── INIT ── */
+  async function init() {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) { window.location.href = 'auth.html'; return; }
+    currentUser = session.user;
+
+    const { data: profile } = await sb.from('profiles').select('*').eq('id', currentUser.id).single();
+    if (!profile) { window.location.href = 'profil.html'; return; }
+    userProfile = profile;
+
+    if (!profile.espace_premium) {
+      sessionStorage.setItem('toast_msg', "Active d'abord ton espace premium");
+      sessionStorage.setItem('toast_type', 'error');
+      window.location.href = 'profil.html';
+      return;
+    }
+
+    document.getElementById('hero-username').textContent = profile.username || 'Créateur';
+    document.getElementById('hero').style.display = '';
+    document.getElementById('section-formations').style.display = '';
+
+    await loadPacks();
+  }
+
+  /* ── LOAD PACKS ── */
+  async function loadPacks() {
+    const container = document.getElementById('packs-container');
+    container.innerHTML = '<div class="loading-state"><div class="spinner"></div></div>';
+
+    const { data: packs, error } = await sb
+      .from('packs_tutoriels')
+      .select('*')
+      .eq('auteur_id', currentUser.id)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      container.innerHTML = '<div class="empty-state"><p>Erreur lors du chargement.</p></div>';
+      return;
+    }
+
+    if (!packs || packs.length === 0) {
+      container.innerHTML = `
+        <div class="empty-state">
+          <div class="icon">📦</div>
+          <p>Tu n'as pas encore créé de formation.<br>Crée ta première formation !</p>
+          <button class="btn btn-primary" onclick="openNewModal()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Créer ma première formation
+          </button>
+        </div>`;
+      updateStats(0, 0);
+      return;
+    }
+
+    /* Compter les acheteurs pour chaque pack */
+    const buyerCounts = {};
+    const packIds = packs.map(p => p.id);
+    const { data: achats } = await sb
+      .from('achats_packs')
+      .select('pack_id')
+      .in('pack_id', packIds);
+
+    if (achats) {
+      achats.forEach(a => {
+        buyerCounts[a.pack_id] = (buyerCounts[a.pack_id] || 0) + 1;
+      });
+    }
+
+    const totalAcheteurs = achats ? achats.length : 0;
+    updateStats(packs.length, totalAcheteurs);
+
+    container.innerHTML = '<div class="packs-grid" id="packs-grid"></div>';
+    const grid = document.getElementById('packs-grid');
+
+    packs.forEach(pack => {
+      const buyers = buyerCounts[pack.id] || 0;
+      const prix = parseFloat(pack.prix || 0);
+      const prixStr = prix === 0 ? 'Gratuit' : prix.toFixed(2) + ' €';
+
+      const card = document.createElement('div');
+      card.className = 'pack-card';
+      card.dataset.id = pack.id;
+
+      const imgHtml = pack.image_url
+        ? `<img class="pack-img" src="${escHtml(pack.image_url)}" alt="${escHtml(pack.titre)}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" loading="lazy" /><div class="pack-img-fallback" style="display:none">📚</div>`
+        : `<div class="pack-img-fallback">📚</div>`;
+
+      card.innerHTML = `
+        ${imgHtml}
+        <div class="pack-body">
+          <div class="pack-title">${escHtml(pack.titre)}</div>
+          ${pack.description ? `<div class="pack-desc">${escHtml(pack.description)}</div>` : ''}
+          <div class="pack-meta">
+            <div class="pack-price">${prixStr}</div>
+            <div class="pack-buyers">👥 ${buyers} acheteur${buyers !== 1 ? 's' : ''}</div>
+          </div>
+        </div>
+        <div class="pack-actions">
+          <button class="btn btn-ghost btn-sm" style="flex:1" onclick="openEditModal(${pack.id})">✏️ Modifier</button>
+          <button class="btn btn-danger btn-sm" onclick="askDelete(${pack.id})">🗑️</button>
+        </div>`;
+
+      grid.appendChild(card);
+    });
+  }
+
+  function updateStats(formations, acheteurs) {
+    document.getElementById('stat-formations').textContent = formations;
+    document.getElementById('stat-acheteurs').textContent = acheteurs;
+  }
+
+  function escHtml(str) {
+    if (!str) return '';
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  /* ── MODAL NOUVELLE FORMATION ── */
+  function openNewModal() {
+    document.getElementById('modal-title').textContent = 'Nouvelle formation';
+    document.getElementById('submit-label').textContent = 'Créer la formation';
+    document.getElementById('edit-pack-id').value = '';
+    document.getElementById('pack-form').reset();
+    document.getElementById('f-prix').value = '2.00';
+    document.getElementById('modal-overlay').classList.add('open');
+  }
+
+  function closeModal() {
+    document.getElementById('modal-overlay').classList.remove('open');
+  }
+
+  document.getElementById('btn-new-pack').addEventListener('click', openNewModal);
+  document.getElementById('modal-close').addEventListener('click', closeModal);
+  document.getElementById('modal-cancel').addEventListener('click', closeModal);
+  document.getElementById('modal-overlay').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+  });
+
+  /* ── MODAL ÉDITION ── */
+  let packsCache = {};
+
+  async function openEditModal(packId) {
+    const { data: pack } = await sb.from('packs_tutoriels').select('*').eq('id', packId).single();
+    if (!pack) { showToast('Formation introuvable', 'error'); return; }
+
+    document.getElementById('modal-title').textContent = 'Modifier la formation';
+    document.getElementById('submit-label').textContent = 'Enregistrer';
+    document.getElementById('edit-pack-id').value = packId;
+    document.getElementById('f-titre').value = pack.titre || '';
+    document.getElementById('f-desc').value = pack.description || '';
+    document.getElementById('f-prix').value = pack.prix != null ? pack.prix : '2.00';
+    document.getElementById('f-image').value = pack.image_url || '';
+    document.getElementById('modal-overlay').classList.add('open');
+  }
+
+  /* ── FORM SUBMIT ── */
+  document.getElementById('pack-form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const submitBtn = document.getElementById('modal-submit');
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<div class="spinner"></div>';
+
+    const titre = document.getElementById('f-titre').value.trim();
+    const description = document.getElementById('f-desc').value.trim();
+    const prix = parseFloat(document.getElementById('f-prix').value) || 0;
+    const image_url = document.getElementById('f-image').value.trim() || null;
+    const editId = document.getElementById('edit-pack-id').value;
+
+    try {
+      if (editId) {
+        const { error } = await sb
+          .from('packs_tutoriels')
+          .update({ titre, description, prix, image_url })
+          .eq('id', editId)
+          .eq('auteur_id', currentUser.id);
+        if (error) throw error;
+        showToast('Formation mise à jour !', 'success');
+      } else {
+        const { error } = await sb
+          .from('packs_tutoriels')
+          .insert({ titre, description, prix, image_url, auteur_id: currentUser.id, auteur_nom: userProfile.username });
+        if (error) throw error;
+        showToast('Formation créée !', 'success');
+      }
+      closeModal();
+      await loadPacks();
+    } catch (err) {
+      showToast('Erreur : ' + (err.message || 'inconnue'), 'error');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = '<span id="submit-label">' + (editId ? 'Enregistrer' : 'Créer la formation') + '</span>';
+    }
+  });
+
+  /* ── SUPPRESSION ── */
+  function askDelete(packId) {
+    deletePackId = packId;
+    document.getElementById('confirm-overlay').classList.add('open');
+  }
+
+  document.getElementById('confirm-cancel').addEventListener('click', function() {
+    deletePackId = null;
+    document.getElementById('confirm-overlay').classList.remove('open');
+  });
+
+  document.getElementById('confirm-overlay').addEventListener('click', function(e) {
+    if (e.target === this) {
+      deletePackId = null;
+      this.classList.remove('open');
+    }
+  });
+
+  document.getElementById('confirm-ok').addEventListener('click', async function() {
+    if (!deletePackId) return;
+    this.disabled = true;
+    this.innerHTML = '<div class="spinner"></div>';
+
+    const { error } = await sb
+      .from('packs_tutoriels')
+      .delete()
+      .eq('id', deletePackId)
+      .eq('auteur_id', currentUser.id);
+
+    this.disabled = false;
+    this.textContent = 'Supprimer';
+    document.getElementById('confirm-overlay').classList.remove('open');
+    deletePackId = null;
+
+    if (error) {
+      showToast('Erreur lors de la suppression', 'error');
+    } else {
+      showToast('Formation supprimée', 'success');
+      await loadPacks();
+    }
+  });
+
+  init();
+</script>
+</body>
+</html>
