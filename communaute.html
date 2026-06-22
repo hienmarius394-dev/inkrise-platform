@@ -564,39 +564,73 @@ function doSearch(){var q=document.getElementById('navSearchInput').value.trim()
 function focusSearch(){document.getElementById('navSearchInput').focus()}
 function doLogout(){sb.auth.signOut().then(function(){window.location.href='index.html'})}
 
+/* ── Overlay safety: ensure it starts hidden ── */
+document.addEventListener('DOMContentLoaded', function() {
+  var ol = document.getElementById('univOverlay');
+  if (ol) ol.classList.remove('open');
+});
+
 /* ===== MAIN INIT ===== */
 (async function init() {
   const params = new URLSearchParams(window.location.search);
   state.creatorId = params.get('id');
-  if (!state.creatorId) { showToast('ID créateur manquant', 'error'); state.loading = false; render(); return; }
 
+  /* ── Welcome / empty state when no creator ID ── */
+  if (!state.creatorId) {
+    state.loading = false;
+    const app = document.getElementById('app');
+    app.innerHTML = '' +
+      '<div class="empty-state" style="padding:80px 20px;">' +
+        '<div class="empty-state-icon" style="font-size:4rem;margin-bottom:16px;">👥</div>' +
+        '<div style="font-size:1.2rem;font-weight:700;color:var(--text);margin-bottom:12px;">Bienvenue sur la communauté Inkrise !</div>' +
+        '<div style="font-size:0.9rem;color:var(--text-muted);max-width:420px;margin:0 auto 28px;line-height:1.7;">' +
+          'Chaque créateur possède son propre espace communautaire. ' +
+          'Connecte-toi ou inscris-toi pour accéder à l\'espace de ton créateur préféré.' +
+        '</div>' +
+        '<div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">' +
+          '<a href="auth.html" style="display:inline-flex;align-items:center;gap:8px;padding:12px 28px;background:var(--purple);color:#fff;border-radius:var(--radius-sm);font-weight:700;font-size:0.9rem;text-decoration:none;">🔑 Connexion / Inscription</a>' +
+          '<a href="index.html" style="display:inline-flex;align-items:center;gap:8px;padding:12px 28px;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:var(--radius-sm);font-weight:600;font-size:0.9rem;text-decoration:none;">🏠 Retour à l\'accueil</a>' +
+        '</div>' +
+      '</div>';
+    return;
+  }
+
+  /* ── Load creator data (public page: no session required to VIEW) ── */
   const { data: { session } } = await sb.auth.getSession();
-  if (!session) { window.location.href = '/auth.html'; return; }
-
-  state.visitor = session.user;
+  state.visitor = session ? session.user : null;
 
   try {
-    const [creatorRes, visitorRes] = await Promise.all([
-      sb.from('profiles').select('id, username, bio, avatar_url, espace_premium').eq('id', state.creatorId).single(),
-      sb.from('profiles').select('id, username, avatar_url').eq('id', state.visitor.id).single()
-    ]);
+    const creatorRes = await sb.from('profiles').select('id, username, bio, avatar_url, espace_premium').eq('id', state.creatorId).single();
     if (creatorRes.error) throw creatorRes.error;
     state.creator = creatorRes.data;
-    state.visitor = visitorRes.data;
-    state.isCreator = state.visitor && state.visitor.id === state.creator.id;
 
-    /* Show avatar / hide connexion button */
-    document.getElementById('navConnexion').style.display = 'none';
-        document.getElementById('navAvatar').classList.add('show');
-    document.getElementById('drawerProfil').style.display = 'flex';
-    document.getElementById('drawerPublier').style.display = 'flex';
-    document.getElementById('drawerConnexion').style.display = 'none';
-    document.getElementById('drawerLogout').style.display = 'flex';
+    /* If visitor is logged in, also fetch their profile */
+    if (state.visitor) {
+      const visitorRes = await sb.from('profiles').select('id, username, avatar_url').eq('id', state.visitor.id).single();
+      if (!visitorRes.error) {
+        state.visitor = visitorRes.data;
+        state.isCreator = state.visitor.id === state.creator.id;
+      }
+    }
+
+    /* Show avatar if logged in */
+    if (state.visitor) {
+      document.getElementById('navConnexion').style.display = 'none';
+      document.getElementById('navAvatar').classList.add('show');
+      document.getElementById('drawerProfil').style.display = 'flex';
+      document.getElementById('drawerPublier').style.display = 'flex';
+      document.getElementById('drawerConnexion').style.display = 'none';
+      document.getElementById('drawerLogout').style.display = 'flex';
+    }
 
     await loadPosts();
     await loadSondageVotes();
   } catch (err) {
-    showToast('Erreur chargement profil: ' + err.message, 'error');
+    /* Creator not found */
+    state.loading = false;
+    const app = document.getElementById('app');
+    app.innerHTML = '<div class="empty-state"><div class="empty-state-icon">😕</div><div class="empty-state-text">Créateur introuvable</div><div style="margin-top:16px;font-size:0.85rem;color:var(--text-muted);">Le lien que vous avez suivi est peut-être invalide.</div></div>';
+    return;
   }
 
   state.loading = false;
