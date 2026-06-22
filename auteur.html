@@ -138,6 +138,14 @@
       text-transform: uppercase; letter-spacing: 0.5px;
     }
     .badge-creator.show { display: inline-flex; }
+    .badge-premium {
+      display: none; align-items: center; gap: 4px;
+      background: linear-gradient(135deg,rgba(255,107,53,.2),rgba(245,200,66,.15));
+      border: 1px solid rgba(255,107,53,.4);
+      color: #ff8c5a; font-size: 0.7rem; font-weight: 800;
+      padding: 3px 10px; border-radius: 20px;
+      text-transform: uppercase; letter-spacing: 0.5px;
+    }
     .author-username {
       font-family: 'Syne', sans-serif; font-size: 2rem; font-weight: 800;
       line-height: 1.1; margin-bottom: 10px;
@@ -336,6 +344,7 @@
       <div class="author-hero-info">
         <div class="author-badges">
           <span class="badge-creator" id="creatorBadge">✏️ Créateur</span>
+          <span class="badge-premium" id="premiumBadge" style="display:none;">💎 Premium</span>
         </div>
         <h1 class="author-username" id="authorUsername">—</h1>
         <p class="author-bio" id="authorBio"></p>
@@ -479,6 +488,10 @@ function renderProfile(profile, mangaCount) {
 
   if (profile.is_creator) {
     document.getElementById('creatorBadge').classList.add('show');
+  }
+
+  if (profile.espace_premium) {
+    document.getElementById('premiumBadge').style.display = 'inline-flex';
   }
 
   document.getElementById('statFollowers').textContent = followerCount;

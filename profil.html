@@ -613,7 +613,20 @@
 .univ-bnav-search{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#7c6fef,#5040c8);border:none;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;margin-top:-18px;box-shadow:0 4px 18px rgba(124,111,239,.5);transition:transform .2s;flex-shrink:0;}
 .univ-bnav-search:hover{transform:scale(1.08);}
 
-</style>
+/* ── Premium Toggle ── */
+    .toggle-switch { position: relative; display: inline-block; width: 48px; height: 26px; flex-shrink: 0; }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider {
+      position: absolute; cursor: pointer; inset: 0;
+      background: #333; border-radius: 26px; transition: .3s;
+    }
+    .toggle-slider::before {
+      content: ''; position: absolute; height: 20px; width: 20px;
+      left: 3px; bottom: 3px; background: #888; border-radius: 50%; transition: .3s;
+    }
+    .toggle-switch input:checked + .toggle-slider { background: var(--accent); }
+    .toggle-switch input:checked + .toggle-slider::before { transform: translateX(22px); background: #fff; }
+  </style>
 </head>
 <body>
 
@@ -769,12 +782,25 @@
     </div>
 
     <div class="info-card">
-      <h3>⚡ Changer de plan</h3>
-      <div style="display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;">
-        <div style="font-size:0.88rem; color:var(--muted);">Accède à plus de fonctionnalités avec un plan supérieur.</div>
-        <button class="btn-creator" id="btnOpenPlans2">Voir les plans ✨</button>
-      </div>
-    </div>
+          <h3>⚡ Changer de plan</h3>
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;">
+            <div style="font-size:0.88rem; color:var(--muted);">Accède à plus de fonctionnalités avec un plan supérieur.</div>
+            <button class="btn-creator" id="btnOpenPlans2">Voir les plans ✨</button>
+          </div>
+        </div>
+
+        <div class="info-card" id="premiumCard">
+          <h3>✨ Espace Premium</h3>
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;">
+            <div style="font-size:0.88rem; color:var(--muted);">
+              Active ton espace premium pour proposer des formations et contenus exclusifs à ta communauté.
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="premiumToggle" onchange="togglePremium()" />
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
   </div>
 
 
@@ -927,10 +953,16 @@
     document.getElementById('profileUsername').textContent = username;
 
     // Compte
-    document.getElementById('inputUsername').value    = username;
-    document.getElementById('displayEmail').textContent = currentUser.email;
-    const joined = new Date(currentUser.created_at).toLocaleDateString('fr-FR', { year:'numeric', month:'long', day:'numeric' });
-    document.getElementById('displayJoined').textContent = joined;
+        document.getElementById('inputUsername').value = username;
+        document.getElementById('displayEmail').textContent = currentUser.email;
+        const joined = new Date(currentUser.created_at).toLocaleDateString('fr-FR', { year:'numeric', month:'long', day:'numeric' });
+        document.getElementById('displayJoined').textContent = joined;
+
+        // Premium status
+        if (profile?.espace_premium) {
+          document.getElementById('premiumToggle').checked = true;
+          document.getElementById('premiumCard').style.borderColor = 'var(--accent)';
+        }
   }
 
   // ── CHARGER MANGAS ──
@@ -1218,6 +1250,18 @@ function doSearch(){
 function focusSearch(){
   const i=document.getElementById('navSearchInput');
   if(i){i.focus();window.scrollTo({top:0,behavior:"smooth"});}
+}
+async function togglePremium(){
+  const el=document.getElementById('premiumToggle');
+  const active=el.checked;
+  const {error}=await sb.from('profiles').update({espace_premium:active}).eq('id',currentUser.id);
+  if(error){
+    el.checked=!active;
+    showToast('Erreur lors de l\'activation','error');
+  } else {
+    document.getElementById('premiumCard').style.borderColor=active?'var(--accent)':'';
+    showToast(active?'✅ Espace premium activé !':'Espace premium désactivé','success');
+  }
 }
 </script>
 <!-- BOTTOM NAV -->
