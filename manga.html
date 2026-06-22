@@ -500,14 +500,14 @@
 <nav>
   <a href="index.html" class="nav-logo">INK<span>RISE</span></a>
   <div class="nav-links">
-    <a href="index.html" class="nav-link">Accueil</a>
-    <a href="manga.html" class="nav-link">Mangas</a>
-    <a href="#" class="nav-link">Tutoriels</a>
-    <button class="nav-link" onclick="openModal()">Premium ✨</button>
+    <a href="index.html" class="univ-nav-link">Accueil</a>
+    <a href="manga.html" class="univ-nav-link">Mangas</a>
+    <a href="#" class="univ-nav-link">Tutoriels</a>
+    <a href="#" class="univ-nav-link" onclick="openModal();return false;">Premium</a>
   </div>
-  <div class="nav-search-wrap">
-    <input type="text" id="navSearchInput" class="nav-search-input" placeholder="Rechercher…" onkeydown="if(event.key==='Enter')doSearch()" />
-    <button class="nav-search-btn" onclick="doSearch()">🔍</button>
+  <div class="univ-search-wrap">
+    <input type="text" id="navSearchInput" class="univ-search-input" placeholder="Rechercher…" onkeydown="if(event.key==='Enter')doSearch()" />
+    <button class="univ-search-btn" onclick="doSearch()">🔍</button>
   </div>
   <div class="nav-right-btns">
     <a href="auth.html" class="nav-connexion-btn" id="navConnexion">Connexion</a>
@@ -528,7 +528,7 @@
   <a href="index.html" class="drawer-item"><div class="drawer-item-icon">🏠</div><span class="drawer-item-label">Accueil</span></a>
   <a href="manga.html" class="drawer-item"><div class="drawer-item-icon">📖</div><span class="drawer-item-label">Manga & BD</span></a>
   <a href="tutoriels.html" class="drawer-item"><div class="drawer-item-icon">🎓</div><span class="drawer-item-label">Tutoriels</span><span class="drawer-item-badge" style="background:rgba(45,212,160,.12);color:#2dd4a0;">GRATUIT</span></a>
-  <a href="#" class="drawer-item" onclick="openModal();closeDrawer();return false;"><div class="drawer-item-icon">💎</div><span class="drawer-item-label">Espace Premium</span><span class="drawer-item-badge" style="background:rgba(124,111,239,.15);color:#a594f9;">PRO</span></a>
+  <a href="#" class="drawer-item" onclick="openModal();closeDrawer();return false;"><div class="drawer-item-icon">💎</div><span class="drawer-item-label">Premium</span><span class="drawer-item-badge" style="background:rgba(255,107,53,.15);color:#ff6b35;">PRO</span></a>
   <div class="drawer-divider"></div>
   <div class="drawer-section-title">Mon compte</div>
   <a href="profil.html" class="drawer-item" id="drawerProfil" style="display:none;"><div class="drawer-item-icon">🧑‍🎨</div><span class="drawer-item-label">Mon profil</span></a>

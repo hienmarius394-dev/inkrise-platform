@@ -33,51 +33,129 @@ body {
 a { color: var(--purple); text-decoration: none; }
 img { max-width: 100%; display: block; }
 
-/* ===== HEADER ===== */
-.univ-header {
+/* ===== STANDARD NAV (universel) ===== */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
   display: flex; align-items: center; justify-content: space-between;
-  padding: 12px 20px; background: var(--surface);
-  border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 100;
+  padding: 0 16px; height: 58px;
+  background: rgba(10,10,15,0.96);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  box-shadow: 0 1px 20px rgba(0,0,0,0.3);
+  backdrop-filter: blur(14px);
+  gap: 8px;
 }
-.univ-nav-logo { font-size: 1.4rem; font-weight: 800; color: var(--purple); letter-spacing: -0.5px; }
-.univ-nav-links-d { display: none; gap: 8px; }
-@media (min-width: 768px) {
-  .univ-nav-links-d { display: flex; }
+.logo { font-size: 20px; font-weight: 900; letter-spacing: -0.5px; text-decoration: none;
+  background: linear-gradient(135deg,#7c6fef,#a594f9); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+.logo span { -webkit-text-fill-color: transparent; }
+.nav-right { display: flex; align-items: center; gap: 8px; }
+.avatar-btn {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: linear-gradient(135deg, #ff6b35, #7c6fef);
+  border: 2px solid var(--surface); box-shadow: 0 2px 8px rgba(124,111,239,0.25);
+  display: none; align-items: center; justify-content: center; font-size: 17px;
+  cursor: pointer; text-decoration: none; transition: transform 0.2s;
 }
-.univ-nav-links-d a {
-  padding: 6px 14px; border-radius: var(--radius-sm);
-  color: var(--text-muted); font-size: 0.9rem; font-weight: 500;
-  transition: background 0.2s, color 0.2s;
+.avatar-btn:hover { transform: scale(1.05); }
+.avatar-btn.show { display: flex; }
+.btn-connexion {
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; font-size: 13px; font-weight: 700;
+  padding: 7px 14px; border-radius: 20px; border: 1.5px solid rgba(255,255,255,0.15);
+  background: transparent; color: rgba(240,239,254,0.8); cursor: pointer; text-decoration: none; transition: all 0.2s;
+  white-space: nowrap;
 }
-.univ-nav-links-d a:hover { background: var(--surface2); color: var(--text); }
-.univ-nav-links-d a.active { color: var(--purple); background: rgba(124,111,239,0.12); }
-.univ-header-right { display: flex; align-items: center; gap: 12px; }
-.univ-header-avatar {
-  width: 34px; height: 34px; border-radius: 50%; object-fit: cover;
-  border: 2px solid var(--border); cursor: pointer;
+.btn-connexion:hover { border-color: #7c6fef; color: #a594f9; }
+.hamburger {
+  width: 34px; height: 34px; border-radius: 8px;
+  background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1);
+  display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px;
+  color: #f0effe; transition: background 0.2s;
 }
-.univ-header-avatar-fallback {
-  width: 34px; height: 34px; border-radius: 50%;
-  background: var(--purple); color: #fff;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 0.75rem; font-weight: 700; cursor: pointer;
-}
+.hamburger:hover { background: rgba(255,255,255,0.13); }
 
-/* ===== BOTTOM NAV ===== */
-.univ-bnav {
-  display: flex; justify-content: space-around; align-items: center;
+/* ── MENU DRAWER ── */
+.drawer-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.35) !important; z-index: 150; backdrop-filter: blur(3px);
+}
+.drawer-overlay.open { display: block; }
+.drawer {
+  position: fixed; top: 0; right: 0; width: 280px; height: 100%;
+  background: #13131c; z-index: 151;
+  transform: translateX(100%);
+  transition: transform 0.28s cubic-bezier(0.4,0,0.2,1);
+  overflow-y: auto; box-shadow: -4px 0 32px rgba(0,0,0,0.4);
+  border-left: 1px solid rgba(255,255,255,0.07);
+}
+.drawer.open { transform: translateX(0); }
+.drawer-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px; border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+.drawer-logo { font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; font-size: 18px; font-weight: 900; text-decoration: none;
+  background: linear-gradient(135deg,#7c6fef,#a594f9); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+.drawer-logo span { -webkit-text-fill-color: transparent; }
+.drawer-close {
+  width: 32px; height: 32px; border-radius: 50%; background: rgba(255,255,255,0.08); border: none;
+  display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; color: rgba(240,239,254,0.7);
+}
+.drawer-section-title {
+  font-size: 10px; font-weight: 800; color: rgba(240,239,254,0.3);
+  letter-spacing: 1.5px; text-transform: uppercase; padding: 16px 16px 6px;
+}
+.drawer-item {
+  display: flex; align-items: center; gap: 12px; padding: 10px 12px; margin: 2px 8px;
+  border-radius: 10px; text-decoration: none; cursor: pointer; border: none; background: none;
+  color: rgba(240,239,254,0.8); font-size: 14px; width: calc(100% - 16px); transition: background 0.2s;
+}
+.drawer-item:hover { background: rgba(255,255,255,0.06); }
+.drawer-item-icon {
+  width: 32px; height: 32px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center; font-size: 16px;
+  background: rgba(255,255,255,0.05); flex-shrink: 0;
+}
+.drawer-item-label { flex: 1; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
+.drawer-item-badge {
+  font-size: 9px; font-weight: 800; padding: 3px 8px; border-radius: 20px;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+.drawer-divider { height: 1px; background: rgba(255,255,255,0.07); margin: 8px 16px; }
+
+/* ── BOTTOM NAV ── */
+.bottom-nav {
   position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
   background: var(--surface); border-top: 1px solid var(--border);
-  padding: 6px 0 env(safe-area-inset-bottom,6px) 0;
+  display: flex; align-items: center; justify-content: space-around;
+  padding: 8px 0 16px; box-shadow: 0 -2px 12px rgba(0,0,0,0.06);
 }
-.univ-bnav a {
-  display: flex; flex-direction: column; align-items: center;
-  gap: 2px; padding: 6px 12px; color: var(--text-muted);
-  font-size: 0.65rem; font-weight: 500; transition: color 0.2s;
+.bottom-nav-item {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  cursor: pointer; text-decoration: none; color: inherit; opacity: 0.4;
+  border: none; background: none; padding: 0 8px; transition: opacity 0.2s;
 }
-.univ-bnav a:hover, .univ-bnav a.active { color: var(--purple); }
-.univ-bnav-icon { font-size: 1.3rem; line-height: 1; }
-.univ-bnav-label { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.3px; }
+.bottom-nav-item.active { opacity: 1; }
+.bottom-nav-item:hover { opacity: 0.75; }
+.bottom-nav-icon { font-size: 21px; }
+.bottom-nav-label { font-size: 9px; font-weight: 800; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; color: var(--text-muted); }
+.bottom-nav-item.active .bottom-nav-label { color: var(--purple); }
+.bottom-nav-search {
+  width: 50px; height: 50px; border-radius: 50%; background: var(--purple); border: none;
+  display: flex; align-items: center; justify-content: center; font-size: 21px;
+  cursor: pointer; margin-top: -18px; box-shadow: 0 4px 18px rgba(124,111,239,0.45);
+  transition: all 0.2s; flex-shrink: 0;
+}
+.bottom-nav-search:hover { background: var(--purple-dim); transform: scale(1.06); }
+
+/* ── NAV LINKS + SEARCH (universel) ── */
+.univ-nav-links { display: flex; align-items: center; gap: 2px; flex: 1; margin: 0 8px; }
+@media (max-width: 680px) { .univ-nav-links { display: none; } }
+.univ-nav-link { color: rgba(240,239,254,0.6); font-size: .82rem; font-weight: 600; text-decoration: none; padding: 5px 10px; border-radius: 7px; transition: all .2s; white-space: nowrap; }
+.univ-nav-link:hover { color: #f0effe; background: rgba(255,255,255,0.06); }
+.univ-search-wrap { display: flex; align-items: center; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1); border-radius: 18px; overflow: hidden; max-width: 200px; flex-shrink: 0; }
+@media (max-width: 480px) { .univ-search-wrap { max-width: 120px; } }
+.univ-search-input { background: none; border: none; outline: none; color: #f0effe; font-size: .8rem; padding: 7px 10px; width: 100%; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
+.univ-search-input::placeholder { color: rgba(240,239,254,.35); }
+.univ-search-btn { background: none; border: none; cursor: pointer; padding: 6px 8px; font-size: 13px; color: rgba(240,239,254,.5); flex-shrink: 0; transition: color .2s; }
+.univ-search-btn:hover { color: #7c6fef; }
 
 /* ===== COMMUNAUTE LAYOUT ===== */
 .comm-container {
@@ -427,20 +505,48 @@ img { max-width: 100%; display: block; }
 </head>
 <body>
 
-<header class="univ-header">
-  <a href="index.html" class="univ-nav-logo">InkRise</a>
-  <nav class="univ-nav-links-d">
-    <a href="index.html">Accueil</a>
-    <a href="manga.html">Mangas</a>
-    <a href="bibliotheque.html">Biblio</a>
-    <a href="tutoriels.html">Tutos</a>
-  </nav>
-  <div class="univ-header-right" id="header-right">
-    <a href="profil.html" id="header-profile-link">
-      <div class="univ-header-avatar-fallback" id="header-avatar-fallback">?</div>
-    </a>
+<!-- TOP NAV -->
+<nav>
+  <a href="index.html" class="logo">INKRISE</a>
+  <div class="univ-nav-links">
+    <a href="index.html" class="univ-nav-link">Accueil</a>
+    <a href="manga.html" class="univ-nav-link">Mangas</a>
+    <a href="tutoriels.html" class="univ-nav-link">Tutoriels</a>
+    <a href="#" class="univ-nav-link" onclick="openModal();return false;">Premium</a>
   </div>
-</header>
+  <div class="univ-search-wrap">
+    <input type="text" id="navSearchInput" class="univ-search-input" placeholder="Rechercher..." onkeydown="if(event.key==='Enter')doSearch()" />
+    <button class="univ-search-btn" onclick="doSearch()">🔍</button>
+  </div>
+  <div class="nav-right">
+    <a href="auth.html" class="btn-connexion" id="btnConnexion">Connexion</a>
+    <a href="profil.html" class="avatar-btn" id="avatarBtn">🧑‍🎨</a>
+    <button class="hamburger" onclick="openDrawer()">☰</button>
+  </div>
+</nav>
+
+<!-- DRAWER OVERLAY -->
+<div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
+
+<!-- MENU DRAWER -->
+<div class="drawer" id="drawer">
+  <div class="drawer-header">
+    <a href="index.html" class="drawer-logo">INK<span>RISE</span></a>
+    <button class="drawer-close" onclick="closeDrawer()">✕</button>
+  </div>
+  <div class="drawer-section-title">Explorer</div>
+  <a href="index.html" class="drawer-item"><div class="drawer-item-icon">🏠</div><span class="drawer-item-label">Accueil</span></a>
+  <a href="manga.html" class="drawer-item"><div class="drawer-item-icon">📖</div><span class="drawer-item-label">Manga &amp; BD</span></a>
+  <a href="tutoriels.html" class="drawer-item"><div class="drawer-item-icon">🎓</div><span class="drawer-item-label">Tutoriels</span><span class="drawer-item-badge" style="background:rgba(0,201,167,.15);color:#00c9a7;">GRATUIT</span></a>
+  <a href="#" class="drawer-item" onclick="openModal();closeDrawer();"><div class="drawer-item-icon">💎</div><span class="drawer-item-label">Premium</span><span class="drawer-item-badge" style="background:rgba(255,107,53,.15);color:#ff6b35;">PRO</span></a>
+  <a href="communaute.html" class="drawer-item"><div class="drawer-item-icon">👥</div><span class="drawer-item-label">Communauté</span></a>
+  <div class="drawer-divider"></div>
+  <div class="drawer-section-title">Mon compte</div>
+  <a href="profil.html" class="drawer-item" id="drawerProfil" style="display:none;"><div class="drawer-item-icon">🧑‍🎨</div><span class="drawer-item-label">Mon profil</span></a>
+  <a href="upload-manga.html" class="drawer-item" id="drawerPublier" style="display:none;"><div class="drawer-item-icon">📤</div><span class="drawer-item-label">Publier un manga</span></a>
+  <a href="auth.html" class="drawer-item" id="drawerConnexion"><div class="drawer-item-icon">🔑</div><span class="drawer-item-label">Connexion / Inscription</span></a>
+  <button class="drawer-item" id="drawerLogout" style="display:none;" onclick="logout()"><div class="drawer-item-icon">🚪</div><span class="drawer-item-label" style="color:#ff3d71;">Déconnexion</span></button>
+</div>
 
 <div class="comm-container" id="app">
   <div class="loading-spinner" id="global-loader">
@@ -449,13 +555,13 @@ img { max-width: 100%; display: block; }
   </div>
 </div>
 
-<nav class="univ-bnav">
-  <a href="index.html"><span class="univ-bnav-icon">🏠</span><span class="univ-bnav-label">Accueil</span></a>
-  <a href="manga.html"><span class="univ-bnav-icon">📚</span><span class="univ-bnav-label">Mangas</span></a>
-  <a href="bibliotheque.html"><span class="univ-bnav-icon">📖</span><span class="univ-bnav-label">Biblio</span></a>
-  <a href="tutoriels.html"><span class="univ-bnav-icon">🎨</span><span class="univ-bnav-label">Tutos</span></a>
-  <a href="profil.html"><span class="univ-bnav-icon">👤</span><span class="univ-bnav-label">Profil</span></a>
-</nav>
+<div class="bottom-nav">
+  <button class="bottom-nav-item" onclick="window.location.href='index.html'"><span class="bottom-nav-icon">🏠</span><span class="bottom-nav-label">Accueil</span></button>
+  <button class="bottom-nav-item" onclick="window.location.href='manga.html'"><span class="bottom-nav-icon">📖</span><span class="bottom-nav-label">Manga</span></button>
+  <button class="bottom-nav-search" onclick="if(typeof doSearch==='function'){focusSearch()}else{window.location.href='recherche.html'}">🔍</button>
+  <a href="tutoriels.html" class="bottom-nav-item"><span class="bottom-nav-icon">🎓</span><span class="bottom-nav-label">Tutoriels</span></a>
+  <button class="bottom-nav-item active" onclick="window.location.href='communaute.html'"><span class="bottom-nav-icon">👥</span><span class="bottom-nav-label">Communauté</span></button>
+</div>
 
 <div class="toast-container" id="toast-container"></div>
 
@@ -520,6 +626,13 @@ let state = {
   loading: true
 };
 
+/* ===== STANDARD NAV FUNCTIONS ===== */
+function openDrawer(){document.getElementById('drawerOverlay').classList.add('open');document.getElementById('drawer').classList.add('open');document.body.style.overflow='hidden'}
+function closeDrawer(){document.getElementById('drawerOverlay').classList.remove('open');document.getElementById('drawer').classList.remove('open');document.body.style.overflow=''}
+function doSearch(){var q=document.getElementById('navSearchInput').value.trim();if(q)window.location.href='recherche.html?q='+encodeURIComponent(q)}
+function focusSearch(){document.getElementById('navSearchInput').focus()}
+function logout(){sb.auth.signOut().then(function(){window.location.reload()})}
+
 /* ===== MAIN INIT ===== */
 (async function init() {
   const params = new URLSearchParams(window.location.search);
@@ -541,24 +654,13 @@ let state = {
     state.visitor = visitorRes.data;
     state.isCreator = state.visitor && state.visitor.id === state.creator.id;
 
-    /* Load header avatar */
-    const hr = document.getElementById('header-right');
-    hr.innerHTML = '';
-    const link = document.createElement('a');
-    link.href = 'profil.html';
-    if (state.visitor.avatar_url) {
-      const img = document.createElement('img');
-      img.src = state.visitor.avatar_url;
-      img.className = 'univ-header-avatar';
-      img.alt = '';
-      link.appendChild(img);
-    } else {
-      const fb = document.createElement('div');
-      fb.className = 'univ-header-avatar-fallback';
-      fb.textContent = getInitials(state.visitor.username);
-      link.appendChild(fb);
-    }
-    hr.appendChild(link);
+    /* Show avatar / hide connexion button */
+    document.getElementById('btnConnexion').style.display = 'none';
+    document.getElementById('avatarBtn').classList.add('show');
+    document.getElementById('drawerProfil').style.display = 'flex';
+    document.getElementById('drawerPublier').style.display = 'flex';
+    document.getElementById('drawerConnexion').style.display = 'none';
+    document.getElementById('drawerLogout').style.display = 'flex';
 
     await loadPosts();
     await loadSondageVotes();

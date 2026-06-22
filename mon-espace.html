@@ -32,99 +32,273 @@
       padding-bottom: 80px;
     }
 
-    /* ── HEADER ── */
-    .univ-header {
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      background: rgba(11, 11, 16, 0.95);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--border);
-      padding: 0 20px;
-      height: 60px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
+    /* ── NAV / DRAWER / BOTTOM NAV ── */
+        /* TOP NAV */
+        body > nav {
+          position: sticky;
+          top: 0;
+          z-index: 1000;
+          background: rgba(11,11,16,.95);
+          -webkit-backdrop-filter: blur(12px);
+          backdrop-filter: blur(12px);
+          border-bottom: 1px solid var(--border);
+          padding: 0 20px;
+          height: 60px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+        }
+        .logo {
+          font-size: 1.3rem;
+          font-weight: 800;
+          background: linear-gradient(135deg,var(--purple),var(--accent));
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+          text-decoration: none;
+          letter-spacing: .04em;
+          flex-shrink: 0;
+        }
+        .univ-nav-links {
+          display: flex;
+          gap: 8px;
+          align-items: center;
+        }
+        .univ-nav-link {
+          color: var(--text-muted);
+          text-decoration: none;
+          font-size: .85rem;
+          padding: 6px 10px;
+          border-radius: 6px;
+          transition: all .2s;
+        }
+        .univ-nav-link:hover { color: var(--text); background: rgba(255,255,255,.05); }
+        .univ-search-wrap {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          background: var(--surface);
+          border: 1px solid var(--border);
+          border-radius: 8px;
+          padding: 0 8px;
+          flex: 0 1 220px;
+          min-width: 0;
+        }
+        .univ-search-input {
+          background: transparent;
+          border: none;
+          outline: none;
+          color: var(--text);
+          font-size: .8rem;
+          padding: 6px 0;
+          width: 100%;
+          min-width: 0;
+        }
+        .univ-search-input::placeholder { color: var(--text-muted); }
+        .univ-search-btn {
+          background: transparent;
+          border: none;
+          cursor: pointer;
+          font-size: .9rem;
+          padding: 4px;
+        }
+        .nav-right {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+        .btn-connexion {
+          padding: 6px 14px;
+          border-radius: 8px;
+          background: linear-gradient(135deg,var(--purple),#5a4fd6);
+          color: #fff;
+          text-decoration: none;
+          font-size: .8rem;
+          font-weight: 700;
+          transition: opacity .2s;
+        }
+        .btn-connexion:hover { opacity: .85; }
+        .avatar-btn {
+          width: 32px;
+          height: 32px;
+          border-radius: 50%;
+          background: linear-gradient(135deg,var(--purple),var(--accent));
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: .9rem;
+          text-decoration: none;
+        }
+        .hamburger {
+          display: none;
+          background: transparent;
+          border: none;
+          color: var(--text);
+          font-size: 1.3rem;
+          cursor: pointer;
+          padding: 4px;
+        }
+        @media (max-width: 768px) {
+          .univ-nav-links { display: none; }
+          .univ-search-wrap { flex: 1; max-width: 200px; }
+          .hamburger { display: block; }
+        }
+        @media (max-width: 480px) {
+          .univ-search-wrap { display: none; }
+          body > nav { gap: 4px; }
+        }
 
-    .univ-header .logo {
-      font-size: 1.4rem;
-      font-weight: 800;
-      background: linear-gradient(135deg, var(--purple), var(--accent));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      text-decoration: none;
-    }
+        /* DRAWER */
+        .drawer-overlay {
+          position: fixed;
+          inset: 0;
+          z-index: 2000;
+          background: rgba(0,0,0,.6);
+          opacity: 0;
+          pointer-events: none;
+          transition: opacity .3s;
+        }
+        .drawer-overlay.open { opacity: 1; pointer-events: auto; }
+        .drawer {
+          position: fixed;
+          top: 0;
+          right: 0;
+          width: 300px;
+          max-width: 85vw;
+          height: 100vh;
+          z-index: 2001;
+          background: var(--surface);
+          border-left: 1px solid var(--border);
+          padding: 20px 0;
+          overflow-y: auto;
+          transform: translateX(100%);
+          transition: transform .3s ease;
+        }
+        .drawer.open { transform: translateX(0); }
+        .drawer-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 0 20px 16px;
+          border-bottom: 1px solid var(--border);
+          margin-bottom: 8px;
+        }
+        .drawer-close {
+          background: transparent;
+          border: none;
+          color: var(--text-muted);
+          font-size: 1.2rem;
+          cursor: pointer;
+          padding: 4px;
+        }
+        .drawer-logo {
+          font-size: 1.2rem;
+          font-weight: 800;
+          background: linear-gradient(135deg,var(--purple),var(--accent));
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+          text-decoration: none;
+        }
+        .drawer-logo span { color: var(--accent); }
+        .drawer-section-title {
+          padding: 12px 20px 6px;
+          font-size: .7rem;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: .06em;
+          color: var(--text-muted);
+        }
+        .drawer-item {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 12px 20px;
+          color: var(--text);
+          text-decoration: none;
+          font-size: .9rem;
+          transition: background .2s;
+          cursor: pointer;
+          background: transparent;
+          border: none;
+          width: 100%;
+          text-align: left;
+        }
+        .drawer-item:hover { background: rgba(255,255,255,.05); }
+        .drawer-item-icon { font-size: 1.1rem; width: 24px; text-align: center; flex-shrink: 0; }
+        .drawer-item-label { flex: 1; }
+        .drawer-item-badge {
+          font-size: .65rem;
+          padding: 2px 8px;
+          border-radius: 10px;
+          font-weight: 700;
+        }
+        .drawer-divider {
+          height: 1px;
+          background: var(--border);
+          margin: 8px 20px;
+        }
 
-    .univ-header nav {
-      display: flex;
-      gap: 20px;
-      align-items: center;
-    }
-
-    .univ-header nav a {
-      color: var(--text-muted);
-      text-decoration: none;
-      font-size: 0.875rem;
-      transition: color 0.2s;
-    }
-
-    .univ-header nav a:hover { color: var(--text); }
-
-    .header-avatar {
-      width: 34px;
-      height: 34px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, var(--purple), var(--accent));
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.8rem;
-      font-weight: 700;
-      color: white;
-      cursor: pointer;
-      text-decoration: none;
-      overflow: hidden;
-    }
-
-    .header-avatar img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-
-    /* ── BOTTOM NAV ── */
-    .univ-bnav {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      z-index: 100;
-      background: rgba(19, 19, 28, 0.98);
-      backdrop-filter: blur(12px);
-      border-top: 1px solid var(--border);
-      display: flex;
-      height: 60px;
-    }
-
-    .univ-bnav a {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 3px;
-      text-decoration: none;
-      color: var(--text-muted);
-      font-size: 0.65rem;
-      transition: color 0.2s;
-    }
-
-    .univ-bnav a.active { color: var(--purple); }
-    .univ-bnav a:hover { color: var(--text); }
-
-    .univ-bnav .bnav-icon { font-size: 1.2rem; }
+        /* BOTTOM NAV */
+        .bottom-nav {
+          position: fixed;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          z-index: 100;
+          background: rgba(19,19,28,.98);
+          -webkit-backdrop-filter: blur(12px);
+          backdrop-filter: blur(12px);
+          border-top: 1px solid var(--border);
+          display: flex;
+          height: 60px;
+          align-items: stretch;
+        }
+        .bottom-nav-item {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: 2px;
+          color: var(--text-muted);
+          text-decoration: none;
+          font-size: .6rem;
+          font-weight: 600;
+          transition: color .2s;
+          cursor: pointer;
+          background: transparent;
+          border: none;
+          padding: 0;
+        }
+        .bottom-nav-item:hover { color: var(--text); }
+        .bottom-nav-icon { font-size: 1.2rem; }
+        .bottom-nav-label { line-height: 1; }
+        .bottom-nav-search {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: 2px;
+          color: var(--text-muted);
+          font-size: 1.3rem;
+          cursor: pointer;
+          background: rgba(124,111,239,.15);
+          border: none;
+          padding: 0;
+          position: relative;
+        }
+        .bottom-nav-search::after {
+          content: '';
+          position: absolute;
+          top: 6px;
+          bottom: 6px;
+          left: 0;
+          right: 0;
+          border-radius: 10px;
+          background: rgba(124,111,239,.08);
+        }
 
     /* ── MAIN ── */
     .main {
@@ -551,18 +725,46 @@
 </head>
 <body>
 
-<!-- HEADER -->
-<header class="univ-header">
-  <a href="index.html" class="logo">InkRise</a>
-  <nav>
-    <a href="index.html">Accueil</a>
-    <a href="mangas.html">Mangas</a>
-    <a href="bibliotheque.html">Biblio</a>
-    <a href="profil.html" class="header-avatar" id="header-avatar-link">
-      <span id="header-avatar-initials">?</span>
-    </a>
-  </nav>
-</header>
+<!-- STANDARD TOP NAV -->
+<nav>
+  <a href="index.html" class="logo">INKRISE</a>
+  <div class="univ-nav-links">
+    <a href="index.html" class="univ-nav-link">Accueil</a>
+    <a href="manga.html" class="univ-nav-link">Mangas</a>
+    <a href="tutoriels.html" class="univ-nav-link">Tutoriels</a>
+    <a href="#" class="univ-nav-link" onclick="openModal();return false;">Premium</a>
+  </div>
+  <div class="univ-search-wrap">
+    <input type="text" id="navSearchInput" class="univ-search-input" placeholder="Rechercher..." onkeydown="if(event.key==='Enter')doSearch()" />
+    <button class="univ-search-btn" onclick="doSearch()">🔍</button>
+  </div>
+  <div class="nav-right">
+    <a href="auth.html" class="btn-connexion" id="btnConnexion">Connexion</a>
+    <a href="profil.html" class="avatar-btn" id="avatarBtn">🧑‍🎨</a>
+    <button class="hamburger" onclick="openDrawer()">☰</button>
+  </div>
+</nav>
+<!-- DRAWER OVERLAY -->
+<div class="drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
+<!-- MENU DRAWER -->
+<div class="drawer" id="drawer">
+  <div class="drawer-header">
+    <a href="index.html" class="drawer-logo">INK<span>RISE</span></a>
+    <button class="drawer-close" onclick="closeDrawer()">✕</button>
+  </div>
+  <div class="drawer-section-title">Explorer</div>
+  <a href="index.html" class="drawer-item"><div class="drawer-item-icon">🏠</div><span class="drawer-item-label">Accueil</span></a>
+  <a href="manga.html" class="drawer-item"><div class="drawer-item-icon">📖</div><span class="drawer-item-label">Manga &amp; BD</span></a>
+  <a href="tutoriels.html" class="drawer-item"><div class="drawer-item-icon">🎓</div><span class="drawer-item-label">Tutoriels</span><span class="drawer-item-badge" style="background:rgba(0,201,167,.15);color:#00c9a7;">GRATUIT</span></a>
+  <a href="#" class="drawer-item" onclick="openModal();closeDrawer();"><div class="drawer-item-icon">💎</div><span class="drawer-item-label">Premium</span><span class="drawer-item-badge" style="background:rgba(255,107,53,.15);color:#ff6b35;">PRO</span></a>
+  <a href="communaute.html" class="drawer-item"><div class="drawer-item-icon">👥</div><span class="drawer-item-label">Communauté</span></a>
+  <div class="drawer-divider"></div>
+  <div class="drawer-section-title">Mon compte</div>
+  <a href="profil.html" class="drawer-item" id="drawerProfil" style="display:none;"><div class="drawer-item-icon">🧑‍🎨</div><span class="drawer-item-label">Mon profil</span></a>
+  <a href="upload-manga.html" class="drawer-item" id="drawerPublier" style="display:none;"><div class="drawer-item-icon">📤</div><span class="drawer-item-label">Publier un manga</span></a>
+  <a href="auth.html" class="drawer-item" id="drawerConnexion"><div class="drawer-item-icon">🔑</div><span class="drawer-item-label">Connexion / Inscription</span></a>
+  <button class="drawer-item" id="drawerLogout" style="display:none;" onclick="logout()"><div class="drawer-item-icon">🚪</div><span class="drawer-item-label" style="color:#ff3d71;">Déconnexion</span></button>
+</div>
 
 <!-- MAIN CONTENT -->
 <main class="main">
@@ -708,30 +910,20 @@
 </main>
 
 <!-- BOTTOM NAV -->
-<nav class="univ-bnav">
-  <a href="index.html">
-    <span class="bnav-icon">🏠</span>
-    Accueil
-  </a>
-  <a href="mangas.html">
-    <span class="bnav-icon">📚</span>
-    Mangas
-  </a>
-  <a href="bibliotheque.html">
-    <span class="bnav-icon">🔖</span>
-    Biblio
-  </a>
-  <a href="tutoriels.html">
-    <span class="bnav-icon">🎓</span>
-    Tutos
-  </a>
-  <a href="profil.html" class="active">
-    <span class="bnav-icon">👤</span>
-    Profil
-  </a>
-</nav>
+<div class="bottom-nav">
+  <button class="bottom-nav-item" onclick="window.location.href='index.html'"><span class="bottom-nav-icon">🏠</span><span class="bottom-nav-label">Accueil</span></button>
+  <button class="bottom-nav-item" onclick="window.location.href='manga.html'"><span class="bottom-nav-icon">📖</span><span class="bottom-nav-label">Manga</span></button>
+  <button class="bottom-nav-search" onclick="if(typeof doSearch==='function'){focusSearch()}else{window.location.href='recherche.html'}">🔍</button>
+  <a href="tutoriels.html" class="bottom-nav-item"><span class="bottom-nav-icon">🎓</span><span class="bottom-nav-label">Tutoriels</span></a>
+  <button class="bottom-nav-item" onclick="window.location.href='communaute.html'"><span class="bottom-nav-icon">👥</span><span class="bottom-nav-label">Communauté</span></button>
+</div>
 
 <script>
+  function openDrawer(){document.getElementById('drawerOverlay').classList.add('open');document.getElementById('drawer').classList.add('open');document.body.style.overflow='hidden'}
+  function closeDrawer(){document.getElementById('drawerOverlay').classList.remove('open');document.getElementById('drawer').classList.remove('open');document.body.style.overflow=''}
+  function doSearch(){var q=document.getElementById('navSearchInput').value.trim();if(q)window.location.href='recherche.html?q='+encodeURIComponent(q)}
+  function focusSearch(){document.getElementById('navSearchInput').focus()}
+
   const SUPABASE_URL = 'https://bsdcpwtimsgxcnaamwip.supabase.co';
   const SUPABASE_KEY = 'eyJhbG...fb44';
   const { createClient } = supabase;
@@ -870,15 +1062,6 @@
     badgesEl.innerHTML = `<span class="badge badge-creator">✍️ Créateur</span>`;
     if (profile.espace_premium) {
       badgesEl.innerHTML += `<span class="badge badge-premium">💎 Premium</span>`;
-    }
-
-    // Header avatar
-    const avatarLink = document.getElementById('header-avatar-link');
-    const initialsEl = document.getElementById('header-avatar-initials');
-    if (profile.avatar_url) {
-      initialsEl.innerHTML = `<img src="${profile.avatar_url}" alt="avatar" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
-    } else {
-      initialsEl.textContent = username.charAt(0).toUpperCase();
     }
 
     // Profil public link
