@@ -932,7 +932,7 @@
 
     userProfile = profile;
 
-    const username = profile?.username || currentUser.email.split('@')[0];
+    const username = profile?.username || currentUser.user_metadata?.username || currentUser.email.split('@')[0];
     const initial  = username[0].toUpperCase();
 
     // Nav
