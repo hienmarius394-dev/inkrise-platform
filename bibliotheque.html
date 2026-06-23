@@ -8,6 +8,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root {
+  --bg: #0a0a0f;
   --ink: #0a0a0f; --ink-2: #13131c; --surface: #1e1e2e; --surface-2: #252538;
   --border: rgba(255,255,255,0.07); --text: #f0f0f4; --text-2: rgba(255,255,255,0.6);
   --text-3: rgba(255,255,255,0.35); --purple: #7c6fef; --purple-dark: #5040c8;
@@ -164,7 +165,7 @@ body { background: var(--ink); color: var(--text); font-family: 'DM Sans', sans-
 
 <script>
 const SUPABASE_URL = 'https://bsdcpwtimsgxcnaamwip.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJzZGNwd3RpbXNneGNuYWFtd2lwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY0MDQ3MzMsImV4cCI6MjA2MTk4MDczM30.kRGfc5j2MHqNRZTl43t5cI11zBIPkCSCzBNFbqyTvkk';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJzZGNwd3RpbXNneGNuYWFtd2lwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAzMTQ1MDIsImV4cCI6MjA5NTg5MDUwMn0.uMcfUsnlULHNqS_87xzUWRUB8tEaCCNQglrWwN2fb44';
 const supabase = SUPABASE_URL && SUPABASE_ANON_KEY ? supabaseJs.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
 function doSearch(){
