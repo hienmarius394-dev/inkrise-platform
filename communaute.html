@@ -7,14 +7,14 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root {
-  --bg: #0b0b10;
-  --surface: #13131c;
-  --surface2: #1a1a27;
+  --bg: #ffffff;
+  --surface: #f2f2f7;
+  --surface2: #e5e5ea;
   --purple: #7c6fef;
-  --purple-dim: #5f53d6;
-  --text: #e8e8f0;
-  --text-muted: #8888aa;
-  --border: #2a2a3d;
+  --purple-dim: #7c6fef;
+  --text: #1c1c1e;
+  --text-muted: #8e8e93;
+  --border: #e0e0e0;
   --radius: 12px;
   --radius-sm: 8px;
   --success: #3ecf8e;
@@ -34,18 +34,18 @@ a { color: var(--purple); text-decoration: none; }
 img { max-width: 100%; display: block; }
 
 /* ── STANDARD NAV (universel) ── */
-.univ-nav { position: sticky; top: 0; z-index: 100; background: rgba(11,11,16,0.96); backdrop-filter: blur(14px); border-bottom: 1px solid rgba(255,255,255,0.08); padding: 0 16px; height: 58px; display: flex; align-items: center; gap: 8px; }
+.univ-nav { position: sticky; top: 0; z-index: 100; background: rgba(255,255,255,0.96); backdrop-filter: blur(14px); border-bottom: 1px solid rgba(0,0,0,0.08); padding: 0 16px; height: 58px; display: flex; align-items: center; gap: 8px; }
 .univ-nav-logo { font-family: 'Syne', sans-serif; font-size: 1.2rem; font-weight: 900; text-decoration: none; background: linear-gradient(135deg, #7c6fef, #a594f9); -webkit-background-clip: text; -webkit-text-fill-color: transparent; flex-shrink: 0; letter-spacing: 1px; }
 .univ-nav-links-d { display: flex; align-items: center; gap: 2px; flex: 1; margin: 0 8px; }
 @media (max-width: 680px) { .univ-nav-links-d { display: none; } }
-.univ-nav-lk { color: rgba(240,239,254,0.6); font-size: .82rem; font-weight: 600; text-decoration: none; padding: 5px 10px; border-radius: 7px; transition: all .2s; white-space: nowrap; font-family: 'DM Sans', sans-serif; }
-.univ-nav-lk:hover { color: #f0effe; background: rgba(255,255,255,0.06); }
+.univ-nav-lk { color: rgba(0,0,0,0.6); font-size: .82rem; font-weight: 600; text-decoration: none; padding: 5px 10px; border-radius: 7px; transition: all .2s; white-space: nowrap; font-family: 'DM Sans', sans-serif; }
+.univ-nav-lk:hover { color: #1c1c1e; background: rgba(255,255,255,0.06); }
 .univ-nav-lk.active { color: var(--purple); background: rgba(124,111,239,0.1); }
 .univ-nav-search { display: flex; align-items: center; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1); border-radius: 18px; overflow: hidden; max-width: 200px; flex-shrink: 0; }
 @media (max-width: 480px) { .univ-nav-search { max-width: 110px; } }
-.univ-nav-si { background: none; border: none; outline: none; color: #f0effe; font-size: .8rem; padding: 7px 10px; width: 100%; font-family: 'DM Sans', sans-serif; }
-.univ-nav-si::placeholder { color: rgba(240,239,254,.35); }
-.univ-nav-sb { background: none; border: none; cursor: pointer; padding: 6px 8px; font-size: 13px; color: rgba(240,239,254,.5); flex-shrink: 0; }
+.univ-nav-si { background: none; border: none; outline: none; color: #1c1c1e; font-size: .8rem; padding: 7px 10px; width: 100%; font-family: 'DM Sans', sans-serif; }
+.univ-nav-si::placeholder { color: rgba(0,0,0,.35); }
+.univ-nav-sb { background: none; border: none; cursor: pointer; padding: 6px 8px; font-size: 13px; color: rgba(0,0,0,.5); flex-shrink: 0; }
 .univ-nav-sb:hover { color: #7c6fef; }
 .nav-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
 .nav-connexion-btn { color: rgba(255,255,255,0.7); font-size: .8rem; font-weight: 600; padding: 6px 13px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.15); text-decoration: none; transition: all .2s; white-space: nowrap; font-family: 'DM Sans', sans-serif; }
@@ -57,7 +57,7 @@ img { max-width: 100%; display: block; }
 .nav-notif-link:hover { background: rgba(255,255,255,0.13); }
 .nav-notif-dot { position: absolute; top: -5px; right: -5px; min-width: 16px; height: 16px; border-radius: 8px; background: var(--danger); color: #fff; font-size: 9px; font-weight: 800; padding: 0 3px; display: none; align-items: center; justify-content: center; border: 2px solid var(--bg); }
 .nav-notif-dot.show { display: flex; }
-.univ-nav-hbg { width: 34px; height: 34px; border-radius: 8px; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; color: #f0effe; transition: background .2s; flex-shrink: 0; }
+.univ-nav-hbg { width: 34px; height: 34px; border-radius: 8px; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; color: #1c1c1e; transition: background .2s; flex-shrink: 0; }
 .univ-nav-hbg:hover { background: rgba(255,255,255,0.13); }
 
 /* ── DRAWER ── */
@@ -67,9 +67,9 @@ img { max-width: 100%; display: block; }
 .univ-drawer.open { transform: translateX(0); }
 .univ-d-hdr { display: flex; align-items: center; justify-content: space-between; padding: 16px; border-bottom: 1px solid rgba(255,255,255,.07); }
 .univ-d-logo { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 900; text-decoration: none; background: linear-gradient(135deg, #7c6fef, #a594f9); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-.univ-d-close { width: 30px; height: 30px; border-radius: 50%; background: rgba(255,255,255,.08); border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; color: rgba(240,239,254,.7); }
-.univ-d-sec { font-size: .65rem; font-weight: 800; color: rgba(240,239,254,.3); letter-spacing: 1.5px; text-transform: uppercase; padding: 14px 16px 5px; }
-.univ-d-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; margin: 2px 8px; text-decoration: none; color: rgba(240,239,254,.85); font-weight: 600; font-size: .88rem; cursor: pointer; transition: background .15s; border: none; background: none; width: calc(100% - 16px); text-align: left; border-radius: 9px; font-family: 'DM Sans', sans-serif; }
+.univ-d-close { width: 30px; height: 30px; border-radius: 50%; background: rgba(255,255,255,.08); border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; color: rgba(0,0,0,.7); }
+.univ-d-sec { font-size: .65rem; font-weight: 800; color: rgba(0,0,0,.3); letter-spacing: 1.5px; text-transform: uppercase; padding: 14px 16px 5px; }
+.univ-d-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; margin: 2px 8px; text-decoration: none; color: rgba(0,0,0,.85); font-weight: 600; font-size: .88rem; cursor: pointer; transition: background .15s; border: none; background: none; width: calc(100% - 16px); text-align: left; border-radius: 9px; font-family: 'DM Sans', sans-serif; }
 .univ-d-item:hover { background: rgba(255,255,255,.06); }
 .univ-d-icon { width: 34px; height: 34px; border-radius: 9px; background: rgba(255,255,255,.07); display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
 .univ-d-badge { font-size: .65rem; font-weight: 800; padding: 2px 7px; border-radius: 6px; margin-left: auto; }
@@ -79,8 +79,8 @@ img { max-width: 100%; display: block; }
 
 /* ── BOTTOM NAV ── */
 .univ-bnav { position: fixed; bottom: 0; left: 0; right: 0; z-index: 100; background: rgba(10,10,15,.97); border-top: 1px solid rgba(255,255,255,.07); display: flex; align-items: center; justify-content: space-around; padding: 8px 0 16px; backdrop-filter: blur(14px); }
-.univ-bnav-item { display: flex; flex-direction: column; align-items: center; gap: 2px; text-decoration: none; color: rgba(240,239,254,.4); padding: 0 8px; transition: color .2s; border: none; background: none; cursor: pointer; }
-.univ-bnav-item:hover { color: rgba(240,239,254,.9); }
+.univ-bnav-item { display: flex; flex-direction: column; align-items: center; gap: 2px; text-decoration: none; color: rgba(0,0,0,.4); padding: 0 8px; transition: color .2s; border: none; background: none; cursor: pointer; }
+.univ-bnav-item:hover { color: rgba(0,0,0,.9); }
 .univ-bnav-item.active { color: var(--purple); }
 .univ-bnav-icon { font-size: 20px; }
 .univ-bnav-label { font-size: .6rem; font-weight: 800; font-family: 'DM Sans', sans-serif; }
