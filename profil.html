@@ -1156,8 +1156,11 @@
 
         const card = document.createElement('div');
         card.className = 'manga-card';
+        const coverHtml = m.couverture_url
+          ? `<img class="manga-cover" src="${m.couverture_url}" alt="${m.titre || ''}" loading="lazy" />`
+          : `<div class="manga-cover-placeholder">📖</div>`;
         card.innerHTML = `
-          <div class="manga-cover-placeholder">📖</div>
+          ${coverHtml}
           <div class="manga-info">
             <div class="manga-title">${m.titre || 'Sans titre'}</div>
             <div class="manga-meta">
@@ -1550,10 +1553,10 @@ function focusSearch(){
 <!-- BOTTOM NAV -->
 <div class="univ-bnav">
   <a href="index.html" class="univ-bnav-item"><span class="univ-bnav-icon">🏠</span><span class="univ-bnav-label">Accueil</span></a>
-  <a href="manga.html" class="univ-bnav-item"><span class="univ-bnav-icon">📖</span><span class="univ-bnav-label">Manga</span></a>
   <button class="univ-bnav-search" onclick="focusSearch()">🔍</button>
   <a href="tutoriels.html" class="univ-bnav-item"><span class="univ-bnav-icon">🎓</span><span class="univ-bnav-label">Tutoriels</span></a>
   <a href="communaute.html" class="univ-bnav-item"><span class="univ-bnav-icon">👥</span><span class="univ-bnav-label">Communauté</span></a>
-  </div>
+    <a href="profil.html" class="univ-bnav-item active"><span class="univ-bnav-icon">👤</span><span class="univ-bnav-label">Profil</span></a>
+</div>
 </body>
 </html>

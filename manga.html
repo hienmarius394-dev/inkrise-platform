@@ -554,10 +554,10 @@
 <div id="notFound" style="display:none;">
   <div class="main-wrap">
     <div class="not-found">
-      <div class="not-found-icon">😕</div>
-      <h2>Manga introuvable</h2>
-      <p>Ce manga n'existe pas ou a été supprimé.</p>
-      <a href="index.html" class="btn-home">← Retour à l'accueil</a>
+      <div class="not-found-icon" id="notFoundIcon">😕</div>
+      <h2 id="notFoundTitle">Manga introuvable</h2>
+      <p id="notFoundText">Ce manga n'existe pas ou a été supprimé.</p>
+      <a href="index.html" class="btn-home" id="notFoundBtn">← Retour à l'accueil</a>
     </div>
   </div>
 </div>
@@ -687,11 +687,11 @@
 <!-- BOTTOM NAV -->
 <div class="univ-bnav">
   <a href="index.html" class="univ-bnav-item"><span class="univ-bnav-icon">🏠</span><span class="univ-bnav-label">Accueil</span></a>
-  <a href="manga.html" class="univ-bnav-item"><span class="univ-bnav-icon">📖</span><span class="univ-bnav-label">Manga</span></a>
   <button class="univ-bnav-search" onclick="focusSearch()">🔍</button>
   <a href="tutoriels.html" class="univ-bnav-item"><span class="univ-bnav-icon">🎓</span><span class="univ-bnav-label">Tutoriels</span></a>
   <a href="communaute.html" class="univ-bnav-item"><span class="univ-bnav-icon">👥</span><span class="univ-bnav-label">Communauté</span></a>
-  </div>
+    <a href="profil.html" class="univ-bnav-item"><span class="univ-bnav-icon">👤</span><span class="univ-bnav-label">Profil</span></a>
+</div>
 
 <script>
 const SUPABASE_URL = 'https://bsdcpwtimsgxcnaamwip.supabase.co';
@@ -758,7 +758,14 @@ async function loadManga(mangaId) {
     .eq('id', mangaId)
     .single();
 
-  if (error || !data) { showNotFound(); return; }
+  if (error || !data) {
+    // PGRST116 = aucune ligne trouvée → vrai "introuvable".
+    // Toute autre erreur (réseau, timeout, RLS...) → message distinct + réessai.
+    const trulyNotFound = error?.code === 'PGRST116' || (!error && !data);
+    console.error('loadManga error:', error);
+    showNotFound(!trulyNotFound);
+    return;
+  }
   // Brouillon visible uniquement par son auteur
   if (data.statut === 'brouillon' && (!currentUser || data.auteur_id !== currentUser.id)) { showNotFound(); return; }
   manga = data;
@@ -1080,10 +1087,23 @@ document.getElementById('btnNextPage').addEventListener('click', () => {
   currentPage++; renderChapitres(); window.scrollTo(0,0);
 });
 
-// ── NOT FOUND ──
-function showNotFound() {
+// ── NOT FOUND / ERREUR RÉSEAU ──
+function showNotFound(networkError) {
   document.getElementById('pageLoading').style.display = 'none';
   document.getElementById('notFound').style.display = 'block';
+  if (networkError) {
+    document.getElementById('notFoundIcon').textContent = '📡';
+    document.getElementById('notFoundTitle').textContent = 'Connexion impossible';
+    document.getElementById('notFoundText').textContent = 'Impossible de charger ce manga — vérifie ta connexion internet et réessaie.';
+    document.getElementById('notFoundBtn').textContent = '↻ Réessayer';
+    document.getElementById('notFoundBtn').href = window.location.href;
+  } else {
+    document.getElementById('notFoundIcon').textContent = '😕';
+    document.getElementById('notFoundTitle').textContent = 'Manga introuvable';
+    document.getElementById('notFoundText').textContent = "Ce manga n'existe pas ou a été supprimé.";
+    document.getElementById('notFoundBtn').textContent = '← Retour à l\'accueil';
+    document.getElementById('notFoundBtn').href = 'index.html';
+  }
 }
 
 // ── TOAST ──

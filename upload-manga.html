@@ -229,20 +229,34 @@
       border-radius: 12px;
       overflow: hidden;
       aspect-ratio: 2/3;
-      max-width: 180px;
+      max-width: 220px;
       margin: 0 auto;
+      background: #111;
+      cursor: grab;
+      touch-action: none;
+      user-select: none;
     }
+    .cover-preview-wrap.dragging { cursor: grabbing; }
     .cover-preview-wrap img {
-      width: 100%; height: 100%; object-fit: cover; display: block;
+      position: absolute; top: 0; left: 0;
+      max-width: none; display: block;
+      pointer-events: none;
     }
     .cover-remove {
-      position: absolute; top: 8px; right: 8px;
+      position: absolute; top: 8px; right: 8px; z-index: 2;
       background: rgba(0,0,0,0.7); color: #fff;
       border: none; border-radius: 50%;
       width: 28px; height: 28px;
       cursor: pointer; font-size: 0.85rem;
       display: flex; align-items: center; justify-content: center;
     }
+    .cover-reposition-hint {
+      text-align: center; font-size: 0.72rem; color: var(--muted); margin-top: 8px;
+    }
+    .cover-zoom-row {
+      display: flex; align-items: center; gap: 8px; max-width: 220px; margin: 6px auto 0;
+    }
+    .cover-zoom-row input[type="range"] { flex: 1; }
 
     /* ── GENRES CHIPS ── */
     .genres-wrap {
@@ -696,9 +710,16 @@
         <div class="cover-drop-sub">JPG, PNG, WEBP — max 5 Mo — Format recommandé : 400×600px</div>
       </div>
       <div class="cover-preview-wrap" id="coverPreview">
-        <img id="coverImg" src="" alt="Preview" />
+        <img id="coverImg" src="" alt="Preview" draggable="false" />
         <button class="cover-remove" id="coverRemove" type="button">✕</button>
       </div>
+    </div>
+    <div class="cover-zoom-row" id="coverZoomRow" style="display:none;">
+      <span style="font-size:0.9rem;">🔍</span>
+      <input type="range" id="coverZoom" min="100" max="300" value="100" step="1" />
+    </div>
+    <div class="cover-reposition-hint" id="coverRepositionHint" style="display:none;">
+      Glisse l'image pour la recadrer comme tu veux, même si elle n'est pas au format recommandé.
     </div>
   </div>
 
@@ -1038,7 +1059,10 @@ function bindEvents() {
     coverFile = null;
     document.getElementById('coverPreview').style.display = 'none';
     document.getElementById('coverDropContent').style.display = 'block';
+    document.getElementById('coverZoomRow').style.display = 'none';
+    document.getElementById('coverRepositionHint').style.display = 'none';
   });
+  bindCoverReposition();
 
   // Chapitre add
   document.getElementById('btnAddChapitre').addEventListener('click', addChapitre);
@@ -1063,11 +1087,135 @@ function handleCoverFile(file) {
   coverFile = file;
   const reader = new FileReader();
   reader.onload = e => {
-    document.getElementById('coverImg').src = e.target.result;
+    const img = document.getElementById('coverImg');
+    img.onload = () => initCoverReposition();
+    img.src = e.target.result;
     document.getElementById('coverPreview').style.display = 'block';
     document.getElementById('coverDropContent').style.display = 'none';
+    document.getElementById('coverZoomRow').style.display = 'flex';
+    document.getElementById('coverRepositionHint').style.display = 'block';
   };
   reader.readAsDataURL(file);
+}
+
+// ── RECADRAGE COUVERTURE (glisser + zoom, même hors format recommandé) ──
+let coverCrop = { zoom: 1, x: 0, y: 0, naturalW: 0, naturalH: 0 };
+
+function initCoverReposition() {
+  const wrap = document.getElementById('coverPreview');
+  const img = document.getElementById('coverImg');
+  coverCrop.naturalW = img.naturalWidth;
+  coverCrop.naturalH = img.naturalHeight;
+  coverCrop.zoom = 1;
+  document.getElementById('coverZoom').value = 100;
+
+  const frameW = wrap.clientWidth, frameH = wrap.clientHeight;
+  const scaleToCover = Math.max(frameW / coverCrop.naturalW, frameH / coverCrop.naturalH);
+  const dispW = coverCrop.naturalW * scaleToCover;
+  const dispH = coverCrop.naturalH * scaleToCover;
+  img.style.width = dispW + 'px';
+  img.style.height = dispH + 'px';
+  // Centré par défaut
+  coverCrop.x = (frameW - dispW) / 2;
+  coverCrop.y = (frameH - dispH) / 2;
+  applyCoverTransform();
+}
+
+function applyCoverTransform() {
+  const img = document.getElementById('coverImg');
+  img.style.left = coverCrop.x + 'px';
+  img.style.top = coverCrop.y + 'px';
+}
+
+function clampCoverPosition() {
+  const wrap = document.getElementById('coverPreview');
+  const img = document.getElementById('coverImg');
+  const frameW = wrap.clientWidth, frameH = wrap.clientHeight;
+  const dispW = img.offsetWidth, dispH = img.offsetHeight;
+  const minX = Math.min(0, frameW - dispW);
+  const minY = Math.min(0, frameH - dispH);
+  coverCrop.x = Math.max(minX, Math.min(0, coverCrop.x));
+  coverCrop.y = Math.max(minY, Math.min(0, coverCrop.y));
+}
+
+function bindCoverReposition() {
+  const wrap = document.getElementById('coverPreview');
+  const img = document.getElementById('coverImg');
+  const zoomInput = document.getElementById('coverZoom');
+  let dragging = false, startX = 0, startY = 0, originX = 0, originY = 0;
+
+  function pointerDown(clientX, clientY) {
+    dragging = true;
+    wrap.classList.add('dragging');
+    startX = clientX; startY = clientY;
+    originX = coverCrop.x; originY = coverCrop.y;
+  }
+  function pointerMove(clientX, clientY) {
+    if (!dragging) return;
+    coverCrop.x = originX + (clientX - startX);
+    coverCrop.y = originY + (clientY - startY);
+    clampCoverPosition();
+    applyCoverTransform();
+  }
+  function pointerUp() { dragging = false; wrap.classList.remove('dragging'); }
+
+  wrap.addEventListener('mousedown', e => { e.preventDefault(); pointerDown(e.clientX, e.clientY); });
+  window.addEventListener('mousemove', e => pointerMove(e.clientX, e.clientY));
+  window.addEventListener('mouseup', pointerUp);
+  wrap.addEventListener('touchstart', e => { const t = e.touches[0]; pointerDown(t.clientX, t.clientY); }, { passive: true });
+  wrap.addEventListener('touchmove', e => { const t = e.touches[0]; pointerMove(t.clientX, t.clientY); }, { passive: true });
+  wrap.addEventListener('touchend', pointerUp);
+
+  zoomInput.addEventListener('input', () => {
+    if (!coverCrop.naturalW) return;
+    const frameW = wrap.clientWidth, frameH = wrap.clientHeight;
+    const zoom = zoomInput.value / 100;
+    const scaleToCover = Math.max(frameW / coverCrop.naturalW, frameH / coverCrop.naturalH);
+    const oldDispW = img.offsetWidth, oldDispH = img.offsetHeight;
+    const newDispW = coverCrop.naturalW * scaleToCover * zoom;
+    const newDispH = coverCrop.naturalH * scaleToCover * zoom;
+    // Garde le centre de la zone visible stable pendant le zoom
+    const centerX = frameW / 2 - coverCrop.x, centerY = frameH / 2 - coverCrop.y;
+    const ratioX = oldDispW ? centerX / oldDispW : 0.5, ratioY = oldDispH ? centerY / oldDispH : 0.5;
+    img.style.width = newDispW + 'px';
+    img.style.height = newDispH + 'px';
+    coverCrop.x = frameW / 2 - ratioX * newDispW;
+    coverCrop.y = frameH / 2 - ratioY * newDispH;
+    clampCoverPosition();
+    applyCoverTransform();
+  });
+}
+
+// Produit un Blob JPEG recadré (800×1200) reflétant le cadrage choisi par l'utilisateur.
+// Retourne le fichier original si aucun recadrage n'a été initialisé (sécurité).
+function bakeCoverCrop() {
+  return new Promise(resolve => {
+    if (!coverFile || !coverCrop.naturalW) { resolve(coverFile); return; }
+    const wrap = document.getElementById('coverPreview');
+    const img = document.getElementById('coverImg');
+    const frameW = wrap.clientWidth, frameH = wrap.clientHeight;
+    const dispW = img.offsetWidth, dispH = img.offsetHeight;
+    const scale = dispW / coverCrop.naturalW; // px CSS affichés par px source
+    const srcX = -coverCrop.x / scale;
+    const srcY = -coverCrop.y / scale;
+    const srcW = frameW / scale;
+    const srcH = frameH / scale;
+
+    const outW = 800, outH = 1200;
+    const canvas = document.createElement('canvas');
+    canvas.width = outW; canvas.height = outH;
+    const ctx = canvas.getContext('2d');
+    const srcImg = new Image();
+    srcImg.onload = () => {
+      ctx.drawImage(srcImg, srcX, srcY, srcW, srcH, 0, 0, outW, outH);
+      canvas.toBlob(blob => {
+        if (!blob) { resolve(coverFile); return; }
+        resolve(new File([blob], 'cover.jpg', { type: 'image/jpeg' }));
+      }, 'image/jpeg', 0.88);
+    };
+    srcImg.onerror = () => resolve(coverFile);
+    srcImg.src = img.src;
+  });
 }
 
 // ── PROGRESS ──
@@ -1090,13 +1238,14 @@ async function publishManga(draft = false) {
   document.getElementById('btnSubmit').disabled = true;
 
   try {
-    // ÉTAPE 1 — Upload cover
+    // ÉTAPE 1 — Upload cover (recadrée selon le cadrage choisi par l'utilisateur)
     setProgress(10, 'Envoi de la couverture…', 'Téléversement de l\'image', 'Étape 1/3');
     let coverUrl = null;
     if (coverFile) {
-      const ext  = coverFile.name.split('.').pop();
+      const finalCoverFile = await bakeCoverCrop();
+      const ext  = finalCoverFile.name.split('.').pop();
       const path = `covers/${currentUser.id}/${Date.now()}.${ext}`;
-      const { error: upErr } = await sb.storage.from('covers').upload(path, coverFile, { upsert: true });
+      const { error: upErr } = await sb.storage.from('covers').upload(path, finalCoverFile, { upsert: true });
             if (!upErr) {
               const { data: { publicUrl } } = sb.storage.from('covers').getPublicUrl(path);
         coverUrl = publicUrl;
@@ -1220,10 +1369,10 @@ function openModal(){ window.location.href = 'index.html?premium=1'; }
 <!-- BOTTOM NAV -->
 <div class="univ-bnav">
   <a href="index.html" class="univ-bnav-item"><span class="univ-bnav-icon">🏠</span><span class="univ-bnav-label">Accueil</span></a>
-  <a href="manga.html" class="univ-bnav-item"><span class="univ-bnav-icon">📖</span><span class="univ-bnav-label">Manga</span></a>
   <button class="univ-bnav-search" onclick="focusSearch()">🔍</button>
   <a href="tutoriels.html" class="univ-bnav-item"><span class="univ-bnav-icon">🎓</span><span class="univ-bnav-label">Tutoriels</span></a>
   <a href="communaute.html" class="univ-bnav-item"><span class="univ-bnav-icon">👥</span><span class="univ-bnav-label">Communauté</span></a>
-  </div>
+    <a href="profil.html" class="univ-bnav-item"><span class="univ-bnav-icon">👤</span><span class="univ-bnav-label">Profil</span></a>
+</div>
 </body>
 </html>

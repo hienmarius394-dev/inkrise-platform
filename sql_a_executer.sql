@@ -528,8 +528,10 @@ CREATE POLICY "avis delete own" ON avis_packs FOR DELETE TO authenticated USING 
 -- COMMUNAUTÉ
 DROP POLICY IF EXISTS "posts select public" ON posts_communaute;
 CREATE POLICY "posts select public" ON posts_communaute FOR SELECT TO anon, authenticated USING (true);
+-- Communauté privée : seul le créateur du mur peut y publier (auteur_id = creator_id = soi-même)
 DROP POLICY IF EXISTS "posts insert own" ON posts_communaute;
-CREATE POLICY "posts insert own" ON posts_communaute FOR INSERT TO authenticated WITH CHECK (auteur_id = auth.uid());
+CREATE POLICY "posts insert own" ON posts_communaute FOR INSERT TO authenticated
+  WITH CHECK (auteur_id = auth.uid() AND creator_id = auth.uid());
 DROP POLICY IF EXISTS "posts update creator" ON posts_communaute;
 CREATE POLICY "posts update creator" ON posts_communaute FOR UPDATE TO authenticated
   USING (creator_id = auth.uid() OR auteur_id = auth.uid());
