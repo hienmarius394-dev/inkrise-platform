@@ -58,10 +58,17 @@ CREATE TABLE IF NOT EXISTS mangas (
   commentaires_actifs BOOLEAN NOT NULL DEFAULT true,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
-ALTER TABLE mangas ADD COLUMN IF NOT EXISTS vues BIGINT NOT NULL DEFAULT 0;
-ALTER TABLE mangas ADD COLUMN IF NOT EXISTS abonnes BIGINT NOT NULL DEFAULT 0;
-ALTER TABLE mangas ADD COLUMN IF NOT EXISTS adulte BOOLEAN NOT NULL DEFAULT false;
-ALTER TABLE mangas ADD COLUMN IF NOT EXISTS commentaires_actifs BOOLEAN NOT NULL DEFAULT true;
+ALTER TABLE mangas ADD COLUMN IF NOT EXISTS auteur_id UUID REFERENCES profiles(id) ON DELETE CASCADE;
+ALTER TABLE mangas ADD COLUMN IF NOT EXISTS titre TEXT;
+ALTER TABLE mangas ADD COLUMN IF NOT EXISTS synopsis TEXT;
+ALTER TABLE mangas ADD COLUMN IF NOT EXISTS type TEXT DEFAULT 'manga';
+ALTER TABLE mangas ADD COLUMN IF NOT EXISTS statut TEXT DEFAULT 'en_cours';
+ALTER TABLE mangas ADD COLUMN IF NOT EXISTS couverture_url TEXT;
+ALTER TABLE mangas ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT now();
+ALTER TABLE mangas ADD COLUMN IF NOT EXISTS vues BIGINT DEFAULT 0;
+ALTER TABLE mangas ADD COLUMN IF NOT EXISTS abonnes BIGINT DEFAULT 0;
+ALTER TABLE mangas ADD COLUMN IF NOT EXISTS adulte BOOLEAN DEFAULT false;
+ALTER TABLE mangas ADD COLUMN IF NOT EXISTS commentaires_actifs BOOLEAN DEFAULT true;
 ALTER TABLE mangas ADD COLUMN IF NOT EXISTS genres TEXT[] DEFAULT '{}';
 CREATE INDEX IF NOT EXISTS idx_mangas_auteur ON mangas(auteur_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_mangas_vues ON mangas(vues DESC);
@@ -76,6 +83,12 @@ CREATE TABLE IF NOT EXISTS chapitres (
   numero INT NOT NULL DEFAULT 1,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+-- Complète une table "chapitres" pré-existante avec un schéma différent
+-- (colonnes ajoutées SANS NOT NULL : une table déjà remplie casserait sinon).
+ALTER TABLE chapitres ADD COLUMN IF NOT EXISTS manga_id BIGINT REFERENCES mangas(id) ON DELETE CASCADE;
+ALTER TABLE chapitres ADD COLUMN IF NOT EXISTS titre TEXT;
+ALTER TABLE chapitres ADD COLUMN IF NOT EXISTS numero INT DEFAULT 1;
+ALTER TABLE chapitres ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT now();
 CREATE INDEX IF NOT EXISTS idx_chapitres_manga ON chapitres(manga_id, numero);
 
 -- ─────────────────────────────────────────────
@@ -87,6 +100,9 @@ CREATE TABLE IF NOT EXISTS vues (
   user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+ALTER TABLE vues ADD COLUMN IF NOT EXISTS manga_id BIGINT REFERENCES mangas(id) ON DELETE CASCADE;
+ALTER TABLE vues ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES profiles(id) ON DELETE CASCADE;
+ALTER TABLE vues ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT now();
 CREATE UNIQUE INDEX IF NOT EXISTS uniq_vues_manga_user
   ON vues(manga_id, user_id) WHERE user_id IS NOT NULL;
 
@@ -110,6 +126,9 @@ CREATE TABLE IF NOT EXISTS abonnements_manga (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   UNIQUE(manga_id, user_id)
 );
+ALTER TABLE abonnements_manga ADD COLUMN IF NOT EXISTS manga_id BIGINT REFERENCES mangas(id) ON DELETE CASCADE;
+ALTER TABLE abonnements_manga ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES profiles(id) ON DELETE CASCADE;
+ALTER TABLE abonnements_manga ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT now();
 
 CREATE OR REPLACE FUNCTION public.bump_manga_abonnes()
 RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
@@ -138,6 +157,9 @@ CREATE TABLE IF NOT EXISTS follows (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   UNIQUE(user_id, followed_id)
 );
+ALTER TABLE follows ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES profiles(id) ON DELETE CASCADE;
+ALTER TABLE follows ADD COLUMN IF NOT EXISTS followed_id UUID REFERENCES profiles(id) ON DELETE CASCADE;
+ALTER TABLE follows ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT now();
 CREATE INDEX IF NOT EXISTS idx_follows_followed ON follows(followed_id);
 
 -- ─────────────────────────────────────────────
@@ -153,9 +175,12 @@ CREATE TABLE IF NOT EXISTS bibliotheque (
   added_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   UNIQUE(user_id, manga_id)
 );
+ALTER TABLE bibliotheque ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES profiles(id) ON DELETE CASCADE;
+ALTER TABLE bibliotheque ADD COLUMN IF NOT EXISTS manga_id BIGINT REFERENCES mangas(id) ON DELETE CASCADE;
 ALTER TABLE bibliotheque ADD COLUMN IF NOT EXISTS page INT DEFAULT 1;
 ALTER TABLE bibliotheque ADD COLUMN IF NOT EXISTS chapitre INT DEFAULT 1;
 ALTER TABLE bibliotheque ADD COLUMN IF NOT EXISTS total_chapitres INT DEFAULT 1;
+ALTER TABLE bibliotheque ADD COLUMN IF NOT EXISTS added_at TIMESTAMPTZ DEFAULT now();
 
 -- ─────────────────────────────────────────────
 -- 8. NOTIFICATIONS
@@ -169,6 +194,12 @@ CREATE TABLE IF NOT EXISTS notifications (
   lu BOOLEAN NOT NULL DEFAULT false,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+ALTER TABLE notifications ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES profiles(id) ON DELETE CASCADE;
+ALTER TABLE notifications ADD COLUMN IF NOT EXISTS type TEXT DEFAULT 'info';
+ALTER TABLE notifications ADD COLUMN IF NOT EXISTS message TEXT;
+ALTER TABLE notifications ADD COLUMN IF NOT EXISTS manga_id BIGINT REFERENCES mangas(id) ON DELETE CASCADE;
+ALTER TABLE notifications ADD COLUMN IF NOT EXISTS lu BOOLEAN DEFAULT false;
+ALTER TABLE notifications ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT now();
 CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id, lu, created_at DESC);
 
 -- ─────────────────────────────────────────────
@@ -183,6 +214,12 @@ CREATE TABLE IF NOT EXISTS commentaires (
   parent_id BIGINT REFERENCES commentaires(id) ON DELETE CASCADE,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+ALTER TABLE commentaires ADD COLUMN IF NOT EXISTS manga_id BIGINT REFERENCES mangas(id) ON DELETE CASCADE;
+ALTER TABLE commentaires ADD COLUMN IF NOT EXISTS chapitre_id BIGINT REFERENCES chapitres(id) ON DELETE CASCADE;
+ALTER TABLE commentaires ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES profiles(id) ON DELETE CASCADE;
+ALTER TABLE commentaires ADD COLUMN IF NOT EXISTS contenu TEXT;
+ALTER TABLE commentaires ADD COLUMN IF NOT EXISTS parent_id BIGINT REFERENCES commentaires(id) ON DELETE CASCADE;
+ALTER TABLE commentaires ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT now();
 CREATE INDEX IF NOT EXISTS idx_commentaires_chapitre ON commentaires(chapitre_id, created_at DESC);
 
 CREATE TABLE IF NOT EXISTS commentaire_likes (
@@ -192,6 +229,9 @@ CREATE TABLE IF NOT EXISTS commentaire_likes (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   UNIQUE(commentaire_id, user_id)
 );
+ALTER TABLE commentaire_likes ADD COLUMN IF NOT EXISTS commentaire_id BIGINT REFERENCES commentaires(id) ON DELETE CASCADE;
+ALTER TABLE commentaire_likes ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES profiles(id) ON DELETE CASCADE;
+ALTER TABLE commentaire_likes ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT now();
 
 -- ─────────────────────────────────────────────
 -- 10. PACKS TUTORIELS + ACHATS + AVIS
@@ -209,6 +249,14 @@ CREATE TABLE IF NOT EXISTS packs_tutoriels (
   niveau TEXT DEFAULT 'Tous niveaux',
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+ALTER TABLE packs_tutoriels ADD COLUMN IF NOT EXISTS auteur_id UUID REFERENCES profiles(id) ON DELETE CASCADE;
+ALTER TABLE packs_tutoriels ADD COLUMN IF NOT EXISTS auteur_nom TEXT;
+ALTER TABLE packs_tutoriels ADD COLUMN IF NOT EXISTS titre TEXT;
+ALTER TABLE packs_tutoriels ADD COLUMN IF NOT EXISTS description TEXT;
+ALTER TABLE packs_tutoriels ADD COLUMN IF NOT EXISTS prix NUMERIC DEFAULT 0;
+ALTER TABLE packs_tutoriels ADD COLUMN IF NOT EXISTS image_url TEXT;
+ALTER TABLE packs_tutoriels ADD COLUMN IF NOT EXISTS contenu_url TEXT;
+ALTER TABLE packs_tutoriels ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT now();
 ALTER TABLE packs_tutoriels ADD COLUMN IF NOT EXISTS objectifs TEXT[] DEFAULT '{}';
 ALTER TABLE packs_tutoriels ADD COLUMN IF NOT EXISTS niveau TEXT DEFAULT 'Tous niveaux';
 
@@ -220,7 +268,10 @@ CREATE TABLE IF NOT EXISTS achats_packs (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   UNIQUE(user_id, pack_id)
 );
+ALTER TABLE achats_packs ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES profiles(id) ON DELETE CASCADE;
+ALTER TABLE achats_packs ADD COLUMN IF NOT EXISTS pack_id BIGINT REFERENCES packs_tutoriels(id) ON DELETE CASCADE;
 ALTER TABLE achats_packs ADD COLUMN IF NOT EXISTS prix_paye NUMERIC DEFAULT 0;
+ALTER TABLE achats_packs ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT now();
 
 CREATE TABLE IF NOT EXISTS avis_packs (
   id BIGSERIAL PRIMARY KEY,
@@ -231,6 +282,10 @@ CREATE TABLE IF NOT EXISTS avis_packs (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   UNIQUE(pack_id, user_id)
 );
+ALTER TABLE avis_packs ADD COLUMN IF NOT EXISTS pack_id BIGINT REFERENCES packs_tutoriels(id) ON DELETE CASCADE;
+ALTER TABLE avis_packs ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES profiles(id) ON DELETE CASCADE;
+ALTER TABLE avis_packs ADD COLUMN IF NOT EXISTS commentaire TEXT;
+ALTER TABLE avis_packs ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT now();
 
 -- ─────────────────────────────────────────────
 -- 11. COMMUNAUTÉ (phase 5.1 — repris tel quel, idempotent)
@@ -245,6 +300,14 @@ CREATE TABLE IF NOT EXISTS posts_communaute (
   est_epingle BOOLEAN NOT NULL DEFAULT false,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+ALTER TABLE posts_communaute ADD COLUMN IF NOT EXISTS creator_id UUID REFERENCES profiles(id) ON DELETE CASCADE;
+ALTER TABLE posts_communaute ADD COLUMN IF NOT EXISTS auteur_id UUID REFERENCES profiles(id) ON DELETE CASCADE;
+ALTER TABLE posts_communaute ADD COLUMN IF NOT EXISTS contenu TEXT;
+ALTER TABLE posts_communaute ADD COLUMN IF NOT EXISTS image_url TEXT;
+ALTER TABLE posts_communaute ADD COLUMN IF NOT EXISTS type TEXT DEFAULT 'post';
+ALTER TABLE posts_communaute ADD COLUMN IF NOT EXISTS est_epingle BOOLEAN DEFAULT false;
+ALTER TABLE posts_communaute ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT now();
+
 CREATE TABLE IF NOT EXISTS reactions (
   id BIGSERIAL PRIMARY KEY,
   post_id BIGINT NOT NULL REFERENCES posts_communaute(id) ON DELETE CASCADE,
@@ -253,6 +316,10 @@ CREATE TABLE IF NOT EXISTS reactions (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   UNIQUE(post_id, user_id)
 );
+ALTER TABLE reactions ADD COLUMN IF NOT EXISTS post_id BIGINT REFERENCES posts_communaute(id) ON DELETE CASCADE;
+ALTER TABLE reactions ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES profiles(id) ON DELETE CASCADE;
+ALTER TABLE reactions ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT now();
+
 CREATE TABLE IF NOT EXISTS commentaires_communaute (
   id BIGSERIAL PRIMARY KEY,
   post_id BIGINT NOT NULL REFERENCES posts_communaute(id) ON DELETE CASCADE,
@@ -262,18 +329,32 @@ CREATE TABLE IF NOT EXISTS commentaires_communaute (
   parent_id BIGINT REFERENCES commentaires_communaute(id) ON DELETE CASCADE,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+ALTER TABLE commentaires_communaute ADD COLUMN IF NOT EXISTS post_id BIGINT REFERENCES posts_communaute(id) ON DELETE CASCADE;
+ALTER TABLE commentaires_communaute ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES profiles(id) ON DELETE CASCADE;
+ALTER TABLE commentaires_communaute ADD COLUMN IF NOT EXISTS contenu TEXT;
+ALTER TABLE commentaires_communaute ADD COLUMN IF NOT EXISTS image_url TEXT;
+ALTER TABLE commentaires_communaute ADD COLUMN IF NOT EXISTS parent_id BIGINT REFERENCES commentaires_communaute(id) ON DELETE CASCADE;
+ALTER TABLE commentaires_communaute ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT now();
+
 CREATE TABLE IF NOT EXISTS sondage_options (
   id BIGSERIAL PRIMARY KEY,
   post_id BIGINT NOT NULL REFERENCES posts_communaute(id) ON DELETE CASCADE,
   option_text TEXT NOT NULL,
   position INT NOT NULL DEFAULT 0
 );
+ALTER TABLE sondage_options ADD COLUMN IF NOT EXISTS post_id BIGINT REFERENCES posts_communaute(id) ON DELETE CASCADE;
+ALTER TABLE sondage_options ADD COLUMN IF NOT EXISTS option_text TEXT;
+ALTER TABLE sondage_options ADD COLUMN IF NOT EXISTS position INT DEFAULT 0;
+
 CREATE TABLE IF NOT EXISTS sondage_votes (
   id BIGSERIAL PRIMARY KEY,
   option_id BIGINT NOT NULL REFERENCES sondage_options(id) ON DELETE CASCADE,
   user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+ALTER TABLE sondage_votes ADD COLUMN IF NOT EXISTS option_id BIGINT REFERENCES sondage_options(id) ON DELETE CASCADE;
+ALTER TABLE sondage_votes ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES profiles(id) ON DELETE CASCADE;
+ALTER TABLE sondage_votes ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT now();
 -- Anti-revote : un seul vote par option et par user (le « 1 vote par
 -- sondage » est garanti côté client en vérifiant les votes existants)
 CREATE UNIQUE INDEX IF NOT EXISTS uniq_sondage_vote ON sondage_votes(option_id, user_id);
