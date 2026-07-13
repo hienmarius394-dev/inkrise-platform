@@ -761,10 +761,11 @@
 <div class="page-wrap" id="successZone" style="display:none;">
   <div class="success-box show">
     <div class="success-circle">🎉</div>
-    <div class="success-title">Manga publié !</div>
+    <div class="success-title" id="successTitle">Manga publié !</div>
     <div class="success-sub" id="successMsg">Ton manga a été publié avec succès sur Inkrise.<br>La communauté peut maintenant le découvrir !</div>
     <div class="success-actions">
-      <a href="profil.html" class="btn-success primary">👤 Voir mon profil</a>
+      <a href="manga.html" class="btn-success primary" id="btnVoirManga">📖 Voir mon manga</a>
+      <a href="profil.html" class="btn-success secondary">👤 Voir mon profil</a>
       <a href="upload-manga.html" class="btn-success secondary">+ Publier un autre manga</a>
     </div>
   </div>
@@ -792,9 +793,20 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const { createClient } = supabase;
 const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 
+// Insert « lenient » : retry sans les colonnes nouvelles si le schéma ne les connaît pas encore
+async function insertLenient(client, table, row, requiredKeys) {
+  let { data, error } = await client.from(table).insert(row).select().single();
+  if (error && /column|schema cache/i.test(error.message || '')) {
+    const slim = {};
+    requiredKeys.forEach(k => { if (row[k] !== undefined) slim[k] = row[k]; });
+    ({ data, error } = await client.from(table).insert(slim).select().single());
+  }
+  return { data, error };
+}
+
 let currentUser = null;
 let coverFile   = null;
-let chapitres   = [];       // { id, titre, ordre, pages: FileList }
+let chapitres   = [];       // { id, titre, pages: FileList }
 let chapCount   = 0;
 let selectedGenres = [];
 
@@ -856,7 +868,7 @@ function toggleGenre(chip, genre) {
 function addChapitre() {
   chapCount++;
   const id = chapCount;
-  const chapData = { id, titre: '', ordre: id, pages: null };
+  const chapData = { id, titre: '', pages: null };
   chapitres.push(chapData);
 
   const item = document.createElement('div');
@@ -877,8 +889,11 @@ function addChapitre() {
   updateStepIndicator();
 
   // File input handler
-  item.querySelector('.chap-pages').addEventListener('change', function() {
+  function onChapPagesChange() {
     const btn = document.getElementById(`fileBtn-${this.dataset.chap}`);
+    const files = Array.from(this.files || []);
+    const valid = validatePageFiles(files);
+    if (!valid) return;
     const idx = chapitres.findIndex(c => c.id == this.dataset.chap);
     if (idx !== -1) chapitres[idx].pages = this.files;
     if (this.files.length > 0) {
@@ -889,10 +904,11 @@ function addChapitre() {
       inp.type = 'file'; inp.accept = 'image/*'; inp.multiple = true;
       inp.style.display = 'none'; inp.dataset.chap = this.dataset.chap;
       inp.className = 'chap-pages';
-      inp.addEventListener('change', arguments.callee);
+      inp.addEventListener('change', onChapPagesChange);
       btn.appendChild(inp);
     }
-  });
+  }
+  item.querySelector('.chap-pages').addEventListener('change', onChapPagesChange);
 
   // Remove handler
   item.querySelector('.chapitre-remove').addEventListener('click', function() {
@@ -983,6 +999,15 @@ function bindEvents() {
   document.getElementById('btnDraft').addEventListener('click', () => publishManga(true));
 }
 
+// Validation des pages : même règles que la cover (type image, max 5 Mo)
+function validatePageFiles(files) {
+  for (const f of files) {
+    if (!f.type.startsWith('image/')) { showToast(`"${f.name}" n'est pas une image`, 'error'); return false; }
+    if (f.size > 5 * 1024 * 1024) { showToast(`"${f.name}" est trop lourde (max 5 Mo)`, 'error'); return false; }
+  }
+  return true;
+}
+
 function handleCoverFile(file) {
   if (!file || !file.type.startsWith('image/')) { showToast('Fichier invalide', 'error'); return; }
   if (file.size > 5 * 1024 * 1024) { showToast('Image trop lourde (max 5 Mo)', 'error'); return; }
@@ -1031,18 +1056,23 @@ async function publishManga(draft = false) {
 
     // ÉTAPE 2 — Créer le manga
     setProgress(40, 'Enregistrement du manga…', 'Création dans la base de données', 'Étape 2/3');
+    const isPublic = document.getElementById('togglePublic').checked;
+    const isDraft  = draft || !isPublic;
     const mangaPayload = {
           auteur_id:   currentUser.id,
           titre,
           synopsis:    desc,
           type:        document.getElementById('inputType').value,
-          statut:      document.getElementById('inputStatut').value,
+          statut:      isDraft ? 'brouillon' : document.getElementById('inputStatut').value,
           genres:      selectedGenres,
           couverture_url: coverUrl,
           created_at:  new Date().toISOString(),
+          adulte:      document.getElementById('toggleAdult').checked,
+          commentaires_actifs: document.getElementById('toggleComments').checked,
         };
 
-    const { data: manga, error: mangaErr } = await sb.from('mangas').insert(mangaPayload).select().single();
+    const { data: manga, error: mangaErr } = await insertLenient(sb, 'mangas', mangaPayload,
+      ['auteur_id', 'titre', 'synopsis', 'type', 'statut', 'genres', 'couverture_url', 'created_at']);
     if (mangaErr) throw mangaErr;
 
     // ÉTAPE 3 — Créer les chapitres + upload des pages
@@ -1084,7 +1114,7 @@ async function publishManga(draft = false) {
           }
         }
 
-        setProgress(100, draft ? 'Brouillon sauvegardé !' : 'Manga publié ! 🎉', '', 'Terminé');
+        setProgress(100, isDraft ? 'Brouillon sauvegardé !' : 'Manga publié ! 🎉', '', 'Terminé');
 
     await new Promise(r => setTimeout(r, 800));
     document.getElementById('progressOverlay').classList.remove('show');
@@ -1092,9 +1122,11 @@ async function publishManga(draft = false) {
     // Succès
     document.getElementById('mainForm').style.display = 'none';
     document.getElementById('successZone').style.display = 'block';
-    document.getElementById('successMsg').textContent = draft
-      ? `"${titre}" a été sauvegardé en brouillon. Tu pourras le publier depuis ton profil.`
+    document.getElementById('successTitle').textContent = isDraft ? 'Brouillon sauvegardé !' : 'Manga publié !';
+    document.getElementById('successMsg').textContent = isDraft
+      ? `"${titre}" a été sauvegardé en brouillon. Il n'est visible que par toi — tu pourras le publier depuis ton profil.`
       : `"${titre}" est maintenant visible sur Inkrise ! La communauté peut le découvrir.`;
+    document.getElementById('btnVoirManga').href = `manga.html?id=${manga.id}`;
 
   } catch (err) {
     document.getElementById('progressOverlay').classList.remove('show');
@@ -1133,6 +1165,8 @@ function closeDrawer(){
   document.getElementById('univDrawer').classList.remove('open');
   document.body.style.overflow = '';
 }
+async function doLogout(){ await sb.auth.signOut(); window.location.href='index.html'; }
+function openModal(){ window.location.href = 'index.html?premium=1'; }
 </script>
 <!-- BOTTOM NAV -->
 <div class="univ-bnav">
