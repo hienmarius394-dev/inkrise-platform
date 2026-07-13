@@ -1229,7 +1229,13 @@
   function openModal() { openPlans(); }
   function closePlans() { document.getElementById('plansModal').classList.remove('open'); }
 
-  document.getElementById('btnOpenPlans').addEventListener('click', openPlans);
+  // "Devenir Créateur" doit être gratuit et immédiat, sans passer par la
+  // modal de plans payants (qui donnait l'impression d'un mur de paiement).
+  document.getElementById('btnOpenPlans').addEventListener('click', () => {
+    if (userProfile?.is_creator) { window.location.href = 'mon-espace.html'; return; }
+    choosePlan('debutant');
+  });
+  // "Voir les plans" reste le chemin explicite vers les offres payantes.
   document.getElementById('btnOpenPlans2').addEventListener('click', openPlans);
   document.getElementById('modalClose').addEventListener('click', closePlans);
   document.getElementById('plansModal').addEventListener('click', e => {
