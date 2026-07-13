@@ -507,16 +507,11 @@
       transition: all .25s;
     }
     .btn-plan.free { background: var(--surface2); color: var(--muted); cursor: default; }
-    .btn-plan.standard {
+    .btn-plan.premium {
       background: linear-gradient(135deg, var(--purple), #5e2dcf);
       color: #fff;
     }
-    .btn-plan.standard:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(155,89,245,0.4); }
-    .btn-plan.pro {
-      background: linear-gradient(135deg, var(--accent), var(--accent2));
-      color: #fff;
-    }
-    .btn-plan.pro:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(255,94,58,0.4); }
+    .btn-plan.premium:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(155,89,245,0.4); }
 
     /* ── LOADING ── */
     .loading-dots {
@@ -831,21 +826,8 @@
     <div class="info-card">
           <h3>⚡ Changer de plan</h3>
           <div style="display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;">
-            <div style="font-size:0.88rem; color:var(--muted);">Accède à plus de fonctionnalités avec un plan supérieur.</div>
+            <div style="font-size:0.88rem; color:var(--muted);" id="planUpsellText">Passe Premium (5€/mois) pour débloquer les mangas et formations illimités.</div>
             <button class="btn-creator" id="btnOpenPlans2">Voir les plans ✨</button>
-          </div>
-        </div>
-
-        <div class="info-card" id="premiumCard">
-          <h3>✨ Espace Premium</h3>
-          <div style="display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;">
-            <div style="font-size:0.88rem; color:var(--muted);">
-              Active ton espace premium pour proposer des formations et contenus exclusifs à ta communauté.
-            </div>
-            <label class="toggle-switch">
-              <input type="checkbox" id="premiumToggle" onchange="togglePremium()" />
-              <span class="toggle-slider"></span>
-            </label>
           </div>
         </div>
   </div>
@@ -889,58 +871,39 @@
     <button class="modal-close" id="modalClose">✕</button>
     <div class="modal-title">CHOISIR UN PLAN</div>
     <div class="modal-sub">Commence gratuitement, évolue quand tu es prêt.</div>
-    <div class="plans-grid">
+    <div class="plans-grid" style="grid-template-columns:repeat(2,1fr);max-width:480px;margin:0 auto;">
 
       <!-- Free -->
       <div class="plan-card">
         <div class="plan-icon">🌱</div>
-        <div class="plan-name">Débutant</div>
+        <div class="plan-name">Gratuit</div>
         <div class="plan-price">0€ <span>/ mois</span></div>
-        <div class="plan-desc">Pour découvrir Inkrise et publier tes premiers chapitres.</div>
+        <div class="plan-desc">Pour découvrir Inkrise et publier tes premiers mangas.</div>
         <ul class="plan-features">
           <li>Jusqu'à 3 mangas</li>
-          <li>10 chapitres par manga</li>
+          <li>Jusqu'à 2 formations en vente</li>
           <li>Statistiques basiques</li>
-          <li class="no">Contenu Premium</li>
-          <li class="no">Badge Créateur</li>
-          <li class="no">Support prioritaire</li>
+          <li class="no">Espace formations premium</li>
+          <li class="no">Badge Premium</li>
         </ul>
         <button class="btn-plan free">Plan actuel</button>
       </div>
 
-      <!-- Standard -->
+      <!-- Premium -->
       <div class="plan-card featured">
-        <div class="plan-badge">⭐ Populaire</div>
-        <div class="plan-icon">⚡</div>
-        <div class="plan-name">Standard</div>
-        <div class="plan-price">4,99€ <span>/ mois</span></div>
+        <div class="plan-badge">⭐ Premium</div>
+        <div class="plan-icon">💎</div>
+        <div class="plan-name">Premium</div>
+        <div class="plan-price">5€ <span>/ mois</span></div>
         <div class="plan-desc">Pour les créateurs sérieux qui veulent grandir.</div>
         <ul class="plan-features">
           <li>Mangas illimités</li>
-          <li>Chapitres illimités</li>
+          <li>Formations illimitées</li>
+          <li>Espace formations premium</li>
           <li>Statistiques avancées</li>
-          <li>1 manga Premium/mois</li>
-          <li>Badge Créateur</li>
-          <li class="no">Support prioritaire</li>
+          <li>Badge Premium ✓</li>
         </ul>
-        <button class="btn-plan standard">Choisir Standard</button>
-      </div>
-
-      <!-- Pro -->
-      <div class="plan-card">
-        <div class="plan-icon">🔥</div>
-        <div class="plan-name">Pro</div>
-        <div class="plan-price">9,99€ <span>/ mois</span></div>
-        <div class="plan-desc">Pour les pros qui veulent monétiser leur passion.</div>
-        <ul class="plan-features">
-          <li>Tout du Standard</li>
-          <li>Mangas Premium illimités</li>
-          <li>Analytics complets</li>
-          <li>Badge Pro exclusif</li>
-          <li>Support prioritaire 24/7</li>
-          <li>Mise en avant accueil</li>
-        </ul>
-        <button class="btn-plan pro">Choisir Pro 🔥</button>
+        <button class="btn-plan premium">Passer Premium</button>
       </div>
 
     </div>
@@ -1088,18 +1051,12 @@
         const joined = new Date(currentUser.created_at).toLocaleDateString('fr-FR', { year:'numeric', month:'long', day:'numeric' });
         document.getElementById('displayJoined').textContent = joined;
 
-        // Premium status
-        if (profile?.espace_premium) {
-          document.getElementById('premiumToggle').checked = true;
-          document.getElementById('premiumCard').style.borderColor = 'var(--accent)';
-        }
-
         // Plan réel dérivé du profil
         updatePlanUI();
   }
 
   function planLabel(p) {
-    if (p?.espace_premium) return 'Créateur Premium';
+    if (p?.espace_premium) return 'Premium';
     if (p?.is_creator) return 'Créateur (gratuit)';
     return 'Lecteur';
   }
@@ -1110,7 +1067,7 @@
     const displayPlanEl = document.getElementById('displayPlan');
     if (planNameEl) planNameEl.textContent = label;
     if (displayPlanEl) displayPlanEl.textContent = label;
-    // Bouton "Débutant" de la modal : activable seulement si pas encore créateur
+    // Bouton "Gratuit" de la modal : activable seulement si pas encore créateur
     const freeBtn = document.querySelector('.btn-plan.free');
     if (freeBtn) {
       if (userProfile?.is_creator) {
@@ -1123,24 +1080,39 @@
         freeBtn.style.cursor = 'pointer';
       }
     }
+    const premiumBtn = document.querySelector('.btn-plan.premium');
+    if (premiumBtn) {
+      if (userProfile?.espace_premium) {
+        premiumBtn.textContent = 'Plan actuel';
+        premiumBtn.disabled = true;
+        premiumBtn.style.cursor = 'default';
+      } else {
+        premiumBtn.textContent = 'Passer Premium';
+        premiumBtn.disabled = false;
+        premiumBtn.style.cursor = 'pointer';
+      }
+    }
   }
 
-  // ── PLANS (spec section 8) ──
-  async function choosePlan(plan) { // 'debutant' | 'createur' | 'pro'
+  // ── PLANS : 2 paliers seulement — Gratuit / Premium (5€) ──
+  async function choosePlan(plan) { // 'gratuit' | 'premium'
     const { data } = await sb.auth.getSession();
     if (!data.session) { window.location.href = 'auth.html'; return; }
-    const updates = plan === 'debutant' ? { is_creator: true } : { is_creator: true, espace_premium: true };
+    const updates = plan === 'premium' ? { is_creator: true, espace_premium: true } : { is_creator: true };
     const { error } = await sb.from('profiles').update(updates).eq('id', data.session.user.id);
     if (error) { showToast('Erreur : ' + error.message, 'error'); return; }
-    showToast(plan === 'debutant' ? 'Espace créateur activé 🎉' : 'Plan activé (démo — paiement bientôt disponible) 🎉', 'success');
+    userProfile = { ...userProfile, ...updates };
+    updatePlanUI();
+    showToast(plan === 'premium' ? 'Premium activé (démo — paiement bientôt disponible) 💎' : 'Espace créateur activé 🎉', 'success');
     setTimeout(() => window.location.href = 'mon-espace.html', 900);
   }
 
   document.querySelector('.btn-plan.free')?.addEventListener('click', () => {
-    if (!userProfile?.is_creator) choosePlan('debutant');
+    if (!userProfile?.is_creator) choosePlan('gratuit');
   });
-  document.querySelector('.btn-plan.standard')?.addEventListener('click', () => choosePlan('createur'));
-  document.querySelector('.btn-plan.pro')?.addEventListener('click', () => choosePlan('pro'));
+  document.querySelector('.btn-plan.premium')?.addEventListener('click', () => {
+    if (!userProfile?.espace_premium) choosePlan('premium');
+  });
 
   // ── CHARGER MANGAS ──
   async function loadMangas() {
@@ -1235,7 +1207,7 @@
   // modal de plans payants (qui donnait l'impression d'un mur de paiement).
   document.getElementById('btnOpenPlans').addEventListener('click', () => {
     if (userProfile?.is_creator) { window.location.href = 'mon-espace.html'; return; }
-    choosePlan('debutant');
+    choosePlan('gratuit');
   });
   // "Voir les plans" reste le chemin explicite vers les offres payantes.
   document.getElementById('btnOpenPlans2').addEventListener('click', openPlans);
@@ -1573,21 +1545,6 @@ function doSearch(){
 function focusSearch(){
   const i=document.getElementById('navSearchInput');
   if(i){i.focus();window.scrollTo({top:0,behavior:"smooth"});}
-}
-async function togglePremium(){
-  const el=document.getElementById('premiumToggle');
-  const active=el.checked;
-  const updates = active ? { espace_premium: true, is_creator: true } : { espace_premium: false };
-  const {error}=await sb.from('profiles').update(updates).eq('id',currentUser.id);
-  if(error){
-    el.checked=!active;
-    showToast('Erreur lors de l\'activation','error');
-  } else {
-    userProfile = { ...userProfile, ...updates };
-    updatePlanUI();
-    document.getElementById('premiumCard').style.borderColor=active?'var(--accent)':'';
-    showToast(active?'✅ Espace premium activé !':'Espace premium désactivé','success');
-  }
 }
 </script>
 <!-- BOTTOM NAV -->
