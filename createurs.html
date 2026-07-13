@@ -625,6 +625,9 @@
           lu: false
         });
       }
+      if ('Notification' in window && Notification.permission === 'default') {
+        setTimeout(() => Notification.requestPermission(), 600);
+      }
     }
 
     btn.disabled = false;

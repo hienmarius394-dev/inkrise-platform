@@ -421,14 +421,14 @@ h1,h2,h3,.logo { font-family: 'Syne', sans-serif; }
         <button class="btn-plan" onclick="choosePlan('gratuit')">Commencer gratuit</button>
       </div>
       <div class="plan-card featured">
-        <div class="plan-badge">⭐ PREMIUM</div>
+        <div class="plan-badge">🔜 BIENTÔT DISPONIBLE</div>
         <div class="plan-name">Premium</div>
         <div class="plan-price"><span class="plan-price-num">5€</span><span class="plan-price-per">/ mois</span></div>
         <ul class="plan-features">
           <li>Mangas illimités</li><li>Formations illimitées</li>
           <li>Espace formations premium</li><li>Badge Premium ✓</li>
         </ul>
-        <button class="btn-plan featured" onclick="choosePlan('premium')">Passer Premium</button>
+        <button class="btn-plan featured" onclick="choosePlan('premium')">🔒 Bientôt disponible</button>
       </div>
     </div>
   </div>
@@ -540,10 +540,10 @@ function escapeHtml(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'
 async function choosePlan(plan) { // 'gratuit' | 'premium'
   const { data } = await supabaseClient.auth.getSession()
   if (!data.session) { window.location.href = 'auth.html'; return }
-  const updates = plan === 'premium' ? { is_creator: true, espace_premium: true } : { is_creator: true }
-  const { error } = await supabaseClient.from('profiles').update(updates).eq('id', data.session.user.id)
+  if (plan === 'premium') { showToast('💎 L\'Espace Premium arrive bientôt ! Le paiement n\'est pas encore disponible.'); return }
+  const { error } = await supabaseClient.from('profiles').update({ is_creator: true }).eq('id', data.session.user.id)
   if (error) { showToast('Erreur : ' + error.message); return }
-  showToast(plan === 'premium' ? 'Premium activé (démo — paiement bientôt disponible) 💎' : 'Espace créateur activé 🎉')
+  showToast('Espace créateur activé 🎉')
   setTimeout(() => window.location.href = 'mon-espace.html', 900)
 }
 
