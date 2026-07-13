@@ -95,7 +95,9 @@
     /* ── HERO PROFIL ── */
     .profile-hero {
       position: relative;
-      background: linear-gradient(180deg, #1a0a2e 0%, var(--bg) 100%);
+      background: var(--cover-image, none), linear-gradient(180deg, #1a0a2e 0%, var(--bg) 100%);
+      background-size: cover;
+      background-position: center;
       padding: 60px 0 0;
       overflow: hidden;
     }
@@ -105,6 +107,13 @@
       background: radial-gradient(ellipse 60% 50% at 50% 0%, rgba(155,89,245,0.18) 0%, transparent 70%);
       pointer-events: none;
     }
+    .cover-edit-btn {
+      position: absolute; top: 14px; right: 14px; z-index: 2; cursor: pointer;
+      background: rgba(0,0,0,0.45); backdrop-filter: blur(6px); color: #fff;
+      font-size: 0.75rem; font-weight: 700; padding: 7px 13px; border-radius: 100px;
+      border: 1px solid rgba(255,255,255,0.2); transition: background .2s;
+    }
+    .cover-edit-btn:hover { background: rgba(0,0,0,0.65); }
     .profile-container {
       max-width: 900px;
       margin: 0 auto;
@@ -672,7 +681,9 @@
 </div>
 
 <!-- ── HERO ── -->
-<div class="profile-hero">
+<div class="profile-hero" id="profileHero">
+  <label for="coverUploadInput" class="cover-edit-btn" title="Changer la photo de couverture">📷 Couverture</label>
+  <input type="file" id="coverUploadInput" accept="image/*" style="display:none;" />
   <div class="profile-container">
     <div class="profile-top">
       <div class="avatar-wrap">
@@ -979,7 +990,11 @@
       if (navAv) {
         navAv.style.display = 'flex';
         const name = session.user?.user_metadata?.username || session.user?.email?.split('@')[0] || '?';
-        navAv.textContent = name[0].toUpperCase();
+        if (userProfile?.avatar_url) {
+          navAv.innerHTML = '<img src="' + userProfile.avatar_url + '" style="width:32px;height:32px;border-radius:50%;object-fit:cover;" alt="" />';
+        } else {
+          navAv.textContent = name[0].toUpperCase();
+        }
       }
       if (navNotif) navNotif.classList.add('show');
       if (dProfil) dProfil.style.display = 'flex';
@@ -1022,7 +1037,14 @@
         const btnConnexionEl = document.getElementById('navConnexion');
         const avatarBtnEl    = document.getElementById('navAvatar');
     if (btnConnexionEl) btnConnexionEl.style.display = 'none';
-    if (avatarBtnEl)    { avatarBtnEl.style.display = 'flex'; avatarBtnEl.textContent = initial; }
+    if (avatarBtnEl) {
+      avatarBtnEl.style.display = 'flex';
+      if (profile?.avatar_url) {
+        avatarBtnEl.innerHTML = '<img src="' + profile.avatar_url + '" style="width:32px;height:32px;border-radius:50%;object-fit:cover;" alt="" />';
+      } else {
+        avatarBtnEl.textContent = initial;
+      }
+    }
 
     // Hero avatar
     const avatarMain = document.getElementById('avatarMain');
@@ -1034,6 +1056,11 @@
       avatarMain.textContent = initial;
       avatarMain.style.fontSize = '';
       avatarMain.style.background = '';
+    }
+
+    // Photo de couverture du hero
+    if (profile?.cover_url) {
+      document.getElementById('profileHero').style.setProperty('--cover-image', 'url(' + JSON.stringify(profile.cover_url) + ')');
     }
     document.getElementById('profileUsername').textContent = username;
 
@@ -1212,6 +1239,46 @@
   // ── SAUVEGARDER PROFIL (nom + bio + avatar) ──
   let pendingAvatarFile = null;
   let pendingAvatarPreview = null;
+  let pendingCoverFile = null;
+
+  // Couverture — sélection + upload immédiat (indépendant du bouton Sauvegarder)
+  document.getElementById('coverUploadInput').addEventListener('change', async function() {
+    const file = this.files[0];
+    if (!file) return;
+    pendingCoverFile = file;
+    const hero = document.getElementById('profileHero');
+
+    // Aperçu instantané
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      hero.style.setProperty('--cover-image', 'url(' + JSON.stringify(e.target.result) + ')');
+    };
+    reader.readAsDataURL(file);
+
+    try {
+      const ext = file.name.split('.').pop() || 'jpg';
+      const fileName = 'covers-profil/' + currentUser.id + '_' + Date.now() + '.' + ext;
+      const { data: uplData, error: uplErr } = await sb.storage.from('covers').upload(fileName, file, { upsert: true });
+      let cover_url = null;
+      if (!uplErr && uplData) {
+        const { data: pubData } = sb.storage.from('covers').getPublicUrl(fileName);
+        cover_url = pubData?.publicUrl || null;
+      }
+      if (cover_url) {
+        const { error } = await sb.from('profiles').update({ cover_url }).eq('id', currentUser.id);
+        if (error) throw error;
+        hero.style.setProperty('--cover-image', 'url(' + JSON.stringify(cover_url) + ')');
+        userProfile = { ...userProfile, cover_url };
+        showToast('✅ Photo de couverture mise à jour !', 'success');
+      } else {
+        showToast('Erreur lors de l\'upload de la couverture.', 'error');
+      }
+    } catch (err) {
+      showToast('Erreur : ' + (err.message || 'inconnue'), 'error');
+    } finally {
+      pendingCoverFile = null;
+    }
+  });
 
   // Avatar file selection
   document.getElementById('avatarUploadInput').addEventListener('change', function() {
