@@ -754,7 +754,7 @@ async function init() {
 async function loadManga(mangaId) {
   const { data, error } = await sb
     .from('mangas')
-    .select('*, profiles!auteur_id(username)')
+    .select('*, profiles!auteur_id(username, avatar_url)')
     .eq('id', mangaId)
     .single();
 
@@ -858,7 +858,12 @@ function renderManga() {
   const authorName = manga.profiles?.username || 'Auteur inconnu';
   document.getElementById('heroAuthorLink').textContent = authorName;
   document.getElementById('authorName').textContent     = authorName;
-  document.getElementById('authorAvatar').textContent   = authorName[0].toUpperCase();
+  const authorAvatarEl = document.getElementById('authorAvatar');
+  if (manga.profiles?.avatar_url) {
+    authorAvatarEl.innerHTML = '<img src="' + manga.profiles.avatar_url + '" style="width:100%;height:100%;border-radius:50%;object-fit:cover;" alt="" />';
+  } else {
+    authorAvatarEl.textContent = authorName[0].toUpperCase();
+  }
   if (manga.auteur_id) {
     const auteurUrl = `auteur.html?id=${manga.auteur_id}`;
     document.getElementById('heroAuthorLink').href   = auteurUrl;
