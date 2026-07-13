@@ -95,12 +95,21 @@
     /* ── HERO PROFIL ── */
     .profile-hero {
       position: relative;
-      background: var(--cover-image, none), linear-gradient(180deg, #1a0a2e 0%, var(--bg) 100%);
-      background-size: cover;
-      background-position: center;
-      padding: 60px 0 0;
+      background: linear-gradient(180deg, #1a0a2e 0%, var(--bg) 100%);
+      padding: 0;
       overflow: hidden;
     }
+    .hero-banner-img {
+      height: 150px;
+      background: var(--cover-image, linear-gradient(135deg, #2d1b4e, #1a0a2e)) center/cover no-repeat;
+      position: relative;
+    }
+    .hero-banner-img::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(180deg, rgba(0,0,0,0.1) 0%, var(--bg) 100%);
+    }
+    @media (min-width: 601px) { .hero-banner-img { height: 210px; } }
     .profile-hero::before {
       content: '';
       position: absolute; inset: 0;
@@ -127,6 +136,7 @@
       align-items: flex-end;
       gap: 28px;
       padding-bottom: 32px;
+      margin-top: -55px;
       position: relative;
       z-index: 1;
     }
@@ -679,6 +689,7 @@
 
 <!-- ── HERO ── -->
 <div class="profile-hero" id="profileHero">
+  <div class="hero-banner-img"></div>
   <button type="button" class="cover-edit-btn" id="coverEditBtn" title="Changer la photo de couverture" onclick="document.getElementById('coverUploadInput').click()">📷 Couverture</button>
   <input type="file" id="coverUploadInput" accept="image/*" style="display:none;" />
   <div class="profile-container">
