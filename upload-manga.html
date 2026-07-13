@@ -1289,6 +1289,7 @@ async function publishManga(draft = false) {
           if (chapErr) throw chapErr;
 
           // Upload des pages pour chaque chapitre
+          let pageUploadErrors = 0, firstPageErrorMsg = null;
           if (totalPagesToUpload > 0) {
             let uploadedCount = 0;
             for (let i = 0; i < chapitres.length; i++) {
@@ -1302,13 +1303,20 @@ async function publishManga(draft = false) {
                 const pagePath = `chapitres/${createdChap.id}/page_${String(p + 1).padStart(4, '0')}.${ext}`;
 
                 const { error: pageErr } = await sb.storage.from('pages').upload(pagePath, page, { upsert: true });
-                if (pageErr) console.warn(`Page ${p + 1} ch.${i + 1}:`, pageErr.message);
+                if (pageErr) {
+                  pageUploadErrors++;
+                  if (!firstPageErrorMsg) firstPageErrorMsg = pageErr.message;
+                  console.warn(`Page ${p + 1} ch.${i + 1}:`, pageErr.message);
+                }
 
                 uploadedCount++;
                 const pct = 70 + Math.round((uploadedCount / totalPagesToUpload) * 25);
                 setProgress(pct, 'Upload des pages…', `${uploadedCount}/${totalPagesToUpload} pages`, 'Upload ' + i + 1 + '/' + chapitres.length);
               }
             }
+          }
+          if (pageUploadErrors > 0) {
+            showToast(`⚠️ ${pageUploadErrors} page(s) n'ont pas pu être envoyées${firstPageErrorMsg ? ' (' + firstPageErrorMsg + ')' : ''} — ajoute-les depuis la gestion des chapitres`, 'error');
           }
         }
 

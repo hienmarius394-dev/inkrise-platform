@@ -575,18 +575,24 @@ async function getNextPageNumber(chapId) {
 // Upload séquentiel des pages, progression via toast « Upload page X/N… »
 async function uploadPagesToChapitre(chapId, files, startNum) {
   const list = Array.from(files);
-  let ok = 0, failed = 0;
+  let ok = 0, failed = 0, firstErrorMsg = null;
   for (let p = 0; p < list.length; p++) {
     showToast(`⏳ Upload page ${p + 1}/${list.length}…`, 'info');
     const page = list[p];
     const ext = page.name.split('.').pop();
     const pagePath = `chapitres/${chapId}/page_${String(startNum + p).padStart(4, '0')}.${ext}`;
     const { error } = await sb.storage.from('pages').upload(pagePath, page, { upsert: true });
-    if (error) { failed++; console.warn(`Page ${startNum + p}:`, error.message); }
-    else ok++;
+    if (error) {
+      failed++;
+      if (!firstErrorMsg) firstErrorMsg = error.message;
+      console.warn(`Page ${startNum + p}:`, error.message);
+    } else ok++;
   }
   pageCounts[chapId] = (pageCounts[chapId] || (startNum - 1)) + ok;
-  if (failed > 0) showToast(`⚠️ ${ok}/${list.length} pages envoyées — ${failed} en échec, réessaie pour les manquantes`, 'error');
+  if (failed > 0) {
+    const detail = firstErrorMsg ? ` (${firstErrorMsg})` : '';
+    showToast(`⚠️ ${ok}/${list.length} pages envoyées — ${failed} en échec${detail}`, 'error');
+  }
   return { ok, failed };
 }
 
