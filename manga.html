@@ -722,9 +722,10 @@ async function init() {
     const av = document.getElementById('navAvatar');
     av.style.display = 'flex';
     document.getElementById('navConnexion').style.display = 'none';
-    const d=document.getElementById('dProfil'),c=document.getElementById('dConnexion'),l=document.getElementById('dLogout');
-    if(d)d.style.display='flex';if(c)c.style.display='none';if(l)l.style.display='flex';
-    const { data: profile } = await sb.from('profiles').select('username').eq('id', currentUser.id).single();
+    const dP=document.getElementById('drawerProfil'),dC=document.getElementById('drawerConnexion'),dL=document.getElementById('drawerLogout'),dPub=document.getElementById('drawerPublier');
+    if(dP)dP.style.display='flex';if(dC)dC.style.display='none';if(dL)dL.style.display='flex';
+    const { data: profile } = await sb.from('profiles').select('username, is_creator').eq('id', currentUser.id).single();
+    if(dPub && profile?.is_creator)dPub.style.display='flex';
     const name = profile?.username || currentUser.email.split('@')[0];
     av.textContent = name[0].toUpperCase();
     // Compteur notifications
@@ -755,6 +756,8 @@ async function loadManga(mangaId) {
     .single();
 
   if (error || !data) { showNotFound(); return; }
+  // Brouillon visible uniquement par son auteur
+  if (data.statut === 'brouillon' && (!currentUser || data.auteur_id !== currentUser.id)) { showNotFound(); return; }
   manga = data;
 
   // Charger chapitres
@@ -765,9 +768,12 @@ async function loadManga(mangaId) {
     .order('numero', { ascending: true });
   chapitres = chaps || [];
 
-  // Enregistrer une vue
+  // Enregistrer une vue (unique par utilisateur, compteur entretenu par trigger SQL)
   if (currentUser) {
-    await sb.from('vues').insert({ manga_id: mangaId, user_id: currentUser.id }).maybeSingle();
+    await sb.from('vues').upsert(
+      { manga_id: mangaId, user_id: currentUser.id },
+      { onConflict: 'manga_id,user_id', ignoreDuplicates: true }
+    );
   }
 
   document.getElementById('pageLoading').style.display = 'none';
@@ -776,7 +782,30 @@ async function loadManga(mangaId) {
 
   renderManga();
   renderChapitres();
-  if (currentUser) await checkFollowState();
+  if (currentUser) {
+    await checkFollowState();
+    await checkLibraryState();
+    await checkSubscribeState();
+  }
+}
+
+// ── ÉTAT BIBLIOTHÈQUE ──
+async function checkLibraryState() {
+  const { data } = await sb.from('bibliotheque').select('id')
+    .eq('user_id', currentUser.id).eq('manga_id', manga.id).maybeSingle();
+  inLibrary = !!data;
+  const btn = document.getElementById('btnLibrary');
+  if (inLibrary) { btn.classList.add('in-library'); btn.textContent = '📚 Dans ta bibliothèque ✓'; }
+}
+
+// ── ÉTAT ABONNEMENT ──
+async function checkSubscribeState() {
+  const { data, error } = await sb.from('abonnements_manga').select('id')
+    .eq('user_id', currentUser.id).eq('manga_id', manga.id).maybeSingle();
+  if (error) return; // table pas encore créée
+  isSubscribed = !!data;
+  const btn = document.getElementById('btnSubscribe');
+  if (isSubscribed) { btn.classList.add('active'); btn.textContent = '🔔 Abonné ✓'; }
 }
 
 // ── RENDER MANGA ──
@@ -949,17 +978,35 @@ async function checkFollowState() {
 
 // ── S'ABONNER ──
 document.getElementById('btnSubscribe').addEventListener('click', async () => {
-  if (!currentUser) { showToast('Connecte-toi pour t\'abonner !', 'info'); return; }
-  isSubscribed = !isSubscribed;
+  if (!currentUser) { window.location.href = 'auth.html'; return; }
+  if (!manga) return;
   const btn = document.getElementById('btnSubscribe');
+  const statEl = document.getElementById('statAbonnes');
+  const curr = parseInt(statEl.textContent) || 0;
   if (isSubscribed) {
-    btn.classList.add('active');
-    btn.textContent = '🔔 Abonné ✓';
-    showToast('✅ Tu es abonné à ce manga !', 'success');
-  } else {
+    // MAJ optimiste
+    isSubscribed = false;
     btn.classList.remove('active');
     btn.textContent = '🔔 S\'abonner';
-    showToast('Désabonné', 'info');
+    statEl.textContent = Math.max(curr - 1, 0);
+    const { error } = await sb.from('abonnements_manga').delete()
+      .eq('user_id', currentUser.id).eq('manga_id', manga.id);
+    if (error) {
+      isSubscribed = true; btn.classList.add('active'); btn.textContent = '🔔 Abonné ✓'; statEl.textContent = curr;
+      showToast('Bientôt disponible', 'info');
+    } else showToast('Désabonné', 'info');
+  } else {
+    isSubscribed = true;
+    btn.classList.add('active');
+    btn.textContent = '🔔 Abonné ✓';
+    statEl.textContent = curr + 1;
+    const { error } = await sb.from('abonnements_manga').insert({
+      user_id: currentUser.id, manga_id: manga.id
+    });
+    if (error) {
+      isSubscribed = false; btn.classList.remove('active'); btn.textContent = '🔔 S\'abonner'; statEl.textContent = curr;
+      showToast('Bientôt disponible', 'info');
+    } else showToast('✅ Tu es abonné à ce manga !', 'success');
   }
 });
 
@@ -998,7 +1045,7 @@ document.getElementById('btnLibrary').addEventListener('click', async () => {
   if (!manga) return;
   const btn = document.getElementById('btnLibrary');
   if (inLibrary) {
-    const { error } = await supabase
+    const { error } = await sb
       .from('bibliotheque')
       .delete()
       .eq('user_id', currentUser.id)
@@ -1010,7 +1057,7 @@ document.getElementById('btnLibrary').addEventListener('click', async () => {
       showToast('Retiré de ta bibliothèque', 'info');
     } else showToast('Erreur: ' + error.message, 'error');
   } else {
-    const { error } = await supabase
+    const { error } = await sb
       .from('bibliotheque')
       .upsert({ user_id: currentUser.id, manga_id: manga.id }, { onConflict: 'user_id,manga_id' });
     if (!error) {
@@ -1043,6 +1090,9 @@ function showToast(msg, type = 'success') {
   t.className = `toast ${type} show`;
   setTimeout(() => t.classList.remove('show'), 3000);
 }
+
+// ── PREMIUM ──
+function openModal(){ window.location.href = 'index.html?premium=1'; }
 
 // UNIVERSAL NAV
 function openDrawer(){document.getElementById('univDrawer').classList.add('open');document.getElementById('univOverlay').classList.add('open');document.body.style.overflow='hidden';}
