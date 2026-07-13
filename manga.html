@@ -21,6 +21,13 @@
       --muted:    #8e8e93;
       --border:   rgba(0,0,0,0.08);
       --border2:  rgba(124,111,239,0.15);
+      --bg-2:#f7f7fa; --bg-3:#ededf2;
+      --surface-2:#e5e5ea;
+      --orange:#ff6b35; --orange-light:#ff8a5c;
+      --teal:#00c9a7; --danger:#ff3d71;
+      --text-2:#48484a; --text-3:#8e8e93;
+      --radius:12px; --radius-lg:16px; --radius-xl:20px;
+      --shadow:0 2px 12px rgba(0,0,0,0.06); --shadow-lg:0 8px 32px rgba(0,0,0,0.1);
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -41,40 +48,40 @@
         .univ-nav-sb { background: none; border: none; cursor: pointer; padding: 6px 8px; font-size: 13px; color: rgba(0,0,0,.5); flex-shrink: 0; }
         .univ-nav-sb:hover { color: #7c6fef; }
         .nav-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-        .nav-connexion-btn { color: rgba(255,255,255,0.7); font-size: .8rem; font-weight: 600; padding: 6px 13px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.15); text-decoration: none; transition: all .2s; white-space: nowrap; }
-        .nav-connexion-btn:hover { border-color: var(--purple); color: var(--purple2); }
+        .nav-connexion-btn { color: var(--text-2); font-size: .8rem; font-weight: 600; padding: 6px 13px; border-radius: 20px; border: 1px solid rgba(0,0,0,.15); text-decoration: none; transition: all .2s; white-space: nowrap; }
+        .nav-connexion-btn:hover { border-color: var(--purple); color: var(--purple); }
         .nav-avatar-btn { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #7c6fef, #5040c8); display: none; align-items: center; justify-content: center; font-size: .85rem; font-weight: 700; color: #fff; text-decoration: none; text-transform: uppercase; }
         .nav-avatar-btn.show { display: flex; }
-        .nav-notif-link { position: relative; display: none; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 8px; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1); text-decoration: none; font-size: .95rem; transition: all .2s; }
+        .nav-notif-link { position: relative; display: none; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 8px; background: rgba(0,0,0,.05); border: 1px solid rgba(0,0,0,.08); text-decoration: none; font-size: .95rem; transition: all .2s; }
         .nav-notif-link.show { display: flex; }
-        .nav-notif-link:hover { background: rgba(255,255,255,0.13); }
-        .nav-notif-dot { position: absolute; top: -5px; right: -5px; min-width: 16px; height: 16px; border-radius: 8px; background: var(--accent); color: #fff; font-size: 9px; font-weight: 800; padding: 0 3px; display: none; align-items: center; justify-content: center; border: 2px solid var(--bg); }
+        .nav-notif-link:hover { background: rgba(0,0,0,.1); }
+        .nav-notif-dot { position: absolute; top: -5px; right: -5px; min-width: 16px; height: 16px; border-radius: 8px; background: var(--accent); color: #fff; font-size: 9px; font-weight: 800; padding: 0 3px; display: none; align-items: center; justify-content: center; border: 2px solid #fff; }
         .nav-notif-dot.show { display: flex; }
-        .univ-nav-hbg { width: 34px; height: 34px; border-radius: 8px; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; color: #1c1c1e; transition: background .2s; flex-shrink: 0; }
-        .univ-nav-hbg:hover { background: rgba(255,255,255,0.13); }
+        .univ-nav-hbg { width: 34px; height: 34px; border-radius: 8px; background: rgba(0,0,0,.05); border: 1px solid rgba(0,0,0,.08); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; color: var(--text); transition: background .2s; flex-shrink: 0; }
+        .univ-nav-hbg:hover { background: rgba(0,0,0,.1); }
 
         /* ── DRAWER ── */
         .univ-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 150; backdrop-filter: blur(3px); }
         .univ-overlay.open { display: block; }
-        .univ-drawer { position: fixed; top: 0; right: 0; width: 270px; height: 100%; background: #13131c; z-index: 151; overflow-y: auto; transform: translateX(100%); transition: transform .28s cubic-bezier(.4,0,.2,1); box-shadow: -4px 0 32px rgba(0,0,0,.4); border-left: 1px solid rgba(255,255,255,.07); }
+        .univ-drawer { position: fixed; top: 0; right: 0; width: 270px; height: 100%; background: #ffffff; z-index: 151; overflow-y: auto; transform: translateX(100%); transition: transform .28s cubic-bezier(.4,0,.2,1); box-shadow: -4px 0 32px rgba(0,0,0,.12); border-left: 1px solid var(--border); }
         .univ-drawer.open { transform: translateX(0); }
-        .univ-d-hdr { display: flex; align-items: center; justify-content: space-between; padding: 16px; border-bottom: 1px solid rgba(255,255,255,.07); }
+        .univ-d-hdr { display: flex; align-items: center; justify-content: space-between; padding: 16px; border-bottom: 1px solid var(--border); }
         .univ-d-logo { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 900; text-decoration: none; background: linear-gradient(135deg, #7c6fef, #a594f9); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .univ-d-close { width: 30px; height: 30px; border-radius: 50%; background: rgba(255,255,255,.08); border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; color: rgba(0,0,0,.7); }
-        .univ-d-sec { font-size: .65rem; font-weight: 800; color: rgba(0,0,0,.3); letter-spacing: 1.5px; text-transform: uppercase; padding: 14px 16px 5px; }
-        .univ-d-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; margin: 2px 8px; text-decoration: none; color: rgba(0,0,0,.85); font-weight: 600; font-size: .88rem; cursor: pointer; transition: background .15s; border: none; background: none; width: calc(100% - 16px); text-align: left; border-radius: 9px; font-family: 'DM Sans', sans-serif; }
-        .univ-d-item:hover { background: rgba(255,255,255,.06); }
-        .univ-d-icon { width: 34px; height: 34px; border-radius: 9px; background: rgba(255,255,255,.07); display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+        .univ-d-close { width: 30px; height: 30px; border-radius: 50%; background: rgba(0,0,0,.06); border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; color: var(--text-2); }
+        .univ-d-sec { font-size: .65rem; font-weight: 800; color: var(--text-3); letter-spacing: 1.5px; text-transform: uppercase; padding: 14px 16px 5px; }
+        .univ-d-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; margin: 2px 8px; text-decoration: none; color: var(--text); font-weight: 600; font-size: .88rem; cursor: pointer; transition: background .15s; border: none; background: none; width: calc(100% - 16px); text-align: left; border-radius: 9px; font-family: 'DM Sans', sans-serif; }
+        .univ-d-item:hover { background: rgba(0,0,0,.05); }
+        .univ-d-icon { width: 34px; height: 34px; border-radius: 9px; background: rgba(0,0,0,.05); display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
         .univ-d-badge { font-size: .65rem; font-weight: 800; padding: 2px 7px; border-radius: 6px; margin-left: auto; }
         .univ-d-badge.orange { background: rgba(255,107,53,.15); color: #ff6b35; }
         .univ-d-badge.teal { background: rgba(0,201,167,.15); color: #00c9a7; }
-        .univ-d-divider { height: 1px; background: rgba(255,255,255,.07); margin: 8px 16px; }
+        .univ-d-divider { height: 1px; background: var(--border); margin: 8px 16px; }
 
         /* ── BOTTOM NAV ── */
-        .univ-bnav { position: fixed; bottom: 0; left: 0; right: 0; z-index: 100; background: rgba(10,10,15,.97); border-top: 1px solid rgba(255,255,255,.07); display: flex; align-items: center; justify-content: space-around; padding: 8px 0 16px; backdrop-filter: blur(14px); }
-        .univ-bnav-item { display: flex; flex-direction: column; align-items: center; gap: 2px; text-decoration: none; color: rgba(0,0,0,.4); padding: 0 8px; transition: color .2s; border: none; background: none; cursor: pointer; }
-        .univ-bnav-item:hover { color: rgba(0,0,0,.9); }
-        .univ-bnav-item.active { color: var(--purple2); }
+        .univ-bnav { position: fixed; bottom: 0; left: 0; right: 0; z-index: 100; background: rgba(255,255,255,.97); border-top: 1px solid var(--border); box-shadow: 0 -2px 12px rgba(0,0,0,.05); display: flex; align-items: center; justify-content: space-around; padding: 8px 0 16px; backdrop-filter: blur(14px); }
+        .univ-bnav-item { display: flex; flex-direction: column; align-items: center; gap: 2px; text-decoration: none; color: var(--text-3); padding: 0 8px; transition: color .2s; border: none; background: none; cursor: pointer; }
+        .univ-bnav-item:hover { color: var(--text); }
+        .univ-bnav-item.active { color: var(--purple); }
         .univ-bnav-icon { font-size: 20px; }
         .univ-bnav-label { font-size: .6rem; font-weight: 800; font-family: 'DM Sans', sans-serif; }
         .univ-bnav-search { width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, #7c6fef, #5040c8); border: none; display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer; margin-top: -18px; box-shadow: 0 4px 18px rgba(124,111,239,.5); transition: transform .2s; flex-shrink: 0; }
@@ -260,17 +267,17 @@
       position: relative; display: none;
       align-items: center; justify-content: center;
       width: 32px; height: 32px; border-radius: 8px;
-      background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(0,0,0,.05); border: 1px solid rgba(0,0,0,.08);
       text-decoration: none; font-size: 0.95rem; transition: all .2s;
     }
     .nav-notif-link.show { display: flex; }
-    .nav-notif-link:hover { background: rgba(255,255,255,0.13); }
+    .nav-notif-link:hover { background: rgba(0,0,0,.1); }
     .nav-notif-dot {
       position: absolute; top: -5px; right: -5px;
       min-width: 16px; height: 16px; border-radius: 8px;
       background: var(--accent); color: #fff; font-size: 9px; font-weight: 800;
       padding: 0 3px; display: none; align-items: center; justify-content: center;
-      border: 2px solid var(--bg);
+      border: 2px solid #fff;
     }
     .nav-notif-dot.show { display: flex; }
 
@@ -314,7 +321,7 @@
     }
 
     .description-text {
-      font-size: 0.92rem; line-height: 1.8; color: #c8c8d8;
+      font-size: 0.92rem; line-height: 1.8; color: var(--text-2);
     }
     .description-text.clamped {
       display: -webkit-box; -webkit-line-clamp: 4;
@@ -570,7 +577,7 @@
       <div class="hero-info">
         <div class="hero-badges" id="heroBadges"></div>
         <h1 class="hero-title" id="heroTitle">—</h1>
-        <div class="hero-author">par <a href="#" id="heroAuthorLink" id="heroAuthor">—</a></div>
+        <div class="hero-author">par <a href="#" id="heroAuthorLink">—</a></div>
         <div class="hero-stats">
           <div class="hstat">
             <div class="hstat-num" id="statVues">0</div>
@@ -715,9 +722,9 @@ async function init() {
     const av = document.getElementById('navAvatar');
     av.style.display = 'flex';
     document.getElementById('navConnexion').style.display = 'none';
-    const d=document.getElementById('dProfil'),c=document.getElementById('dConnexion'),l=document.getElementById('dLogout');
-    if(d)d.style.display='flex';if(c)c.style.display='none';if(l)l.style.display='flex';
-    const { data: profile } = await sb.from('profiles').select('username').eq('id', currentUser.id).single();
+    const dP=document.getElementById('drawerProfil'),dC=document.getElementById('drawerConnexion'),dL=document.getElementById('drawerLogout'),dPub=document.getElementById('drawerPublier');
+    if(dP)dP.style.display='flex';if(dC)dC.style.display='none';if(dL)dL.style.display='flex';if(dPub)dPub.style.display='flex';
+    const { data: profile } = await sb.from('profiles').select('username, is_creator').eq('id', currentUser.id).single();
     const name = profile?.username || currentUser.email.split('@')[0];
     av.textContent = name[0].toUpperCase();
     // Compteur notifications
@@ -748,6 +755,8 @@ async function loadManga(mangaId) {
     .single();
 
   if (error || !data) { showNotFound(); return; }
+  // Brouillon visible uniquement par son auteur
+  if (data.statut === 'brouillon' && (!currentUser || data.auteur_id !== currentUser.id)) { showNotFound(); return; }
   manga = data;
 
   // Charger chapitres
@@ -758,9 +767,12 @@ async function loadManga(mangaId) {
     .order('numero', { ascending: true });
   chapitres = chaps || [];
 
-  // Enregistrer une vue
+  // Enregistrer une vue (unique par utilisateur, compteur entretenu par trigger SQL)
   if (currentUser) {
-    await sb.from('vues').insert({ manga_id: mangaId, user_id: currentUser.id }).maybeSingle();
+    await sb.from('vues').upsert(
+      { manga_id: mangaId, user_id: currentUser.id },
+      { onConflict: 'manga_id,user_id', ignoreDuplicates: true }
+    );
   }
 
   document.getElementById('pageLoading').style.display = 'none';
@@ -769,7 +781,30 @@ async function loadManga(mangaId) {
 
   renderManga();
   renderChapitres();
-  if (currentUser) await checkFollowState();
+  if (currentUser) {
+    await checkFollowState();
+    await checkLibraryState();
+    await checkSubscribeState();
+  }
+}
+
+// ── ÉTAT BIBLIOTHÈQUE ──
+async function checkLibraryState() {
+  const { data } = await sb.from('bibliotheque').select('id')
+    .eq('user_id', currentUser.id).eq('manga_id', manga.id).maybeSingle();
+  inLibrary = !!data;
+  const btn = document.getElementById('btnLibrary');
+  if (inLibrary) { btn.classList.add('in-library'); btn.textContent = '📚 Dans ta bibliothèque ✓'; }
+}
+
+// ── ÉTAT ABONNEMENT ──
+async function checkSubscribeState() {
+  const { data, error } = await sb.from('abonnements_manga').select('id')
+    .eq('user_id', currentUser.id).eq('manga_id', manga.id).maybeSingle();
+  if (error) return; // table pas encore créée
+  isSubscribed = !!data;
+  const btn = document.getElementById('btnSubscribe');
+  if (isSubscribed) { btn.classList.add('active'); btn.textContent = '🔔 Abonné ✓'; }
 }
 
 // ── RENDER MANGA ──
@@ -942,17 +977,35 @@ async function checkFollowState() {
 
 // ── S'ABONNER ──
 document.getElementById('btnSubscribe').addEventListener('click', async () => {
-  if (!currentUser) { showToast('Connecte-toi pour t\'abonner !', 'info'); return; }
-  isSubscribed = !isSubscribed;
+  if (!currentUser) { window.location.href = 'auth.html'; return; }
+  if (!manga) return;
   const btn = document.getElementById('btnSubscribe');
+  const statEl = document.getElementById('statAbonnes');
+  const curr = parseInt(statEl.textContent) || 0;
   if (isSubscribed) {
-    btn.classList.add('active');
-    btn.textContent = '🔔 Abonné ✓';
-    showToast('✅ Tu es abonné à ce manga !', 'success');
-  } else {
+    // MAJ optimiste
+    isSubscribed = false;
     btn.classList.remove('active');
     btn.textContent = '🔔 S\'abonner';
-    showToast('Désabonné', 'info');
+    statEl.textContent = Math.max(curr - 1, 0);
+    const { error } = await sb.from('abonnements_manga').delete()
+      .eq('user_id', currentUser.id).eq('manga_id', manga.id);
+    if (error) {
+      isSubscribed = true; btn.classList.add('active'); btn.textContent = '🔔 Abonné ✓'; statEl.textContent = curr;
+      showToast('Bientôt disponible', 'info');
+    } else showToast('Désabonné', 'info');
+  } else {
+    isSubscribed = true;
+    btn.classList.add('active');
+    btn.textContent = '🔔 Abonné ✓';
+    statEl.textContent = curr + 1;
+    const { error } = await sb.from('abonnements_manga').insert({
+      user_id: currentUser.id, manga_id: manga.id
+    });
+    if (error) {
+      isSubscribed = false; btn.classList.remove('active'); btn.textContent = '🔔 S\'abonner'; statEl.textContent = curr;
+      showToast('Bientôt disponible', 'info');
+    } else showToast('✅ Tu es abonné à ce manga !', 'success');
   }
 });
 
@@ -991,7 +1044,7 @@ document.getElementById('btnLibrary').addEventListener('click', async () => {
   if (!manga) return;
   const btn = document.getElementById('btnLibrary');
   if (inLibrary) {
-    const { error } = await supabase
+    const { error } = await sb
       .from('bibliotheque')
       .delete()
       .eq('user_id', currentUser.id)
@@ -1003,7 +1056,7 @@ document.getElementById('btnLibrary').addEventListener('click', async () => {
       showToast('Retiré de ta bibliothèque', 'info');
     } else showToast('Erreur: ' + error.message, 'error');
   } else {
-    const { error } = await supabase
+    const { error } = await sb
       .from('bibliotheque')
       .upsert({ user_id: currentUser.id, manga_id: manga.id }, { onConflict: 'user_id,manga_id' });
     if (!error) {
@@ -1036,6 +1089,9 @@ function showToast(msg, type = 'success') {
   t.className = `toast ${type} show`;
   setTimeout(() => t.classList.remove('show'), 3000);
 }
+
+// ── PREMIUM ──
+function openModal(){ window.location.href = 'index.html?premium=1'; }
 
 // UNIVERSAL NAV
 function openDrawer(){document.getElementById('univDrawer').classList.add('open');document.getElementById('univOverlay').classList.add('open');document.body.style.overflow='hidden';}

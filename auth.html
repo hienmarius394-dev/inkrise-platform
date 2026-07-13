@@ -16,6 +16,8 @@
   --border: rgba(0,0,0,0.08);
   --border-2: rgba(0,0,0,0.12);
   --purple: #7c6fef;
+  --purple2: #a594f9;
+  --accent: #7c6fef;
   --purple-light: #a89af7;
   --purple-dim: rgba(124,111,239,0.15);
   --teal: #2dd4a0;
@@ -33,13 +35,17 @@ body {
   color: var(--text);
   font-family: 'DM Sans', sans-serif;
   min-height: 100vh;
+  padding: 0 0 100px;
+  position: relative;
+  overflow-x: hidden;
+}
+.auth-wrap {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 78px 20px 100px;
-  position: relative;
-  overflow: hidden;
+  min-height: calc(100vh - 190px);
+  padding: 20px;
 }
 body::before {
   content: '';
@@ -219,50 +225,51 @@ body::after {
 .back-link a:hover { text-decoration: underline; }
 
 /* ── NAV UNIVERSEL ── */
-.univ-nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(255,255,255,0.96);backdrop-filter:blur(14px);border-bottom:1px solid rgba(0,0,0,0.08);padding:0 16px;height:58px;display:flex;align-items:center;gap:8px;}
+.univ-nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,0.96);backdrop-filter:blur(14px);border-bottom:1px solid rgba(0,0,0,0.08);padding:0 16px;height:58px;display:flex;align-items:center;gap:8px;}
 .univ-nav-logo{font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:900;text-decoration:none;background:linear-gradient(135deg,#7c6fef,#a594f9);-webkit-background-clip:text;-webkit-text-fill-color:transparent;flex-shrink:0;letter-spacing:1px;}
 .univ-nav-links-d{display:flex;align-items:center;gap:2px;flex:1;margin:0 8px;}
 @media(max-width:680px){.univ-nav-links-d{display:none;}}
 .univ-nav-lk{color:rgba(0,0,0,0.6);font-size:.82rem;font-weight:600;text-decoration:none;padding:5px 10px;border-radius:7px;transition:all .2s;white-space:nowrap;font-family:'DM Sans',sans-serif;}
-.univ-nav-lk:hover{color:#1c1c1e;background:rgba(255,255,255,0.06);}
-.univ-nav-search{display:flex;align-items:center;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);border-radius:18px;overflow:hidden;max-width:200px;flex-shrink:0;}
+.univ-nav-lk:hover{color:#1c1c1e;background:rgba(0,0,0,0.06);}
+.univ-nav-search{display:flex;align-items:center;background:rgba(0,0,0,0.05);border:1px solid rgba(0,0,0,0.1);border-radius:18px;overflow:hidden;max-width:200px;flex-shrink:0;}
 @media(max-width:480px){.univ-nav-search{max-width:120px;}}
 .univ-nav-si{background:none;border:none;outline:none;color:#1c1c1e;font-size:.8rem;padding:7px 10px;width:100%;font-family:'DM Sans',sans-serif;}
 .univ-nav-si::placeholder{color:rgba(0,0,0,.35);}
 .univ-nav-sb{background:none;border:none;cursor:pointer;padding:6px 8px;font-size:13px;color:rgba(0,0,0,.5);flex-shrink:0;}
 .univ-nav-sb:hover{color:#7c6fef;}
-.univ-nav-hbg{width:34px;height:34px;border-radius:8px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;color:#1c1c1e;transition:background .2s;flex-shrink:0;}
-.univ-nav-hbg:hover{background:rgba(255,255,255,0.13);}
+.univ-nav-hbg{width:34px;height:34px;border-radius:8px;background:rgba(0,0,0,.05);border:1px solid rgba(0,0,0,.08);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;color:var(--text);transition:background .2s;flex-shrink:0;}
+.univ-nav-hbg:hover{background:rgba(0,0,0,.1);}
 .nav-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-.nav-connexion-btn { color: rgba(255,255,255,0.7); font-size: .8rem; font-weight: 600; padding: 6px 13px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.15); text-decoration: none; transition: all .2s; white-space: nowrap; }
-.nav-connexion-btn:hover { border-color: var(--purple); color: var(--purple2); }
+.nav-connexion-btn { color: var(--text-2); font-size: .8rem; font-weight: 600; padding: 6px 13px; border-radius: 20px; border: 1px solid rgba(0,0,0,.15); text-decoration: none; transition: all .2s; white-space: nowrap; }
+.nav-connexion-btn:hover { border-color: var(--purple); color: var(--purple); }
 .nav-avatar-btn { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #7c6fef, #5040c8); display: none; align-items: center; justify-content: center; font-size: .85rem; font-weight: 700; color: #fff; text-decoration: none; text-transform: uppercase; }
 .nav-avatar-btn.show { display: flex; }
-.nav-notif-link { position: relative; display: none; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 8px; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1); text-decoration: none; font-size: .95rem; transition: all .2s; }
+.nav-notif-link { position: relative; display: none; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 8px; background: rgba(0,0,0,.05); border: 1px solid rgba(0,0,0,.08); text-decoration: none; font-size: .95rem; transition: all .2s; }
 .nav-notif-link.show { display: flex; }
-.nav-notif-link:hover { background: rgba(255,255,255,0.13); }
-.nav-notif-dot { position: absolute; top: -5px; right: -5px; min-width: 16px; height: 16px; border-radius: 8px; background: var(--accent); color: #fff; font-size: 9px; font-weight: 800; padding: 0 3px; display: none; align-items: center; justify-content: center; border: 2px solid var(--bg); }
+.nav-notif-link:hover { background: rgba(0,0,0,.1); }
+.nav-notif-dot { position: absolute; top: -5px; right: -5px; min-width: 16px; height: 16px; border-radius: 8px; background: var(--accent); color: #fff; font-size: 9px; font-weight: 800; padding: 0 3px; display: none; align-items: center; justify-content: center; border: 2px solid #fff; }
 .nav-notif-dot.show { display: flex; }
 /* Drawer */
 .univ-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:150;backdrop-filter:blur(3px);}
 .univ-overlay.open{display:block;}
-.univ-drawer{position:fixed;top:0;right:0;width:270px;height:100%;background:#13131c;z-index:151;overflow-y:auto;transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1);box-shadow:-4px 0 32px rgba(0,0,0,.4);border-left:1px solid rgba(255,255,255,.07);}
+.univ-drawer{position:fixed;top:0;right:0;width:270px;height:100%;background:#ffffff;z-index:151;overflow-y:auto;transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1);box-shadow:-4px 0 32px rgba(0,0,0,.12);border-left:1px solid var(--border);}
 .univ-drawer.open{transform:translateX(0);}
-.univ-d-hdr{display:flex;align-items:center;justify-content:space-between;padding:16px;border-bottom:1px solid rgba(255,255,255,.07);}
+.univ-d-hdr{display:flex;align-items:center;justify-content:space-between;padding:16px;border-bottom:1px solid var(--border);}
 .univ-d-logo{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:900;text-decoration:none;background:linear-gradient(135deg,#7c6fef,#a594f9);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
-.univ-d-close{width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.08);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;color:rgba(0,0,0,.7);}
-.univ-d-sec{font-size:.65rem;font-weight:800;color:rgba(0,0,0,.3);letter-spacing:1.5px;text-transform:uppercase;padding:14px 16px 5px;}
-.univ-d-item{display:flex;align-items:center;gap:10px;padding:10px 12px;margin:2px 8px;text-decoration:none;color:rgba(0,0,0,.85);font-weight:600;font-size:.88rem;cursor:pointer;transition:background .15s;border:none;background:none;width:calc(100% - 16px);text-align:left;border-radius:9px;font-family:'DM Sans',sans-serif;}
-.univ-d-item:hover{background:rgba(255,255,255,.06);}
-.univ-d-icon{width:34px;height:34px;border-radius:9px;background:rgba(255,255,255,.07);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+.univ-d-close{width:30px;height:30px;border-radius:50%;background:rgba(0,0,0,.06);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;color:var(--text-2);}
+.univ-d-sec{font-size:.65rem;font-weight:800;color:var(--text-3);letter-spacing:1.5px;text-transform:uppercase;padding:14px 16px 5px;}
+.univ-d-item{display:flex;align-items:center;gap:10px;padding:10px 12px;margin:2px 8px;text-decoration:none;color:var(--text);font-weight:600;font-size:.88rem;cursor:pointer;transition:background .15s;border:none;background:none;width:calc(100% - 16px);text-align:left;border-radius:9px;font-family:'DM Sans',sans-serif;}
+.univ-d-item:hover{background:rgba(0,0,0,.05);}
+.univ-d-icon{width:34px;height:34px;border-radius:9px;background:rgba(0,0,0,.05);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
 .univ-d-badge{font-size:.65rem;font-weight:800;padding:2px 7px;border-radius:6px;margin-left:auto;}
 .univ-d-badge.orange{background:rgba(255,107,53,.15);color:#ff6b35;}
 .univ-d-badge.teal{background:rgba(0,201,167,.15);color:#00c9a7;}
-.univ-d-divider{height:1px;background:rgba(255,255,255,.07);margin:8px 16px;}
+.univ-d-divider{height:1px;background:var(--border);margin:8px 16px;}
 /* Bottom nav */
-.univ-bnav{position:fixed;bottom:0;left:0;right:0;z-index:100;background:rgba(10,10,15,.97);border-top:1px solid rgba(255,255,255,.07);display:flex;align-items:center;justify-content:space-around;padding:8px 0 16px;backdrop-filter:blur(14px);}
-.univ-bnav-item{display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none;color:rgba(0,0,0,.4);padding:0 8px;transition:color .2s;border:none;background:none;cursor:pointer;}
-.univ-bnav-item:hover{color:rgba(0,0,0,.9);}
+.univ-bnav{position:fixed;bottom:0;left:0;right:0;z-index:100;background:rgba(255,255,255,.97);border-top:1px solid var(--border);box-shadow:0 -2px 12px rgba(0,0,0,.05);display:flex;align-items:center;justify-content:space-around;padding:8px 0 16px;backdrop-filter:blur(14px);}
+.univ-bnav-item{display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none;color:var(--text-3);padding:0 8px;transition:color .2s;border:none;background:none;cursor:pointer;}
+.univ-bnav-item:hover{color:var(--text);}
+.univ-bnav-item.active{color:var(--purple);}
 .univ-bnav-icon{font-size:20px;}
 .univ-bnav-label{font-size:.6rem;font-weight:800;font-family:'DM Sans',sans-serif;}
 .univ-bnav-search{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#7c6fef,#5040c8);border:none;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;margin-top:-18px;box-shadow:0 4px 18px rgba(124,111,239,.5);transition:transform .2s;flex-shrink:0;}
@@ -347,6 +354,7 @@ body::after {
   <button class="univ-d-item" id="drawerLogout" style="display:none;" onclick="doLogout()"><div class="univ-d-icon">🚪</div><span style="color:#f0522a;">Déconnexion</span></button>
 </div>
 
+<div class="auth-wrap">
 <a href="index.html" class="logo-top" style="display:none;">INK<span>RISE</span></a>
 
 <div class="card">
@@ -373,6 +381,29 @@ body::after {
       <span id="loginBtnText">Se connecter</span>
     </button>
     <div class="msg" id="loginMsg"></div>
+    <div style="text-align:center;margin-top:14px;">
+      <a href="#" onclick="toggleForgot();return false;" style="font-size:12px;color:var(--text-3);text-decoration:none;">Mot de passe oublié ?</a>
+    </div>
+    <div id="forgotBox" style="display:none;margin-top:14px;padding-top:14px;border-top:1px solid var(--border);">
+      <div class="field">
+        <label>Email de récupération</label>
+        <input type="email" id="forgotEmail" placeholder="ton@email.com" />
+      </div>
+      <button class="btn-submit" id="forgotBtn" onclick="handleForgot()">Envoyer le lien de réinitialisation</button>
+      <div class="msg" id="forgotMsg"></div>
+    </div>
+  </div>
+
+  <!-- NOUVEAU MOT DE PASSE (retour lien de récupération) -->
+  <div id="recoveryForm" style="display:none">
+    <div class="form-title">Nouveau mot de passe 🔒</div>
+    <div class="form-sub">Choisis ton nouveau mot de passe</div>
+    <div class="field">
+      <label>Nouveau mot de passe</label>
+      <input type="password" id="recoveryPassword" placeholder="6 caractères minimum" />
+    </div>
+    <button class="btn-submit" id="recoveryBtn" onclick="handleRecovery()">Mettre à jour</button>
+    <div class="msg" id="recoveryMsg"></div>
   </div>
 
   <!-- FORMULAIRE INSCRIPTION -->
@@ -412,14 +443,20 @@ body::after {
     <a href="index.html">← Retour à l'accueil</a>
   </div>
 </div>
+</div><!-- /.auth-wrap -->
 
 <script>
 // =============================================
-// CONFIG SUPABASE — REMPLACE PAR TES VRAIES CLÉS
+// CONFIG SUPABASE
 // =============================================
 const SUPABASE_URL = 'https://bsdcpwtimsgxcnaamwip.supabase.co'
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJzZGNwd3RpbXNneGNuYWFtd2lwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAzMTQ1MDIsImV4cCI6MjA5NTg5MDUwMn0.uMcfUsnlULHNqS_87xzUWRUB8tEaCCNQglrWwN2fb44'
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
+
+async function doLogout() {
+  await supabaseClient.auth.signOut()
+  window.location.href = 'index.html'
+}
 
 // =============================================
 // SWITCH TABS
@@ -519,14 +556,14 @@ async function handleSignup() {
     return
   }
 
-  // Créer le profil dans la table profiles
-  if (data.user) {
+  // Créer le profil seulement si une session existe (sinon, le trigger
+  // SQL handle_new_user s'en charge à la confirmation de l'email)
+  if (data.user && data.session) {
     try {
       await supabaseClient.from('profiles').upsert({
         id: data.user.id,
         username: username,
-        bio: '',
-        created_at: new Date().toISOString()
+        bio: ''
       })
     } catch (e) {
       console.warn('Profile creation warning:', e);
@@ -540,11 +577,60 @@ async function handleSignup() {
 // Enter key support
 document.addEventListener('keydown', e => {
   if (e.key === 'Enter') {
+    if (document.getElementById('recoveryForm').style.display !== 'none') { handleRecovery(); return }
+    if (document.activeElement?.id === 'forgotEmail') { handleForgot(); return }
     const loginVisible = document.getElementById('loginForm').style.display !== 'none'
     if (loginVisible) handleLogin()
     else handleSignup()
   }
 })
+
+// =============================================
+// MOT DE PASSE OUBLIÉ
+// =============================================
+function toggleForgot() {
+  const box = document.getElementById('forgotBox')
+  box.style.display = box.style.display === 'none' ? 'block' : 'none'
+  if (box.style.display === 'block') {
+    document.getElementById('forgotEmail').value = document.getElementById('loginEmail').value
+    document.getElementById('forgotEmail').focus()
+  }
+}
+async function handleForgot() {
+  const email = document.getElementById('forgotEmail').value.trim()
+  hideMsg('forgotMsg')
+  if (!email) { showMsg('forgotMsg', 'Entre ton email.', 'error'); return }
+  document.getElementById('forgotBtn').disabled = true
+  const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+    redirectTo: window.location.origin + '/auth.html'
+  })
+  document.getElementById('forgotBtn').disabled = false
+  if (error) { showMsg('forgotMsg', 'Erreur : ' + error.message, 'error'); return }
+  showMsg('forgotMsg', '✓ Email envoyé ! Clique sur le lien reçu pour réinitialiser ton mot de passe.', 'success')
+}
+
+// Retour du lien de récupération
+let isRecovery = window.location.hash.includes('type=recovery')
+supabaseClient.auth.onAuthStateChange((event) => {
+  if (event === 'PASSWORD_RECOVERY') {
+    isRecovery = true
+    document.getElementById('loginForm').style.display = 'none'
+    document.getElementById('signupForm').style.display = 'none'
+    document.querySelector('.tabs').style.display = 'none'
+    document.getElementById('recoveryForm').style.display = 'block'
+  }
+})
+async function handleRecovery() {
+  const password = document.getElementById('recoveryPassword').value
+  hideMsg('recoveryMsg')
+  if (password.length < 6) { showMsg('recoveryMsg', 'Le mot de passe doit faire au moins 6 caractères.', 'error'); return }
+  document.getElementById('recoveryBtn').disabled = true
+  const { error } = await supabaseClient.auth.updateUser({ password })
+  document.getElementById('recoveryBtn').disabled = false
+  if (error) { showMsg('recoveryMsg', 'Erreur : ' + error.message, 'error'); return }
+  showMsg('recoveryMsg', '✓ Mot de passe mis à jour ! Redirection…', 'success')
+  setTimeout(() => { window.location.href = 'index.html' }, 1200)
+}
 
 
 function togglePwd(id, btn) {
@@ -559,15 +645,16 @@ function togglePwd(id, btn) {
 }
 
 // UNIVERSAL NAV
+function openModal(){ window.location.href = 'index.html?premium=1' }
 function openDrawer(){document.getElementById('univOverlay').classList.add('open');document.getElementById('univDrawer').classList.add('open');document.body.style.overflow='hidden';}
 function closeDrawer(){document.getElementById('univOverlay').classList.remove('open');document.getElementById('univDrawer').classList.remove('open');document.body.style.overflow='';}
 function doSearch(){const q=document.getElementById('navSearchInput').value.trim();if(q)window.location.href='recherche.html?q='+encodeURIComponent(q);}
 function focusSearch(){const i=document.getElementById('navSearchInput');if(i){i.focus();window.scrollTo({top:0,behavior:'smooth'});}}
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!['loginEmail','loginPassword','signupUsername','signupEmail','signupPassword'].includes(document.activeElement?.id))closeDrawer();});
 
-// Vérifier si déjà connecté
+// Vérifier si déjà connecté (sauf en mode récupération de mot de passe)
 supabaseClient.auth.getSession().then(({ data }) => {
-  if (data.session) window.location.href = 'index.html'
+  if (data.session && !isRecovery) window.location.href = 'index.html'
 })
 </script>
 

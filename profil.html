@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Mon Profil — Inkrise</title>
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500;600;700&family=Bebas+Neue&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     :root {
@@ -19,6 +19,23 @@
       --border: rgba(0,0,0,0.08);
       --card-bg: #f5f5f7;
       --gold: #f5c842;
+      --bg-2: #f7f7fa;
+      --bg-3: #ededf2;
+      --surface-2: #e5e5ea;
+      --purple2: #a594f9;
+      --green: #3ddc84;
+      --amber: #f5a623;
+      --orange: #ff6b35;
+      --orange-light: #ff8a5c;
+      --teal: #00c9a7;
+      --danger: #ff3d71;
+      --text-2: #48484a;
+      --text-3: #8e8e93;
+      --radius: 12px;
+      --radius-lg: 16px;
+      --radius-xl: 20px;
+      --shadow: 0 2px 12px rgba(0,0,0,0.06);
+      --shadow-lg: 0 8px 32px rgba(0,0,0,0.1);
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -46,34 +63,34 @@
         .univ-nav-sb { background: none; border: none; cursor: pointer; padding: 6px 8px; font-size: 13px; color: rgba(0,0,0,.5); flex-shrink: 0; }
         .univ-nav-sb:hover { color: #7c6fef; }
         .nav-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-        .nav-connexion-btn { color: rgba(255,255,255,0.7); font-size: .8rem; font-weight: 600; padding: 6px 13px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.15); text-decoration: none; transition: all .2s; white-space: nowrap; }
-        .nav-connexion-btn:hover { border-color: var(--purple); color: var(--purple2); }
+        .nav-connexion-btn { color: var(--text-2); font-size: .8rem; font-weight: 600; padding: 6px 13px; border-radius: 20px; border: 1px solid rgba(0,0,0,.15); text-decoration: none; transition: all .2s; white-space: nowrap; }
+        .nav-connexion-btn:hover { border-color: var(--purple); color: var(--purple); }
         .nav-avatar-btn { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #7c6fef, #5040c8); display: none; align-items: center; justify-content: center; font-size: .85rem; font-weight: 700; color: #fff; text-decoration: none; text-transform: uppercase; }
         .nav-avatar-btn.show { display: flex; }
-        .nav-notif-link { position: relative; display: none; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 8px; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1); text-decoration: none; font-size: .95rem; transition: all .2s; }
+        .nav-notif-link { position: relative; display: none; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 8px; background: rgba(0,0,0,.05); border: 1px solid rgba(0,0,0,.08); text-decoration: none; font-size: .95rem; transition: all .2s; }
         .nav-notif-link.show { display: flex; }
-        .nav-notif-link:hover { background: rgba(255,255,255,0.13); }
-        .nav-notif-dot { position: absolute; top: -5px; right: -5px; min-width: 16px; height: 16px; border-radius: 8px; background: var(--accent); color: #fff; font-size: 9px; font-weight: 800; padding: 0 3px; display: none; align-items: center; justify-content: center; border: 2px solid var(--bg); }
+        .nav-notif-link:hover { background: rgba(0,0,0,.1); }
+        .nav-notif-dot { position: absolute; top: -5px; right: -5px; min-width: 16px; height: 16px; border-radius: 8px; background: var(--accent); color: #fff; font-size: 9px; font-weight: 800; padding: 0 3px; display: none; align-items: center; justify-content: center; border: 2px solid #fff; }
         .nav-notif-dot.show { display: flex; }
-        .univ-nav-hbg { width: 34px; height: 34px; border-radius: 8px; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; color: #1c1c1e; transition: background .2s; flex-shrink: 0; }
-        .univ-nav-hbg:hover { background: rgba(255,255,255,0.13); }
+        .univ-nav-hbg { width: 34px; height: 34px; border-radius: 8px; background: rgba(0,0,0,.05); border: 1px solid rgba(0,0,0,.08); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; color: var(--text); transition: background .2s; flex-shrink: 0; }
+        .univ-nav-hbg:hover { background: rgba(0,0,0,.1); }
 
         /* ── DRAWER ── */
         .univ-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 150; backdrop-filter: blur(3px); }
         .univ-overlay.open { display: block; }
-        .univ-drawer { position: fixed; top: 0; right: 0; width: 270px; height: 100%; background: #13131c; z-index: 151; overflow-y: auto; transform: translateX(100%); transition: transform .28s cubic-bezier(.4,0,.2,1); box-shadow: -4px 0 32px rgba(0,0,0,.4); border-left: 1px solid rgba(255,255,255,.07); }
+        .univ-drawer { position: fixed; top: 0; right: 0; width: 270px; height: 100%; background: #ffffff; z-index: 151; overflow-y: auto; transform: translateX(100%); transition: transform .28s cubic-bezier(.4,0,.2,1); box-shadow: -4px 0 32px rgba(0,0,0,.12); border-left: 1px solid var(--border); }
         .univ-drawer.open { transform: translateX(0); }
-        .univ-d-hdr { display: flex; align-items: center; justify-content: space-between; padding: 16px; border-bottom: 1px solid rgba(255,255,255,.07); }
+        .univ-d-hdr { display: flex; align-items: center; justify-content: space-between; padding: 16px; border-bottom: 1px solid var(--border); }
         .univ-d-logo { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 900; text-decoration: none; background: linear-gradient(135deg, #7c6fef, #a594f9); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .univ-d-close { width: 30px; height: 30px; border-radius: 50%; background: rgba(255,255,255,.08); border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; color: rgba(0,0,0,.7); }
-        .univ-d-sec { font-size: .65rem; font-weight: 800; color: rgba(0,0,0,.3); letter-spacing: 1.5px; text-transform: uppercase; padding: 14px 16px 5px; }
-        .univ-d-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; margin: 2px 8px; text-decoration: none; color: rgba(0,0,0,.85); font-weight: 600; font-size: .88rem; cursor: pointer; transition: background .15s; border: none; background: none; width: calc(100% - 16px); text-align: left; border-radius: 9px; font-family: 'DM Sans', sans-serif; }
-        .univ-d-item:hover { background: rgba(255,255,255,.06); }
-        .univ-d-icon { width: 34px; height: 34px; border-radius: 9px; background: rgba(255,255,255,.07); display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+        .univ-d-close { width: 30px; height: 30px; border-radius: 50%; background: rgba(0,0,0,.06); border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; color: var(--text-2); }
+        .univ-d-sec { font-size: .65rem; font-weight: 800; color: var(--text-3); letter-spacing: 1.5px; text-transform: uppercase; padding: 14px 16px 5px; }
+        .univ-d-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; margin: 2px 8px; text-decoration: none; color: var(--text); font-weight: 600; font-size: .88rem; cursor: pointer; transition: background .15s; border: none; background: none; width: calc(100% - 16px); text-align: left; border-radius: 9px; font-family: 'DM Sans', sans-serif; }
+        .univ-d-item:hover { background: rgba(0,0,0,.05); }
+        .univ-d-icon { width: 34px; height: 34px; border-radius: 9px; background: rgba(0,0,0,.05); display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
         .univ-d-badge { font-size: .65rem; font-weight: 800; padding: 2px 7px; border-radius: 6px; margin-left: auto; }
         .univ-d-badge.orange { background: rgba(255,107,53,.15); color: #ff6b35; }
         .univ-d-badge.teal { background: rgba(0,201,167,.15); color: #00c9a7; }
-        .univ-d-divider { height: 1px; background: rgba(255,255,255,.07); margin: 8px 16px; }
+        .univ-d-divider { height: 1px; background: var(--border); margin: 8px 16px; }
 
     /* ── HERO PROFIL ── */
     .profile-hero {
@@ -586,9 +603,10 @@
 .btn-mark-all:hover { border-color: var(--accent2); color: var(--accent2); }
 
 /* ── BOTTOM NAV UNIVERSEL ── */
-.univ-bnav{position:fixed;bottom:0;left:0;right:0;z-index:100;background:rgba(10,10,15,.97);border-top:1px solid rgba(255,255,255,.07);display:flex;align-items:center;justify-content:space-around;padding:8px 0 16px;backdrop-filter:blur(14px);}
-.univ-bnav-item{display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none;color:rgba(0,0,0,.4);padding:0 8px;transition:color .2s;border:none;background:none;cursor:pointer;}
-.univ-bnav-item:hover{color:rgba(0,0,0,.9);}
+.univ-bnav{position:fixed;bottom:0;left:0;right:0;z-index:100;background:rgba(255,255,255,.97);border-top:1px solid var(--border);box-shadow:0 -2px 12px rgba(0,0,0,.05);display:flex;align-items:center;justify-content:space-around;padding:8px 0 16px;backdrop-filter:blur(14px);}
+.univ-bnav-item{display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none;color:var(--text-3);padding:0 8px;transition:color .2s;border:none;background:none;cursor:pointer;}
+.univ-bnav-item:hover{color:var(--text);}
+.univ-bnav-item.active{color:var(--purple);}
 .univ-bnav-icon{font-size:20px;}
 .univ-bnav-label{font-size:.6rem;font-weight:800;font-family:'DM Sans',sans-serif;}
 .univ-bnav-search{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#7c6fef,#5040c8);border:none;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;margin-top:-18px;box-shadow:0 4px 18px rgba(124,111,239,.5);transition:transform .2s;flex-shrink:0;}
@@ -714,7 +732,7 @@
 
     <div class="section-header">
       <div class="section-title">Mes Publications</div>
-      <a href="upload.html" class="btn-upload" id="btnUpload" style="display:none;">+ Publier un manga</a>
+      <a href="upload-manga.html" class="btn-upload" id="btnUpload" style="display:none;">+ Publier un manga</a>
     </div>
 
     <div id="mangaLoading" class="loading-dots">
@@ -951,6 +969,11 @@
   function updateNav(session) {
     const navConn = document.getElementById('navConnexion');
     const navAv = document.getElementById('navAvatar');
+    const navNotif = document.getElementById('navNotifLink');
+    const dProfil = document.getElementById('drawerProfil');
+    const dPublier = document.getElementById('drawerPublier');
+    const dConnexion = document.getElementById('drawerConnexion');
+    const dLogout = document.getElementById('drawerLogout');
     if (session) {
       if (navConn) navConn.style.display = 'none';
       if (navAv) {
@@ -958,9 +981,19 @@
         const name = session.user?.user_metadata?.username || session.user?.email?.split('@')[0] || '?';
         navAv.textContent = name[0].toUpperCase();
       }
+      if (navNotif) navNotif.classList.add('show');
+      if (dProfil) dProfil.style.display = 'flex';
+      if (dPublier) dPublier.style.display = 'flex';
+      if (dConnexion) dConnexion.style.display = 'none';
+      if (dLogout) dLogout.style.display = 'flex';
     } else {
       if (navConn) navConn.style.display = '';
       if (navAv) navAv.style.display = 'none';
+      if (navNotif) navNotif.classList.remove('show');
+      if (dProfil) dProfil.style.display = 'none';
+      if (dPublier) dPublier.style.display = 'none';
+      if (dConnexion) dConnexion.style.display = '';
+      if (dLogout) dLogout.style.display = 'none';
     }
   }
 
@@ -1031,17 +1064,74 @@
           document.getElementById('premiumToggle').checked = true;
           document.getElementById('premiumCard').style.borderColor = 'var(--accent)';
         }
+
+        // Plan réel dérivé du profil
+        updatePlanUI();
   }
+
+  function planLabel(p) {
+    if (p?.espace_premium) return 'Créateur Premium';
+    if (p?.is_creator) return 'Créateur (gratuit)';
+    return 'Lecteur';
+  }
+
+  function updatePlanUI() {
+    const label = planLabel(userProfile);
+    const planNameEl = document.getElementById('planName');
+    const displayPlanEl = document.getElementById('displayPlan');
+    if (planNameEl) planNameEl.textContent = label;
+    if (displayPlanEl) displayPlanEl.textContent = label;
+    // Bouton "Débutant" de la modal : activable seulement si pas encore créateur
+    const freeBtn = document.querySelector('.btn-plan.free');
+    if (freeBtn) {
+      if (userProfile?.is_creator) {
+        freeBtn.textContent = 'Plan actuel';
+        freeBtn.disabled = true;
+        freeBtn.style.cursor = 'default';
+      } else {
+        freeBtn.textContent = 'Commencer gratuit';
+        freeBtn.disabled = false;
+        freeBtn.style.cursor = 'pointer';
+      }
+    }
+  }
+
+  // ── PLANS (spec section 8) ──
+  async function choosePlan(plan) { // 'debutant' | 'createur' | 'pro'
+    const { data } = await sb.auth.getSession();
+    if (!data.session) { window.location.href = 'auth.html'; return; }
+    const updates = plan === 'debutant' ? { is_creator: true } : { is_creator: true, espace_premium: true };
+    const { error } = await sb.from('profiles').update(updates).eq('id', data.session.user.id);
+    if (error) { showToast('Erreur : ' + error.message, 'error'); return; }
+    showToast(plan === 'debutant' ? 'Espace créateur activé 🎉' : 'Plan activé (démo — paiement bientôt disponible) 🎉', 'success');
+    setTimeout(() => window.location.href = 'mon-espace.html', 900);
+  }
+
+  document.querySelector('.btn-plan.free')?.addEventListener('click', () => {
+    if (!userProfile?.is_creator) choosePlan('debutant');
+  });
+  document.querySelector('.btn-plan.standard')?.addEventListener('click', () => choosePlan('createur'));
+  document.querySelector('.btn-plan.pro')?.addEventListener('click', () => choosePlan('pro'));
 
   // ── CHARGER MANGAS ──
   async function loadMangas() {
     document.getElementById('mangaLoading').style.display = 'flex';
 
-    const { data: mangas, error } = await sb
+    let { data: mangas, error } = await sb
       .from('mangas')
       .select('*, chapitres(count), vues(count)')
       .eq('auteur_id', currentUser.id)
       .order('created_at', { ascending: false });
+
+    // Fallback : si l'embed vues(count) échoue (table absente), on relit
+    // sans l'embed et on utilise le scalaire mangas.vues
+    if (error) {
+      ({ data: mangas, error } = await sb
+        .from('mangas')
+        .select('*, chapitres(count)')
+        .eq('auteur_id', currentUser.id)
+        .order('created_at', { ascending: false }));
+    }
 
     document.getElementById('mangaLoading').style.display = 'none';
 
@@ -1059,7 +1149,7 @@
 
       mangas.forEach(m => {
         const chaps = m.chapitres?.[0]?.count || 0;
-        const vues  = m.vues?.[0]?.count     || 0;
+        const vues  = Array.isArray(m.vues) ? (m.vues[0]?.count || 0) : (typeof m.vues === 'number' ? m.vues : 0);
         totalChaps += chaps;
         totalVues  += vues;
 
@@ -1232,15 +1322,6 @@
       btnSave.textContent = '💾 Sauvegarder';
     }
   });
-
-  // ── DÉCONNEXION ──
-  const btnLogoutEl = document.getElementById('btnLogout');
-  if (btnLogoutEl) {
-    btnLogoutEl.addEventListener('click', async () => {
-      await sb.auth.signOut();
-      window.location.href = 'index.html';
-    });
-  }
 
   // ── SUIVIS ──
   async function loadSuivis() {
@@ -1421,11 +1502,14 @@ function focusSearch(){
 async function togglePremium(){
   const el=document.getElementById('premiumToggle');
   const active=el.checked;
-  const {error}=await sb.from('profiles').update({espace_premium:active}).eq('id',currentUser.id);
+  const updates = active ? { espace_premium: true, is_creator: true } : { espace_premium: false };
+  const {error}=await sb.from('profiles').update(updates).eq('id',currentUser.id);
   if(error){
     el.checked=!active;
     showToast('Erreur lors de l\'activation','error');
   } else {
+    userProfile = { ...userProfile, ...updates };
+    updatePlanUI();
     document.getElementById('premiumCard').style.borderColor=active?'var(--accent)':'';
     showToast(active?'✅ Espace premium activé !':'Espace premium désactivé','success');
   }

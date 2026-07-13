@@ -8,11 +8,15 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root {
-  --bg: #ffffff;
-  --ink: #ffffff; --ink-2: #f2f2f7; --surface: #f2f2f7; --surface-2: #e5e5ea;
+  --bg: #ffffff; --bg-2:#f7f7fa; --bg-3:#ededf2;
+  --ink: #ffffff; --ink-2: #f2f2f7; --surface: #f2f2f7; --surface2:#e5e5ea; --surface-2: #e5e5ea;
   --border: rgba(0,0,0,0.08); --text: #1c1c1e; --text-2: rgba(0,0,0,0.6);
-  --text-3: rgba(0,0,0,0.35); --purple: #7c6fef; --purple-dark: #5040c8;
-  --radius: 10px; --radius-lg: 14px;
+  --text-3: rgba(0,0,0,0.35); --muted:#8e8e93;
+  --purple: #7c6fef; --purple-dark: #5040c8; --purple2:#a594f9; --accent:#7c6fef;
+  --green:#3ddc84; --amber:#f5a623; --orange:#ff6b35; --orange-light:#ff8a5c;
+  --teal:#00c9a7; --danger:#ff3d71;
+  --radius: 10px; --radius-lg: 14px; --radius-xl:20px;
+  --shadow:0 2px 12px rgba(0,0,0,0.06); --shadow-lg:0 8px 32px rgba(0,0,0,0.1);
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { background: var(--ink); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; padding: 70px 0 100px; }
@@ -31,39 +35,39 @@ body { background: var(--ink); color: var(--text); font-family: 'DM Sans', sans-
 .univ-nav-sb { background: none; border: none; cursor: pointer; padding: 6px 8px; font-size: 13px; color: rgba(0,0,0,.5); flex-shrink: 0; }
 .univ-nav-sb:hover { color: #7c6fef; }
 .nav-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-.nav-connexion-btn { color: rgba(255,255,255,0.7); font-size: .8rem; font-weight: 600; padding: 6px 13px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.15); text-decoration: none; transition: all .2s; white-space: nowrap; }
-.nav-connexion-btn:hover { border-color: var(--purple); color: var(--purple2); }
+.nav-connexion-btn { color: var(--text-2); font-size: .8rem; font-weight: 600; padding: 6px 13px; border-radius: 20px; border: 1px solid rgba(0,0,0,.15); text-decoration: none; transition: all .2s; white-space: nowrap; }
+.nav-connexion-btn:hover { border-color: var(--purple); color: var(--purple); }
 .nav-avatar-btn { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #7c6fef, #5040c8); display: none; align-items: center; justify-content: center; font-size: .85rem; font-weight: 700; color: #fff; text-decoration: none; text-transform: uppercase; }
 .nav-avatar-btn.show { display: flex; }
-.nav-notif-link { position: relative; display: none; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 8px; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1); text-decoration: none; font-size: .95rem; transition: all .2s; }
+.nav-notif-link { position: relative; display: none; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 8px; background: rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.08); text-decoration: none; font-size: .95rem; transition: all .2s; }
 .nav-notif-link.show { display: flex; }
-.nav-notif-link:hover { background: rgba(255,255,255,0.13); }
-.nav-notif-dot { position: absolute; top: -5px; right: -5px; min-width: 16px; height: 16px; border-radius: 8px; background: var(--accent); color: #fff; font-size: 9px; font-weight: 800; padding: 0 3px; display: none; align-items: center; justify-content: center; border: 2px solid var(--bg); }
+.nav-notif-link:hover { background: rgba(0,0,0,0.1); }
+.nav-notif-dot { position: absolute; top: -5px; right: -5px; min-width: 16px; height: 16px; border-radius: 8px; background: var(--accent); color: #fff; font-size: 9px; font-weight: 800; padding: 0 3px; display: none; align-items: center; justify-content: center; border: 2px solid #fff; }
 .nav-notif-dot.show { display: flex; }
-.univ-nav-hbg { width: 34px; height: 34px; border-radius: 8px; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; color: #1c1c1e; transition: background .2s; flex-shrink: 0; }
-.univ-nav-hbg:hover { background: rgba(255,255,255,0.13); }
+.univ-nav-hbg { width: 34px; height: 34px; border-radius: 8px; background: rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.08); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; color: var(--text); transition: background .2s; flex-shrink: 0; }
+.univ-nav-hbg:hover { background: rgba(0,0,0,0.1); }
 
 /* ── DRAWER ── */
 .univ-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 150; backdrop-filter: blur(3px); }
 .univ-overlay.open { display: block; }
-.univ-drawer { position: fixed; top: 0; right: 0; width: 270px; height: 100%; background: #13131c; z-index: 151; overflow-y: auto; transform: translateX(100%); transition: transform .28s cubic-bezier(.4,0,.2,1); box-shadow: -4px 0 32px rgba(0,0,0,.4); border-left: 1px solid rgba(255,255,255,.07); }
+.univ-drawer { position: fixed; top: 0; right: 0; width: 270px; height: 100%; background: #ffffff; z-index: 151; overflow-y: auto; transform: translateX(100%); transition: transform .28s cubic-bezier(.4,0,.2,1); box-shadow: -4px 0 32px rgba(0,0,0,.12); border-left: 1px solid var(--border); }
 .univ-drawer.open { transform: translateX(0); }
-.univ-d-hdr { display: flex; align-items: center; justify-content: space-between; padding: 16px; border-bottom: 1px solid rgba(255,255,255,.07); }
+.univ-d-hdr { display: flex; align-items: center; justify-content: space-between; padding: 16px; border-bottom: 1px solid var(--border); }
 .univ-d-logo { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 900; text-decoration: none; background: linear-gradient(135deg, #7c6fef, #a594f9); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-.univ-d-close { width: 30px; height: 30px; border-radius: 50%; background: rgba(255,255,255,.08); border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; color: rgba(0,0,0,.7); }
-.univ-d-sec { font-size: .65rem; font-weight: 800; color: rgba(0,0,0,.3); letter-spacing: 1.5px; text-transform: uppercase; padding: 14px 16px 5px; }
-.univ-d-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; margin: 2px 8px; text-decoration: none; color: rgba(0,0,0,.85); font-weight: 600; font-size: .88rem; cursor: pointer; transition: background .15s; border: none; background: none; width: calc(100% - 16px); text-align: left; border-radius: 9px; font-family: 'DM Sans', sans-serif; }
-.univ-d-item:hover { background: rgba(255,255,255,.06); }
-.univ-d-icon { width: 34px; height: 34px; border-radius: 9px; background: rgba(255,255,255,.07); display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+.univ-d-close { width: 30px; height: 30px; border-radius: 50%; background: rgba(0,0,0,.06); border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; color: var(--text-2); }
+.univ-d-sec { font-size: .65rem; font-weight: 800; color: var(--text-3); letter-spacing: 1.5px; text-transform: uppercase; padding: 14px 16px 5px; }
+.univ-d-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; margin: 2px 8px; text-decoration: none; color: var(--text); font-weight: 600; font-size: .88rem; cursor: pointer; transition: background .15s; border: none; background: none; width: calc(100% - 16px); text-align: left; border-radius: 9px; font-family: 'DM Sans', sans-serif; }
+.univ-d-item:hover { background: rgba(0,0,0,.05); }
+.univ-d-icon { width: 34px; height: 34px; border-radius: 9px; background: rgba(0,0,0,.05); display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
 .univ-d-badge { font-size: .65rem; font-weight: 800; padding: 2px 7px; border-radius: 6px; margin-left: auto; }
 .univ-d-badge.orange { background: rgba(255,107,53,.15); color: #ff6b35; }
 .univ-d-badge.teal { background: rgba(0,201,167,.15); color: #00c9a7; }
-.univ-d-divider { height: 1px; background: rgba(255,255,255,.07); margin: 8px 16px; }
+.univ-d-divider { height: 1px; background: var(--border); margin: 8px 16px; }
 
 /* BOTTOM NAV */
-.univ-bnav{position:fixed;bottom:0;left:0;right:0;z-index:100;background:rgba(10,10,15,.97);border-top:1px solid rgba(255,255,255,.07);display:flex;align-items:center;justify-content:space-around;padding:8px 0 16px;backdrop-filter:blur(14px);}
-.univ-bnav-item{display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none;color:rgba(0,0,0,.4);padding:0 8px;transition:color .2s;border:none;background:none;cursor:pointer;}
-.univ-bnav-item:hover,.univ-bnav-item.active{color:rgba(0,0,0,.9);}
+.univ-bnav{position:fixed;bottom:0;left:0;right:0;z-index:100;background:rgba(255,255,255,.97);border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-around;padding:8px 0 16px;backdrop-filter:blur(14px);box-shadow:0 -2px 12px rgba(0,0,0,.05);}
+.univ-bnav-item{display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none;color:var(--text-3);padding:0 8px;transition:color .2s;border:none;background:none;cursor:pointer;}
+.univ-bnav-item:hover,.univ-bnav-item.active{color:var(--text);}
 .univ-bnav-icon{font-size:20px;}
 .univ-bnav-label{font-size:.6rem;font-weight:800;font-family:'DM Sans',sans-serif;}
 .univ-bnav-search{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#7c6fef,#5040c8);border:none;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;margin-top:-18px;box-shadow:0 4px 18px rgba(124,111,239,.5);transition:transform .2s;flex-shrink:0;}
@@ -96,7 +100,11 @@ body { background: var(--ink); color: var(--text); font-family: 'DM Sans', sans-
 .lib-new-badge{position:absolute;top:6px;left:6px;background:var(--purple);color:#fff;font-size:9px;font-weight:800;padding:3px 7px;border-radius:5px;}
 
 .loading{text-align:center;padding:40px;color:var(--text-3);font-size:.85rem;}
-.error-state{text-align:center;padding:40px;color:#ff6b6b;font-size:.85rem;}
+.error-state{text-align:center;padding:40px;color:var(--danger);font-size:.85rem;}
+.lib-remove{position:absolute;top:6px;right:6px;width:26px;height:26px;border-radius:50%;background:rgba(0,0,0,.55);color:#fff;border:none;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;z-index:3;}
+.lib-remove:hover{background:var(--danger);}
+#toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:var(--text);color:#fff;padding:10px 18px;border-radius:10px;font-size:.82rem;font-weight:600;opacity:0;pointer-events:none;transition:opacity .25s;z-index:300;}
+#toast.show{opacity:1;}
 </style>
 </head>
 <body>
@@ -154,6 +162,8 @@ body { background: var(--ink); color: var(--text); font-family: 'DM Sans', sans-
   <div class="loading" id="libLoading">Chargement de ta bibliothèque…</div>
 </div>
 
+<div id="toast"></div>
+
 <!-- BOTTOM NAV -->
 <div class="univ-bnav">
   <a href="index.html" class="univ-bnav-item"><span class="univ-bnav-icon">🏠</span><span class="univ-bnav-label">Accueil</span></a>
@@ -165,8 +175,21 @@ body { background: var(--ink); color: var(--text); font-family: 'DM Sans', sans-
 
 <script>
 const SUPABASE_URL = 'https://bsdcpwtimsgxcnaamwip.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJzZGNwd3RpbXNneGNuYWFtd2lwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAzMTQ1MDIsImV4cCI6MjA5NTg5MDUwMn0.uMcfUsnlULHNqS_87xzUWRUB8tEaCCNQglrWwN2fb44';
-const supabase = SUPABASE_URL && SUPABASE_ANON_KEY ? supabaseJs.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJzZGNwd3RpbXNneGNuYWFtd2lwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAzMTQ1MDIsImV4cCI6MjA5NTg5MDUwMn0.uMcfUsnlULHNqS_87xzUWRUB8tEaCCNQglrWwN2fb44';
+const sb = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+
+let currentUserId = null;
+
+function escapeHtml(str){
+  if(str==null) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+function showToast(msg){
+  const t=document.getElementById('toast');
+  if(!t) return;
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(t._tmr); t._tmr=setTimeout(()=>t.classList.remove('show'),2000);
+}
 
 function doSearch(){
   const q=document.getElementById('navSearchInput');
@@ -179,19 +202,77 @@ function focusSearch(){
 }
 function openDrawer(){document.getElementById('univDrawer').classList.add('open');document.getElementById('univOverlay').classList.add('open');}
 function closeDrawer(){document.getElementById('univDrawer').classList.remove('open');document.getElementById('univOverlay').classList.remove('open');}
-function openModal(){alert('Premium - bientôt disponible !');}
+function openModal(){ window.location.href = 'index.html?premium=1'; }
+
+async function updateAuthUI(user){
+  const btn = document.getElementById('navConnexion');
+  const avatar = document.getElementById('navAvatar');
+  const notif = document.getElementById('navNotifLink');
+  const profil = document.getElementById('drawerProfil');
+  const publier = document.getElementById('drawerPublier');
+  const connexion = document.getElementById('drawerConnexion');
+  const logout = document.getElementById('drawerLogout');
+
+  if(user){
+    if(btn) btn.style.display = 'none';
+    if(avatar) avatar.classList.add('show');
+    if(notif) notif.classList.add('show');
+    if(profil) profil.style.display = 'flex';
+    if(publier) publier.style.display = 'flex';
+    if(connexion) connexion.style.display = 'none';
+    if(logout) logout.style.display = 'flex';
+
+    const { data: prof } = await sb.from('profiles').select('username, avatar_url').eq('id', user.id).single();
+    const uname = (prof && prof.username) || (user.email || 'U');
+    if(avatar){
+      avatar.textContent = uname[0].toUpperCase();
+      if(prof && prof.avatar_url){
+        avatar.innerHTML = `<img src="${escapeHtml(prof.avatar_url)}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;" alt="" />`;
+      }
+    }
+    const { count } = await sb.from('notifications').select('id',{count:'exact',head:true}).eq('user_id', user.id).eq('lu', false);
+    if(count > 0){
+      const dot = document.getElementById('navNotifDot');
+      dot.textContent = count > 9 ? '9+' : count;
+      dot.classList.add('show');
+    }
+  } else {
+    if(btn) btn.style.display = '';
+    if(avatar) avatar.classList.remove('show');
+    if(notif) notif.classList.remove('show');
+    if(profil) profil.style.display = 'none';
+    if(publier) publier.style.display = 'none';
+    if(connexion) connexion.style.display = 'flex';
+    if(logout) logout.style.display = 'none';
+  }
+}
+
+async function fetchLibrary(userId){
+  const sel = 'manga_id, chapitre, page, total_chapitres, added_at, mangas(titre, couverture_url, auteur_id, profiles(username))';
+  let { data, error } = await sb.from('bibliotheque').select(sel)
+    .eq('user_id', userId).order('added_at', { ascending: false });
+  if(error && /page/i.test(error.message || '')){
+    // Retry sans la colonne page (peut être absente avant exécution du SQL)
+    const sel2 = 'manga_id, chapitre, total_chapitres, added_at, mangas(titre, couverture_url, auteur_id, profiles(username))';
+    ({ data, error } = await sb.from('bibliotheque').select(sel2)
+      .eq('user_id', userId).order('added_at', { ascending: false }));
+  }
+  return { data, error };
+}
 
 async function loadLibrary(){
   const content = document.getElementById('libraryContent');
-  
-  if(!supabase){
+
+  if(!sb){
     content.innerHTML = '<div class="error-state">Erreur de configuration</div>';
     return;
   }
 
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
-  
+  const { data: { user } } = await sb.auth.getUser();
+
   if(!user){
+    await updateAuthUI(null);
+    document.getElementById('libSub').textContent = 'Tes mangas sauvegardés';
     content.innerHTML = `
       <div class="library-empty">
         <div class="library-empty-icon">🔒</div>
@@ -199,24 +280,29 @@ async function loadLibrary(){
         <div class="library-empty-text">Connecte-toi à ton compte pour retrouver ta bibliothèque et reprendre ta lecture.</div>
         <a href="auth.html" class="btn-primary">Se connecter</a>
       </div>`;
-    updateAuthUI(null);
     return;
   }
 
-  updateAuthUI(user);
+  currentUserId = user.id;
+  await updateAuthUI(user);
 
-  const { data: library, error } = await supabase
-    .from('bibliotheque')
-    .select('manga_id, chapitre, page, total_chapitres, added_at, mangas:titre, mangas:couverture_url, mangas:auteur_nom')
-    .eq('user_id', user.id)
-    .order('added_at', { ascending: false });
+  const { data: library, error } = await fetchLibrary(user.id);
 
   if(error){
-    content.innerHTML = `<div class="error-state">Erreur: ${error.message}</div>`;
+    content.innerHTML = `<div class="error-state">Erreur: ${escapeHtml(error.message)}</div>`;
     return;
   }
 
   document.getElementById('libSub').textContent = library.length + ' manga' + (library.length > 1 ? 's' : '') + ' dans ta bibliothèque';
+
+  // bibliotheque.chapitre stocke l'ID technique du chapitre, pas son numéro
+  // dans le manga → on résout les vrais numéros pour un affichage correct.
+  const chapitreIds = (library || []).map(it => it.chapitre).filter(Boolean);
+  let numeroById = {};
+  if (chapitreIds.length) {
+    const { data: chaps } = await sb.from('chapitres').select('id, numero').in('id', chapitreIds);
+    (chaps || []).forEach(c => { numeroById[c.id] = c.numero; });
+  }
 
   if(!library || library.length === 0){
     content.innerHTML = `
@@ -232,58 +318,55 @@ async function loadLibrary(){
   let html = '<div class="library-grid">';
   for(const item of library){
     const manga = item.mangas || {};
-    const titre = manga.titre || 'Manga #' + item.manga_id;
+    const titre = escapeHtml(manga.titre || 'Manga #' + item.manga_id);
     const cover = manga.couverture_url || '';
-    const auteur = manga.auteur_nom || '';
+    const auteur = escapeHtml((manga.profiles && manga.profiles.username) || 'Auteur inconnu');
     const chapitre = item.chapitre || 0;
     const totalChaps = item.total_chapitres || '?';
-    const progress = chapitre > 0 ? `Ch. ${chapitre}/${totalChaps}` : 'Ajouté';
-    const continueUrl = chapitre > 0 ? `lecteur.html?id=${item.manga_id}&chapitre=${chapitre}` : `manga.html?id=${item.manga_id}`;
+    const numero = numeroById[chapitre];
+    const progress = chapitre > 0 ? `Chapitre ${numero != null ? numero : chapitre}/${totalChaps}` : 'Ajouté';
+    // lecteur.html attend ?manga_id=<id>&chapitre=<id du chapitre> (== bibliotheque.chapitre)
+    const continueUrl = chapitre > 0
+      ? `lecteur.html?manga_id=${item.manga_id}&chapitre=${chapitre}`
+      : `manga.html?id=${item.manga_id}`;
 
     html += `
-      <div class="lib-card" onclick="window.location.href='${continueUrl}'">
-        <div class="lib-cover">
-          ${cover ? `<img src="${cover}" alt="${titre}" />` : `<span class="lib-cover-fallback">📖</span>`}
-        </div>
-        ${chapitre > 0 ? `<a href="${continueUrl}" class="lib-continue">▶ Reprendre (Ch.${chapitre})</a>` : '<div class="lib-new-badge">NOUVEAU</div>'}
-        <div class="lib-info">
-          <div class="lib-title">${titre}</div>
-          <div class="lib-meta">${auteur} · ${progress}</div>
-        </div>
+      <div class="lib-card">
+        <button class="lib-remove" title="Retirer" onclick="removeFromLibrary(${item.manga_id}, this, event)">✕</button>
+        <a href="${continueUrl}" style="text-decoration:none;color:inherit;display:block;">
+          <div class="lib-cover">
+            ${cover ? `<img src="${escapeHtml(cover)}" alt="${titre}" />` : `<span class="lib-cover-fallback">📖</span>`}
+          </div>
+          <div class="lib-info">
+            <div class="lib-title">${titre}</div>
+            <div class="lib-meta">${auteur} · ${progress}</div>
+          </div>
+        </a>
+        <a href="${continueUrl}" class="lib-continue" style="display:block;position:static;margin:0 10px 10px;">▶ Reprendre</a>
       </div>`;
   }
   html += '</div>';
   content.innerHTML = html;
 }
 
-function updateAuthUI(user){
-  const btn = document.getElementById('navConnexion');
-  const avatar = document.getElementById('navAvatar');
-  const profil = document.getElementById('drawerProfil');
-  const publier = document.getElementById('drawerPublier');
-  const connexion = document.getElementById('drawerConnexion');
-  const logout = document.getElementById('drawerLogout');
-  
-  if(user){
-    if(btn) btn.style.display = 'none';
-    if(avatar) { avatar.style.display = 'flex'; }
-    if(profil) profil.style.display = 'flex';
-    if(publier) publier.style.display = 'flex';
-    if(connexion) connexion.style.display = 'none';
-    if(logout) logout.style.display = 'flex';
-  } else {
-    if(btn) btn.style.display = 'inline-flex';
-    if(avatar) avatar.style.display = 'none';
-    if(profil) profil.style.display = 'none';
-    if(publier) publier.style.display = 'none';
-    if(connexion) connexion.style.display = 'flex';
-    if(logout) logout.style.display = 'none';
-  }
+async function removeFromLibrary(mangaId, btn, ev){
+  if(ev){ ev.preventDefault(); ev.stopPropagation(); }
+  if(!currentUserId) return;
+  if(!confirm('Retirer ce manga de ta bibliothèque ?')) return;
+  const { error } = await sb.from('bibliotheque').delete()
+    .eq('user_id', currentUserId).eq('manga_id', mangaId);
+  if(error){ showToast('Erreur : ' + error.message); return; }
+  const card = btn.closest('.lib-card');
+  if(card) card.remove();
+  showToast('Retiré de ta bibliothèque');
+  const remaining = document.querySelectorAll('.lib-card').length;
+  document.getElementById('libSub').textContent = remaining + ' manga' + (remaining > 1 ? 's' : '') + ' dans ta bibliothèque';
+  if(remaining === 0) loadLibrary();
 }
 
 async function doLogout(){
-  if(supabase) await supabase.auth.signOut();
-  location.reload();
+  if(sb) await sb.auth.signOut();
+  window.location.href = 'index.html';
 }
 
 loadLibrary();
