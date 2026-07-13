@@ -611,6 +611,12 @@
         <div class="form-hint">Ex : https://www.youtube.com/watch?v=... ou https://vimeo.com/...</div>
       </div>
       <div class="form-group">
+        <label class="form-label">📚 Leçons de la formation</label>
+        <div class="form-hint">Structure ta formation en plusieurs leçons vidéo, comme une vraie classroom (façon Skool). Optionnel — laisse vide pour une formation à vidéo unique.</div>
+        <div id="lecons-list" style="display:flex;flex-direction:column;gap:10px;margin-top:10px;"></div>
+        <button type="button" class="btn btn-ghost btn-sm" id="btn-add-lecon" style="margin-top:8px;">+ Ajouter une leçon</button>
+      </div>
+      <div class="form-group">
         <label class="form-label" for="f-objectifs">Objectifs (un par ligne)</label>
         <textarea class="form-textarea" id="f-objectifs" placeholder="Ex :&#10;Maîtriser les proportions du visage&#10;Dessiner des expressions vivantes"></textarea>
         <div class="form-hint">Affichés dans « Ce que tu vas apprendre » sur la page du pack.</div>
@@ -866,6 +872,30 @@
     return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 
+  /* ── LEÇONS (constructeur dynamique) ── */
+  function addLeconRow(titre, video_url) {
+    const list = document.getElementById('lecons-list');
+    const row = document.createElement('div');
+    row.className = 'lecon-row';
+    row.style.cssText = 'display:flex;gap:8px;align-items:flex-start;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px;';
+    row.innerHTML =
+      '<div style="flex:1;display:flex;flex-direction:column;gap:6px;">' +
+        '<input class="form-input lecon-titre" type="text" placeholder="Titre de la leçon (ex: Leçon 1 — Les bases)" value="' + escHtml(titre || '') + '" />' +
+        '<input class="form-input lecon-video" type="url" placeholder="URL vidéo (YouTube, Vimeo...)" value="' + escHtml(video_url || '') + '" />' +
+      '</div>' +
+      '<button type="button" class="btn-remove-lecon" title="Supprimer" style="background:none;border:none;color:var(--danger);font-size:1.1rem;cursor:pointer;padding:4px;">✕</button>';
+    row.querySelector('.btn-remove-lecon').addEventListener('click', () => row.remove());
+    list.appendChild(row);
+  }
+  document.getElementById('btn-add-lecon').addEventListener('click', () => addLeconRow());
+  function getLeconsFromForm() {
+    return Array.from(document.querySelectorAll('#lecons-list .lecon-row')).map((row, i) => ({
+      titre: row.querySelector('.lecon-titre').value.trim(),
+      video_url: row.querySelector('.lecon-video').value.trim(),
+      ordre: i
+    })).filter(l => l.titre || l.video_url);
+  }
+
   /* ── MODAL NOUVELLE FORMATION ── */
   async function openNewModal() {
     if (!userProfile?.espace_premium) {
@@ -883,6 +913,7 @@
     document.getElementById('f-image-preview').style.display = 'none';
     document.getElementById('f-image-status').textContent = '';
     document.getElementById('f-prix').value = '2.00';
+    document.getElementById('lecons-list').innerHTML = '';
     document.getElementById('modal-overlay').classList.add('open');
   }
 
@@ -952,6 +983,12 @@
     document.getElementById('f-video').value = pack.contenu_url || '';
     document.getElementById('f-objectifs').value = Array.isArray(pack.objectifs) ? pack.objectifs.join('\n') : '';
     document.getElementById('f-niveau').value = pack.niveau || 'Tous niveaux';
+    const leconsList = document.getElementById('lecons-list');
+    leconsList.innerHTML = '';
+    try {
+      const { data: lecons } = await sb.from('pack_lecons').select('*').eq('pack_id', packId).order('ordre', { ascending: true });
+      (lecons || []).forEach(l => addLeconRow(l.titre, l.video_url));
+    } catch (e) { /* table pas encore créée côté SQL, on ignore */ }
     document.getElementById('modal-overlay').classList.add('open');
   }
 
@@ -988,6 +1025,7 @@
           return;
         }
       }
+      let packIdFinal = editId;
       if (editId) {
         const row = { titre, description, prix, image_url, contenu_url, objectifs, niveau };
         let { error } = await sb.from('packs_tutoriels').update(row).eq('id', editId).eq('auteur_id', currentUser.id);
@@ -1000,14 +1038,28 @@
         showToast('Formation mise à jour !', 'success');
       } else {
         const row = { titre, description, prix, image_url, contenu_url, objectifs, niveau, auteur_id: currentUser.id, auteur_nom: userProfile.username };
-        let { error } = await sb.from('packs_tutoriels').insert(row);
+        let { data: inserted, error } = await sb.from('packs_tutoriels').insert(row).select('id').single();
         if (error && /column|schema cache/i.test(error.message || '')) {
-          ({ error } = await sb.from('packs_tutoriels')
-            .insert(slimRow(row, ['titre', 'description', 'prix', 'image_url', 'contenu_url', 'auteur_id', 'auteur_nom'])));
+          ({ data: inserted, error } = await sb.from('packs_tutoriels')
+            .insert(slimRow(row, ['titre', 'description', 'prix', 'image_url', 'contenu_url', 'auteur_id', 'auteur_nom']))
+            .select('id').single());
         }
         if (error) throw error;
+        packIdFinal = inserted?.id;
         showToast('Formation créée !', 'success');
       }
+
+      // Leçons — best-effort (silencieux si la table n'existe pas encore côté SQL)
+      if (packIdFinal) {
+        try {
+          const lecons = getLeconsFromForm();
+          await sb.from('pack_lecons').delete().eq('pack_id', packIdFinal);
+          if (lecons.length) {
+            await sb.from('pack_lecons').insert(lecons.map(l => ({ ...l, pack_id: packIdFinal })));
+          }
+        } catch (e) { /* ignoré */ }
+      }
+
       closeModal();
       await loadPacks();
     } catch (err) {

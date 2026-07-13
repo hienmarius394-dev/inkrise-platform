@@ -289,6 +289,37 @@ ALTER TABLE avis_packs ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES profiles
 ALTER TABLE avis_packs ADD COLUMN IF NOT EXISTS commentaire TEXT;
 ALTER TABLE avis_packs ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT now();
 
+CREATE TABLE IF NOT EXISTS pack_lecons (
+  id BIGSERIAL PRIMARY KEY,
+  pack_id BIGINT NOT NULL REFERENCES packs_tutoriels(id) ON DELETE CASCADE,
+  titre TEXT NOT NULL,
+  description TEXT,
+  video_url TEXT,
+  module TEXT,
+  ordre INT NOT NULL DEFAULT 0,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+ALTER TABLE pack_lecons ADD COLUMN IF NOT EXISTS pack_id BIGINT REFERENCES packs_tutoriels(id) ON DELETE CASCADE;
+ALTER TABLE pack_lecons ADD COLUMN IF NOT EXISTS titre TEXT;
+ALTER TABLE pack_lecons ADD COLUMN IF NOT EXISTS description TEXT;
+ALTER TABLE pack_lecons ADD COLUMN IF NOT EXISTS video_url TEXT;
+ALTER TABLE pack_lecons ADD COLUMN IF NOT EXISTS module TEXT;
+ALTER TABLE pack_lecons ADD COLUMN IF NOT EXISTS ordre INT DEFAULT 0;
+ALTER TABLE pack_lecons ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT now();
+
+CREATE TABLE IF NOT EXISTS pack_progression (
+  id BIGSERIAL PRIMARY KEY,
+  user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  lecon_id BIGINT NOT NULL REFERENCES pack_lecons(id) ON DELETE CASCADE,
+  termine BOOLEAN NOT NULL DEFAULT true,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  UNIQUE(user_id, lecon_id)
+);
+ALTER TABLE pack_progression ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES profiles(id) ON DELETE CASCADE;
+ALTER TABLE pack_progression ADD COLUMN IF NOT EXISTS lecon_id BIGINT REFERENCES pack_lecons(id) ON DELETE CASCADE;
+ALTER TABLE pack_progression ADD COLUMN IF NOT EXISTS termine BOOLEAN DEFAULT true;
+ALTER TABLE pack_progression ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT now();
+
 -- ─────────────────────────────────────────────
 -- 11. COMMUNAUTÉ (phase 5.1 — repris tel quel, idempotent)
 -- ─────────────────────────────────────────────
@@ -409,6 +440,8 @@ ALTER TABLE commentaire_likes     ENABLE ROW LEVEL SECURITY;
 ALTER TABLE packs_tutoriels       ENABLE ROW LEVEL SECURITY;
 ALTER TABLE achats_packs          ENABLE ROW LEVEL SECURITY;
 ALTER TABLE avis_packs            ENABLE ROW LEVEL SECURITY;
+ALTER TABLE pack_lecons           ENABLE ROW LEVEL SECURITY;
+ALTER TABLE pack_progression      ENABLE ROW LEVEL SECURITY;
 ALTER TABLE posts_communaute      ENABLE ROW LEVEL SECURITY;
 ALTER TABLE reactions             ENABLE ROW LEVEL SECURITY;
 ALTER TABLE commentaires_communaute ENABLE ROW LEVEL SECURITY;
@@ -524,6 +557,21 @@ DROP POLICY IF EXISTS "avis update own" ON avis_packs;
 CREATE POLICY "avis update own" ON avis_packs FOR UPDATE TO authenticated USING (user_id = auth.uid());
 DROP POLICY IF EXISTS "avis delete own" ON avis_packs;
 CREATE POLICY "avis delete own" ON avis_packs FOR DELETE TO authenticated USING (user_id = auth.uid());
+
+-- LEÇONS DE PACK (visibles par tous, éditables par l'auteur du pack)
+DROP POLICY IF EXISTS "lecons select public" ON pack_lecons;
+CREATE POLICY "lecons select public" ON pack_lecons FOR SELECT TO anon, authenticated USING (true);
+DROP POLICY IF EXISTS "lecons write auteur" ON pack_lecons;
+CREATE POLICY "lecons write auteur" ON pack_lecons FOR ALL TO authenticated
+  USING (EXISTS (SELECT 1 FROM packs_tutoriels p WHERE p.id = pack_id AND p.auteur_id = auth.uid()))
+  WITH CHECK (EXISTS (SELECT 1 FROM packs_tutoriels p WHERE p.id = pack_id AND p.auteur_id = auth.uid()));
+
+-- PROGRESSION (chacun voit/modifie uniquement sa propre progression)
+DROP POLICY IF EXISTS "progression select own" ON pack_progression;
+CREATE POLICY "progression select own" ON pack_progression FOR SELECT TO authenticated USING (user_id = auth.uid());
+DROP POLICY IF EXISTS "progression write own" ON pack_progression;
+CREATE POLICY "progression write own" ON pack_progression FOR ALL TO authenticated
+  USING (user_id = auth.uid()) WITH CHECK (user_id = auth.uid());
 
 -- COMMUNAUTÉ
 DROP POLICY IF EXISTS "posts select public" ON posts_communaute;
