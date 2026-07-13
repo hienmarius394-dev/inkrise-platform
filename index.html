@@ -48,7 +48,6 @@ body {
     radial-gradient(560px 400px at 100% 6%, rgba(255,95,168,0.13), transparent 60%),
     radial-gradient(720px 480px at 50% 118%, rgba(15,184,166,0.10), transparent 60%),
     var(--bg);
-  background-attachment: fixed;
   color: var(--text);
   font-family: 'DM Sans', sans-serif;
   font-size: 15px;
@@ -61,7 +60,7 @@ h1,h2,h3,.logo { font-family: 'Syne', sans-serif; }
 ::selection { background: rgba(124,92,252,0.22); color: var(--text); }
 
 /* ── NAV UNIVERSEL (verre clair) ── */
-    .univ-nav { position: sticky; top: 0; z-index: 100; background: rgba(255,255,255,0.72); backdrop-filter: blur(20px) saturate(180%); -webkit-backdrop-filter: blur(20px) saturate(180%); border-bottom: 1px solid var(--glass-border); padding: 0 16px; height: 60px; display: flex; align-items: center; gap: 8px; }
+    .univ-nav { position: sticky; top: 0; z-index: 100; background: rgba(255,255,255,0.72); backdrop-filter: blur(14px) saturate(160%); -webkit-backdrop-filter: blur(14px) saturate(160%); border-bottom: 1px solid var(--glass-border); padding: 0 16px; height: 60px; display: flex; align-items: center; gap: 8px; }
     .univ-nav-logo { font-family: 'Syne', sans-serif; font-size: 1.25rem; font-weight: 900; text-decoration: none; background: linear-gradient(135deg, #7c5cfc, #ff5fa8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; flex-shrink: 0; letter-spacing: 1px; }
     .univ-nav-links-d { display: flex; align-items: center; gap: 2px; flex: 1; margin: 0 8px; }
     @media (max-width: 680px) { .univ-nav-links-d { display: none; } }
@@ -90,7 +89,7 @@ h1,h2,h3,.logo { font-family: 'Syne', sans-serif; }
     /* ── DRAWER (verre clair) ── */
     .univ-overlay { display: none; position: fixed; inset: 0; background: rgba(22,19,42,.35); z-index: 150; backdrop-filter: blur(4px); }
     .univ-overlay.open { display: block; }
-    .univ-drawer { position: fixed; top: 0; right: 0; width: 280px; height: 100%; background: rgba(255,255,255,0.88); backdrop-filter: blur(28px) saturate(180%); -webkit-backdrop-filter: blur(28px) saturate(180%); z-index: 151; overflow-y: auto; transform: translateX(100%); transition: transform .28s cubic-bezier(.4,0,.2,1); box-shadow: -12px 0 48px rgba(35,20,90,.15); border-left: 1px solid var(--glass-border); }
+    .univ-drawer { position: fixed; top: 0; right: 0; width: 280px; height: 100%; background: rgba(255,255,255,0.88); backdrop-filter: blur(16px) saturate(160%); -webkit-backdrop-filter: blur(16px) saturate(160%); z-index: 151; overflow-y: auto; transform: translateX(100%); transition: transform .28s cubic-bezier(.4,0,.2,1); box-shadow: -12px 0 48px rgba(35,20,90,.15); border-left: 1px solid var(--glass-border); }
     .univ-drawer.open { transform: translateX(0); }
     .univ-d-hdr { display: flex; align-items: center; justify-content: space-between; padding: 16px; border-bottom: 1px solid var(--glass-border); }
     .univ-d-logo { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 900; text-decoration: none; background: linear-gradient(135deg, #7c5cfc, #ff5fa8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
@@ -105,7 +104,7 @@ h1,h2,h3,.logo { font-family: 'Syne', sans-serif; }
     .univ-d-divider { height: 1px; background: var(--glass-border); margin: 8px 16px; }
 
     /* ── BOTTOM NAV (dock flottant verre) ── */
-    .univ-bnav { position: fixed; bottom: 12px; left: 12px; right: 12px; z-index: 100; background: rgba(255,255,255,0.78); border: 1px solid var(--glass-border); border-radius: 24px; box-shadow: var(--shadow-lg); display: flex; align-items: center; justify-content: space-around; padding: 9px 0 11px; backdrop-filter: blur(22px) saturate(180%); -webkit-backdrop-filter: blur(22px) saturate(180%); }
+    .univ-bnav { position: fixed; bottom: 12px; left: 12px; right: 12px; z-index: 100; background: rgba(255,255,255,0.78); border: 1px solid var(--glass-border); border-radius: 24px; box-shadow: var(--shadow-lg); display: flex; align-items: center; justify-content: space-around; padding: 9px 0 11px; backdrop-filter: blur(14px) saturate(160%); -webkit-backdrop-filter: blur(14px) saturate(160%); }
     .univ-bnav-item { display: flex; flex-direction: column; align-items: center; gap: 2px; text-decoration: none; color: var(--text-3); padding: 0 8px; transition: color .2s; border: none; background: none; cursor: pointer; }
     .univ-bnav-item:hover { color: var(--text); }
     .univ-bnav-item.active { color: var(--purple2); }
@@ -173,7 +172,7 @@ h1,h2,h3,.logo { font-family: 'Syne', sans-serif; }
 .section-tab {
   border: 1px solid var(--glass-border); border-radius: 100px; padding: 8px 16px; font-family: 'Nunito', sans-serif;
   font-size: 12px; font-weight: 800; cursor: pointer; transition: all 0.2s; white-space: nowrap; flex-shrink: 0;
-  background: var(--glass-strong); color: var(--text-2); backdrop-filter: blur(8px); box-shadow: var(--shadow);
+  background: var(--glass-strong); color: var(--text-2); box-shadow: var(--shadow);
 }
 .section-tab.active { background: linear-gradient(135deg, #7c5cfc, #ff5fa8); color: #fff; border-color: transparent; box-shadow: var(--glow-purple); }
 .section-tab:not(.active):hover { background: #fff; color: var(--text); }
@@ -190,14 +189,13 @@ h1,h2,h3,.logo { font-family: 'Syne', sans-serif; }
 .featured-card-h {
   flex-shrink: 0; width: 162px; background: var(--glass-strong); border: 1px solid var(--glass-border); border-radius: var(--radius-lg); overflow: hidden;
   cursor: pointer; box-shadow: var(--shadow); text-decoration: none; color: inherit; transition: transform 0.25s, box-shadow .25s; display: block;
-  backdrop-filter: blur(10px);
 }
 .featured-card-h:hover { transform: translateY(-5px); box-shadow: var(--glow-purple); }
 .featured-cover-h { height: 110px; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; }
 .featured-badge-h {
   position: absolute; top: 8px; left: 8px; font-size: 9px; font-weight: 800;
   padding: 4px 9px; border-radius: 100px; z-index: 2; font-family: 'Nunito', sans-serif;
-  backdrop-filter: blur(6px); box-shadow: 0 2px 10px rgba(0,0,0,.18);
+  box-shadow: 0 2px 10px rgba(0,0,0,.18);
 }
 .cover-deco-icon { font-size: 38px; opacity: 0.35; filter: drop-shadow(0 0 12px rgba(255,255,255,.4)); }
 .featured-body-h { padding: 10px 11px 12px; }
@@ -212,12 +210,11 @@ h1,h2,h3,.logo { font-family: 'Syne', sans-serif; }
 .manga-card-2 {
   background: var(--glass-strong); border: 1px solid var(--glass-border); border-radius: var(--radius-lg); overflow: hidden; cursor: pointer;
   box-shadow: var(--shadow); text-decoration: none; color: inherit; transition: transform 0.25s, box-shadow 0.25s; display: block;
-  backdrop-filter: blur(10px);
 }
 .manga-card-2:hover { transform: translateY(-5px); box-shadow: var(--glow-pink); }
 .manga-cover { height: 130px; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; }
 .manga-time-badge {
-  position: absolute; top: 8px; left: 8px; background: rgba(22,19,42,0.55); backdrop-filter: blur(6px); color: #fff;
+  position: absolute; top: 8px; left: 8px; background: rgba(22,19,42,0.72); color: #fff;
   font-size: 9px; font-weight: 700; padding: 4px 9px; border-radius: 100px;
   display: flex; align-items: center; gap: 3px; z-index: 2;
 }
@@ -247,7 +244,7 @@ h1,h2,h3,.logo { font-family: 'Syne', sans-serif; }
 .modal {
   background: rgba(255,255,255,0.92); border: 1px solid var(--glass-border); border-radius: var(--radius-xl);
   padding: 28px; width: 100%; max-width: 720px; max-height: 90vh; overflow-y: auto;
-  position: relative; animation: modalIn 0.25s ease; backdrop-filter: blur(24px) saturate(180%);
+  position: relative; animation: modalIn 0.25s ease; backdrop-filter: blur(14px) saturate(160%);
   box-shadow: var(--shadow-lg);
 }
 @keyframes modalIn { from{opacity:0;transform:translateY(14px) scale(0.97)}to{opacity:1;transform:translateY(0) scale(1)} }
@@ -349,7 +346,6 @@ h1,h2,h3,.logo { font-family: 'Syne', sans-serif; }
     <div class="hero-banner-title">Bienvenue sur<br>Inkrise 🎨</div>
     <div class="hero-banner-sub">Publie, partage et monétise ta passion manga — gratuitement.</div>
   </div>
-  <div class="hero-banner-deco">🎨</div>
 </div>
 
 <!-- CRÉATEURS -->
