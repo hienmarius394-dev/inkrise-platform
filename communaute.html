@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Communauté · InkRise</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root {
@@ -20,6 +21,23 @@
   --success: #3ecf8e;
   --danger: #ef476f;
   --warning: #ffd166;
+  --bg-2: #f7f7fa;
+  --bg-3: #ededf2;
+  --surface-2: #e5e5ea;
+  --purple2: #a594f9;
+  --accent: #7c6fef;
+  --green: #3ddc84;
+  --amber: #f5a623;
+  --orange: #ff6b35;
+  --orange-light: #ff8a5c;
+  --teal: #00c9a7;
+  --text-2: #48484a;
+  --text-3: #8e8e93;
+  --muted: #8e8e93;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --shadow: 0 2px 12px rgba(0,0,0,0.06);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.1);
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 body {
@@ -41,46 +59,46 @@ img { max-width: 100%; display: block; }
 .univ-nav-lk { color: rgba(0,0,0,0.6); font-size: .82rem; font-weight: 600; text-decoration: none; padding: 5px 10px; border-radius: 7px; transition: all .2s; white-space: nowrap; font-family: 'DM Sans', sans-serif; }
 .univ-nav-lk:hover { color: #1c1c1e; background: rgba(255,255,255,0.06); }
 .univ-nav-lk.active { color: var(--purple); background: rgba(124,111,239,0.1); }
-.univ-nav-search { display: flex; align-items: center; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1); border-radius: 18px; overflow: hidden; max-width: 200px; flex-shrink: 0; }
+.univ-nav-search { display: flex; align-items: center; background: rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.08); border-radius: 18px; overflow: hidden; max-width: 200px; flex-shrink: 0; }
 @media (max-width: 480px) { .univ-nav-search { max-width: 110px; } }
 .univ-nav-si { background: none; border: none; outline: none; color: #1c1c1e; font-size: .8rem; padding: 7px 10px; width: 100%; font-family: 'DM Sans', sans-serif; }
 .univ-nav-si::placeholder { color: rgba(0,0,0,.35); }
 .univ-nav-sb { background: none; border: none; cursor: pointer; padding: 6px 8px; font-size: 13px; color: rgba(0,0,0,.5); flex-shrink: 0; }
 .univ-nav-sb:hover { color: #7c6fef; }
 .nav-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-.nav-connexion-btn { color: rgba(255,255,255,0.7); font-size: .8rem; font-weight: 600; padding: 6px 13px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.15); text-decoration: none; transition: all .2s; white-space: nowrap; font-family: 'DM Sans', sans-serif; }
+.nav-connexion-btn { color: var(--text-2); font-size: .8rem; font-weight: 600; padding: 6px 13px; border-radius: 20px; border: 1px solid rgba(0,0,0,.15); text-decoration: none; transition: all .2s; white-space: nowrap; font-family: 'DM Sans', sans-serif; }
 .nav-connexion-btn:hover { border-color: var(--purple); color: var(--purple); }
 .nav-avatar-btn { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #7c6fef, #5040c8); display: none; align-items: center; justify-content: center; font-size: .85rem; font-weight: 700; color: #fff; text-decoration: none; text-transform: uppercase; }
 .nav-avatar-btn.show { display: flex; }
-.nav-notif-link { position: relative; display: none; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 8px; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1); text-decoration: none; font-size: .95rem; transition: all .2s; }
+.nav-notif-link { position: relative; display: none; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 8px; background: rgba(0,0,0,.05); border: 1px solid rgba(0,0,0,.08); text-decoration: none; font-size: .95rem; transition: all .2s; }
 .nav-notif-link.show { display: flex; }
-.nav-notif-link:hover { background: rgba(255,255,255,0.13); }
-.nav-notif-dot { position: absolute; top: -5px; right: -5px; min-width: 16px; height: 16px; border-radius: 8px; background: var(--danger); color: #fff; font-size: 9px; font-weight: 800; padding: 0 3px; display: none; align-items: center; justify-content: center; border: 2px solid var(--bg); }
+.nav-notif-link:hover { background: rgba(0,0,0,.1); }
+.nav-notif-dot { position: absolute; top: -5px; right: -5px; min-width: 16px; height: 16px; border-radius: 8px; background: var(--danger); color: #fff; font-size: 9px; font-weight: 800; padding: 0 3px; display: none; align-items: center; justify-content: center; border: 2px solid #fff; }
 .nav-notif-dot.show { display: flex; }
-.univ-nav-hbg { width: 34px; height: 34px; border-radius: 8px; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; color: #1c1c1e; transition: background .2s; flex-shrink: 0; }
-.univ-nav-hbg:hover { background: rgba(255,255,255,0.13); }
+.univ-nav-hbg { width: 34px; height: 34px; border-radius: 8px; background: rgba(0,0,0,.05); border: 1px solid rgba(0,0,0,.08); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; color: var(--text); transition: background .2s; flex-shrink: 0; }
+.univ-nav-hbg:hover { background: rgba(0,0,0,.1); }
 
 /* ── DRAWER ── */
 .univ-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.35); z-index: 150; backdrop-filter: blur(3px); }
 .univ-overlay.open { display: block; }
-.univ-drawer { position: fixed; top: 0; right: 0; width: 270px; height: 100%; background: #13131c; z-index: 151; overflow-y: auto; transform: translateX(100%); transition: transform .28s cubic-bezier(.4,0,.2,1); box-shadow: -4px 0 32px rgba(0,0,0,.4); border-left: 1px solid rgba(255,255,255,.07); }
+.univ-drawer { position: fixed; top: 0; right: 0; width: 270px; height: 100%; background: #ffffff; z-index: 151; overflow-y: auto; transform: translateX(100%); transition: transform .28s cubic-bezier(.4,0,.2,1); box-shadow: -4px 0 32px rgba(0,0,0,.12); border-left: 1px solid var(--border); }
 .univ-drawer.open { transform: translateX(0); }
-.univ-d-hdr { display: flex; align-items: center; justify-content: space-between; padding: 16px; border-bottom: 1px solid rgba(255,255,255,.07); }
+.univ-d-hdr { display: flex; align-items: center; justify-content: space-between; padding: 16px; border-bottom: 1px solid var(--border); }
 .univ-d-logo { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 900; text-decoration: none; background: linear-gradient(135deg, #7c6fef, #a594f9); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-.univ-d-close { width: 30px; height: 30px; border-radius: 50%; background: rgba(255,255,255,.08); border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; color: rgba(0,0,0,.7); }
-.univ-d-sec { font-size: .65rem; font-weight: 800; color: rgba(0,0,0,.3); letter-spacing: 1.5px; text-transform: uppercase; padding: 14px 16px 5px; }
-.univ-d-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; margin: 2px 8px; text-decoration: none; color: rgba(0,0,0,.85); font-weight: 600; font-size: .88rem; cursor: pointer; transition: background .15s; border: none; background: none; width: calc(100% - 16px); text-align: left; border-radius: 9px; font-family: 'DM Sans', sans-serif; }
-.univ-d-item:hover { background: rgba(255,255,255,.06); }
-.univ-d-icon { width: 34px; height: 34px; border-radius: 9px; background: rgba(255,255,255,.07); display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+.univ-d-close { width: 30px; height: 30px; border-radius: 50%; background: rgba(0,0,0,.06); border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; color: var(--text-2); }
+.univ-d-sec { font-size: .65rem; font-weight: 800; color: var(--text-3); letter-spacing: 1.5px; text-transform: uppercase; padding: 14px 16px 5px; }
+.univ-d-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; margin: 2px 8px; text-decoration: none; color: var(--text); font-weight: 600; font-size: .88rem; cursor: pointer; transition: background .15s; border: none; background: none; width: calc(100% - 16px); text-align: left; border-radius: 9px; font-family: 'DM Sans', sans-serif; }
+.univ-d-item:hover { background: rgba(0,0,0,.05); }
+.univ-d-icon { width: 34px; height: 34px; border-radius: 9px; background: rgba(0,0,0,.05); display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
 .univ-d-badge { font-size: .65rem; font-weight: 800; padding: 2px 7px; border-radius: 6px; margin-left: auto; }
 .univ-d-badge.orange { background: rgba(255,107,53,.15); color: #ff6b35; }
 .univ-d-badge.teal { background: rgba(0,201,167,.15); color: #00c9a7; }
-.univ-d-divider { height: 1px; background: rgba(255,255,255,.07); margin: 8px 16px; }
+.univ-d-divider { height: 1px; background: var(--border); margin: 8px 16px; }
 
 /* ── BOTTOM NAV ── */
-.univ-bnav { position: fixed; bottom: 0; left: 0; right: 0; z-index: 100; background: rgba(10,10,15,.97); border-top: 1px solid rgba(255,255,255,.07); display: flex; align-items: center; justify-content: space-around; padding: 8px 0 16px; backdrop-filter: blur(14px); }
-.univ-bnav-item { display: flex; flex-direction: column; align-items: center; gap: 2px; text-decoration: none; color: rgba(0,0,0,.4); padding: 0 8px; transition: color .2s; border: none; background: none; cursor: pointer; }
-.univ-bnav-item:hover { color: rgba(0,0,0,.9); }
+.univ-bnav { position: fixed; bottom: 0; left: 0; right: 0; z-index: 100; background: rgba(255,255,255,.97); border-top: 1px solid var(--border); box-shadow: 0 -2px 12px rgba(0,0,0,.05); display: flex; align-items: center; justify-content: space-around; padding: 8px 0 16px; backdrop-filter: blur(14px); }
+.univ-bnav-item { display: flex; flex-direction: column; align-items: center; gap: 2px; text-decoration: none; color: var(--text-3); padding: 0 8px; transition: color .2s; border: none; background: none; cursor: pointer; }
+.univ-bnav-item:hover { color: var(--text); }
 .univ-bnav-item.active { color: var(--purple); }
 .univ-bnav-icon { font-size: 20px; }
 .univ-bnav-label { font-size: .6rem; font-weight: 800; font-family: 'DM Sans', sans-serif; }
@@ -537,6 +555,17 @@ function showToast(msg, type) {
   setTimeout(() => { t.style.transition = 'opacity 0.3s'; t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 3000);
 }
 
+/* Notification best-effort au créateur du mur (jamais pour soi-même) */
+async function notifyCreator(message) {
+  try {
+    if (!state.visitor || !state.creator || state.visitor.id === state.creator.id) return;
+    const { error } = await sb.from('notifications').insert({
+      user_id: state.creator.id, type: 'info', message: message, lu: false
+    });
+    if (error) { /* ignoré (best-effort) */ }
+  } catch (e) { /* ignoré */ }
+}
+
 function getInitials(name) {
   if (!name) return '?';
   return name.split(' ').filter(Boolean).map(w => w[0]).join('').toUpperCase().slice(0, 2) || '?';
@@ -563,6 +592,7 @@ function closeDrawer(){document.getElementById('univOverlay').classList.remove('
 function doSearch(){var q=document.getElementById('navSearchInput').value.trim();if(q)window.location.href='recherche.html?q='+encodeURIComponent(q)}
 function focusSearch(){document.getElementById('navSearchInput').focus()}
 function doLogout(){sb.auth.signOut().then(function(){window.location.href='index.html'})}
+function openModal(){ window.location.href = 'index.html?premium=1' }
 
 /* ── NAV AUTH — update connexion/avatar buttons based on session ── */
 function updateNavAuth(session) {
@@ -572,12 +602,22 @@ function updateNavAuth(session) {
   var dpu = document.getElementById('drawerPublier');
   var dc = document.getElementById('drawerConnexion');
   var dl = document.getElementById('drawerLogout');
+  var nl = document.getElementById('navNotifLink');
   if (session) {
     if (navConn) navConn.style.display = 'none';
     if (navAv) {
       navAv.classList.add('show');
       var initial = (session.user?.user_metadata?.username || session.user?.email || '?')[0].toUpperCase();
       navAv.textContent = initial;
+    }
+    if (nl) {
+      nl.classList.add('show');
+      sb.from('notifications').select('id', { count: 'exact', head: true })
+        .eq('user_id', session.user.id).eq('lu', false)
+        .then(function(res) {
+          var dot = document.getElementById('navNotifDot');
+          if (dot && res.count > 0) { dot.textContent = res.count > 9 ? '9+' : res.count; dot.classList.add('show'); }
+        });
     }
     if (dp) dp.style.display = 'flex';
     if (dpu) dpu.style.display = 'flex';
@@ -590,6 +630,7 @@ function updateNavAuth(session) {
     if (dpu) dpu.style.display = 'none';
     if (dc) dc.style.display = 'flex';
     if (dl) dl.style.display = 'none';
+    if (nl) nl.classList.remove('show');
   }
 }
 
@@ -702,12 +743,21 @@ document.addEventListener('DOMContentLoaded', function() {
 })();
 
 async function loadPosts() {
-  const { data, error } = await sb.from('posts_communaute')
-    .select('*')
+  /* posts_communaute a deux FK vers profiles → désambiguïsation obligatoire.
+     Fallback sans embed si l'embed échoue (schéma pas encore à jour). */
+  let { data, error } = await sb.from('posts_communaute')
+    .select('*, auteur:profiles!auteur_id(username, avatar_url)')
     .eq('creator_id', state.creatorId)
     .order('est_epingle', { ascending: false })
     .order('created_at', { ascending: false });
-  if (error) throw error;
+  if (error) {
+    ({ data, error } = await sb.from('posts_communaute')
+      .select('*')
+      .eq('creator_id', state.creatorId)
+      .order('est_epingle', { ascending: false })
+      .order('created_at', { ascending: false }));
+    if (error) throw error;
+  }
   state.posts = data || [];
 
   /* Load reactions for all posts */
@@ -725,12 +775,18 @@ async function loadPosts() {
     }
   }
 
-  /* Load comments for all posts */
+  /* Load comments for all posts (avec le vrai auteur via embed profiles) */
   if (postIds.length) {
-    const { data: cData } = await sb.from('commentaires_communaute')
-      .select('*')
+    let { data: cData, error: cErr } = await sb.from('commentaires_communaute')
+      .select('*, profiles(username, avatar_url)')
       .in('post_id', postIds)
       .order('created_at', { ascending: true });
+    if (cErr) {
+      ({ data: cData } = await sb.from('commentaires_communaute')
+        .select('*')
+        .in('post_id', postIds)
+        .order('created_at', { ascending: true }));
+    }
     if (cData) {
       state.comments = {};
       cData.forEach(c => {
@@ -742,6 +798,9 @@ async function loadPosts() {
 }
 
 async function loadSondageVotes() {
+  state.sondageOptions = {};
+  state.sondageVotes = {};
+  state.myVotes = {}; /* option_id → true pour le visiteur */
   const postIds = state.posts.filter(p => p.type === 'sondage').map(p => p.id);
   if (!postIds.length) return;
   const { data: opts } = await sb.from('sondage_options')
@@ -749,7 +808,6 @@ async function loadSondageVotes() {
     .in('post_id', postIds)
     .order('position', { ascending: true });
   if (opts) {
-    state.sondageOptions = state.sondageOptions || {};
     opts.forEach(o => {
       if (!state.sondageOptions[o.post_id]) state.sondageOptions[o.post_id] = [];
       state.sondageOptions[o.post_id].push(o);
@@ -761,10 +819,10 @@ async function loadSondageVotes() {
       .select('*')
       .in('option_id', optIds);
     if (votes) {
-      state.sondageVotes = {};
       votes.forEach(v => {
         if (!state.sondageVotes[v.option_id]) state.sondageVotes[v.option_id] = 0;
         state.sondageVotes[v.option_id]++;
+        if (state.visitor && v.user_id === state.visitor.id) state.myVotes[v.option_id] = true;
       });
     }
   }
@@ -830,8 +888,8 @@ function render() {
     return;
   }
 
-  /* Create post zone (only for logged-in users) */
-  if (state.visitor && state.activeTab !== 'sondages') {
+  /* Create post zone (only for logged-in users) — aussi visible dans l'onglet Sondages */
+  if (state.visitor) {
     html += '<div class="create-post" id="create-post-zone">';
     html += '<textarea id="create-post-text" placeholder="Partagez quelque chose avec votre communauté..." maxlength="2000"></textarea>';
     html += '<div class="create-post-actions">';
@@ -893,14 +951,16 @@ function renderPost(post) {
 
   let html = '<div class="post-card' + (isPinned ? ' pinned' : '') + '" data-post-id="' + post.id + '">';
 
-  /* Header */
+  /* Header — auteur réel du post (fallback : créateur du mur si l'embed a échoué) */
+  const author = post.auteur || (post.auteur_id === state.creator.id ? state.creator : null) || state.creator;
   html += '<div class="post-card-header">';
-  if (state.creator.avatar_url) {
-    html += '<img src="' + escHtml(state.creator.avatar_url) + '" alt="" class="post-card-avatar">';
+  if (author.avatar_url) {
+    html += '<img src="' + escHtml(author.avatar_url) + '" alt="" class="post-card-avatar">';
   } else {
-    html += '<div class="post-card-avatar-fallback">' + getInitials(state.creator.username) + '</div>';
+    html += '<div class="post-card-avatar-fallback">' + getInitials(author.username) + '</div>';
   }
-  html += '<span class="post-card-author">' + escHtml(state.creator.username) + '</span>';
+  html += '<span class="post-card-author">' + escHtml(author.username) + '</span>';
+  if (post.auteur_id === state.creator.id) html += '<span class="post-card-badge">Créateur</span>';
   if (isPinned) html += '<span class="post-card-badge">📌 Épinglé</span>';
   html += '<span class="post-card-date">' + timeAgo(post.created_at) + '</span>';
   html += '</div>';
@@ -965,33 +1025,49 @@ function renderPost(post) {
   return html;
 }
 
+function commentAuthor(c) {
+  /* Auteur réel du commentaire via l'embed profiles ; fallback minimal */
+  if (c.profiles && c.profiles.username) return c.profiles;
+  if (state.visitor && c.user_id === state.visitor.id) return state.visitor;
+  if (state.creator && c.user_id === state.creator.id) return state.creator;
+  return { username: 'Utilisateur', avatar_url: null };
+}
+
 function renderComment(comment, allComments, post) {
   const replies = allComments.filter(c => c.parent_id === comment.id);
-  const hasPreview = state.visitor && state.visitor.avatar_url;
+  const au = commentAuthor(comment);
   let html = '<div class="comment" data-comment-id="' + comment.id + '">';
-  if (hasPreview) {
-    html += '<img src="' + escHtml(state.visitor.avatar_url) + '" alt="" class="comment-avatar">';
+  if (au.avatar_url) {
+    html += '<img src="' + escHtml(au.avatar_url) + '" alt="" class="comment-avatar">';
   } else {
-    html += '<div class="comment-avatar-fallback">' + getInitials(state.visitor?.username) + '</div>';
+    html += '<div class="comment-avatar-fallback">' + getInitials(au.username) + '</div>';
   }
   html += '<div class="comment-body">';
-  html += '<span class="comment-author">' + escHtml(state.visitor?.username || 'Anonyme') + '</span>';
+  html += '<span class="comment-author">' + escHtml(au.username || 'Anonyme') + '</span>';
   html += '<div class="comment-text">' + escHtml(comment.contenu) + '</div>';
   if (comment.image_url) {
     html += '<img src="' + escHtml(comment.image_url) + '" alt="" class="comment-image" loading="lazy">';
   }
   html += '<span class="comment-date">' + timeAgo(comment.created_at) + '</span>';
-  html += ' <button class="comment-reply-btn" data-comment="' + comment.id + '" data-post="' + comment.post_id + '">Répondre</button>';
+  if (state.visitor) {
+    html += ' <button class="comment-reply-btn" data-comment="' + comment.id + '" data-post="' + comment.post_id + '">Répondre</button>';
+  }
   if (state.isCreator) {
     html += ' <button class="comment-reply-btn delete-comment-btn" data-comment="' + comment.id + '" style="color:var(--danger)">Supprimer</button>';
   }
+  html += '<div class="reply-form-slot" id="reply-slot-' + comment.id + '"></div>';
   html += '</div></div>';
 
   replies.forEach(r => {
+    const ra = commentAuthor(r);
     html += '<div class="comment reply">';
-    html += '<div class="comment-avatar-fallback" style="width:24px;height:24px;font-size:0.5rem">' + getInitials(state.visitor?.username) + '</div>';
+    if (ra.avatar_url) {
+      html += '<img src="' + escHtml(ra.avatar_url) + '" alt="" class="comment-avatar" style="width:24px;height:24px">';
+    } else {
+      html += '<div class="comment-avatar-fallback" style="width:24px;height:24px;font-size:0.5rem">' + getInitials(ra.username) + '</div>';
+    }
     html += '<div class="comment-body">';
-    html += '<span class="comment-author">' + escHtml(state.visitor?.username || 'Anonyme') + '</span>';
+    html += '<span class="comment-author">' + escHtml(ra.username || 'Anonyme') + '</span>';
     html += '<div class="comment-text">' + escHtml(r.contenu) + '</div>';
     if (r.image_url) {
       html += '<img src="' + escHtml(r.image_url) + '" alt="" class="comment-image" loading="lazy">';
@@ -1008,26 +1084,29 @@ function renderSondage(post) {
   if (!options.length) return '<p style="color:var(--text-muted);font-size:0.85rem">Sondage sans options</p>';
 
   const totalVotes = options.reduce((sum, o) => sum + (state.sondageVotes[o.id] || 0), 0);
-  const userVotedOption = options.find(o => {
-    /* Check if visitor voted for this option — we use a set approach */
-    return false; /* simplified — we track per-option in state */
-  });
+  /* Option votée par le visiteur (chargée dans state.myVotes) */
+  const userVotedOption = options.find(o => state.myVotes && state.myVotes[o.id]);
+  const hasVoted = !!userVotedOption;
 
-  let html = '<div class="sondage-display" data-post="' + post.id + '">';
+  let html = '<div class="sondage-display" data-post="' + post.id + '" data-voted="' + (hasVoted ? '1' : '0') + '">';
 
   options.forEach((opt, idx) => {
     const count = state.sondageVotes[opt.id] || 0;
     const pct = totalVotes > 0 ? Math.round((count / totalVotes) * 100) : 0;
-    html += '<div class="sondage-option-display" data-optid="' + opt.id + '" data-post="' + post.id + '">';
-    /* Always show bars now — we determine if user can vote */
+    const isMine = hasVoted && userVotedOption.id === opt.id;
+    html += '<div class="sondage-option-display' + (isMine ? ' voted' : '') + '" data-optid="' + opt.id + '" data-post="' + post.id + '"' + (hasVoted ? ' style="cursor:default"' : '') + '>';
     html += '<div class="sondage-option-bar" style="width:' + pct + '%"></div>';
-    html += '<div class="sondage-option-radio" data-optid="' + opt.id + '"></div>';
-    html += '<span class="sondage-option-text">' + escHtml(opt.option_text) + '</span>';
+    html += '<div class="sondage-option-radio' + (isMine ? ' selected' : '') + '" data-optid="' + opt.id + '"></div>';
+    html += '<span class="sondage-option-text">' + escHtml(opt.option_text) + (isMine ? ' ✓' : '') + '</span>';
     html += '<span class="sondage-option-pct">' + pct + '%</span>';
     html += '</div>';
   });
 
-  html += '<button class="sondage-vote-btn" data-post="' + post.id + '" disabled>Voter</button>';
+  if (hasVoted) {
+    html += '<button class="sondage-vote-btn" data-post="' + post.id + '" disabled>Vous avez voté</button>';
+  } else {
+    html += '<button class="sondage-vote-btn" data-post="' + post.id + '" disabled>Voter</button>';
+  }
   html += '<div class="sondage-total">' + totalVotes + ' vote' + (totalVotes !== 1 ? 's' : '') + '</div>';
   html += '</div>';
   return html;
@@ -1055,6 +1134,15 @@ function bindCreatePost() {
   let isSondage = false;
   let selectedFile = null;
   let blobUrl = null;
+
+  /* Onglet Sondages : ouvrir directement le mode sondage */
+  if (state.activeTab === 'sondages' && sondageArea && sondageBtn) {
+    isSondage = true;
+    sondageArea.style.display = 'flex';
+    sondageArea.style.flexDirection = 'column';
+    sondageBtn.textContent = '− Retirer sondage';
+    if (textarea) textarea.placeholder = 'Question du sondage (optionnel)...';
+  }
 
   if (fileLabel && fileInput) {
     fileLabel.addEventListener('click', function(e) {
@@ -1207,6 +1295,7 @@ function bindCreatePost() {
           if (postErr) throw postErr;
         }
 
+        await notifyCreator('@' + (state.visitor.username || 'Quelqu\'un') + ' a publié sur ta communauté');
         showToast('Post publié !', 'success');
         textarea.value = '';
         selectedFile = null;
@@ -1418,6 +1507,9 @@ function bindSondageVote() {
   /* Select option */
   document.querySelectorAll('.sondage-option-display').forEach(el => {
     el.addEventListener('click', function() {
+      const parentDisplay = this.closest('.sondage-display');
+      if (parentDisplay && parentDisplay.getAttribute('data-voted') === '1') return; /* déjà voté */
+      if (!state.visitor) { showToast('Connectez-vous pour voter', 'error'); return; }
       const postId = this.getAttribute('data-post');
       const optId = parseInt(this.getAttribute('data-optid'));
       const parent = this.closest('.sondage-display');
@@ -1434,9 +1526,25 @@ function bindSondageVote() {
   /* Submit vote */
   document.querySelectorAll('.sondage-vote-btn').forEach(btn => {
     btn.addEventListener('click', async function() {
+      if (!state.visitor) { showToast('Connectez-vous pour voter', 'error'); return; }
       const optId = parseInt(this.dataset.optid);
       if (!optId) { showToast('Sélectionnez une option', 'error'); return; }
+      const postId = parseInt(this.getAttribute('data-post'));
+      const postOptions = state.sondageOptions[postId] || [];
+      /* Un seul vote par sondage : vérifier l'état local puis la base */
+      if (postOptions.some(o => state.myVotes && state.myVotes[o.id])) {
+        showToast('Vous avez déjà voté sur ce sondage', 'error'); return;
+      }
       try {
+        const optIds = postOptions.map(o => o.id);
+        if (optIds.length) {
+          const { data: existing } = await sb.from('sondage_votes')
+            .select('id').in('option_id', optIds).eq('user_id', state.visitor.id).limit(1);
+          if (existing && existing.length) {
+            showToast('Vous avez déjà voté sur ce sondage', 'error');
+            await loadSondageVotes(); render(); return;
+          }
+        }
         const { error } = await sb.from('sondage_votes').insert({
           option_id: optId,
           user_id: state.visitor.id
