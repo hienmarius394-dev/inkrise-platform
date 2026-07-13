@@ -763,7 +763,7 @@ async function loadManga(mangaId) {
     // Toute autre erreur (réseau, timeout, RLS...) → message distinct + réessai.
     const trulyNotFound = error?.code === 'PGRST116' || (!error && !data);
     console.error('loadManga error:', error);
-    showNotFound(!trulyNotFound);
+    showNotFound(!trulyNotFound, error);
     return;
   }
   // Brouillon visible uniquement par son auteur
@@ -1088,7 +1088,7 @@ document.getElementById('btnNextPage').addEventListener('click', () => {
 });
 
 // ── NOT FOUND / ERREUR RÉSEAU ──
-function showNotFound(networkError) {
+function showNotFound(networkError, errorObj) {
   document.getElementById('pageLoading').style.display = 'none';
   document.getElementById('notFound').style.display = 'block';
   if (networkError) {
@@ -1103,6 +1103,19 @@ function showNotFound(networkError) {
     document.getElementById('notFoundText').textContent = "Ce manga n'existe pas ou a été supprimé.";
     document.getElementById('notFoundBtn').textContent = '← Retour à l\'accueil';
     document.getElementById('notFoundBtn').href = 'index.html';
+  }
+  // Détail technique visible à l'écran (pour diagnostic sans devtools)
+  let debugEl = document.getElementById('notFoundDebug');
+  if (!debugEl) {
+    debugEl = document.createElement('p');
+    debugEl.id = 'notFoundDebug';
+    debugEl.style.cssText = 'margin-top:16px;font-size:11px;color:var(--muted);word-break:break-word;max-width:320px;';
+    document.querySelector('#notFound .not-found').appendChild(debugEl);
+  }
+  if (errorObj) {
+    debugEl.textContent = 'Détail : ' + (errorObj.code ? '[' + errorObj.code + '] ' : '') + (errorObj.message || JSON.stringify(errorObj));
+  } else {
+    debugEl.textContent = '';
   }
 }
 
