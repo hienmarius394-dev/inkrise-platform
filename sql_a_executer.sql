@@ -568,8 +568,11 @@ DROP POLICY IF EXISTS "svotes delete own" ON sondage_votes;
 CREATE POLICY "svotes delete own" ON sondage_votes FOR DELETE TO authenticated USING (user_id = auth.uid());
 
 -- ─────────────────────────────────────────────
--- 14. DROITS service_role + rechargement du schéma
+-- 14. DROITS (RLS filtre les lignes, mais anon/authenticated ont aussi
+-- besoin du GRANT au niveau table — sinon "permission denied for table")
 -- ─────────────────────────────────────────────
 GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO service_role;
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO service_role;
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO anon, authenticated;
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated;
 NOTIFY pgrst, 'reload schema';
