@@ -108,10 +108,12 @@
       pointer-events: none;
     }
     .cover-edit-btn {
-      position: absolute; top: 14px; right: 14px; z-index: 2; cursor: pointer;
+      position: absolute; top: 14px; right: 14px; z-index: 5; cursor: pointer;
       background: rgba(0,0,0,0.45); backdrop-filter: blur(6px); color: #fff;
       font-size: 0.75rem; font-weight: 700; padding: 7px 13px; border-radius: 100px;
       border: 1px solid rgba(255,255,255,0.2); transition: background .2s;
+      font-family: inherit; -webkit-appearance: none; appearance: none;
+      display: inline-flex; align-items: center; gap: 4px; line-height: 1.2;
     }
     .cover-edit-btn:hover { background: rgba(0,0,0,0.65); }
     .profile-container {
@@ -682,7 +684,7 @@
 
 <!-- ── HERO ── -->
 <div class="profile-hero" id="profileHero">
-  <label for="coverUploadInput" class="cover-edit-btn" title="Changer la photo de couverture">📷 Couverture</label>
+  <button type="button" class="cover-edit-btn" id="coverEditBtn" title="Changer la photo de couverture" onclick="document.getElementById('coverUploadInput').click()">📷 Couverture</button>
   <input type="file" id="coverUploadInput" accept="image/*" style="display:none;" />
   <div class="profile-container">
     <div class="profile-top">
