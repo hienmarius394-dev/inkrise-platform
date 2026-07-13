@@ -724,9 +724,13 @@ async function init() {
     document.getElementById('navConnexion').style.display = 'none';
     const dP=document.getElementById('drawerProfil'),dC=document.getElementById('drawerConnexion'),dL=document.getElementById('drawerLogout'),dPub=document.getElementById('drawerPublier');
     if(dP)dP.style.display='flex';if(dC)dC.style.display='none';if(dL)dL.style.display='flex';if(dPub)dPub.style.display='flex';
-    const { data: profile } = await sb.from('profiles').select('username, is_creator').eq('id', currentUser.id).single();
+    const { data: profile } = await sb.from('profiles').select('username, is_creator, avatar_url').eq('id', currentUser.id).single();
     const name = profile?.username || currentUser.email.split('@')[0];
-    av.textContent = name[0].toUpperCase();
+    if (profile?.avatar_url) {
+      av.innerHTML = '<img src="' + profile.avatar_url + '" style="width:32px;height:32px;border-radius:50%;object-fit:cover;" alt="" />';
+    } else {
+      av.textContent = name[0].toUpperCase();
+    }
     // Compteur notifications
     const { count: unreadCount } = await sb.from('notifications')
       .select('id', { count: 'exact', head: true })
