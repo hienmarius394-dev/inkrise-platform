@@ -580,8 +580,18 @@
   <button class="univ-d-item" id="drawerLogout" style="display:none;" onclick="doLogout()"><div class="univ-d-icon">🚪</div><span style="color:#f0522a;">Déconnexion</span></button>
 </div>
 
+<!-- GATE CRÉATEUR GRATUIT (affiché si l'utilisateur n'est pas encore créateur) -->
+<div class="page-wrap" id="creatorGate" style="display:none;max-width:480px;margin:60px auto;text-align:center;">
+  <div style="font-size:52px;margin-bottom:8px;">🎉</div>
+  <h1 style="margin-bottom:10px;">Publier sur Inkrise, <span>c'est gratuit</span></h1>
+  <p style="color:var(--text-2, #666);margin-bottom:28px;line-height:1.6;">
+    Aucune carte bancaire, aucun abonnement. Deviens créateur en un clic et publie ton premier manga.
+  </p>
+  <button class="btn-primary" style="padding:14px 32px;font-size:1rem;" onclick="becomeCreatorFree()">✓ Devenir créateur gratuitement</button>
+</div>
+
 <!-- PAGE -->
-<div class="page-wrap" id="mainForm">
+<div class="page-wrap" id="mainForm" style="display:none;">
 
   <!-- Header -->
   <div class="page-header">
@@ -823,7 +833,7 @@ async function init() {
   if (!session) { window.location.href = 'auth.html'; return; }
   currentUser = session.user;
 
-  const { data: profile } = await sb.from('profiles').select('username').eq('id', currentUser.id).single();
+  const { data: profile } = await sb.from('profiles').select('username, is_creator').eq('id', currentUser.id).single();
   const name = profile?.username || currentUser.email.split('@')[0];
   document.getElementById('navAvatar').textContent = name[0].toUpperCase();
   document.getElementById('navAvatar').classList.add('show');
@@ -834,8 +844,25 @@ async function init() {
   document.getElementById('drawerPublier').style.display = 'flex';
   document.getElementById('drawerLogout').style.display = 'flex';
 
+  if (!profile?.is_creator) {
+    document.getElementById('creatorGate').style.display = 'block';
+    return; // le formulaire reste caché tant que becomeCreatorFree() n'a pas été appelé
+  }
+
+  document.getElementById('mainForm').style.display = 'block';
   buildGenres();
   addChapitre(); // 1 chapitre par défaut
+  bindEvents();
+}
+
+// Activation gratuite de l'espace créateur (aucun paiement, aucun prix affiché)
+async function becomeCreatorFree() {
+  const { error } = await sb.from('profiles').update({ is_creator: true }).eq('id', currentUser.id);
+  if (error) { alert('Erreur : ' + error.message); return; }
+  document.getElementById('creatorGate').style.display = 'none';
+  document.getElementById('mainForm').style.display = 'block';
+  buildGenres();
+  addChapitre();
   bindEvents();
 }
 

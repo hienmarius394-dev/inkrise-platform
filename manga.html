@@ -723,9 +723,8 @@ async function init() {
     av.style.display = 'flex';
     document.getElementById('navConnexion').style.display = 'none';
     const dP=document.getElementById('drawerProfil'),dC=document.getElementById('drawerConnexion'),dL=document.getElementById('drawerLogout'),dPub=document.getElementById('drawerPublier');
-    if(dP)dP.style.display='flex';if(dC)dC.style.display='none';if(dL)dL.style.display='flex';
+    if(dP)dP.style.display='flex';if(dC)dC.style.display='none';if(dL)dL.style.display='flex';if(dPub)dPub.style.display='flex';
     const { data: profile } = await sb.from('profiles').select('username, is_creator').eq('id', currentUser.id).single();
-    if(dPub && profile?.is_creator)dPub.style.display='flex';
     const name = profile?.username || currentUser.email.split('@')[0];
     av.textContent = name[0].toUpperCase();
     // Compteur notifications

@@ -333,8 +333,7 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
     document.getElementById('drawerConnexion').style.display = 'none';
     document.getElementById('drawerProfil').style.display = 'flex';
     document.getElementById('drawerLogout').style.display = 'flex';
-    const { data: p } = await sb.from('profiles').select('is_creator').eq('id', session.user.id).single();
-    if (p?.is_creator) document.getElementById('drawerPublier').style.display = 'flex';
+    document.getElementById('drawerPublier').style.display = 'flex';
   }
 })();
 

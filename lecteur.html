@@ -1022,9 +1022,7 @@ async function setupNav() {
     av.textContent = name[0].toUpperCase();
   }
   const dP=document.getElementById('drawerProfil'),dC=document.getElementById('drawerConnexion'),dL=document.getElementById('drawerLogout'),dPub=document.getElementById('drawerPublier');
-  if(dP)dP.style.display='flex';if(dC)dC.style.display='none';if(dL)dL.style.display='flex';
-  const { data: profile } = await sb.from('profiles').select('is_creator').eq('id', user.id).maybeSingle();
-  if(dPub && profile?.is_creator)dPub.style.display='flex';
+  if(dP)dP.style.display='flex';if(dC)dC.style.display='none';if(dL)dL.style.display='flex';if(dPub)dPub.style.display='flex';
   const notifLink = document.getElementById('navNotifLink');
   if (notifLink) notifLink.classList.add('show');
   const { count } = await sb.from('notifications')

@@ -478,12 +478,8 @@ async function checkAuth() {
         dot.classList.add('show')
       }
     } catch (e) {}
-    // Publier visible seulement pour les créateurs
-    try {
-      const { data: prof } = await supabaseClient.from('profiles')
-        .select('is_creator').eq('id', uid).single()
-      if (prof?.is_creator) document.getElementById('drawerPublier').style.display = 'flex'
-    } catch (e) {}
+    // Publier un manga est gratuit : accessible à tout utilisateur connecté
+    document.getElementById('drawerPublier').style.display = 'flex'
   }
 }
 async function doLogout() {
