@@ -4,20 +4,27 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Inkrise — La plateforme des artistes manga & dessin</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600;700&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <style>
 :root {
   --bg: #ffffff;
+  --bg-2: #f7f7fa;
+  --bg-3: #ededf2;
   --surface: #f2f2f7;
   --surface2: #e5e5ea;
+  --surface-2: #e5e5ea;
   --purple: #7c6fef;
   --purple2: #a594f9;
   --accent: #7c6fef;
   --green: #3ddc84;
   --amber: #f5a623;
   --orange: #ff6b35;
+  --orange-light: #ff8a5c;
   --teal: #00c9a7;
+  --danger: #ff3d71;
   --text: #1c1c1e;
+  --text-2: #48484a;
+  --text-3: #8e8e93;
   --muted: #8e8e93;
   --border: rgba(0,0,0,0.08);
   --radius: 12px;
@@ -53,40 +60,40 @@ h1,h2,h3,.logo { font-family: 'Syne', sans-serif; }
     .univ-nav-sb { background: none; border: none; cursor: pointer; padding: 6px 8px; font-size: 13px; color: rgba(0,0,0,.5); flex-shrink: 0; }
     .univ-nav-sb:hover { color: #7c6fef; }
     .nav-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-    .nav-connexion-btn { color: rgba(255,255,255,0.7); font-size: .8rem; font-weight: 600; padding: 6px 13px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.15); text-decoration: none; transition: all .2s; white-space: nowrap; }
-    .nav-connexion-btn:hover { border-color: var(--purple); color: var(--purple2); }
+    .nav-connexion-btn { color: var(--text-2); font-size: .8rem; font-weight: 600; padding: 6px 13px; border-radius: 20px; border: 1px solid rgba(0,0,0,.15); text-decoration: none; transition: all .2s; white-space: nowrap; }
+    .nav-connexion-btn:hover { border-color: var(--purple); color: var(--purple); }
     .nav-avatar-btn { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #7c6fef, #5040c8); display: none; align-items: center; justify-content: center; font-size: .85rem; font-weight: 700; color: #fff; text-decoration: none; text-transform: uppercase; }
     .nav-avatar-btn.show { display: flex; }
-    .nav-notif-link { position: relative; display: none; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 8px; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1); text-decoration: none; font-size: .95rem; transition: all .2s; }
+    .nav-notif-link { position: relative; display: none; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 8px; background: rgba(0,0,0,.05); border: 1px solid rgba(0,0,0,.08); text-decoration: none; font-size: .95rem; transition: all .2s; }
     .nav-notif-link.show { display: flex; }
-    .nav-notif-link:hover { background: rgba(255,255,255,0.13); }
-    .nav-notif-dot { position: absolute; top: -5px; right: -5px; min-width: 16px; height: 16px; border-radius: 8px; background: var(--accent); color: #fff; font-size: 9px; font-weight: 800; padding: 0 3px; display: none; align-items: center; justify-content: center; border: 2px solid var(--bg); }
+    .nav-notif-link:hover { background: rgba(0,0,0,.1); }
+    .nav-notif-dot { position: absolute; top: -5px; right: -5px; min-width: 16px; height: 16px; border-radius: 8px; background: var(--accent); color: #fff; font-size: 9px; font-weight: 800; padding: 0 3px; display: none; align-items: center; justify-content: center; border: 2px solid #fff; }
     .nav-notif-dot.show { display: flex; }
-    .univ-nav-hbg { width: 34px; height: 34px; border-radius: 8px; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; color: #1c1c1e; transition: background .2s; flex-shrink: 0; }
-    .univ-nav-hbg:hover { background: rgba(255,255,255,0.13); }
+    .univ-nav-hbg { width: 34px; height: 34px; border-radius: 8px; background: rgba(0,0,0,.05); border: 1px solid rgba(0,0,0,.08); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; color: var(--text); transition: background .2s; flex-shrink: 0; }
+    .univ-nav-hbg:hover { background: rgba(0,0,0,.1); }
 
     /* ── DRAWER ── */
     .univ-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 150; backdrop-filter: blur(3px); }
     .univ-overlay.open { display: block; }
-    .univ-drawer { position: fixed; top: 0; right: 0; width: 270px; height: 100%; background: #13131c; z-index: 151; overflow-y: auto; transform: translateX(100%); transition: transform .28s cubic-bezier(.4,0,.2,1); box-shadow: -4px 0 32px rgba(0,0,0,.4); border-left: 1px solid rgba(255,255,255,.07); }
+    .univ-drawer { position: fixed; top: 0; right: 0; width: 270px; height: 100%; background: #ffffff; z-index: 151; overflow-y: auto; transform: translateX(100%); transition: transform .28s cubic-bezier(.4,0,.2,1); box-shadow: -4px 0 32px rgba(0,0,0,.12); border-left: 1px solid var(--border); }
     .univ-drawer.open { transform: translateX(0); }
-    .univ-d-hdr { display: flex; align-items: center; justify-content: space-between; padding: 16px; border-bottom: 1px solid rgba(255,255,255,.07); }
+    .univ-d-hdr { display: flex; align-items: center; justify-content: space-between; padding: 16px; border-bottom: 1px solid var(--border); }
     .univ-d-logo { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 900; text-decoration: none; background: linear-gradient(135deg, #7c6fef, #a594f9); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-    .univ-d-close { width: 30px; height: 30px; border-radius: 50%; background: rgba(255,255,255,.08); border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; color: rgba(0,0,0,.7); }
-    .univ-d-sec { font-size: .65rem; font-weight: 800; color: rgba(0,0,0,.3); letter-spacing: 1.5px; text-transform: uppercase; padding: 14px 16px 5px; }
-    .univ-d-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; margin: 2px 8px; text-decoration: none; color: rgba(0,0,0,.85); font-weight: 600; font-size: .88rem; cursor: pointer; transition: background .15s; border: none; background: none; width: calc(100% - 16px); text-align: left; border-radius: 9px; font-family: 'DM Sans', sans-serif; }
-    .univ-d-item:hover { background: rgba(255,255,255,.06); }
-    .univ-d-icon { width: 34px; height: 34px; border-radius: 9px; background: rgba(255,255,255,.07); display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+    .univ-d-close { width: 30px; height: 30px; border-radius: 50%; background: rgba(0,0,0,.06); border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; color: var(--text-2); }
+    .univ-d-sec { font-size: .65rem; font-weight: 800; color: var(--text-3); letter-spacing: 1.5px; text-transform: uppercase; padding: 14px 16px 5px; }
+    .univ-d-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; margin: 2px 8px; text-decoration: none; color: var(--text); font-weight: 600; font-size: .88rem; cursor: pointer; transition: background .15s; border: none; background: none; width: calc(100% - 16px); text-align: left; border-radius: 9px; font-family: 'DM Sans', sans-serif; }
+    .univ-d-item:hover { background: rgba(0,0,0,.05); }
+    .univ-d-icon { width: 34px; height: 34px; border-radius: 9px; background: rgba(0,0,0,.05); display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
     .univ-d-badge { font-size: .65rem; font-weight: 800; padding: 2px 7px; border-radius: 6px; margin-left: auto; }
     .univ-d-badge.orange { background: rgba(255,107,53,.15); color: #ff6b35; }
     .univ-d-badge.teal { background: rgba(0,201,167,.15); color: #00c9a7; }
-    .univ-d-divider { height: 1px; background: rgba(255,255,255,.07); margin: 8px 16px; }
+    .univ-d-divider { height: 1px; background: var(--border); margin: 8px 16px; }
 
     /* ── BOTTOM NAV ── */
-    .univ-bnav { position: fixed; bottom: 0; left: 0; right: 0; z-index: 100; background: rgba(10,10,15,.97); border-top: 1px solid rgba(255,255,255,.07); display: flex; align-items: center; justify-content: space-around; padding: 8px 0 16px; backdrop-filter: blur(14px); }
-    .univ-bnav-item { display: flex; flex-direction: column; align-items: center; gap: 2px; text-decoration: none; color: rgba(0,0,0,.4); padding: 0 8px; transition: color .2s; border: none; background: none; cursor: pointer; }
-    .univ-bnav-item:hover { color: rgba(0,0,0,.9); }
-    .univ-bnav-item.active { color: var(--purple2); }
+    .univ-bnav { position: fixed; bottom: 0; left: 0; right: 0; z-index: 100; background: rgba(255,255,255,.97); border-top: 1px solid var(--border); box-shadow: 0 -2px 12px rgba(0,0,0,.05); display: flex; align-items: center; justify-content: space-around; padding: 8px 0 16px; backdrop-filter: blur(14px); }
+    .univ-bnav-item { display: flex; flex-direction: column; align-items: center; gap: 2px; text-decoration: none; color: var(--text-3); padding: 0 8px; transition: color .2s; border: none; background: none; cursor: pointer; }
+    .univ-bnav-item:hover { color: var(--text); }
+    .univ-bnav-item.active { color: var(--purple); }
     .univ-bnav-icon { font-size: 20px; }
     .univ-bnav-label { font-size: .6rem; font-weight: 800; font-family: 'DM Sans', sans-serif; }
     .univ-bnav-search { width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, #7c6fef, #5040c8); border: none; display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer; margin-top: -18px; box-shadow: 0 4px 18px rgba(124,111,239,.5); transition: transform .2s; flex-shrink: 0; }
@@ -188,31 +195,6 @@ h1,h2,h3,.logo { font-family: 'Syne', sans-serif; }
 .c5{background:linear-gradient(145deg,#1a1a3e,#3a3a8a)}
 .c6{background:linear-gradient(145deg,#2C2C2A,#5F5E5A)}
 
-/* ── BOTTOM NAV ── */
-.bottom-nav {
-  position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
-  background: var(--bg-2); border-top: 1px solid var(--border);
-  display: flex; align-items: center; justify-content: space-around;
-  padding: 8px 0 16px; box-shadow: 0 -2px 12px rgba(0,0,0,0.06);
-}
-.bottom-nav-item {
-  display: flex; flex-direction: column; align-items: center; gap: 2px;
-  cursor: pointer; text-decoration: none; color: inherit; opacity: 0.4;
-  border: none; background: none; padding: 0 8px; transition: opacity 0.2s;
-}
-.bottom-nav-item.active { opacity: 1; }
-.bottom-nav-item:hover { opacity: 0.75; }
-.bottom-nav-icon { font-size: 21px; }
-.bottom-nav-label { font-size: 9px; font-weight: 800; font-family: 'Nunito', sans-serif; color: var(--text-3); }
-.bottom-nav-item.active .bottom-nav-label { color: var(--orange); }
-.bottom-nav-search {
-  width: 50px; height: 50px; border-radius: 50%; background: var(--orange); border: none;
-  display: flex; align-items: center; justify-content: center; font-size: 21px;
-  cursor: pointer; margin-top: -18px; box-shadow: 0 4px 18px rgba(255,107,53,0.45);
-  transition: all 0.2s; flex-shrink: 0;
-}
-.bottom-nav-search:hover { background: var(--orange-light); transform: scale(1.06); }
-
 /* ── MODAL ── */
 .modal-overlay {
   display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.45); z-index: 200;
@@ -265,7 +247,9 @@ h1,h2,h3,.logo { font-family: 'Syne', sans-serif; }
 @media(max-width:600px){ .plans-grid{ grid-template-columns:1fr; } }
 @media(max-width:520px){ .modal{ padding: 20px 16px; } }
 
-/* ── BOTTOM NAV ── */
+/* ── TOAST ── */
+.toast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--text); color: #fff; padding: 10px 18px; border-radius: 10px; font-size: 13px; font-weight: 600; z-index: 300; opacity: 0; pointer-events: none; transition: all .25s; max-width: 90vw; }
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 </style>
 </head>
 <body>
@@ -325,24 +309,19 @@ h1,h2,h3,.logo { font-family: 'Syne', sans-serif; }
 </div>
 
 <!-- CRÉATEURS -->
-<div class="creators-section">
-  <div class="creators-scroll" id="creatorsScroll">
-    <div class="creator-item">
-      <div class="creator-avatar" style="background:linear-gradient(135deg,#ff6b35,#ff3d71);">M</div>
-      <div class="creator-name">mario</div>
-    </div>
-  </div>
+<div class="creators-section" id="creatorsSection">
+  <div class="creators-scroll" id="creatorsScroll"></div>
 </div>
 
 <!-- TABS -->
 <div class="section-tabs">
-  <button class="section-tab active">🌟 Originals</button>
-  <button class="section-tab">🔥 Populaires</button>
-  <button class="section-tab">✨ Nouveaux</button>
+  <button class="section-tab active" onclick="activateTab(this,'secOriginals')">🌟 Originals</button>
+  <button class="section-tab" onclick="activateTab(this,'secPopulaires')">🔥 Populaires</button>
+  <button class="section-tab" onclick="activateTab(this,'secNouveaux')">✨ Nouveaux</button>
 </div>
 
 <!-- MIS EN AVANT -->
-<div class="sec-header">
+<div class="sec-header" id="secOriginals">
   <div class="sec-title">INKRISE <span>ORIGINALS</span></div>
   <a href="manga.html" class="sec-link">Voir tout →</a>
 </div>
@@ -351,7 +330,7 @@ h1,h2,h3,.logo { font-family: 'Syne', sans-serif; }
 </div>
 
 <!-- POPULAIRES -->
-<div class="sec-header" style="margin-top:18px;">
+<div class="sec-header" id="secPopulaires" style="margin-top:18px;">
   <div class="sec-title">🔥 <span>Populaires</span> cette semaine</div>
   <a href="manga.html" class="sec-link">Voir tout →</a>
 </div>
@@ -360,7 +339,7 @@ h1,h2,h3,.logo { font-family: 'Syne', sans-serif; }
 </div>
 
 <!-- NOUVEAUX -->
-<div class="sec-header" style="margin-top:18px;">
+<div class="sec-header" id="secNouveaux" style="margin-top:18px;">
   <div class="sec-title">✨ Dernières <span>mises à jour</span></div>
   <a href="manga.html" class="sec-link">Voir tout →</a>
 </div>
@@ -399,7 +378,7 @@ h1,h2,h3,.logo { font-family: 'Syne', sans-serif; }
           <li>Publication de mangas</li><li>Monétisation par les vues</li>
           <li>Profil créateur basique</li><li>Accès à la communauté</li>
         </ul>
-        <button class="btn-plan" onclick="window.location='auth.html'">Commencer gratuit</button>
+        <button class="btn-plan" onclick="choosePlan('debutant')">Commencer gratuit</button>
       </div>
       <div class="plan-card featured">
         <div class="plan-badge">⭐ POPULAIRE</div>
@@ -409,7 +388,7 @@ h1,h2,h3,.logo { font-family: 'Syne', sans-serif; }
           <li>Tout du plan Débutant</li><li>Communauté privée payante</li>
           <li>0% commission abonnés</li><li>Analytics basiques</li><li>Support prioritaire</li>
         </ul>
-        <button class="btn-plan featured">Devenir Créateur</button>
+        <button class="btn-plan featured" onclick="choosePlan('createur')">Devenir Créateur</button>
       </div>
       <div class="plan-card">
         <div class="plan-name">Pro</div>
@@ -418,11 +397,14 @@ h1,h2,h3,.logo { font-family: 'Syne', sans-serif; }
           <li>Tout du plan Créateur</li><li>Badge vérifié ✓</li>
           <li>Mise en avant accueil</li><li>Analytics avancés</li><li>Support dédié</li>
         </ul>
-        <button class="btn-plan">Passer Pro</button>
+        <button class="btn-plan" onclick="choosePlan('pro')">Passer Pro</button>
       </div>
     </div>
   </div>
 </div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
@@ -450,7 +432,23 @@ function closeModal() { document.getElementById('modalOverlay').classList.remove
 function closeModalOutside(e) { if(e.target===document.getElementById('modalOverlay')) closeModal(); }
 document.addEventListener('keydown', e => { if(e.key==='Escape') { closeModal(); closeDrawer(); } })
 
-// BOTTOM NAV
+// TOAST
+let toastTimer = null
+function showToast(msg) {
+  const t = document.getElementById('toast')
+  t.textContent = msg
+  t.classList.add('show')
+  clearTimeout(toastTimer)
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2000)
+}
+
+// TABS
+function activateTab(btn, sectionId) {
+  document.querySelectorAll('.section-tab').forEach(t => t.classList.remove('active'))
+  btn.classList.add('active')
+  const sec = document.getElementById(sectionId)
+  if (sec) sec.scrollIntoView({ behavior: 'smooth', block: 'start' })
+}
 
 // SEARCH
 function doSearch(){const q=document.getElementById('navSearchInput').value.trim();if(q)window.location.href='recherche.html?q='+encodeURIComponent(q);}
@@ -460,15 +458,32 @@ function focusSearch(){const i=document.getElementById('navSearchInput');if(i){i
 async function checkAuth() {
   const { data } = await supabaseClient.auth.getSession()
   if (data.session) {
+    const uid = data.session.user.id
     document.getElementById('navConnexion').style.display = 'none'
     document.getElementById('navAvatar').classList.add('show')
     const displayName = data.session.user.user_metadata?.username || data.session.user.email || '?';
     document.getElementById('navAvatar').textContent = displayName[0].toUpperCase()
     document.getElementById('navNotifLink').classList.add('show')
     document.getElementById('drawerProfil').style.display = 'flex'
-    document.getElementById('drawerPublier').style.display = 'flex'
     document.getElementById('drawerConnexion').style.display = 'none'
     document.getElementById('drawerLogout').style.display = 'flex'
+    // Badge notifications non lues
+    try {
+      const { count } = await supabaseClient.from('notifications')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', uid).eq('lu', false)
+      if (count > 0) {
+        const dot = document.getElementById('navNotifDot')
+        dot.textContent = count > 9 ? '9+' : count
+        dot.classList.add('show')
+      }
+    } catch (e) {}
+    // Publier visible seulement pour les créateurs
+    try {
+      const { data: prof } = await supabaseClient.from('profiles')
+        .select('is_creator').eq('id', uid).single()
+      if (prof?.is_creator) document.getElementById('drawerPublier').style.display = 'flex'
+    } catch (e) {}
   }
 }
 async function doLogout() {

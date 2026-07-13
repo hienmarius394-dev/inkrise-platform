@@ -19,6 +19,23 @@
       --border: rgba(0,0,0,0.08);
       --card-bg: #f5f5f7;
       --gold: #f5c842;
+      --bg-2: #f7f7fa;
+      --bg-3: #ededf2;
+      --surface-2: #e5e5ea;
+      --purple2: #a594f9;
+      --green: #3ddc84;
+      --amber: #f5a623;
+      --orange: #ff6b35;
+      --orange-light: #ff8a5c;
+      --teal: #00c9a7;
+      --danger: #ff3d71;
+      --text-2: #48484a;
+      --text-3: #8e8e93;
+      --radius: 12px;
+      --radius-lg: 16px;
+      --radius-xl: 20px;
+      --shadow: 0 2px 12px rgba(0,0,0,0.06);
+      --shadow-lg: 0 8px 32px rgba(0,0,0,0.1);
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -46,17 +63,17 @@
         .univ-nav-sb { background: none; border: none; cursor: pointer; padding: 6px 8px; font-size: 13px; color: rgba(0,0,0,.5); flex-shrink: 0; }
         .univ-nav-sb:hover { color: #7c6fef; }
         .nav-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-        .nav-connexion-btn { color: rgba(255,255,255,0.7); font-size: .8rem; font-weight: 600; padding: 6px 13px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.15); text-decoration: none; transition: all .2s; white-space: nowrap; }
-        .nav-connexion-btn:hover { border-color: var(--purple); color: var(--purple2); }
+        .nav-connexion-btn { color: var(--text-2); font-size: .8rem; font-weight: 600; padding: 6px 13px; border-radius: 20px; border: 1px solid rgba(0,0,0,.15); text-decoration: none; transition: all .2s; white-space: nowrap; }
+        .nav-connexion-btn:hover { border-color: var(--purple); color: var(--purple); }
         .nav-avatar-btn { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #7c6fef, #5040c8); display: none; align-items: center; justify-content: center; font-size: .85rem; font-weight: 700; color: #fff; text-decoration: none; text-transform: uppercase; }
         .nav-avatar-btn.show { display: flex; }
-        .nav-notif-link { position: relative; display: none; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 8px; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1); text-decoration: none; font-size: .95rem; transition: all .2s; }
+        .nav-notif-link { position: relative; display: none; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 8px; background: rgba(0,0,0,.05); border: 1px solid rgba(0,0,0,.08); text-decoration: none; font-size: .95rem; transition: all .2s; }
         .nav-notif-link.show { display: flex; }
-        .nav-notif-link:hover { background: rgba(255,255,255,0.13); }
-        .nav-notif-dot { position: absolute; top: -5px; right: -5px; min-width: 16px; height: 16px; border-radius: 8px; background: var(--accent); color: #fff; font-size: 9px; font-weight: 800; padding: 0 3px; display: none; align-items: center; justify-content: center; border: 2px solid var(--bg); }
+        .nav-notif-link:hover { background: rgba(0,0,0,.1); }
+        .nav-notif-dot { position: absolute; top: -5px; right: -5px; min-width: 16px; height: 16px; border-radius: 8px; background: var(--accent); color: #fff; font-size: 9px; font-weight: 800; padding: 0 3px; display: none; align-items: center; justify-content: center; border: 2px solid #fff; }
         .nav-notif-dot.show { display: flex; }
-        .univ-nav-hbg { width: 34px; height: 34px; border-radius: 8px; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; color: #1c1c1e; transition: background .2s; flex-shrink: 0; }
-        .univ-nav-hbg:hover { background: rgba(255,255,255,0.13); }
+        .univ-nav-hbg { width: 34px; height: 34px; border-radius: 8px; background: rgba(0,0,0,.05); border: 1px solid rgba(0,0,0,.08); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; color: var(--text); transition: background .2s; flex-shrink: 0; }
+        .univ-nav-hbg:hover { background: rgba(0,0,0,.1); }
 
         /* ── DRAWER ── */
         .univ-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 150; backdrop-filter: blur(3px); }
