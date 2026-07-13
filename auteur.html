@@ -285,7 +285,7 @@
     <a href="index.html" class="univ-nav-lk">Accueil</a>
     <a href="manga.html" class="univ-nav-lk">Mangas</a>
     <a href="tutoriels.html" class="univ-nav-lk">Tutoriels</a>
-    <a href="#" class="univ-nav-lk">Premium</a>
+    <a href="#" class="univ-nav-lk" onclick="openModal();return false;">Premium</a>
   </div>
   <div class="univ-nav-search">
     <input type="text" id="navSearchInput" class="univ-nav-si" placeholder="Rechercher…" onkeydown="if(event.key==='Enter')doSearch()" />
@@ -310,7 +310,7 @@
   <a href="index.html" class="univ-d-item"><div class="univ-d-icon">🏠</div>Accueil</a>
   <a href="manga.html" class="univ-d-item"><div class="univ-d-icon">📖</div>Manga & BD</a>
   <a href="tutoriels.html" class="univ-d-item"><div class="univ-d-icon">🎓</div>Tutoriels <span class="univ-d-badge teal">GRATUIT</span></a>
-  <a href="#" class="univ-d-item"><div class="univ-d-icon">💎</div>Premium <span class="univ-d-badge orange">PRO</span></a>
+  <a href="#" class="univ-d-item" onclick="openModal();closeDrawer();return false;"><div class="univ-d-icon">💎</div>Premium <span class="univ-d-badge orange">PRO</span></a>
   <a href="communaute.html" class="univ-d-item"><div class="univ-d-icon">👥</div>Communauté</a>
   <div class="univ-d-divider"></div>
   <div class="univ-d-sec">Mon compte</div>
@@ -367,6 +367,7 @@
         <div class="author-join-date" id="authorJoinDate"></div>
         <div class="author-actions">
           <button class="btn-follow-author" id="btnFollowAuthor">👤 Suivre</button>
+          <a class="btn-follow-author show" id="btnCommunaute" href="#">👥 Communauté</a>
         </div>
       </div>
     </div>
@@ -402,6 +403,7 @@ const { createClient } = supabase;
 const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let currentUser   = null;
+let currentUsername = null;
 let auteurId      = null;
 let isFollowing   = false;
 let followerCount = 0;
@@ -419,9 +421,14 @@ async function init() {
     document.getElementById('drawerPublier').style.display = 'flex';
     document.getElementById('drawerLogout').style.display = 'flex';
 
-    const { data: myProfile } = await sb.from('profiles').select('username').eq('id', currentUser.id).single();
+    const { data: myProfile } = await sb.from('profiles').select('username, avatar_url').eq('id', currentUser.id).single();
     const name = myProfile?.username || currentUser.email.split('@')[0];
-    document.getElementById('navAvatar').textContent = name[0].toUpperCase();
+    currentUsername = myProfile?.username || null;
+    const navAvatar = document.getElementById('navAvatar');
+    navAvatar.textContent = name[0].toUpperCase();
+    if (myProfile?.avatar_url) {
+      navAvatar.innerHTML = `<img src="${myProfile.avatar_url}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;" alt="" />`;
+    }
 
     const { count: unreadCount } = await sb.from('notifications')
       .select('id', { count: 'exact', head: true })
@@ -436,6 +443,9 @@ async function init() {
   const params = new URLSearchParams(window.location.search);
   auteurId = params.get('id');
   if (!auteurId) { showNotFound(); return; }
+
+  const commBtn = document.getElementById('btnCommunaute');
+  if (commBtn) commBtn.href = 'communaute.html?id=' + encodeURIComponent(auteurId);
 
   await loadProfile(auteurId);
 }
@@ -587,6 +597,15 @@ document.getElementById('btnFollowAuthor').addEventListener('click', async () =>
       followerCount++;
       document.getElementById('statFollowers').textContent = followerCount;
       showToast('✅ Tu suis maintenant ce créateur !', 'success');
+      // Notification de follow (best-effort, jamais pour soi-même)
+      if (auteurId !== currentUser.id) {
+        await sb.from('notifications').insert({
+          user_id: auteurId,
+          type: 'follow',
+          message: '@' + (currentUsername || 'quelqu\'un') + ' te suit désormais !',
+          lu: false
+        });
+      }
     } else {
       showToast('Erreur : ' + error.message, 'error');
     }
@@ -615,6 +634,7 @@ function closeDrawer() { document.getElementById('univDrawer').classList.remove(
 function doSearch()    { const q = document.getElementById('navSearchInput').value.trim(); if (q) window.location.href = 'recherche.html?q=' + encodeURIComponent(q); }
 function focusSearch() { const i = document.getElementById('navSearchInput'); if (i) { i.focus(); window.scrollTo({ top: 0, behavior: 'smooth' }); } }
 function doLogout()    { sb.auth.signOut().then(() => window.location.href = 'index.html'); }
+function openModal()   { window.location.href = 'index.html?premium=1'; }
 
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDrawer(); });
 
