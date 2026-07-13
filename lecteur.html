@@ -385,9 +385,9 @@
     .key-hint.show { opacity: 1; }
 
     @media (max-width: 600px) {
-      .mode-toggle { display: none; }
+      .mode-btn { padding: 5px 7px; font-size: 0.68rem; }
       .topbar-manga { display: none; }
-      .chap-select { max-width: 110px; }
+      .chap-select { max-width: 90px; }
     }
     /* BOTTOM NAV UNIVERSEL */
     .univ-bnav{position:fixed;bottom:0;left:0;right:0;z-index:100;background:rgba(255,255,255,.97);border-top:1px solid var(--border);box-shadow:0 -2px 12px rgba(0,0,0,.05);display:flex;align-items:center;justify-content:space-around;padding:8px 0 16px;backdrop-filter:blur(14px);}
@@ -674,12 +674,8 @@ async function init() {
     }
   }
 
-  // Mode par défaut selon le type
-  if (manga?.type === 'webtoon' || manga?.type === 'manhwa' || manga?.type === 'manhua') {
-    setMode('scroll', false);
-  } else {
-    setMode('pages', false);
-  }
+  // Mode scroll vertical par défaut pour tous les types (manga, webtoon, manhwa, manhua)
+  setMode('scroll', false);
 
   // UI
   document.getElementById('topbarManga').textContent = manga?.titre || 'Manga';
