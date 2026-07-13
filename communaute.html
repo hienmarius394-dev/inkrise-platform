@@ -1424,19 +1424,37 @@ function bindComments() {
       const postId = parseInt(this.getAttribute('data-post'));
       const textarea = document.querySelector('.comment-textarea[data-post="' + postId + '"]');
       const content = textarea.value.trim();
-      if (!content) { showToast('Écrivez un commentaire', 'error'); return; }
+      const fileInput = document.querySelector('.comment-file-input[data-post="' + postId + '"]');
+      const file = fileInput && fileInput.files[0];
+      if (!content && !file) { showToast('Écrivez un commentaire ou ajoutez une image', 'error'); return; }
 
       this.disabled = true;
       this.textContent = 'Envoi...';
 
       try {
-        const { error } = await sb.from('commentaires_communaute').insert({
-          post_id: postId,
-          user_id: state.visitor.id,
-          contenu: content
-        });
+        let imageUrl = null;
+        if (file) {
+          const ext = file.name.split('.').pop() || 'jpg';
+          const fileName = 'communaute/' + state.visitor.id + '/' + Date.now() + '.' + ext;
+          const { data: uplData, error: uplErr } = await sb.storage.from('community').upload(fileName, file);
+          if (!uplErr && uplData) {
+            const { data: pubData } = sb.storage.from('community').getPublicUrl(fileName);
+            imageUrl = pubData?.publicUrl || null;
+          }
+        }
+        const row = { post_id: postId, user_id: state.visitor.id, contenu: content || '' };
+        if (imageUrl) row.image_url = imageUrl;
+        let { error } = await sb.from('commentaires_communaute').insert(row);
+        if (error && imageUrl && /column|schema cache/i.test(error.message || '')) {
+          delete row.image_url;
+          ({ error } = await sb.from('commentaires_communaute').insert(row));
+        }
         if (error) throw error;
         textarea.value = '';
+        if (fileInput) fileInput.value = '';
+        const prev = document.getElementById('comment-preview-' + postId);
+        if (prev) { prev.style.display = 'none'; prev.innerHTML = ''; }
+        await notifyCreator('@' + (state.visitor.username || 'Quelqu\'un') + ' a commenté sur ta communauté');
         showToast('Commentaire ajouté', 'success');
         await loadPosts();
         render();
@@ -1483,22 +1501,47 @@ function bindComments() {
 
       const parentId = parseInt(this.getAttribute('data-comment'));
       const postId = parseInt(this.getAttribute('data-post'));
-      const replyText = prompt('Votre réponse :');
-      if (!replyText || !replyText.trim()) return;
-      try {
-        const { error } = await sb.from('commentaires_communaute').insert({
-          post_id: postId,
-          user_id: state.visitor.id,
-          contenu: replyText.trim(),
-          parent_id: parentId
-        });
-        if (error) throw error;
-        showToast('Réponse ajoutée', 'success');
-        await loadPosts();
-        render();
-      } catch (err) {
-        showToast('Erreur: ' + err.message, 'error');
+      const slot = document.getElementById('reply-slot-' + parentId);
+      if (!slot) return;
+      /* Toggle : refermer si déjà ouvert */
+      if (slot.getAttribute('data-open') === '1') { slot.innerHTML = ''; slot.removeAttribute('data-open'); return; }
+      slot.setAttribute('data-open', '1');
+      slot.innerHTML =
+        '<div class="comment-input-actions" style="margin-top:6px">' +
+          '<input type="text" class="reply-input" placeholder="Votre réponse..." maxlength="1000" ' +
+            'style="flex:1;padding:6px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:0.8rem;outline:none">' +
+          '<button class="comment-submit-btn reply-send-btn">Répondre</button>' +
+          '<button class="create-post-btn-sm reply-cancel-btn">Annuler</button>' +
+        '</div>';
+      const input = slot.querySelector('.reply-input');
+      input.focus();
+      slot.querySelector('.reply-cancel-btn').addEventListener('click', function () {
+        slot.innerHTML = ''; slot.removeAttribute('data-open');
+      });
+      const sendBtn = slot.querySelector('.reply-send-btn');
+      async function sendReply() {
+        const replyText = input.value.trim();
+        if (!replyText) { showToast('Écrivez une réponse', 'error'); return; }
+        sendBtn.disabled = true;
+        try {
+          const { error } = await sb.from('commentaires_communaute').insert({
+            post_id: postId,
+            user_id: state.visitor.id,
+            contenu: replyText,
+            parent_id: parentId
+          });
+          if (error) throw error;
+          await notifyCreator('@' + (state.visitor.username || 'Quelqu\'un') + ' a commenté sur ta communauté');
+          showToast('Réponse ajoutée', 'success');
+          await loadPosts();
+          render();
+        } catch (err) {
+          showToast('Erreur: ' + err.message, 'error');
+          sendBtn.disabled = false;
+        }
       }
+      sendBtn.addEventListener('click', sendReply);
+      input.addEventListener('keydown', function (e) { if (e.key === 'Enter') sendReply(); });
     });
   });
 }
@@ -1560,19 +1603,6 @@ function bindSondageVote() {
   });
 }
 
-/* Handle storage fallback for comment file uploads */
-/* The comment file upload uses blob URL fallback */
-document.addEventListener('change', function(e) {
-  if (e.target.classList.contains('comment-file-input') && e.target.files[0]) {
-    const postId = e.target.getAttribute('data-post');
-    const preview = document.getElementById('comment-preview-' + postId);
-    if (preview) {
-      const url = URL.createObjectURL(e.target.files[0]);
-      preview.innerHTML = '<img src="' + url + '" style="max-width:120px;border-radius:6px">';
-      preview.style.display = 'block';
-    }
-  }
-});
 </script>
 </body>
 </html>

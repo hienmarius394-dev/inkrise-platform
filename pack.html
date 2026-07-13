@@ -328,7 +328,7 @@
     <a href="index.html" class="univ-nav-lk">Accueil</a>
     <a href="manga.html" class="univ-nav-lk">Mangas</a>
     <a href="tutoriels.html" class="univ-nav-lk active">Tutoriels</a>
-    <a href="#" class="univ-nav-lk">Premium</a>
+    <a href="#" class="univ-nav-lk" onclick="openModal();return false;">Premium</a>
   </div>
   <div class="univ-nav-search">
     <input type="text" id="navSearchInput" class="univ-nav-si" placeholder="Rechercher…" onkeydown="if(event.key==='Enter')doSearch()" />
@@ -353,7 +353,7 @@
   <a href="index.html" class="univ-d-item"><div class="univ-d-icon">🏠</div>Accueil</a>
   <a href="manga.html" class="univ-d-item"><div class="univ-d-icon">📖</div>Manga & BD</a>
   <a href="tutoriels.html" class="univ-d-item"><div class="univ-d-icon">🎓</div>Tutoriels <span class="univ-d-badge teal">NOUVEAU</span></a>
-  <a href="#" class="univ-d-item"><div class="univ-d-icon">💎</div>Premium <span class="univ-d-badge orange">PRO</span></a>
+  <a href="#" class="univ-d-item" onclick="openModal();closeDrawer();return false;"><div class="univ-d-icon">💎</div>Premium <span class="univ-d-badge orange">PRO</span></a>
   <a href="communaute.html" class="univ-d-item"><div class="univ-d-icon">👥</div>Communauté</a>
   <div class="univ-d-divider"></div>
   <div class="univ-d-sec">Mon compte</div>
@@ -422,62 +422,17 @@
         </div>
 
         <!-- Ce que tu vas apprendre -->
-        <div class="section-card">
+        <div class="section-card" id="learnSection">
           <div class="section-title">✅ Ce que tu vas apprendre</div>
-          <ul class="learn-list" id="learnList">
-            <li class="learn-item"><span class="learn-check">✓</span><span>Maîtriser les bases du dessin manga professionnel</span></li>
-            <li class="learn-item"><span class="learn-check">✓</span><span>Construire des personnages expressifs et dynamiques</span></li>
-            <li class="learn-item"><span class="learn-check">✓</span><span>Techniques d'ombrage et de rendu pour donner du volume</span></li>
-            <li class="learn-item"><span class="learn-check">✓</span><span>Composer des cases efficaces pour raconter une histoire</span></li>
-            <li class="learn-item"><span class="learn-check">✓</span><span>Finitions professionnelles : encrage, couleur et effets</span></li>
-          </ul>
+          <ul class="learn-list" id="learnList"></ul>
         </div>
 
         <!-- Avis -->
-        <div class="section-card">
+        <div class="section-card" id="avisSection" style="display:none;">
           <div class="section-title">⭐ Avis</div>
-          <div class="rating-summary">
-            <div class="rating-big">4.8</div>
-            <div>
-              <div class="rating-stars">★★★★★</div>
-              <div class="rating-count">12 avis</div>
-            </div>
-          </div>
-          <div class="avis-list">
-            <div class="avis-item">
-              <div class="avis-header">
-                <div class="avis-avatar">K</div>
-                <div>
-                  <div class="avis-name">KiraDraws</div>
-                  <div style="font-size:.72rem;color:var(--muted);">il y a 3 jours</div>
-                </div>
-                <div class="avis-stars">★★★★★</div>
-              </div>
-              <div class="avis-text">Contenu incroyable, très bien expliqué et progressif. J'ai appris plus en 2h qu'en 6 mois de tutos YouTube !</div>
-            </div>
-            <div class="avis-item">
-              <div class="avis-header">
-                <div class="avis-avatar">M</div>
-                <div>
-                  <div class="avis-name">Mangaka_Fr</div>
-                  <div style="font-size:.72rem;color:var(--muted);">il y a 1 semaine</div>
-                </div>
-                <div class="avis-stars">★★★★★</div>
-              </div>
-              <div class="avis-text">Parfait pour débuter. Les exercices pratiques sont vraiment utiles, le créateur explique chaque étape en détail.</div>
-            </div>
-            <div class="avis-item">
-              <div class="avis-header">
-                <div class="avis-avatar">S</div>
-                <div>
-                  <div class="avis-name">SakuraPen</div>
-                  <div style="font-size:.72rem;color:var(--muted);">il y a 2 semaines</div>
-                </div>
-                <div class="avis-stars">★★★★☆</div>
-              </div>
-              <div class="avis-text">Super pack, j'aurais aimé encore plus d'exercices sur les décors. Mais le reste est top !</div>
-            </div>
-          </div>
+          <div id="avisSummary"></div>
+          <div id="avisForm"></div>
+          <div class="avis-list" id="avisList"></div>
         </div>
 
       </div>
@@ -508,7 +463,7 @@
           <div class="pack-infos-title">Infos</div>
           <div class="info-row">
             <span class="info-key">Format</span>
-            <span class="info-val">Fichier PDF / ZIP</span>
+            <span class="info-val" id="infoFormat">—</span>
           </div>
           <div class="info-row">
             <span class="info-key">Accès</span>
@@ -516,7 +471,7 @@
           </div>
           <div class="info-row">
             <span class="info-key">Niveau</span>
-            <span class="info-val">Tous niveaux</span>
+            <span class="info-val" id="infoNiveau">Tous niveaux</span>
           </div>
           <div class="info-row">
             <span class="info-key">Publié le</span>
@@ -549,7 +504,7 @@
   <a href="manga.html" class="univ-bnav-item"><span class="univ-bnav-icon">📖</span><span class="univ-bnav-label">Manga</span></a>
   <button class="univ-bnav-search" onclick="focusSearch()">🔍</button>
   <a href="tutoriels.html" class="univ-bnav-item active"><span class="univ-bnav-icon">🎓</span><span class="univ-bnav-label">Tutoriels</span></a>
-  <a href="#" class="univ-bnav-item"><span class="univ-bnav-icon">👥</span><span class="univ-bnav-label">Communauté</span></a>
+  <a href="communaute.html" class="univ-bnav-item"><span class="univ-bnav-icon">👥</span><span class="univ-bnav-label">Communauté</span></a>
 </div>
 
 <script>
@@ -624,6 +579,94 @@ async function loadPack(packId) {
       }
     }
   }
+
+  await loadAvis(packId);
+}
+
+// ── AVIS ──
+async function loadAvis(packId) {
+  const section = document.getElementById('avisSection');
+  const { data, error } = await sb
+    .from('avis_packs')
+    .select('*, profiles(username, avatar_url)')
+    .eq('pack_id', packId)
+    .order('created_at', { ascending: false });
+  if (error) { section.style.display = 'none'; return; }
+  section.style.display = 'block';
+  const avis = data || [];
+  renderAvisSummary(avis);
+  renderAvisList(avis);
+  renderAvisForm(packId, avis);
+}
+
+function renderAvisSummary(avis) {
+  const el = document.getElementById('avisSummary');
+  if (!avis.length) { el.innerHTML = ''; return; }
+  const moy = avis.reduce((s, a) => s + Number(a.note || 0), 0) / avis.length;
+  const rounded = Math.round(moy);
+  el.innerHTML = '<div class="rating-summary">' +
+    '<div class="rating-big">' + moy.toFixed(1) + '</div><div>' +
+    '<div class="rating-stars">' + '★'.repeat(rounded) + '☆'.repeat(5 - rounded) + '</div>' +
+    '<div class="rating-count">' + avis.length + ' avis</div></div></div>';
+}
+
+function renderAvisList(avis) {
+  const el = document.getElementById('avisList');
+  if (!avis.length) {
+    el.innerHTML = '<div style="color:var(--muted);font-size:.85rem;padding:8px 0;">Aucun avis pour l\'instant</div>';
+    return;
+  }
+  el.innerHTML = avis.map(a => {
+    const name = (a.profiles && a.profiles.username) || 'Utilisateur';
+    const initial = (name[0] || '?').toUpperCase();
+    const note = Number(a.note || 0);
+    const stars = '★'.repeat(note) + '☆'.repeat(5 - note);
+    const avatar = (a.profiles && a.profiles.avatar_url)
+      ? '<div class="avis-avatar"><img src="' + escapeHtml(a.profiles.avatar_url) + '" style="width:100%;height:100%;border-radius:50%;object-fit:cover" alt=""></div>'
+      : '<div class="avis-avatar">' + escapeHtml(initial) + '</div>';
+    const date = a.created_at ? new Date(a.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
+    return '<div class="avis-item"><div class="avis-header">' + avatar +
+      '<div><div class="avis-name">' + escapeHtml(name) + '</div>' +
+      '<div style="font-size:.72rem;color:var(--muted);">' + escapeHtml(date) + '</div></div>' +
+      '<div class="avis-stars">' + stars + '</div></div>' +
+      (a.commentaire ? '<div class="avis-text">' + escapeHtml(a.commentaire) + '</div>' : '') +
+      '</div>';
+  }).join('');
+}
+
+function renderAvisForm(packId, avis) {
+  const el = document.getElementById('avisForm');
+  if (!currentPack || !currentPack.accesAutorise || !currentUser) { el.innerHTML = ''; return; }
+  const mine = avis.find(a => a.user_id === currentUser.id);
+  let selected = mine ? Number(mine.note) : 0;
+  el.innerHTML = '<div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:16px;">' +
+    '<div style="font-weight:700;font-size:.88rem;margin-bottom:10px;">' + (mine ? 'Modifier ton avis' : 'Laisser un avis') + '</div>' +
+    '<div id="avisStars" style="font-size:1.5rem;color:var(--amber);cursor:pointer;letter-spacing:3px;margin-bottom:10px;"></div>' +
+    '<textarea id="avisText" placeholder="Ton commentaire (optionnel)" style="width:100%;min-height:60px;padding:10px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:inherit;font-size:.85rem;resize:vertical;outline:none;margin-bottom:10px;">' + escapeHtml((mine && mine.commentaire) || '') + '</textarea>' +
+    '<button id="avisSubmit" class="btn-buy" style="padding:10px;font-size:.9rem;">Publier mon avis</button></div>';
+  const starsEl = document.getElementById('avisStars');
+  function drawStars(n) {
+    starsEl.innerHTML = [1, 2, 3, 4, 5].map(i => '<span data-n="' + i + '" style="cursor:pointer">' + (i <= n ? '★' : '☆') + '</span>').join('');
+  }
+  drawStars(selected);
+  starsEl.addEventListener('click', function (e) {
+    const s = e.target.closest('span');
+    if (!s) return;
+    selected = parseInt(s.dataset.n);
+    drawStars(selected);
+  });
+  document.getElementById('avisSubmit').addEventListener('click', async function () {
+    if (!selected) { showToast('Choisis une note', 'info'); return; }
+    const commentaire = document.getElementById('avisText').value.trim();
+    this.disabled = true;
+    const { error } = await sb.from('avis_packs').upsert(
+      { pack_id: packId, user_id: currentUser.id, note: selected, commentaire: commentaire || null },
+      { onConflict: 'pack_id,user_id' }
+    );
+    if (error) { showToast('Erreur : ' + error.message, 'info'); this.disabled = false; return; }
+    showToast('Avis publié 🎉');
+    await loadAvis(packId);
+  });
 }
 
 function renderPack(pack) {
@@ -651,6 +694,22 @@ function renderPack(pack) {
 
   // Description
   document.getElementById('packDesc').textContent = pack.description || 'Aucune description disponible.';
+
+  // Ce que tu vas apprendre (objectifs)
+  const learnList = document.getElementById('learnList');
+  const learnSection = document.getElementById('learnSection');
+  if (Array.isArray(pack.objectifs) && pack.objectifs.filter(Boolean).length) {
+    learnList.innerHTML = pack.objectifs.filter(Boolean).map(o =>
+      '<li class="learn-item"><span class="learn-check">✓</span><span>' + escapeHtml(o) + '</span></li>'
+    ).join('');
+    learnSection.style.display = 'block';
+  } else {
+    learnSection.style.display = 'none';
+  }
+
+  // Infos : format & niveau
+  document.getElementById('infoFormat').textContent = formatFromUrl(pack.contenu_url);
+  document.getElementById('infoNiveau').textContent = pack.niveau || 'Tous niveaux';
 
   // Buy cards
   const buyLabel = isFree ? 'Télécharger gratuitement' : `Acheter — ${priceLabel}`;
@@ -724,7 +783,26 @@ function isVideoUrl(url) {
   return /youtube\.com|youtu\.be|vimeo\.com/i.test(url) || /\.(mp4|webm|ogg)$/i.test(url);
 }
 
+function formatFromUrl(url) {
+  if (!url) return '📎 Fichier';
+  if (/youtube\.com|youtu\.be|vimeo\.com|\.(mp4|webm|ogg)(\?|$)/i.test(url)) return '🎬 Vidéo';
+  if (/\.pdf(\?|$)/i.test(url)) return '📄 PDF';
+  if (/\.zip(\?|$)/i.test(url)) return '📦 ZIP';
+  return '📎 Fichier';
+}
+
+async function recordFreeAccess() {
+  if (!currentUser || !currentPack) return;
+  const prix = Number(currentPack.prix);
+  const isFree = prix === 0 || isNaN(prix) || currentPack.prix === null;
+  if (!isFree) return;
+  try {
+    await sb.from('achats_packs').insert({ user_id: currentUser.id, pack_id: currentPack.id, prix_paye: 0 });
+  } catch (e) { /* ignoré (déjà présent / table absente) */ }
+}
+
 function handleDownload() {
+  recordFreeAccess();
   if (currentPack && currentPack.contenu_url && !isVideoUrl(currentPack.contenu_url)) {
     window.open(currentPack.contenu_url, '_blank', 'noopener');
   } else if (currentPack && currentPack.contenu_url && isVideoUrl(currentPack.contenu_url)) {
@@ -749,6 +827,13 @@ function showToast(msg, type = 'success') {
   t.className = `toast ${type} show`;
   setTimeout(() => t.classList.remove('show'), 3000);
 }
+function escapeHtml(str) {
+  if (str === null || str === undefined) return '';
+  const d = document.createElement('div');
+  d.textContent = String(str);
+  return d.innerHTML;
+}
+function openModal() { window.location.href = 'index.html?premium=1'; }
 
 // ── NAV ──
 function openDrawer()  { document.getElementById('univDrawer').classList.add('open'); document.getElementById('univOverlay').classList.add('open'); document.body.style.overflow = 'hidden'; }
