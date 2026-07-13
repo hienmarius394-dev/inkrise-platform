@@ -142,9 +142,19 @@
       border: 1px solid var(--border);
       border-radius: 14px;
       padding: 16px 20px;
-      display: flex; align-items: center; gap: 14px;
+      display: flex; align-items: center; gap: 10px 14px;
+      flex-wrap: wrap;
       transition: all .2s;
       position: relative;
+    }
+    /* Le titre force un retour à la ligne : les infos (pages/date) et les
+       actions (dont "Ajouter des pages") passent sur une 2e ligne plutôt
+       que d'être poussées hors de l'écran sur mobile. */
+    .chap-title-display, .chap-title-input { flex: 1 1 140px; min-width: 100px; }
+    .chap-pages-count, .chap-date { order: 3; }
+    .chap-actions { order: 4; margin-left: auto; }
+    @media (max-width: 480px) {
+      .chap-date { display: none; }
     }
     .chap-row:hover { border-color: var(--border2); }
     .chap-row.editing { border-color: var(--purple); background: rgba(124,111,239,0.05); }
@@ -366,6 +376,16 @@
     }
     .edit-cover-label:hover { border-color: var(--purple); color: var(--purple2); }
     .edit-cover-label.has-files { border-color: var(--green); color: var(--green); }
+    .edit-cover-preview-wrap {
+      display: none; position: relative; border-radius: 12px; overflow: hidden;
+      aspect-ratio: 2/3; max-width: 220px; margin: 10px auto 0;
+      background: #111; cursor: grab; touch-action: none; user-select: none;
+    }
+    .edit-cover-preview-wrap.dragging { cursor: grabbing; }
+    .edit-cover-preview-wrap img { position: absolute; top: 0; left: 0; max-width: none; display: block; pointer-events: none; }
+    .edit-cover-zoom-row { display: flex; align-items: center; gap: 8px; max-width: 220px; margin: 8px auto 0; }
+    .edit-cover-zoom-row input[type="range"] { flex: 1; }
+    .edit-cover-hint { text-align: center; font-size: 0.72rem; color: var(--muted); margin-top: 6px; }
     .btn-modal-save {
       background: linear-gradient(135deg, var(--purple), #5040c8); color: #fff; border: none;
       padding: 10px 22px; border-radius: 10px; font-weight: 700;
@@ -520,8 +540,16 @@
       <label>Couverture</label>
       <label class="edit-cover-label" id="editCoverLabel">
         <input type="file" accept="image/*" style="display:none;" id="editCoverInput" />
-        🖼️ Remplacer la couverture
+        🖼️ Choisir une nouvelle image
       </label>
+      <div class="edit-cover-preview-wrap" id="editCoverPreview">
+        <img id="editCoverImg" src="" alt="Couverture" draggable="false" />
+      </div>
+      <div class="edit-cover-zoom-row" id="editCoverZoomRow" style="display:none;">
+        <span style="font-size:0.9rem;">🔍</span>
+        <input type="range" id="editCoverZoom" min="100" max="300" value="100" step="1" />
+      </div>
+      <div class="edit-cover-hint" id="editCoverHint" style="display:none;">Glisse l'image pour la recadrer.</div>
     </div>
     <div class="modal-actions" style="margin-top:22px;">
       <button class="btn-modal-cancel" id="btnCancelEditManga">Annuler</button>
@@ -551,6 +579,8 @@ let authorName     = '';
 let pageCounts     = {};   // chapitreId -> nombre de pages dans le storage
 let rowPagesTargetChapId = null;
 let editCoverFile  = null;
+let editCoverTouched = false;
+let editCoverCrop = { zoom: 1, x: 0, y: 0, naturalW: 0, naturalH: 0 };
 
 // ── HELPERS PAGES (bucket `pages`, chemin chapitres/{chapitreId}/page_XXXX.ext) ──
 function validatePageFiles(files) {
@@ -981,9 +1011,25 @@ function bindEvents() {
     const st = document.getElementById('editStatut');
     st.value = ['en_cours','termine','pause','brouillon'].includes(manga.statut) ? manga.statut : 'en_cours';
     editCoverFile = null;
+    editCoverTouched = false;
+    editCoverCrop = { zoom: 1, x: 0, y: 0, naturalW: 0, naturalH: 0 };
     const lbl = document.getElementById('editCoverLabel');
     lbl.classList.remove('has-files');
-    lbl.childNodes[lbl.childNodes.length - 1].textContent = ' 🖼️ Remplacer la couverture';
+    lbl.childNodes[lbl.childNodes.length - 1].textContent = ' 🖼️ Choisir une nouvelle image';
+    // Précharge la couverture actuelle pour permettre un simple recadrage sans re-upload
+    if (manga.couverture_url) {
+      const img = document.getElementById('editCoverImg');
+      img.crossOrigin = 'anonymous';
+      img.onload = () => { initEditCoverReposition(); editCoverTouched = false; };
+      img.src = manga.couverture_url;
+      document.getElementById('editCoverPreview').style.display = 'block';
+      document.getElementById('editCoverZoomRow').style.display = 'flex';
+      document.getElementById('editCoverHint').style.display = 'block';
+    } else {
+      document.getElementById('editCoverPreview').style.display = 'none';
+      document.getElementById('editCoverZoomRow').style.display = 'none';
+      document.getElementById('editCoverHint').style.display = 'none';
+    }
     document.getElementById('editMangaModal').classList.add('open');
   });
   document.getElementById('btnCancelEditManga').addEventListener('click', () => {
@@ -1000,11 +1046,129 @@ function bindEvents() {
     if (!f.type.startsWith('image/')) { showToast('Fichier invalide (image attendue)', 'error'); this.value = ''; return; }
     if (f.size > 5 * 1024 * 1024) { showToast('Image trop lourde (max 5 Mo)', 'error'); this.value = ''; return; }
     editCoverFile = f;
+    editCoverTouched = true;
     const lbl = document.getElementById('editCoverLabel');
     lbl.classList.add('has-files');
     lbl.childNodes[lbl.childNodes.length - 1].textContent = ' ✅ ' + f.name;
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = document.getElementById('editCoverImg');
+      img.removeAttribute('crossorigin');
+      img.onload = () => initEditCoverReposition();
+      img.src = e.target.result;
+      document.getElementById('editCoverPreview').style.display = 'block';
+      document.getElementById('editCoverZoomRow').style.display = 'flex';
+      document.getElementById('editCoverHint').style.display = 'block';
+    };
+    reader.readAsDataURL(f);
   });
   document.getElementById('btnSaveEditManga').addEventListener('click', saveMangaEdits);
+  bindEditCoverReposition();
+}
+
+// ── RECADRAGE COUVERTURE (édition manga existant) ──
+function initEditCoverReposition() {
+  const wrap = document.getElementById('editCoverPreview');
+  const img = document.getElementById('editCoverImg');
+  editCoverCrop.naturalW = img.naturalWidth;
+  editCoverCrop.naturalH = img.naturalHeight;
+  editCoverCrop.zoom = 1;
+  document.getElementById('editCoverZoom').value = 100;
+  const frameW = wrap.clientWidth, frameH = wrap.clientHeight;
+  const scaleToCover = Math.max(frameW / editCoverCrop.naturalW, frameH / editCoverCrop.naturalH);
+  const dispW = editCoverCrop.naturalW * scaleToCover;
+  const dispH = editCoverCrop.naturalH * scaleToCover;
+  img.style.width = dispW + 'px';
+  img.style.height = dispH + 'px';
+  editCoverCrop.x = (frameW - dispW) / 2;
+  editCoverCrop.y = (frameH - dispH) / 2;
+  applyEditCoverTransform();
+}
+function applyEditCoverTransform() {
+  const img = document.getElementById('editCoverImg');
+  img.style.left = editCoverCrop.x + 'px';
+  img.style.top = editCoverCrop.y + 'px';
+}
+function clampEditCoverPosition() {
+  const wrap = document.getElementById('editCoverPreview');
+  const img = document.getElementById('editCoverImg');
+  const frameW = wrap.clientWidth, frameH = wrap.clientHeight;
+  const dispW = img.offsetWidth, dispH = img.offsetHeight;
+  const minX = Math.min(0, frameW - dispW), minY = Math.min(0, frameH - dispH);
+  editCoverCrop.x = Math.max(minX, Math.min(0, editCoverCrop.x));
+  editCoverCrop.y = Math.max(minY, Math.min(0, editCoverCrop.y));
+}
+function bindEditCoverReposition() {
+  const wrap = document.getElementById('editCoverPreview');
+  const img = document.getElementById('editCoverImg');
+  const zoomInput = document.getElementById('editCoverZoom');
+  let dragging = false, startX = 0, startY = 0, originX = 0, originY = 0;
+  function pointerDown(cx, cy) { dragging = true; wrap.classList.add('dragging'); startX = cx; startY = cy; originX = editCoverCrop.x; originY = editCoverCrop.y; }
+  function pointerMove(cx, cy) {
+    if (!dragging) return;
+    editCoverTouched = true;
+    editCoverCrop.x = originX + (cx - startX);
+    editCoverCrop.y = originY + (cy - startY);
+    clampEditCoverPosition();
+    applyEditCoverTransform();
+  }
+  function pointerUp() { dragging = false; wrap.classList.remove('dragging'); }
+  wrap.addEventListener('mousedown', e => { e.preventDefault(); pointerDown(e.clientX, e.clientY); });
+  window.addEventListener('mousemove', e => pointerMove(e.clientX, e.clientY));
+  window.addEventListener('mouseup', pointerUp);
+  wrap.addEventListener('touchstart', e => { const t = e.touches[0]; pointerDown(t.clientX, t.clientY); }, { passive: true });
+  wrap.addEventListener('touchmove', e => { const t = e.touches[0]; pointerMove(t.clientX, t.clientY); }, { passive: true });
+  wrap.addEventListener('touchend', pointerUp);
+  zoomInput.addEventListener('input', () => {
+    if (!editCoverCrop.naturalW) return;
+    editCoverTouched = true;
+    const frameW = wrap.clientWidth, frameH = wrap.clientHeight;
+    const zoom = zoomInput.value / 100;
+    const scaleToCover = Math.max(frameW / editCoverCrop.naturalW, frameH / editCoverCrop.naturalH);
+    const oldDispW = img.offsetWidth, oldDispH = img.offsetHeight;
+    const newDispW = editCoverCrop.naturalW * scaleToCover * zoom;
+    const newDispH = editCoverCrop.naturalH * scaleToCover * zoom;
+    const centerX = frameW / 2 - editCoverCrop.x, centerY = frameH / 2 - editCoverCrop.y;
+    const ratioX = oldDispW ? centerX / oldDispW : 0.5, ratioY = oldDispH ? centerY / oldDispH : 0.5;
+    img.style.width = newDispW + 'px';
+    img.style.height = newDispH + 'px';
+    editCoverCrop.x = frameW / 2 - ratioX * newDispW;
+    editCoverCrop.y = frameH / 2 - ratioY * newDispH;
+    clampEditCoverPosition();
+    applyEditCoverTransform();
+  });
+}
+function bakeEditCoverCrop() {
+  return new Promise(resolve => {
+    if (!editCoverCrop.naturalW) { resolve(editCoverFile); return; }
+    const wrap = document.getElementById('editCoverPreview');
+    const img = document.getElementById('editCoverImg');
+    const frameW = wrap.clientWidth, frameH = wrap.clientHeight;
+    const dispW = img.offsetWidth;
+    const scale = dispW / editCoverCrop.naturalW;
+    const srcX = -editCoverCrop.x / scale, srcY = -editCoverCrop.y / scale;
+    const srcW = frameW / scale, srcH = frameH / scale;
+    const outW = 800, outH = 1200;
+    const canvas = document.createElement('canvas');
+    canvas.width = outW; canvas.height = outH;
+    const ctx = canvas.getContext('2d');
+    const srcImg = new Image();
+    srcImg.crossOrigin = 'anonymous';
+    srcImg.onload = () => {
+      try {
+        ctx.drawImage(srcImg, srcX, srcY, srcW, srcH, 0, 0, outW, outH);
+        canvas.toBlob(blob => {
+          if (!blob) { resolve(editCoverFile); return; }
+          resolve(new File([blob], 'cover.jpg', { type: 'image/jpeg' }));
+        }, 'image/jpeg', 0.88);
+      } catch (e) {
+        // Canvas "tainted" (CORS) : on retombe sur le fichier choisi tel quel, si présent
+        resolve(editCoverFile);
+      }
+    };
+    srcImg.onerror = () => resolve(editCoverFile);
+    srcImg.src = img.src;
+  });
 }
 
 async function saveMangaEdits() {
@@ -1016,14 +1180,17 @@ async function saveMangaEdits() {
     statut:   document.getElementById('editStatut').value,
   };
 
-  if (editCoverFile) {
-    showToast('⏳ Upload de la couverture…', 'info');
-    const ext  = editCoverFile.name.split('.').pop();
-    const path = `covers/${currentUser.id}/${Date.now()}.${ext}`;
-    const { error: upErr } = await sb.storage.from('covers').upload(path, editCoverFile, { upsert: true });
-    if (upErr) { showToast('Erreur upload couverture : ' + upErr.message, 'error'); return; }
-    const { data: { publicUrl } } = sb.storage.from('covers').getPublicUrl(path);
-    updates.couverture_url = publicUrl;
+  if (editCoverTouched) {
+    showToast('⏳ Envoi de la couverture recadrée…', 'info');
+    const finalCoverFile = await bakeEditCoverCrop();
+    if (finalCoverFile) {
+      const ext  = finalCoverFile.name.split('.').pop() || 'jpg';
+      const path = `covers/${currentUser.id}/${Date.now()}.${ext}`;
+      const { error: upErr } = await sb.storage.from('covers').upload(path, finalCoverFile, { upsert: true });
+      if (upErr) { showToast('Erreur upload couverture : ' + upErr.message, 'error'); return; }
+      const { data: { publicUrl } } = sb.storage.from('covers').getPublicUrl(path);
+      updates.couverture_url = publicUrl;
+    }
   }
 
   const { error } = await sb.from('mangas').update(updates).eq('id', mangaId);
