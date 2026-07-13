@@ -248,18 +248,21 @@
     .pack-card {
       background: var(--card-bg);
       border: 1px solid var(--border);
-      border-radius: 16px;
+      border-radius: 20px;
       overflow: hidden;
       display: flex;
       flex-direction: column;
-      transition: border-color .2s, transform .2s;
+      transition: border-color .2s, transform .2s, box-shadow .2s;
+      position: relative;
     }
-    .pack-card:hover { border-color: rgba(124,111,239,0.3); transform: translateY(-2px); }
+    .pack-card:hover { border-color: rgba(124,111,239,0.4); transform: translateY(-4px); box-shadow: 0 14px 34px rgba(124,111,239,0.18); }
+    .pack-img-wrap { position: relative; }
     .pack-img {
       width: 100%;
       height: 160px;
       object-fit: cover;
       background: var(--surface2);
+      display: block;
     }
     .pack-img-fallback {
       width: 100%;
@@ -270,6 +273,14 @@
       justify-content: center;
       font-size: 2.5rem;
     }
+    .pack-price-badge {
+      position: absolute; top: 10px; left: 10px;
+      font-family: 'Syne', sans-serif; font-size: 0.78rem; font-weight: 800;
+      padding: 5px 12px; border-radius: 100px;
+      background: rgba(10,8,20,0.72); backdrop-filter: blur(6px);
+      color: var(--gold); border: 1px solid rgba(255,255,255,0.12);
+    }
+    .pack-price-badge.free { color: #3ddc84; }
     .pack-body { padding: 16px; flex: 1; display: flex; flex-direction: column; gap: 8px; }
     .pack-title {
       font-family: 'Syne', sans-serif;
@@ -292,16 +303,13 @@
       justify-content: space-between;
       margin-top: 4px;
     }
-    .pack-price {
-      font-family: 'Syne', sans-serif;
-      font-size: 1.05rem;
-      font-weight: 800;
-      color: var(--gold);
-    }
     .pack-buyers {
-      font-size: 0.78rem;
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 0.76rem;
       color: var(--muted);
-      font-weight: 600;
+      font-weight: 700;
+      background: rgba(124,111,239,0.1);
+      padding: 4px 10px; border-radius: 100px;
     }
     .pack-actions {
       display: flex;
@@ -589,8 +597,14 @@
         <div class="form-hint">Mets 0 pour une formation gratuite.</div>
       </div>
       <div class="form-group">
-        <label class="form-label" for="f-image">URL de l'image (optionnelle)</label>
-        <input class="form-input" type="url" id="f-image" placeholder="https://..." />
+        <label class="form-label">Image de couverture (optionnelle)</label>
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+          <img id="f-image-preview" src="" alt="" style="display:none;width:88px;height:56px;object-fit:cover;border-radius:8px;border:1px solid var(--border);" />
+          <label for="f-image-file" class="btn btn-ghost btn-sm" style="cursor:pointer;">📷 Choisir une image</label>
+          <input type="file" id="f-image-file" accept="image/*" style="display:none;" />
+          <span id="f-image-status" style="font-size:0.78rem;color:var(--muted);"></span>
+        </div>
+        <input class="form-input" type="url" id="f-image" placeholder="https://... (ou colle une URL directement)" style="margin-top:8px;" />
       </div>
       <div class="form-group">
         <label class="form-label" for="f-video">Lien vidéo (optionnel)</label>
@@ -823,12 +837,14 @@
         : `<div class="pack-img-fallback">📚</div>`;
 
       card.innerHTML = `
-        ${imgHtml}
+        <div class="pack-img-wrap">
+          ${imgHtml}
+          <span class="pack-price-badge${prix === 0 ? ' free' : ''}">${prixStr}</span>
+        </div>
         <div class="pack-body">
           <div class="pack-title">${escHtml(pack.titre)}</div>
           ${pack.description ? `<div class="pack-desc">${escHtml(pack.description)}</div>` : ''}
           <div class="pack-meta">
-            <div class="pack-price">${prixStr}</div>
             <div class="pack-buyers">👥 ${buyers} acheteur${buyers !== 1 ? 's' : ''}</div>
           </div>
         </div>
@@ -852,11 +868,21 @@
   }
 
   /* ── MODAL NOUVELLE FORMATION ── */
-  function openNewModal() {
+  async function openNewModal() {
+    if (!userProfile?.espace_premium) {
+      const { count } = await sb.from('packs_tutoriels').select('id', { count: 'exact', head: true }).eq('auteur_id', currentUser.id);
+      if ((count || 0) >= 2) {
+        showToast('Limite de 2 formations gratuites atteinte — passe Premium pour en créer plus 💎', 'error');
+        setTimeout(() => window.location.href = 'index.html?premium=1', 1400);
+        return;
+      }
+    }
     document.getElementById('modal-title').textContent = 'Nouvelle formation';
     document.getElementById('submit-label').textContent = 'Créer la formation';
     document.getElementById('edit-pack-id').value = '';
     document.getElementById('pack-form').reset();
+    document.getElementById('f-image-preview').style.display = 'none';
+    document.getElementById('f-image-status').textContent = '';
     document.getElementById('f-prix').value = '2.00';
     document.getElementById('modal-overlay').classList.add('open');
   }
@@ -868,6 +894,39 @@
   document.getElementById('btn-new-pack').addEventListener('click', openNewModal);
   document.getElementById('modal-close').addEventListener('click', closeModal);
   document.getElementById('modal-cancel').addEventListener('click', closeModal);
+
+  /* ── UPLOAD IMAGE DE COUVERTURE DU PACK ── */
+  document.getElementById('f-image-file').addEventListener('change', async function() {
+    const file = this.files[0];
+    if (!file) return;
+    const statusEl = document.getElementById('f-image-status');
+    const preview = document.getElementById('f-image-preview');
+
+    const reader = new FileReader();
+    reader.onload = e => { preview.src = e.target.result; preview.style.display = ''; };
+    reader.readAsDataURL(file);
+
+    statusEl.textContent = 'Envoi en cours…';
+    try {
+      const ext = file.name.split('.').pop() || 'jpg';
+      const fileName = 'packs/' + currentUser.id + '_' + Date.now() + '.' + ext;
+      const { data: uplData, error: uplErr } = await sb.storage.from('covers').upload(fileName, file, { upsert: true });
+      if (uplErr || !uplData) throw uplErr || new Error('Upload échoué');
+      const { data: pubData } = sb.storage.from('covers').getPublicUrl(fileName);
+      if (!pubData?.publicUrl) throw new Error('URL publique introuvable');
+      document.getElementById('f-image').value = pubData.publicUrl;
+      statusEl.textContent = '✅ Image ajoutée';
+    } catch (err) {
+      statusEl.textContent = 'Erreur : ' + (err.message || 'upload impossible');
+    }
+  });
+
+  // Aperçu si une URL est collée/déjà présente (création vs édition)
+  document.getElementById('f-image').addEventListener('input', function() {
+    const preview = document.getElementById('f-image-preview');
+    if (this.value.trim()) { preview.src = this.value.trim(); preview.style.display = ''; }
+    else { preview.style.display = 'none'; }
+  });
   document.getElementById('modal-overlay').addEventListener('click', function(e) {
     if (e.target === this) closeModal();
   });
@@ -884,6 +943,13 @@
     document.getElementById('f-desc').value = pack.description || '';
     document.getElementById('f-prix').value = pack.prix != null ? pack.prix : '2.00';
     document.getElementById('f-image').value = pack.image_url || '';
+    if (pack.image_url) {
+      document.getElementById('f-image-preview').src = pack.image_url;
+      document.getElementById('f-image-preview').style.display = '';
+    } else {
+      document.getElementById('f-image-preview').style.display = 'none';
+    }
+    document.getElementById('f-image-status').textContent = '';
     document.getElementById('f-video').value = pack.contenu_url || '';
     document.getElementById('f-objectifs').value = Array.isArray(pack.objectifs) ? pack.objectifs.join('\n') : '';
     document.getElementById('f-niveau').value = pack.niveau || 'Tous niveaux';
@@ -914,6 +980,15 @@
     const editId = document.getElementById('edit-pack-id').value;
 
     try {
+      if (!editId && !userProfile?.espace_premium) {
+        const { count } = await sb.from('packs_tutoriels').select('id', { count: 'exact', head: true }).eq('auteur_id', currentUser.id);
+        if ((count || 0) >= 2) {
+          showToast('Limite de 2 formations gratuites atteinte — passe Premium 💎', 'error');
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = '<span id="submit-label">Créer la formation</span>';
+          return;
+        }
+      }
       if (editId) {
         const row = { titre, description, prix, image_url, contenu_url, objectifs, niveau };
         let { error } = await sb.from('packs_tutoriels').update(row).eq('id', editId).eq('auteur_id', currentUser.id);

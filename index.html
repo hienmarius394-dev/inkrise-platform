@@ -409,35 +409,26 @@ h1,h2,h3,.logo { font-family: 'Syne', sans-serif; }
     <button class="modal-close" onclick="closeModal()">✕</button>
     <span class="modal-tag">Espace créateur</span>
     <div class="modal-title">Choisis ton plan créateur</div>
-    <div class="modal-sub">La publication et la monétisation de base sont gratuites. Passe à un plan supérieur pour débloquer ta communauté privée et tes fonctionnalités avancées.</div>
-    <div class="plans-grid">
+    <div class="modal-sub">Publie gratuitement. Passe en Premium pour débloquer les formations illimitées et plus de mangas.</div>
+    <div class="plans-grid" style="grid-template-columns:repeat(2,1fr);max-width:520px;margin:0 auto;">
       <div class="plan-card">
-        <div class="plan-name">Débutant</div>
+        <div class="plan-name">Gratuit</div>
         <div class="plan-price"><span class="plan-price-num">0€</span><span class="plan-price-per">/ pour toujours</span></div>
         <ul class="plan-features">
-          <li>Publication de mangas</li><li>Monétisation par les vues</li>
-          <li>Profil créateur basique</li><li>Accès à la communauté</li>
+          <li>Jusqu'à 3 mangas publiés</li><li>Jusqu'à 2 formations en vente</li>
+          <li>Profil créateur</li><li>Accès à la communauté</li>
         </ul>
-        <button class="btn-plan" onclick="choosePlan('debutant')">Commencer gratuit</button>
+        <button class="btn-plan" onclick="choosePlan('gratuit')">Commencer gratuit</button>
       </div>
       <div class="plan-card featured">
-        <div class="plan-badge">⭐ POPULAIRE</div>
-        <div class="plan-name">Créateur</div>
-        <div class="plan-price"><span class="plan-price-num">8€</span><span class="plan-price-per">/ mois</span></div>
+        <div class="plan-badge">⭐ PREMIUM</div>
+        <div class="plan-name">Premium</div>
+        <div class="plan-price"><span class="plan-price-num">5€</span><span class="plan-price-per">/ mois</span></div>
         <ul class="plan-features">
-          <li>Tout du plan Débutant</li><li>Communauté privée payante</li>
-          <li>0% commission abonnés</li><li>Analytics basiques</li><li>Support prioritaire</li>
+          <li>Mangas illimités</li><li>Formations illimitées</li>
+          <li>Espace formations premium</li><li>Badge Premium ✓</li>
         </ul>
-        <button class="btn-plan featured" onclick="choosePlan('createur')">Devenir Créateur</button>
-      </div>
-      <div class="plan-card">
-        <div class="plan-name">Pro</div>
-        <div class="plan-price"><span class="plan-price-num">15€</span><span class="plan-price-per">/ mois</span></div>
-        <ul class="plan-features">
-          <li>Tout du plan Créateur</li><li>Badge vérifié ✓</li>
-          <li>Mise en avant accueil</li><li>Analytics avancés</li><li>Support dédié</li>
-        </ul>
-        <button class="btn-plan" onclick="choosePlan('pro')">Passer Pro</button>
+        <button class="btn-plan featured" onclick="choosePlan('premium')">Passer Premium</button>
       </div>
     </div>
   </div>
@@ -546,13 +537,13 @@ function emptyState(msg) { return `<div class="empty-state">${msg}</div>` }
 function escapeHtml(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])) }
 
 // PLANS CRÉATEUR
-async function choosePlan(plan) { // 'debutant' | 'createur' | 'pro'
+async function choosePlan(plan) { // 'gratuit' | 'premium'
   const { data } = await supabaseClient.auth.getSession()
   if (!data.session) { window.location.href = 'auth.html'; return }
-  const updates = plan === 'debutant' ? { is_creator: true } : { is_creator: true, espace_premium: true }
+  const updates = plan === 'premium' ? { is_creator: true, espace_premium: true } : { is_creator: true }
   const { error } = await supabaseClient.from('profiles').update(updates).eq('id', data.session.user.id)
   if (error) { showToast('Erreur : ' + error.message); return }
-  showToast(plan === 'debutant' ? 'Espace créateur activé 🎉' : 'Plan activé (démo — paiement bientôt disponible) 🎉')
+  showToast(plan === 'premium' ? 'Premium activé (démo — paiement bientôt disponible) 💎' : 'Espace créateur activé 🎉')
   setTimeout(() => window.location.href = 'mon-espace.html', 900)
 }
 
