@@ -175,8 +175,21 @@ body { background: var(--ink); color: var(--text); font-family: 'DM Sans', sans-
 
 <script>
 const SUPABASE_URL = 'https://bsdcpwtimsgxcnaamwip.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJzZGNwd3RpbXNneGNuYWFtd2lwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAzMTQ1MDIsImV4cCI6MjA5NTg5MDUwMn0.uMcfUsnlULHNqS_87xzUWRUB8tEaCCNQglrWwN2fb44';
-const supabase = SUPABASE_URL && SUPABASE_ANON_KEY ? supabaseJs.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJzZGNwd3RpbXNneGNuYWFtd2lwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAzMTQ1MDIsImV4cCI6MjA5NTg5MDUwMn0.uMcfUsnlULHNqS_87xzUWRUB8tEaCCNQglrWwN2fb44';
+const sb = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+
+let currentUserId = null;
+
+function escapeHtml(str){
+  if(str==null) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+function showToast(msg){
+  const t=document.getElementById('toast');
+  if(!t) return;
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(t._tmr); t._tmr=setTimeout(()=>t.classList.remove('show'),2000);
+}
 
 function doSearch(){
   const q=document.getElementById('navSearchInput');
@@ -189,19 +202,77 @@ function focusSearch(){
 }
 function openDrawer(){document.getElementById('univDrawer').classList.add('open');document.getElementById('univOverlay').classList.add('open');}
 function closeDrawer(){document.getElementById('univDrawer').classList.remove('open');document.getElementById('univOverlay').classList.remove('open');}
-function openModal(){alert('Premium - bientôt disponible !');}
+function openModal(){ window.location.href = 'index.html?premium=1'; }
+
+async function updateAuthUI(user){
+  const btn = document.getElementById('navConnexion');
+  const avatar = document.getElementById('navAvatar');
+  const notif = document.getElementById('navNotifLink');
+  const profil = document.getElementById('drawerProfil');
+  const publier = document.getElementById('drawerPublier');
+  const connexion = document.getElementById('drawerConnexion');
+  const logout = document.getElementById('drawerLogout');
+
+  if(user){
+    if(btn) btn.style.display = 'none';
+    if(avatar) avatar.classList.add('show');
+    if(notif) notif.classList.add('show');
+    if(profil) profil.style.display = 'flex';
+    if(publier) publier.style.display = 'flex';
+    if(connexion) connexion.style.display = 'none';
+    if(logout) logout.style.display = 'flex';
+
+    const { data: prof } = await sb.from('profiles').select('username, avatar_url').eq('id', user.id).single();
+    const uname = (prof && prof.username) || (user.email || 'U');
+    if(avatar){
+      avatar.textContent = uname[0].toUpperCase();
+      if(prof && prof.avatar_url){
+        avatar.innerHTML = `<img src="${escapeHtml(prof.avatar_url)}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;" alt="" />`;
+      }
+    }
+    const { count } = await sb.from('notifications').select('id',{count:'exact',head:true}).eq('user_id', user.id).eq('lu', false);
+    if(count > 0){
+      const dot = document.getElementById('navNotifDot');
+      dot.textContent = count > 9 ? '9+' : count;
+      dot.classList.add('show');
+    }
+  } else {
+    if(btn) btn.style.display = '';
+    if(avatar) avatar.classList.remove('show');
+    if(notif) notif.classList.remove('show');
+    if(profil) profil.style.display = 'none';
+    if(publier) publier.style.display = 'none';
+    if(connexion) connexion.style.display = 'flex';
+    if(logout) logout.style.display = 'none';
+  }
+}
+
+async function fetchLibrary(userId){
+  const sel = 'manga_id, chapitre, page, total_chapitres, added_at, mangas(titre, couverture_url, auteur_id, profiles(username))';
+  let { data, error } = await sb.from('bibliotheque').select(sel)
+    .eq('user_id', userId).order('added_at', { ascending: false });
+  if(error && /page/i.test(error.message || '')){
+    // Retry sans la colonne page (peut être absente avant exécution du SQL)
+    const sel2 = 'manga_id, chapitre, total_chapitres, added_at, mangas(titre, couverture_url, auteur_id, profiles(username))';
+    ({ data, error } = await sb.from('bibliotheque').select(sel2)
+      .eq('user_id', userId).order('added_at', { ascending: false }));
+  }
+  return { data, error };
+}
 
 async function loadLibrary(){
   const content = document.getElementById('libraryContent');
-  
-  if(!supabase){
+
+  if(!sb){
     content.innerHTML = '<div class="error-state">Erreur de configuration</div>';
     return;
   }
 
-  const { data: { user }, error: authError } = await supabase.auth.getUser();
-  
+  const { data: { user } } = await sb.auth.getUser();
+
   if(!user){
+    await updateAuthUI(null);
+    document.getElementById('libSub').textContent = 'Tes mangas sauvegardés';
     content.innerHTML = `
       <div class="library-empty">
         <div class="library-empty-icon">🔒</div>
@@ -209,20 +280,16 @@ async function loadLibrary(){
         <div class="library-empty-text">Connecte-toi à ton compte pour retrouver ta bibliothèque et reprendre ta lecture.</div>
         <a href="auth.html" class="btn-primary">Se connecter</a>
       </div>`;
-    updateAuthUI(null);
     return;
   }
 
-  updateAuthUI(user);
+  currentUserId = user.id;
+  await updateAuthUI(user);
 
-  const { data: library, error } = await supabase
-    .from('bibliotheque')
-    .select('manga_id, chapitre, page, total_chapitres, added_at, mangas:titre, mangas:couverture_url, mangas:auteur_nom')
-    .eq('user_id', user.id)
-    .order('added_at', { ascending: false });
+  const { data: library, error } = await fetchLibrary(user.id);
 
   if(error){
-    content.innerHTML = `<div class="error-state">Erreur: ${error.message}</div>`;
+    content.innerHTML = `<div class="error-state">Erreur: ${escapeHtml(error.message)}</div>`;
     return;
   }
 
@@ -242,58 +309,54 @@ async function loadLibrary(){
   let html = '<div class="library-grid">';
   for(const item of library){
     const manga = item.mangas || {};
-    const titre = manga.titre || 'Manga #' + item.manga_id;
+    const titre = escapeHtml(manga.titre || 'Manga #' + item.manga_id);
     const cover = manga.couverture_url || '';
-    const auteur = manga.auteur_nom || '';
+    const auteur = escapeHtml((manga.profiles && manga.profiles.username) || 'Auteur inconnu');
     const chapitre = item.chapitre || 0;
     const totalChaps = item.total_chapitres || '?';
-    const progress = chapitre > 0 ? `Ch. ${chapitre}/${totalChaps}` : 'Ajouté';
-    const continueUrl = chapitre > 0 ? `lecteur.html?id=${item.manga_id}&chapitre=${chapitre}` : `manga.html?id=${item.manga_id}`;
+    const progress = chapitre > 0 ? `Chapitre ${chapitre}/${totalChaps}` : 'Ajouté';
+    // lecteur.html attend ?manga_id=<id>&chapitre=<id du chapitre> (== bibliotheque.chapitre)
+    const continueUrl = chapitre > 0
+      ? `lecteur.html?manga_id=${item.manga_id}&chapitre=${chapitre}`
+      : `manga.html?id=${item.manga_id}`;
 
     html += `
-      <div class="lib-card" onclick="window.location.href='${continueUrl}'">
-        <div class="lib-cover">
-          ${cover ? `<img src="${cover}" alt="${titre}" />` : `<span class="lib-cover-fallback">📖</span>`}
-        </div>
-        ${chapitre > 0 ? `<a href="${continueUrl}" class="lib-continue">▶ Reprendre (Ch.${chapitre})</a>` : '<div class="lib-new-badge">NOUVEAU</div>'}
-        <div class="lib-info">
-          <div class="lib-title">${titre}</div>
-          <div class="lib-meta">${auteur} · ${progress}</div>
-        </div>
+      <div class="lib-card">
+        <button class="lib-remove" title="Retirer" onclick="removeFromLibrary(${item.manga_id}, this, event)">✕</button>
+        <a href="${continueUrl}" style="text-decoration:none;color:inherit;display:block;">
+          <div class="lib-cover">
+            ${cover ? `<img src="${escapeHtml(cover)}" alt="${titre}" />` : `<span class="lib-cover-fallback">📖</span>`}
+          </div>
+          <div class="lib-info">
+            <div class="lib-title">${titre}</div>
+            <div class="lib-meta">${auteur} · ${progress}</div>
+          </div>
+        </a>
+        <a href="${continueUrl}" class="lib-continue" style="display:block;position:static;margin:0 10px 10px;">▶ Reprendre</a>
       </div>`;
   }
   html += '</div>';
   content.innerHTML = html;
 }
 
-function updateAuthUI(user){
-  const btn = document.getElementById('navConnexion');
-  const avatar = document.getElementById('navAvatar');
-  const profil = document.getElementById('drawerProfil');
-  const publier = document.getElementById('drawerPublier');
-  const connexion = document.getElementById('drawerConnexion');
-  const logout = document.getElementById('drawerLogout');
-  
-  if(user){
-    if(btn) btn.style.display = 'none';
-    if(avatar) { avatar.style.display = 'flex'; }
-    if(profil) profil.style.display = 'flex';
-    if(publier) publier.style.display = 'flex';
-    if(connexion) connexion.style.display = 'none';
-    if(logout) logout.style.display = 'flex';
-  } else {
-    if(btn) btn.style.display = 'inline-flex';
-    if(avatar) avatar.style.display = 'none';
-    if(profil) profil.style.display = 'none';
-    if(publier) publier.style.display = 'none';
-    if(connexion) connexion.style.display = 'flex';
-    if(logout) logout.style.display = 'none';
-  }
+async function removeFromLibrary(mangaId, btn, ev){
+  if(ev){ ev.preventDefault(); ev.stopPropagation(); }
+  if(!currentUserId) return;
+  if(!confirm('Retirer ce manga de ta bibliothèque ?')) return;
+  const { error } = await sb.from('bibliotheque').delete()
+    .eq('user_id', currentUserId).eq('manga_id', mangaId);
+  if(error){ showToast('Erreur : ' + error.message); return; }
+  const card = btn.closest('.lib-card');
+  if(card) card.remove();
+  showToast('Retiré de ta bibliothèque');
+  const remaining = document.querySelectorAll('.lib-card').length;
+  document.getElementById('libSub').textContent = remaining + ' manga' + (remaining > 1 ? 's' : '') + ' dans ta bibliothèque';
+  if(remaining === 0) loadLibrary();
 }
 
 async function doLogout(){
-  if(supabase) await supabase.auth.signOut();
-  location.reload();
+  if(sb) await sb.auth.signOut();
+  window.location.href = 'index.html';
 }
 
 loadLibrary();
