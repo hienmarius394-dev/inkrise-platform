@@ -503,12 +503,54 @@ function timeAgo(dateStr) {
 }
 function colorClass(i) { return COLORS[i % COLORS.length] }
 function emptyState(msg) { return `<div class="empty-state">${msg}</div>` }
+function escapeHtml(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])) }
+
+// PLANS CRÉATEUR
+async function choosePlan(plan) { // 'debutant' | 'createur' | 'pro'
+  const { data } = await supabaseClient.auth.getSession()
+  if (!data.session) { window.location.href = 'auth.html'; return }
+  const updates = plan === 'debutant' ? { is_creator: true } : { is_creator: true, espace_premium: true }
+  const { error } = await supabaseClient.from('profiles').update(updates).eq('id', data.session.user.id)
+  if (error) { showToast('Erreur : ' + error.message); return }
+  showToast(plan === 'debutant' ? 'Espace créateur activé 🎉' : 'Plan activé (démo — paiement bientôt disponible) 🎉')
+  setTimeout(() => window.location.href = 'mon-espace.html', 900)
+}
+
+// CRÉATEURS
+const CREATOR_GRADIENTS = [
+  'linear-gradient(135deg,#ff6b35,#ff3d71)',
+  'linear-gradient(135deg,#7c6fef,#a594f9)',
+  'linear-gradient(135deg,#00c9a7,#3ddc84)',
+  'linear-gradient(135deg,#f5a623,#ff6b35)',
+  'linear-gradient(135deg,#5040c8,#7c6fef)',
+  'linear-gradient(135deg,#ff3d71,#a594f9)',
+]
+async function loadCreators() {
+  const section = document.getElementById('creatorsSection')
+  const { data: creators } = await supabaseClient.from('profiles')
+    .select('id, username, avatar_url')
+    .eq('is_creator', true)
+    .order('created_at', { ascending: false })
+    .limit(12)
+  if (!creators || creators.length === 0) { section.style.display = 'none'; return }
+  document.getElementById('creatorsScroll').innerHTML = creators.map((c, i) => {
+    const name = c.username || '?'
+    const avatar = c.avatar_url
+      ? `<div class="creator-avatar" style="background:url('${escapeHtml(c.avatar_url)}') center/cover no-repeat;"></div>`
+      : `<div class="creator-avatar" style="background:${CREATOR_GRADIENTS[i % CREATOR_GRADIENTS.length]};">${escapeHtml(name[0].toUpperCase())}</div>`
+    return `<a href="auteur.html?id=${encodeURIComponent(c.id)}" class="creator-item" style="text-decoration:none;">
+      ${avatar}
+      <div class="creator-name">${escapeHtml(name)}</div>
+    </a>`
+  }).join('')
+}
 
 // FEATURED
 async function loadFeatured() {
   const { data: mangas } = await supabaseClient.from('mangas')
     .select('id, titre, type, vues, created_at, couverture_url, profiles(username)')
-        .limit(6)
+        .neq('statut', 'brouillon')
+        .order('vues', { ascending: false }).limit(6)
   const row = document.getElementById('featuredRow')
   if (!mangas || mangas.length === 0) {
     row.innerHTML = `<div style="padding:20px 0;color:var(--text-3);font-size:13px;">Aucun manga en avant pour l'instant.</div>`
@@ -540,8 +582,9 @@ async function loadFeatured() {
 // POPULAIRES
 async function loadPopulaires() {
   const { data: mangas } = await supabaseClient.from('mangas')
-    .select('id, titre, type, genres, vues, created_at, couverture_url')
-        .limit(6)
+    .select('id, titre, type, vues, created_at, couverture_url')
+        .neq('statut', 'brouillon')
+        .order('vues', { ascending: false }).limit(6)
   const grid = document.getElementById('populairesGrid')
   if (!mangas || mangas.length === 0) { grid.innerHTML = emptyState('Aucun manga populaire pour l\'instant.'); return }
   grid.innerHTML = mangas.map((m, i) => {
@@ -556,7 +599,7 @@ async function loadPopulaires() {
           <div class="manga-card-title">${m.titre || 'Sans titre'}</div>
           <div class="manga-card-footer">
             <span class="manga-card-genre">${TYPE_LABELS[m.type]||'Manga'}</span>
-            <span class="manga-card-likes">♥ ${m.vues || 0}</span>
+            <span class="manga-card-likes">👁 ${m.vues || 0}</span>
           </div>
         </div>
       </a>`
@@ -566,7 +609,8 @@ async function loadPopulaires() {
 // DERNIERS
 async function loadDerniers() {
   const { data: mangas } = await supabaseClient.from('mangas')
-    .select('id, titre, type, genres, created_at, couverture_url')
+    .select('id, titre, type, created_at, couverture_url')
+        .neq('statut', 'brouillon')
         .order('created_at', { ascending: false }).limit(6)
   const grid = document.getElementById('derniersGrid')
   if (!mangas || mangas.length === 0) { grid.innerHTML = emptyState('Aucune mise à jour récente.'); return }
@@ -590,9 +634,13 @@ async function loadDerniers() {
 }
 
 checkAuth()
+loadCreators()
 loadFeatured()
 loadPopulaires()
 loadDerniers()
+
+// ?premium=1 → ouvrir la modal des plans
+if (new URLSearchParams(location.search).get('premium')) openModal()
 </script>
 </body>
 </html>
