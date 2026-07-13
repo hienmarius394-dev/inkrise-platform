@@ -1021,7 +1021,10 @@ document.getElementById('btnSubscribe').addEventListener('click', async () => {
     if (error) {
       isSubscribed = false; btn.classList.remove('active'); btn.textContent = '🔔 S\'abonner'; statEl.textContent = curr;
       showToast('Bientôt disponible', 'info');
-    } else showToast('✅ Tu es abonné à ce manga !', 'success');
+    } else {
+      showToast('✅ Tu es abonné à ce manga !', 'success');
+      askNotifPermission(manga.titre || 'ce manga');
+    }
   }
 });
 
@@ -1049,6 +1052,7 @@ document.getElementById('btnFollow').addEventListener('click', async () => {
       btn.classList.add('following');
       btn.textContent = '✅ Suivi';
       showToast(`✅ Tu suis maintenant ${authorN} !`, 'success');
+      askNotifPermission(authorN);
     } else showToast('Erreur: ' + error.message, 'error');
   }
 });
@@ -1130,6 +1134,15 @@ function showToast(msg, type = 'success') {
   t.textContent = msg;
   t.className = `toast ${type} show`;
   setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ── NOTIFICATIONS NAVIGATEUR ──
+function askNotifPermission(name) {
+  if (!('Notification' in window) || Notification.permission !== 'default') return;
+  setTimeout(() => {
+    showToast(`🔔 Active les notifications pour être alerté des nouveautés de ${name}`, 'info');
+    Notification.requestPermission();
+  }, 600);
 }
 
 // ── PREMIUM ──

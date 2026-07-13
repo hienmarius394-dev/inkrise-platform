@@ -891,7 +891,7 @@
 
       <!-- Premium -->
       <div class="plan-card featured">
-        <div class="plan-badge">⭐ Premium</div>
+        <div class="plan-badge">🔜 Bientôt disponible</div>
         <div class="plan-icon">💎</div>
         <div class="plan-name">Premium</div>
         <div class="plan-price">5€ <span>/ mois</span></div>
@@ -903,7 +903,7 @@
           <li>Statistiques avancées</li>
           <li>Badge Premium ✓</li>
         </ul>
-        <button class="btn-plan premium">Passer Premium</button>
+        <button class="btn-plan premium">🔒 Bientôt disponible</button>
       </div>
 
     </div>
@@ -1098,12 +1098,13 @@
   async function choosePlan(plan) { // 'gratuit' | 'premium'
     const { data } = await sb.auth.getSession();
     if (!data.session) { window.location.href = 'auth.html'; return; }
-    const updates = plan === 'premium' ? { is_creator: true, espace_premium: true } : { is_creator: true };
+    if (plan === 'premium') { showToast('💎 L\'Espace Premium arrive bientôt ! Le paiement n\'est pas encore disponible.', 'info'); return; }
+    const updates = { is_creator: true };
     const { error } = await sb.from('profiles').update(updates).eq('id', data.session.user.id);
     if (error) { showToast('Erreur : ' + error.message, 'error'); return; }
     userProfile = { ...userProfile, ...updates };
     updatePlanUI();
-    showToast(plan === 'premium' ? 'Premium activé (démo — paiement bientôt disponible) 💎' : 'Espace créateur activé 🎉', 'success');
+    showToast('Espace créateur activé 🎉', 'success');
     setTimeout(() => window.location.href = 'mon-espace.html', 900);
   }
 

@@ -658,6 +658,7 @@ document.getElementById('btnFollowAuthor').addEventListener('click', async () =>
       followerCount++;
       document.getElementById('statFollowers').textContent = followerCount;
       showToast('✅ Tu suis maintenant ce créateur !', 'success');
+      askNotifPermission(profile?.username || 'ce créateur');
       // Notification de follow (best-effort, jamais pour soi-même)
       if (auteurId !== currentUser.id) {
         await sb.from('notifications').insert({
@@ -680,6 +681,14 @@ document.getElementById('btnFollowAuthor').addEventListener('click', async () =>
 function showNotFound() {
   document.getElementById('pageLoading').style.display = 'none';
   document.getElementById('notFound').style.display = 'block';
+}
+
+function askNotifPermission(name) {
+  if (!('Notification' in window) || Notification.permission !== 'default') return;
+  setTimeout(() => {
+    showToast(`🔔 Active les notifications pour être alerté des nouveautés de ${name}`, 'info');
+    Notification.requestPermission();
+  }, 600);
 }
 
 function showToast(msg, type = 'success') {
