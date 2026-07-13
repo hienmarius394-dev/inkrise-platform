@@ -247,12 +247,12 @@ async function updateAuthUI(user){
 }
 
 async function fetchLibrary(userId){
-  const sel = 'manga_id, chapitre, page, total_chapitres, added_at, mangas(titre, couverture_url, auteur_id, profiles(username))';
+  const sel = 'manga_id, chapitre, page, total_chapitres, added_at, mangas(titre, couverture_url, auteur_id, profiles!auteur_id(username))';
   let { data, error } = await sb.from('bibliotheque').select(sel)
     .eq('user_id', userId).order('added_at', { ascending: false });
   if(error && /page/i.test(error.message || '')){
     // Retry sans la colonne page (peut être absente avant exécution du SQL)
-    const sel2 = 'manga_id, chapitre, total_chapitres, added_at, mangas(titre, couverture_url, auteur_id, profiles(username))';
+    const sel2 = 'manga_id, chapitre, total_chapitres, added_at, mangas(titre, couverture_url, auteur_id, profiles!auteur_id(username))';
     ({ data, error } = await sb.from('bibliotheque').select(sel2)
       .eq('user_id', userId).order('added_at', { ascending: false }));
   }

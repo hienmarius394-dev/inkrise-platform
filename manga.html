@@ -754,7 +754,7 @@ async function init() {
 async function loadManga(mangaId) {
   const { data, error } = await sb
     .from('mangas')
-    .select('*, profiles(username)')
+    .select('*, profiles!auteur_id(username)')
     .eq('id', mangaId)
     .single();
 

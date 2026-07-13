@@ -579,7 +579,7 @@ async function loadCreators() {
 // FEATURED
 async function loadFeatured() {
   const { data: mangas } = await supabaseClient.from('mangas')
-    .select('id, titre, type, vues, created_at, couverture_url, profiles(username)')
+    .select('id, titre, type, vues, created_at, couverture_url, profiles!auteur_id(username)')
         .neq('statut', 'brouillon')
         .order('vues', { ascending: false }).limit(6)
   const row = document.getElementById('featuredRow')
