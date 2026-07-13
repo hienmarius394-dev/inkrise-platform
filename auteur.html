@@ -98,7 +98,8 @@
 
     /* ── AUTHOR HERO ── */
     .author-hero {
-      background: linear-gradient(180deg, rgba(124,111,239,.12) 0%, var(--bg) 100%);
+      background: var(--cover-image, none), linear-gradient(180deg, rgba(124,111,239,.12) 0%, var(--bg) 100%);
+      background-size: cover; background-position: center;
       padding: 48px 0 40px;
       position: relative;
       overflow: hidden;
@@ -109,6 +110,15 @@
       background: radial-gradient(ellipse 70% 60% at 50% 0%, rgba(124,111,239,0.14) 0%, transparent 70%);
       pointer-events: none;
     }
+    /* Quand une photo de couverture est définie, on assombrit et on passe le texte en clair pour la lisibilité */
+    .author-hero.has-cover::before {
+      background: linear-gradient(180deg, rgba(10,8,20,0.35) 0%, rgba(10,8,20,0.72) 100%);
+    }
+    .author-hero.has-cover .author-username,
+    .author-hero.has-cover .astat-num { color: #fff; }
+    .author-hero.has-cover .author-bio,
+    .author-hero.has-cover .astat-label,
+    .author-hero.has-cover .author-join-date { color: rgba(255,255,255,0.75); }
     .author-hero-inner {
       max-width: 900px; margin: 0 auto; padding: 0 24px;
       display: flex; align-items: center; gap: 36px;
@@ -383,6 +393,14 @@
     </div>
   </div>
 
+  <!-- Formations / Packs tutoriels -->
+  <div class="main-wrap" id="packsSection" style="display:none;">
+    <div class="section-header">
+      <h2 class="section-title">🎓 Formations en vente</h2>
+    </div>
+    <div class="manga-grid" id="packsGridAuthor"></div>
+  </div>
+
 </div>
 
 <div class="toast" id="toast"></div>
@@ -452,10 +470,11 @@ async function init() {
 
 // ── CHARGER PROFIL ──
 async function loadProfile(id) {
-  const [profileRes, followerRes, mangasRes] = await Promise.all([
+  const [profileRes, followerRes, mangasRes, packsRes] = await Promise.all([
     sb.from('profiles').select('*').eq('id', id).single(),
     sb.from('follows').select('id', { count: 'exact', head: true }).eq('followed_id', id),
-    sb.from('mangas').select('*').eq('auteur_id', id).order('created_at', { ascending: false })
+    sb.from('mangas').select('*').eq('auteur_id', id).order('created_at', { ascending: false }),
+    sb.from('packs_tutoriels').select('*').eq('auteur_id', id).order('created_at', { ascending: false })
   ]);
 
   if (profileRes.error || !profileRes.data) { showNotFound(); return; }
@@ -463,6 +482,7 @@ async function loadProfile(id) {
   const profile = profileRes.data;
   followerCount = followerRes.count || 0;
   const mangas  = mangasRes.data || [];
+  const packs   = packsRes.data || [];
 
   if (currentUser && currentUser.id !== id) {
     const { data: followData } = await sb.from('follows')
@@ -476,10 +496,17 @@ async function loadProfile(id) {
 
   renderProfile(profile, mangas.length);
   renderMangas(mangas);
+  renderPacks(packs);
 }
 
 // ── RENDER PROFIL ──
 function renderProfile(profile, mangaCount) {
+  if (profile.cover_url) {
+    const hero = document.querySelector('.author-hero');
+    hero.style.setProperty('--cover-image', 'url(' + JSON.stringify(profile.cover_url) + ')');
+    hero.classList.add('has-cover');
+  }
+
   const avatarEl = document.getElementById('authorAvatarEl');
   if (profile.avatar_url) {
     const img = document.createElement('img');
@@ -508,6 +535,8 @@ function renderProfile(profile, mangaCount) {
 
   if (profile.espace_premium) {
     document.getElementById('premiumBadge').style.display = 'inline-flex';
+    const commBtn = document.getElementById('btnCommunaute');
+    if (commBtn) commBtn.innerHTML = '👥 Communauté <span style="opacity:.8;">💎</span>';
   }
 
   document.getElementById('statFollowers').textContent = followerCount;
@@ -568,6 +597,38 @@ function createMangaCard(manga) {
     <div class="manga-card-info">
       <div class="manga-card-title">${manga.titre || 'Sans titre'}</div>
       <div class="manga-card-meta">${statutHtml}${genresHtml}</div>
+    </div>
+  `;
+  return card;
+}
+
+// ── RENDER FORMATIONS (packs tutoriels) ──
+function renderPacks(packs) {
+  const section = document.getElementById('packsSection');
+  if (!packs || packs.length === 0) { section.style.display = 'none'; return; }
+  section.style.display = 'block';
+  const grid = document.getElementById('packsGridAuthor');
+  grid.innerHTML = '';
+  packs.forEach(pack => grid.appendChild(createPackCard(pack)));
+}
+
+function createPackCard(pack) {
+  const card = document.createElement('a');
+  card.className = 'manga-card';
+  card.href = `pack.html?id=${pack.id}`;
+
+  const coverHtml = pack.image_url
+    ? `<img class="manga-cover" src="${pack.image_url}" alt="${pack.titre || ''}" loading="lazy" />`
+    : `<div class="manga-cover-placeholder">🎓</div>`;
+
+  const prix = Number(pack.prix);
+  const prixLabel = prix === 0 || isNaN(prix) ? 'Gratuit' : `${prix % 1 === 0 ? prix : prix.toFixed(2)}€`;
+
+  card.innerHTML = `
+    ${coverHtml}
+    <div class="manga-card-info">
+      <div class="manga-card-title">${pack.titre || 'Sans titre'}</div>
+      <div class="manga-card-meta"><span class="manga-genre">${prixLabel}</span></div>
     </div>
   `;
   return card;
