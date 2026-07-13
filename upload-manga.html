@@ -833,9 +833,13 @@ async function init() {
   if (!session) { window.location.href = 'auth.html'; return; }
   currentUser = session.user;
 
-  const { data: profile } = await sb.from('profiles').select('username, is_creator').eq('id', currentUser.id).single();
+  const { data: profile } = await sb.from('profiles').select('username, is_creator, avatar_url').eq('id', currentUser.id).single();
   const name = profile?.username || currentUser.email.split('@')[0];
-  document.getElementById('navAvatar').textContent = name[0].toUpperCase();
+  if (profile?.avatar_url) {
+    document.getElementById('navAvatar').innerHTML = '<img src="' + profile.avatar_url + '" style="width:32px;height:32px;border-radius:50%;object-fit:cover;" alt="" />';
+  } else {
+    document.getElementById('navAvatar').textContent = name[0].toUpperCase();
+  }
   document.getElementById('navAvatar').classList.add('show');
   document.getElementById('navConnexion').style.display = 'none';
   document.getElementById('navNotifLink').classList.add('show');

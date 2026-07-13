@@ -527,8 +527,11 @@ async function init() {
   if (currentUser) {
     document.getElementById('navConnexion').style.display = 'none';
     const avatarEl = document.getElementById('navAvatar');
-    avatarEl.textContent = (currentUser.email?.[0] || '?').toUpperCase();
+    avatarEl.textContent = (currentUser.user_metadata?.username?.[0] || currentUser.email?.[0] || '?').toUpperCase();
     avatarEl.classList.add('show');
+    sb.from('profiles').select('avatar_url').eq('id', currentUser.id).single().then(({ data: prof }) => {
+      if (prof?.avatar_url) avatarEl.innerHTML = '<img src="' + prof.avatar_url + '" style="width:32px;height:32px;border-radius:50%;object-fit:cover;" alt="" />';
+    });
     document.getElementById('navNotifLink').classList.add('show');
     document.getElementById('drawerProfil').style.display = 'flex';
     document.getElementById('drawerPublier').style.display = 'flex';

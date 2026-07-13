@@ -608,11 +608,18 @@ async function init() {
   mangaId = params.get('manga_id');
   if (!mangaId) { window.location.href = 'profil.html'; return; }
 
-  const { data: profile } = await sb.from('profiles').select('username').eq('id', currentUser.id).single();
+  const { data: profile } = await sb.from('profiles').select('username, avatar_url').eq('id', currentUser.id).single();
   const name = profile?.username || currentUser.email.split('@')[0];
   authorName = name;
   const avatarBtnEl = document.getElementById('navAvatar');
-    if (avatarBtnEl) { avatarBtnEl.style.display = 'flex'; avatarBtnEl.textContent = name[0].toUpperCase(); }
+    if (avatarBtnEl) {
+      avatarBtnEl.style.display = 'flex';
+      if (profile?.avatar_url) {
+        avatarBtnEl.innerHTML = '<img src="' + profile.avatar_url + '" style="width:32px;height:32px;border-radius:50%;object-fit:cover;" alt="" />';
+      } else {
+        avatarBtnEl.textContent = name[0].toUpperCase();
+      }
+    }
     const btnConnexionEl = document.getElementById('navConnexion');
     if (btnConnexionEl) btnConnexionEl.style.display = 'none';
 

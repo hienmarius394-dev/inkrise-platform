@@ -365,6 +365,9 @@ async function init() {
     const displayName = user.user_metadata?.username || user.email || '?';
     avatarEl.textContent = displayName[0].toUpperCase();
     avatarEl.classList.add('show');
+    sb.from('profiles').select('avatar_url').eq('id', user.id).single().then(({ data: prof }) => {
+      if (prof?.avatar_url) avatarEl.innerHTML = '<img src="' + prof.avatar_url + '" style="width:32px;height:32px;border-radius:50%;object-fit:cover;" alt="" />';
+    });
     document.getElementById('drawerProfil').style.display = 'flex';
     document.getElementById('drawerConnexion').style.display = 'none';
     document.getElementById('drawerLogout').style.display = 'flex';

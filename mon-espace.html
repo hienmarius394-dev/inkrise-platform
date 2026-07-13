@@ -834,7 +834,13 @@
     if (!session) return;
     const displayName = session.user.user_metadata?.username || session.user.email || '?';
     if (navConnexion) navConnexion.style.display = 'none';
-    if (navAvatar) { navAvatar.classList.add('show'); navAvatar.textContent = displayName[0].toUpperCase(); }
+    if (navAvatar) {
+      navAvatar.classList.add('show');
+      navAvatar.textContent = displayName[0].toUpperCase();
+      db.from('profiles').select('avatar_url').eq('id', session.user.id).single().then(({ data: prof }) => {
+        if (prof?.avatar_url) navAvatar.innerHTML = '<img src="' + prof.avatar_url + '" style="width:32px;height:32px;border-radius:50%;object-fit:cover;" alt="" />';
+      });
+    }
     if (drawerProfil) drawerProfil.style.display = 'flex';
     if (drawerPublier) drawerPublier.style.display = 'flex';
     if (drawerConnexion) drawerConnexion.style.display = 'none';

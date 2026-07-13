@@ -231,8 +231,11 @@ async function init() {
   if (currentUser) {
     document.getElementById('navConnexion').style.display = 'none';
     const av = document.getElementById('navAvatar');
-    av.textContent = (currentUser.email?.[0] || '?').toUpperCase();
+    av.textContent = (currentUser.user_metadata?.username?.[0] || currentUser.email?.[0] || '?').toUpperCase();
     av.classList.add('show');
+    sb.from('profiles').select('avatar_url').eq('id', currentUser.id).single().then(({ data: prof }) => {
+      if (prof?.avatar_url) av.innerHTML = '<img src="' + prof.avatar_url + '" style="width:32px;height:32px;border-radius:50%;object-fit:cover;" alt="" />';
+    });
   }
 
   // Charger le pack

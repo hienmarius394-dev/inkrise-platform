@@ -129,7 +129,9 @@ h1,h2,h3,.logo { font-family: 'Syne', sans-serif; }
 }
 .hero-banner::before {
   content: ''; position: absolute; inset: 0;
-  background: linear-gradient(180deg, rgba(20,14,40,0.05) 0%, rgba(20,14,40,0.45) 100%);
+  background:
+    linear-gradient(90deg, rgba(12,8,28,0.72) 0%, rgba(12,8,28,0.38) 45%, transparent 75%),
+    linear-gradient(180deg, rgba(20,14,40,0.05) 0%, rgba(20,14,40,0.4) 100%);
   pointer-events: none;
 }
 .hero-banner::after {
@@ -341,7 +343,7 @@ h1,h2,h3,.logo { font-family: 'Syne', sans-serif; }
 </div>
 
 <!-- BANNIERE -->
-<div class="hero-banner">
+<div class="hero-banner" style="--hero-image:url('assets/hero-manga.jpg');">
   <div>
     <div class="hero-banner-tag">✨ NOUVELLE PLATEFORME</div>
     <div class="hero-banner-title">Bienvenue sur<br>Inkrise 🎨</div>
@@ -504,7 +506,11 @@ async function checkAuth() {
     document.getElementById('navConnexion').style.display = 'none'
     document.getElementById('navAvatar').classList.add('show')
     const displayName = data.session.user.user_metadata?.username || data.session.user.email || '?';
-    document.getElementById('navAvatar').textContent = displayName[0].toUpperCase()
+    const navAvatarEl = document.getElementById('navAvatar')
+    navAvatarEl.textContent = displayName[0].toUpperCase()
+    supabaseClient.from('profiles').select('avatar_url').eq('id', uid).single().then(({ data: prof }) => {
+      if (prof?.avatar_url) navAvatarEl.innerHTML = '<img src="' + prof.avatar_url + '" style="width:32px;height:32px;border-radius:50%;object-fit:cover;" alt="" />'
+    })
     document.getElementById('navNotifLink').classList.add('show')
     document.getElementById('drawerProfil').style.display = 'flex'
     document.getElementById('drawerConnexion').style.display = 'none'

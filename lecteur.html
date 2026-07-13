@@ -1020,6 +1020,9 @@ async function setupNav() {
     av.classList.add('show');
     const name = user.user_metadata?.username || user.email || '?';
     av.textContent = name[0].toUpperCase();
+    sb.from('profiles').select('avatar_url').eq('id', user.id).single().then(({ data: prof }) => {
+      if (prof?.avatar_url) av.innerHTML = '<img src="' + prof.avatar_url + '" style="width:32px;height:32px;border-radius:50%;object-fit:cover;" alt="" />';
+    });
   }
   const dP=document.getElementById('drawerProfil'),dC=document.getElementById('drawerConnexion'),dL=document.getElementById('drawerLogout'),dPub=document.getElementById('drawerPublier');
   if(dP)dP.style.display='flex';if(dC)dC.style.display='none';if(dL)dL.style.display='flex';if(dPub)dPub.style.display='flex';
