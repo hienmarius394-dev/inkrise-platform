@@ -295,6 +295,15 @@ async function loadLibrary(){
 
   document.getElementById('libSub').textContent = library.length + ' manga' + (library.length > 1 ? 's' : '') + ' dans ta bibliothèque';
 
+  // bibliotheque.chapitre stocke l'ID technique du chapitre, pas son numéro
+  // dans le manga → on résout les vrais numéros pour un affichage correct.
+  const chapitreIds = (library || []).map(it => it.chapitre).filter(Boolean);
+  let numeroById = {};
+  if (chapitreIds.length) {
+    const { data: chaps } = await sb.from('chapitres').select('id, numero').in('id', chapitreIds);
+    (chaps || []).forEach(c => { numeroById[c.id] = c.numero; });
+  }
+
   if(!library || library.length === 0){
     content.innerHTML = `
       <div class="library-empty">
@@ -314,7 +323,8 @@ async function loadLibrary(){
     const auteur = escapeHtml((manga.profiles && manga.profiles.username) || 'Auteur inconnu');
     const chapitre = item.chapitre || 0;
     const totalChaps = item.total_chapitres || '?';
-    const progress = chapitre > 0 ? `Chapitre ${chapitre}/${totalChaps}` : 'Ajouté';
+    const numero = numeroById[chapitre];
+    const progress = chapitre > 0 ? `Chapitre ${numero != null ? numero : chapitre}/${totalChaps}` : 'Ajouté';
     // lecteur.html attend ?manga_id=<id>&chapitre=<id du chapitre> (== bibliotheque.chapitre)
     const continueUrl = chapitre > 0
       ? `lecteur.html?manga_id=${item.manga_id}&chapitre=${chapitre}`
