@@ -469,6 +469,24 @@
     }
     .modal-sub { text-align: center; color: var(--muted); font-size: 0.88rem; margin-bottom: 30px; }
 
+    /* ── CROP MODAL (couverture + avatar) ── */
+    .crop-preview-wrap {
+      position: relative; margin: 0 auto; overflow: hidden;
+      background: #000; border-radius: 14px; cursor: grab;
+      touch-action: none; user-select: none;
+    }
+    .crop-preview-wrap.dragging { cursor: grabbing; }
+    .crop-preview-wrap.circle { border-radius: 50%; }
+    .crop-preview-wrap img {
+      position: absolute; top: 0; left: 0;
+      max-width: none; max-height: none; pointer-events: none;
+    }
+    .crop-zoom-row { display: flex; align-items: center; gap: 10px; margin-top: 14px; }
+    .crop-zoom-row input[type="range"] { flex: 1; }
+    .crop-hint { text-align: center; color: var(--muted); font-size: 0.78rem; margin-top: 6px; }
+    .crop-actions { display: flex; gap: 10px; margin-top: 20px; }
+    .crop-actions button { flex: 1; }
+
     .plans-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -876,6 +894,26 @@
 
 </div>
 
+<!-- ── MODAL RECADRAGE (couverture / avatar) ── -->
+<div class="modal-overlay" id="cropModal">
+  <div class="modal" style="max-width:460px;">
+    <button class="modal-close" id="cropModalClose">✕</button>
+    <div class="modal-title" id="cropModalTitle" style="font-size:1.5rem;">Recadrer l'image</div>
+    <div class="crop-preview-wrap" id="cropPreviewWrap">
+      <img id="cropImg" src="" alt="" />
+    </div>
+    <div class="crop-zoom-row">
+      <span>🔍</span>
+      <input type="range" id="cropZoom" min="1" max="3" step="0.01" value="1" />
+    </div>
+    <div class="crop-hint">Glisse l'image pour la recadrer.</div>
+    <div class="crop-actions">
+      <button class="btn-save" id="cropCancelBtn" style="background:var(--surface2);color:var(--text);">Annuler</button>
+      <button class="btn-save" id="cropConfirmBtn">✅ Valider</button>
+    </div>
+  </div>
+</div>
+
 <!-- ── MODAL PLANS ── -->
 <div class="modal-overlay" id="plansModal">
   <div class="modal">
@@ -1234,13 +1272,120 @@
   // ── SAUVEGARDER PROFIL (nom + bio + avatar) ──
   let pendingAvatarFile = null;
   let pendingAvatarPreview = null;
-  let pendingCoverFile = null;
 
-  // Couverture — sélection + upload immédiat (indépendant du bouton Sauvegarder)
+  // ── OUTIL DE RECADRAGE GÉNÉRIQUE (couverture + avatar) ──
+  let cropState = { zoom: 1, x: 0, y: 0, naturalW: 0, naturalH: 0, outW: 0, outH: 0, resolve: null };
+
+  function openCropModal(file, opts) {
+    return new Promise((resolve) => {
+      const wrap = document.getElementById('cropPreviewWrap');
+      const img = document.getElementById('cropImg');
+      wrap.classList.toggle('circle', opts.shape === 'circle');
+      wrap.style.aspectRatio = opts.aspect;
+      document.getElementById('cropModalTitle').textContent = opts.title || 'Recadrer l\'image';
+      document.getElementById('cropZoom').value = 1;
+      cropState = { zoom: 1, x: 0, y: 0, naturalW: 0, naturalH: 0, outW: opts.outW, outH: opts.outH, resolve };
+      const reader = new FileReader();
+      reader.onload = e => {
+        img.onload = () => initCropPosition();
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+      document.getElementById('cropModal').classList.add('open');
+    });
+  }
+
+  function initCropPosition() {
+    const wrap = document.getElementById('cropPreviewWrap');
+    const img = document.getElementById('cropImg');
+    cropState.naturalW = img.naturalWidth;
+    cropState.naturalH = img.naturalHeight;
+    const frameW = wrap.clientWidth, frameH = wrap.clientHeight;
+    const scaleToCover = Math.max(frameW / cropState.naturalW, frameH / cropState.naturalH);
+    const dispW = cropState.naturalW * scaleToCover;
+    const dispH = cropState.naturalH * scaleToCover;
+    img.style.width = dispW + 'px'; img.style.height = dispH + 'px';
+    cropState.x = (frameW - dispW) / 2;
+    cropState.y = (frameH - dispH) / 2;
+    applyCropTransform();
+  }
+  function applyCropTransform() {
+    const img = document.getElementById('cropImg');
+    img.style.left = cropState.x + 'px';
+    img.style.top = cropState.y + 'px';
+  }
+  function clampCropPosition() {
+    const wrap = document.getElementById('cropPreviewWrap');
+    const img = document.getElementById('cropImg');
+    const frameW = wrap.clientWidth, frameH = wrap.clientHeight;
+    const dispW = img.offsetWidth, dispH = img.offsetHeight;
+    const minX = Math.min(0, frameW - dispW);
+    const minY = Math.min(0, frameH - dispH);
+    cropState.x = Math.max(minX, Math.min(0, cropState.x));
+    cropState.y = Math.max(minY, Math.min(0, cropState.y));
+  }
+  function bakeCrop() {
+    const wrap = document.getElementById('cropPreviewWrap');
+    const img = document.getElementById('cropImg');
+    const frameW = wrap.clientWidth, frameH = wrap.clientHeight;
+    const scale = img.offsetWidth / cropState.naturalW;
+    const srcX = -cropState.x / scale, srcY = -cropState.y / scale;
+    const srcW = frameW / scale, srcH = frameH / scale;
+    return new Promise(resolve => {
+      const canvas = document.createElement('canvas');
+      canvas.width = cropState.outW; canvas.height = cropState.outH;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, srcX, srcY, srcW, srcH, 0, 0, cropState.outW, cropState.outH);
+      canvas.toBlob(blob => resolve(blob ? new File([blob], 'crop.jpg', { type: 'image/jpeg' }) : null), 'image/jpeg', 0.9);
+    });
+  }
+  (function bindCropEvents() {
+    const wrap = document.getElementById('cropPreviewWrap');
+    let dragging = false, startX = 0, startY = 0, originX = 0, originY = 0;
+    function pointerDown(cx, cy) { dragging = true; wrap.classList.add('dragging'); startX = cx; startY = cy; originX = cropState.x; originY = cropState.y; }
+    function pointerMove(cx, cy) { if (!dragging) return; cropState.x = originX + (cx - startX); cropState.y = originY + (cy - startY); clampCropPosition(); applyCropTransform(); }
+    function pointerUp() { dragging = false; wrap.classList.remove('dragging'); }
+    wrap.addEventListener('mousedown', e => pointerDown(e.clientX, e.clientY));
+    window.addEventListener('mousemove', e => pointerMove(e.clientX, e.clientY));
+    window.addEventListener('mouseup', pointerUp);
+    wrap.addEventListener('touchstart', e => { const t = e.touches[0]; pointerDown(t.clientX, t.clientY); }, { passive: true });
+    wrap.addEventListener('touchmove', e => { const t = e.touches[0]; pointerMove(t.clientX, t.clientY); }, { passive: true });
+    wrap.addEventListener('touchend', pointerUp);
+    document.getElementById('cropZoom').addEventListener('input', function() {
+      if (!cropState.naturalW) return;
+      const zoom = parseFloat(this.value);
+      const img = document.getElementById('cropImg');
+      const frameW = wrap.clientWidth, frameH = wrap.clientHeight;
+      const scaleToCover = Math.max(frameW / cropState.naturalW, frameH / cropState.naturalH);
+      const newDispW = cropState.naturalW * scaleToCover * zoom;
+      const newDispH = cropState.naturalH * scaleToCover * zoom;
+      const centerX = frameW / 2 - cropState.x, centerY = frameH / 2 - cropState.y;
+      const ratioX = centerX / img.offsetWidth, ratioY = centerY / img.offsetHeight;
+      img.style.width = newDispW + 'px'; img.style.height = newDispH + 'px';
+      cropState.x = frameW / 2 - ratioX * newDispW;
+      cropState.y = frameH / 2 - ratioY * newDispH;
+      clampCropPosition();
+      applyCropTransform();
+    });
+  })();
+  document.getElementById('cropCancelBtn').addEventListener('click', () => {
+    document.getElementById('cropModal').classList.remove('open');
+    if (cropState.resolve) cropState.resolve(null);
+  });
+  document.getElementById('cropModalClose').addEventListener('click', () => document.getElementById('cropCancelBtn').click());
+  document.getElementById('cropConfirmBtn').addEventListener('click', async () => {
+    const file = await bakeCrop();
+    document.getElementById('cropModal').classList.remove('open');
+    if (cropState.resolve) cropState.resolve(file);
+  });
+
+  // Couverture — sélection + recadrage + upload immédiat (indépendant du bouton Sauvegarder)
   document.getElementById('coverUploadInput').addEventListener('change', async function() {
     const file = this.files[0];
+    this.value = '';
     if (!file) return;
-    pendingCoverFile = file;
+    const cropped = await openCropModal(file, { aspect: '3/1', outW: 1500, outH: 500, shape: 'rect', title: 'Recadrer la couverture' });
+    if (!cropped) return;
     const hero = document.getElementById('profileHero');
 
     // Aperçu instantané
@@ -1248,12 +1393,11 @@
     reader.onload = function(e) {
       hero.style.setProperty('--cover-image', 'url(' + JSON.stringify(e.target.result) + ')');
     };
-    reader.readAsDataURL(file);
+    reader.readAsDataURL(cropped);
 
     try {
-      const ext = file.name.split('.').pop() || 'jpg';
-      const fileName = 'covers-profil/' + currentUser.id + '_' + Date.now() + '.' + ext;
-      const { data: uplData, error: uplErr } = await sb.storage.from('covers').upload(fileName, file, { upsert: true });
+      const fileName = 'covers-profil/' + currentUser.id + '_' + Date.now() + '.jpg';
+      const { data: uplData, error: uplErr } = await sb.storage.from('covers').upload(fileName, cropped, { upsert: true });
       let cover_url = null;
       if (!uplErr && uplData) {
         const { data: pubData } = sb.storage.from('covers').getPublicUrl(fileName);
@@ -1270,17 +1414,18 @@
       }
     } catch (err) {
       showToast('Erreur : ' + (err.message || 'inconnue'), 'error');
-    } finally {
-      pendingCoverFile = null;
     }
   });
 
-  // Avatar file selection
-  document.getElementById('avatarUploadInput').addEventListener('change', function() {
+  // Avatar — sélection + recadrage
+  document.getElementById('avatarUploadInput').addEventListener('change', async function() {
     const file = this.files[0];
+    this.value = '';
     if (!file) return;
-    pendingAvatarFile = file;
-    document.getElementById('avatarFileName').textContent = file.name;
+    const cropped = await openCropModal(file, { aspect: '1/1', outW: 400, outH: 400, shape: 'circle', title: 'Recadrer la photo de profil' });
+    if (!cropped) return;
+    pendingAvatarFile = cropped;
+    document.getElementById('avatarFileName').textContent = 'Image recadrée ✓';
     const reader = new FileReader();
     reader.onload = function(e) {
       const preview = document.getElementById('avatarPreview');
@@ -1288,7 +1433,7 @@
       preview.style.display = '';
       pendingAvatarPreview = e.target.result;
     };
-    reader.readAsDataURL(file);
+    reader.readAsDataURL(cropped);
   });
 
   // "Modifier le profil" button → switch to infos tab
