@@ -453,6 +453,11 @@ const SUPABASE_URL = 'https://bsdcpwtimsgxcnaamwip.supabase.co'
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJzZGNwd3RpbXNneGNuYWFtd2lwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAzMTQ1MDIsImV4cCI6MjA5NTg5MDUwMn0.uMcfUsnlULHNqS_87xzUWRUB8tEaCCNQglrWwN2fb44'
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
 
+async function doLogout() {
+  await supabaseClient.auth.signOut()
+  window.location.href = 'index.html'
+}
+
 // =============================================
 // SWITCH TABS
 // =============================================

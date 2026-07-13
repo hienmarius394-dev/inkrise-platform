@@ -824,6 +824,23 @@
     container.innerHTML = `<div class="notif-list">${items.join('')}</div>`;
   }
 
+  function updateNav(session) {
+    const navConnexion = document.getElementById('navConnexion');
+    const navAvatar = document.getElementById('navAvatar');
+    const drawerProfil = document.getElementById('drawerProfil');
+    const drawerPublier = document.getElementById('drawerPublier');
+    const drawerConnexion = document.getElementById('drawerConnexion');
+    const drawerLogout = document.getElementById('drawerLogout');
+    if (!session) return;
+    const displayName = session.user.user_metadata?.username || session.user.email || '?';
+    if (navConnexion) navConnexion.style.display = 'none';
+    if (navAvatar) { navAvatar.classList.add('show'); navAvatar.textContent = displayName[0].toUpperCase(); }
+    if (drawerProfil) drawerProfil.style.display = 'flex';
+    if (drawerPublier) drawerPublier.style.display = 'flex';
+    if (drawerConnexion) drawerConnexion.style.display = 'none';
+    if (drawerLogout) drawerLogout.style.display = 'flex';
+  }
+
   async function init() {
     const loadingScreen = document.getElementById('loading-screen');
     const authScreen = document.getElementById('auth-screen');
