@@ -1050,7 +1050,7 @@ async function loadComments(mId, cId) {
   renderCommentForm();
 
   const { data: comments } = await sb.from('commentaires')
-    .select('*, profiles(username, avatar_url)')
+    .select('*, profiles!user_id(username, avatar_url)')
     .eq('manga_id', mId)
     .eq('chapitre_id', cId)
     .is('parent_id', null)
@@ -1065,7 +1065,7 @@ async function loadComments(mId, cId) {
   }
 
   const { data: replies } = await sb.from('commentaires')
-    .select('*, profiles(username, avatar_url)')
+    .select('*, profiles!user_id(username, avatar_url)')
     .eq('manga_id', mId)
     .eq('chapitre_id', cId)
     .not('parent_id', 'is', null)

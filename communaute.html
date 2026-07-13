@@ -778,7 +778,7 @@ async function loadPosts() {
   /* Load comments for all posts (avec le vrai auteur via embed profiles) */
   if (postIds.length) {
     let { data: cData, error: cErr } = await sb.from('commentaires_communaute')
-      .select('*, profiles(username, avatar_url)')
+      .select('*, profiles!user_id(username, avatar_url)')
       .in('post_id', postIds)
       .order('created_at', { ascending: true });
     if (cErr) {
