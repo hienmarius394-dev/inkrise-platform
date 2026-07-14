@@ -350,6 +350,7 @@ h1,h2,h3,.logo { font-family: 'Syne', sans-serif; }
   <div class="univ-d-divider"></div>
   <div class="univ-d-sec">Mon compte</div>
   <a href="profil.html" class="univ-d-item" id="drawerProfil" style="display:none;"><div class="univ-d-icon">🧑‍🎨</div>Mon profil</a>
+  <a href="bibliotheque.html" class="univ-d-item"><div class="univ-d-icon">📚</div>Ma bibliothèque</a>
   <a href="upload-manga.html" class="univ-d-item" id="drawerPublier" style="display:none;"><div class="univ-d-icon">📤</div>Publier un manga</a>
   <a href="auth.html" class="univ-d-item" id="drawerConnexion"><div class="univ-d-icon">🔑</div>Connexion / Inscription</a>
   <button class="univ-d-item" id="drawerLogout" style="display:none;" onclick="doLogout()"><div class="univ-d-icon">🚪</div><span style="color:#f0522a;">Déconnexion</span></button>
@@ -642,7 +643,7 @@ async function loadPopulaires() {
       return `<a href="manga.html?id=${m.id}" class="manga-card-2">
         <div class="manga-cover ${colorBg}" style="${bg}">
           <div class="manga-time-badge">🕐 ${timeAgo(m.created_at)}</div>
-          <div class="manga-cover-deco">📖</div>
+          ${m.couverture_url ? '' : '<div class="manga-cover-deco">📖</div>'}
           <span class="manga-flag-badge">${flag}</span>
           ${m.adulte ? '<span class="manga-adult-badge">18+</span>' : ''}
         </div>
@@ -673,7 +674,7 @@ async function loadDerniers() {
     return `<a href="manga.html?id=${m.id}" class="manga-card-2">
       <div class="manga-cover ${colorBg}" style="${bg}">
         <div class="manga-time-badge">✨ ${timeAgo(m.created_at)}</div>
-        <div class="manga-cover-deco">📖</div>
+        ${m.couverture_url ? '' : '<div class="manga-cover-deco">📖</div>'}
         <span class="manga-flag-badge">${flag}</span>
         ${m.adulte ? '<span class="manga-adult-badge">18+</span>' : ''}
       </div>
@@ -695,8 +696,17 @@ loadFeatured()
 loadPopulaires()
 loadDerniers()
 
-// ?premium=1 → ouvrir la modal des plans
-if (new URLSearchParams(location.search).get('premium')) openModal()
+// ?premium=1 → Espace Premium direct si déjà créateur, sinon modal des plans
+if (new URLSearchParams(location.search).get('premium')) {
+  (async () => {
+    const { data } = await supabaseClient.auth.getSession()
+    if (data.session) {
+      const { data: prof } = await supabaseClient.from('profiles').select('is_creator').eq('id', data.session.user.id).single()
+      if (prof?.is_creator) { window.location.replace('premium.html'); return }
+    }
+    openModal()
+  })()
+}
 </script>
 </body>
 </html>
