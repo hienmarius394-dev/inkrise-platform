@@ -285,6 +285,7 @@ ALTER TABLE packs_tutoriels ADD COLUMN IF NOT EXISTS contenu_url TEXT;
 ALTER TABLE packs_tutoriels ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT now();
 ALTER TABLE packs_tutoriels ADD COLUMN IF NOT EXISTS objectifs TEXT[] DEFAULT '{}';
 ALTER TABLE packs_tutoriels ADD COLUMN IF NOT EXISTS niveau TEXT DEFAULT 'Tous niveaux';
+ALTER TABLE packs_tutoriels ADD COLUMN IF NOT EXISTS images TEXT[] DEFAULT '{}';   -- contenu du pack (croquis, planches, pages d'ebook…)
 
 CREATE TABLE IF NOT EXISTS achats_packs (
   id BIGSERIAL PRIMARY KEY,

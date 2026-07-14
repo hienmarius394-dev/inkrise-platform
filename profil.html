@@ -682,7 +682,7 @@
     <a href="index.html" class="univ-nav-lk">Accueil</a>
     <a href="recherche.html" class="univ-nav-lk">Mangas</a>
     <a href="tutoriels.html" class="univ-nav-lk">Tutoriels</a>
-    <a href="#" class="univ-nav-lk" onclick="openModal();return false;">Premium</a>
+    <a href="premium.html" class="univ-nav-lk">Espace Créateur</a>
   </div>
   <div class="univ-nav-search">
     <input type="text" id="navSearchInput" class="univ-nav-si" placeholder="Rechercher…" onkeydown="if(event.key==='Enter')doSearch()" />
@@ -707,7 +707,7 @@
   <a href="index.html" class="univ-d-item"><div class="univ-d-icon">🏠</div>Accueil</a>
   <a href="recherche.html" class="univ-d-item"><div class="univ-d-icon">📖</div>Manga & BD</a>
   <a href="tutoriels.html" class="univ-d-item"><div class="univ-d-icon">🎓</div>Tutoriels <span class="univ-d-badge teal">GRATUIT</span></a>
-  <a href="#" class="univ-d-item" onclick="openModal();closeDrawer();"><div class="univ-d-icon">💎</div>Premium <span class="univ-d-badge orange">PRO</span></a>
+  <a href="premium.html" class="univ-d-item"><div class="univ-d-icon">🎨</div>Espace Créateur <span class="univ-d-badge teal">GRATUIT</span></a>
   <a href="communaute.html" class="univ-d-item"><div class="univ-d-icon">👥</div>Communauté</a>
   <div class="univ-d-divider"></div>
   <div class="univ-d-sec">Mon compte</div>
@@ -734,7 +734,7 @@
         <div id="profileBio" style="color:var(--muted);font-size:0.85rem;margin-bottom:10px;"></div>
         <div class="profile-plan">
           <span class="plan-dot"></span>
-          <span id="planName">Débutant gratuit</span>
+          <span id="planName">Membre</span>
         </div>
         <div class="profile-stats">
           <div class="stat-item">
@@ -843,7 +843,7 @@
     <div class="info-card">
       <h3>📈 Activité</h3>
       <div style="color:var(--muted); font-size:0.88rem; padding:20px 0; text-align:center;">
-        Les graphiques d'activité détaillés arriveront bientôt avec le plan Premium.
+        Les graphiques d'activité détaillés arrivent bientôt.
       </div>
     </div>
   </div>
@@ -882,16 +882,16 @@
       </div>
       <div class="info-row">
         <label>Plan actuel</label>
-        <span id="displayPlan" style="color:var(--purple); font-weight:800;">Débutant gratuit</span>
+        <span id="displayPlan" style="color:var(--purple); font-weight:800;">Membre</span>
       </div>
       <button class="btn-save" id="btnSave">💾 Sauvegarder</button>
     </div>
 
     <div class="info-card">
-          <h3>⚡ Changer de plan</h3>
+          <h3>🎨 Espace Créateur</h3>
           <div style="display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;">
-            <div style="font-size:0.88rem; color:var(--muted);" id="planUpsellText">Passe Premium (5€/mois) pour débloquer les mangas et formations illimités.</div>
-            <button class="btn-creator" id="btnOpenPlans2">Voir les plans ✨</button>
+            <div style="font-size:0.88rem; color:var(--muted);" id="planUpsellText">Crée et vends tes packs de dessin, ebooks et tutoriels — gratuitement.</div>
+            <a class="btn-creator" id="btnOpenPlans2" href="premium.html" style="text-decoration:none;">Ouvrir mon espace 🎨</a>
           </div>
         </div>
   </div>
@@ -949,48 +949,19 @@
   </div>
 </div>
 
-<!-- ── MODAL PLANS ── -->
+<!-- ── MODAL CRÉATEUR ── -->
 <div class="modal-overlay" id="plansModal">
-  <div class="modal">
+  <div class="modal" style="max-width:440px;text-align:center;">
     <button class="modal-close" id="modalClose">✕</button>
-    <div class="modal-title">CHOISIR UN PLAN</div>
-    <div class="modal-sub">Commence gratuitement, évolue quand tu es prêt.</div>
-    <div class="plans-grid" style="grid-template-columns:repeat(2,1fr);max-width:480px;margin:0 auto;">
-
-      <!-- Free -->
-      <div class="plan-card">
-        <div class="plan-icon">🌱</div>
-        <div class="plan-name">Gratuit</div>
-        <div class="plan-price">0€ <span>/ mois</span></div>
-        <div class="plan-desc">Pour découvrir Inkrise et publier tes premiers mangas.</div>
-        <ul class="plan-features">
-          <li>Jusqu'à 3 mangas</li>
-          <li>Jusqu'à 2 formations en vente</li>
-          <li>Statistiques basiques</li>
-          <li class="no">Espace formations premium</li>
-          <li class="no">Badge Premium</li>
-        </ul>
-        <button class="btn-plan free">Plan actuel</button>
-      </div>
-
-      <!-- Premium -->
-      <div class="plan-card featured">
-        <div class="plan-badge">🔜 Bientôt disponible</div>
-        <div class="plan-icon">💎</div>
-        <div class="plan-name">Premium</div>
-        <div class="plan-price">5€ <span>/ mois</span></div>
-        <div class="plan-desc">Pour les créateurs sérieux qui veulent grandir.</div>
-        <ul class="plan-features">
-          <li>Mangas illimités</li>
-          <li>Formations illimitées</li>
-          <li>Espace formations premium</li>
-          <li>Statistiques avancées</li>
-          <li>Badge Premium ✓</li>
-        </ul>
-        <button class="btn-plan premium">🔒 Bientôt disponible</button>
-      </div>
-
-    </div>
+    <div class="modal-title">DEVIENS CRÉATEUR</div>
+    <div class="modal-sub">C'est gratuit, pour toujours. Publie tes mangas et vends tes packs de dessin sur Inkrise.</div>
+    <ul class="plan-features" style="text-align:left;max-width:280px;margin:0 auto 24px;">
+      <li>Mangas illimités</li>
+      <li>Packs de dessin illimités</li>
+      <li>Communauté personnelle</li>
+      <li>Statistiques</li>
+    </ul>
+    <button class="btn-plan free" style="max-width:280px;margin:0 auto;">✨ Activer mon espace créateur</button>
   </div>
 </div>
 
@@ -1141,8 +1112,8 @@
   }
 
   function planLabel(p) {
-    if (p?.espace_premium) return 'Premium';
-    if (p?.is_creator) return 'Créateur (gratuit)';
+
+    if (p?.is_creator) return 'Créateur';
     return 'Lecteur';
   }
 
@@ -1165,25 +1136,12 @@
         freeBtn.style.cursor = 'pointer';
       }
     }
-    const premiumBtn = document.querySelector('.btn-plan.premium');
-    if (premiumBtn) {
-      if (userProfile?.espace_premium) {
-        premiumBtn.textContent = 'Plan actuel';
-        premiumBtn.disabled = true;
-        premiumBtn.style.cursor = 'default';
-      } else {
-        premiumBtn.textContent = '🔒 Bientôt disponible';
-        premiumBtn.disabled = false;
-        premiumBtn.style.cursor = 'pointer';
-      }
-    }
   }
 
-  // ── PLANS : 2 paliers seulement — Gratuit / Premium (5€) ──
-  async function choosePlan(plan) { // 'gratuit' | 'premium'
+  // ── DEVENIR CRÉATEUR (gratuit, une seule fois) ──
+  async function choosePlan(plan) {
     const { data } = await sb.auth.getSession();
     if (!data.session) { window.location.href = 'auth.html'; return; }
-    if (plan === 'premium') { showToast('💎 L\'Espace Premium arrive bientôt ! Le paiement n\'est pas encore disponible.', 'info'); return; }
     const updates = { is_creator: true };
     const { error } = await sb.from('profiles').update(updates).eq('id', data.session.user.id);
     if (error) { showToast('Erreur : ' + error.message, 'error'); return; }
@@ -1195,9 +1153,7 @@
 
   document.querySelector('.btn-plan.free')?.addEventListener('click', () => {
     if (!userProfile?.is_creator) choosePlan('gratuit');
-  });
-  document.querySelector('.btn-plan.premium')?.addEventListener('click', () => {
-    if (!userProfile?.espace_premium) choosePlan('premium');
+    else window.location.href = 'premium.html';
   });
 
   // ── CHARGER MANGAS ──
@@ -1375,7 +1331,7 @@
     choosePlan('gratuit');
   });
   // "Voir les plans" reste le chemin explicite vers les offres payantes.
-  document.getElementById('btnOpenPlans2').addEventListener('click', openPlans);
+
   document.getElementById('modalClose').addEventListener('click', closePlans);
   document.getElementById('plansModal').addEventListener('click', e => {
     if (e.target === e.currentTarget) closePlans();

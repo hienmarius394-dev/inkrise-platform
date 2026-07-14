@@ -318,7 +318,7 @@ h1,h2,h3,.logo { font-family: 'Syne', sans-serif; }
     <a href="index.html" class="univ-nav-lk">Accueil</a>
     <a href="recherche.html" class="univ-nav-lk">Mangas</a>
     <a href="tutoriels.html" class="univ-nav-lk">Tutoriels</a>
-    <a href="#" class="univ-nav-lk" onclick="openModal();return false;">Premium</a>
+    <a href="premium.html" class="univ-nav-lk">Espace Créateur</a>
   </div>
   <div class="univ-nav-search">
     <input type="text" id="navSearchInput" class="univ-nav-si" placeholder="Rechercher…" onkeydown="if(event.key==='Enter')doSearch()" />
@@ -345,7 +345,7 @@ h1,h2,h3,.logo { font-family: 'Syne', sans-serif; }
   <a href="index.html" class="univ-d-item"><div class="univ-d-icon">🏠</div>Accueil</a>
   <a href="recherche.html" class="univ-d-item"><div class="univ-d-icon">📖</div>Manga &amp; BD</a>
   <a href="tutoriels.html" class="univ-d-item"><div class="univ-d-icon">🎓</div>Tutoriels <span class="univ-d-badge teal">GRATUIT</span></a>
-  <a href="#" class="univ-d-item" onclick="openModal();closeDrawer();"><div class="univ-d-icon">💎</div>Premium <span class="univ-d-badge orange">PRO</span></a>
+  <a href="premium.html" class="univ-d-item"><div class="univ-d-icon">🎨</div>Espace Créateur <span class="univ-d-badge teal">GRATUIT</span></a>
   <a href="communaute.html" class="univ-d-item"><div class="univ-d-icon">👥</div>Communauté</a>
   <div class="univ-d-divider"></div>
   <div class="univ-d-sec">Mon compte</div>
@@ -420,32 +420,22 @@ h1,h2,h3,.logo { font-family: 'Syne', sans-serif; }
   <a href="profil.html" class="univ-bnav-item"><span class="univ-bnav-icon">👤</span><span class="univ-bnav-label">Profil</span></a>
 </div>
 
-<!-- MODAL PLANS -->
+<!-- MODAL CRÉATEUR -->
 <div class="modal-overlay" id="modalOverlay" onclick="closeModalOutside(event)">
   <div class="modal">
     <button class="modal-close" onclick="closeModal()">✕</button>
     <span class="modal-tag">Espace créateur</span>
-    <div class="modal-title">Choisis ton plan créateur</div>
-    <div class="modal-sub">Publie gratuitement. Passe en Premium pour débloquer les formations illimitées et plus de mangas.</div>
-    <div class="plans-grid" style="grid-template-columns:repeat(2,1fr);max-width:520px;margin:0 auto;">
-      <div class="plan-card">
-        <div class="plan-name">Gratuit</div>
+    <div class="modal-title">Deviens créateur, c'est gratuit</div>
+    <div class="modal-sub">Publie tes mangas et vends tes packs de dessin (croquis, ebooks, tutoriels) directement sur Inkrise. Aucun abonnement, jamais.</div>
+    <div class="plans-grid" style="grid-template-columns:1fr;max-width:340px;margin:0 auto;">
+      <div class="plan-card featured">
+        <div class="plan-name">Créateur</div>
         <div class="plan-price"><span class="plan-price-num">0€</span><span class="plan-price-per">/ pour toujours</span></div>
         <ul class="plan-features">
-          <li>Jusqu'à 3 mangas publiés</li><li>Jusqu'à 2 formations en vente</li>
-          <li>Profil créateur</li><li>Accès à la communauté</li>
+          <li>Mangas illimités</li><li>Packs de dessin illimités</li>
+          <li>Communauté personnelle</li><li>Statistiques</li>
         </ul>
-        <button class="btn-plan" onclick="choosePlan('gratuit')">Commencer gratuit</button>
-      </div>
-      <div class="plan-card featured">
-        <div class="plan-badge">🔜 BIENTÔT DISPONIBLE</div>
-        <div class="plan-name">Premium</div>
-        <div class="plan-price"><span class="plan-price-num">5€</span><span class="plan-price-per">/ mois</span></div>
-        <ul class="plan-features">
-          <li>Mangas illimités</li><li>Formations illimitées</li>
-          <li>Espace formations premium</li><li>Badge Premium ✓</li>
-        </ul>
-        <button class="btn-plan featured" onclick="choosePlan('premium')">🔒 Bientôt disponible</button>
+        <button class="btn-plan featured" onclick="choosePlan('gratuit')">✨ Activer mon espace créateur</button>
       </div>
     </div>
   </div>
@@ -555,10 +545,9 @@ function emptyState(msg) { return `<div class="empty-state">${msg}</div>` }
 function escapeHtml(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])) }
 
 // PLANS CRÉATEUR
-async function choosePlan(plan) { // 'gratuit' | 'premium'
+async function choosePlan(plan) {
   const { data } = await supabaseClient.auth.getSession()
   if (!data.session) { window.location.href = 'auth.html'; return }
-  if (plan === 'premium') { showToast('💎 L\'Espace Premium arrive bientôt ! Le paiement n\'est pas encore disponible.'); return }
   const { error } = await supabaseClient.from('profiles').update({ is_creator: true }).eq('id', data.session.user.id)
   if (error) { showToast('Erreur : ' + error.message); return }
   showToast('Espace créateur activé 🎉')

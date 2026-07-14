@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Espace Premium — InkRise</title>
+  <title>Espace Créateur — InkRise</title>
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500;600;700&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
@@ -565,7 +565,7 @@
     <a href="index.html" class="univ-nav-lk">Accueil</a>
     <a href="recherche.html" class="univ-nav-lk">Mangas</a>
     <a href="tutoriels.html" class="univ-nav-lk">Tutoriels</a>
-    <a href="premium.html" class="univ-nav-lk active">Premium</a>
+    <a href="premium.html" class="univ-nav-lk active">Espace Créateur</a>
   </div>
   <div class="univ-nav-search">
     <input type="text" id="navSearchInput" class="univ-nav-si" placeholder="Rechercher…" onkeydown="if(event.key==='Enter')doSearch()" />
@@ -607,9 +607,9 @@
   <!-- GATE CRÉATEUR GRATUIT -->
   <div id="creatorGate" style="display:none;max-width:480px;margin:60px auto;text-align:center;">
     <div style="font-size:52px;margin-bottom:8px;">🎨</div>
-    <h1 style="margin-bottom:10px;">Vends tes formations, <span>c'est gratuit</span></h1>
+    <h1 style="margin-bottom:10px;">Vends tes packs de dessin, <span>c'est gratuit</span></h1>
     <p style="color:var(--text-2, #666);margin-bottom:28px;line-height:1.6;">
-      Aucune carte bancaire, aucun abonnement. Deviens créateur en un clic pour créer et vendre tes propres formations.
+      Aucune carte bancaire, aucun abonnement. Deviens créateur en un clic pour vendre tes packs de croquis, ebooks et tutoriels dessinés.
     </p>
     <button class="btn btn-primary" style="padding:14px 32px;font-size:1rem;" onclick="becomeCreatorFree()">✓ Devenir créateur gratuitement</button>
   </div>
@@ -617,11 +617,11 @@
   <!-- HERO -->
   <div class="hero" id="hero" style="display:none">
     <div class="hero-title">Bienvenue, <span id="hero-username">...</span> ✨</div>
-    <div class="badge-premium">💎 Espace Premium Créateur</div>
+    <div class="badge-premium">🎨 Espace Créateur</div>
     <div class="hero-stats">
       <div class="stat-box">
         <div class="stat-num" id="stat-formations">0</div>
-        <div class="stat-label">Formation(s)</div>
+        <div class="stat-label">Pack(s)</div>
       </div>
       <div class="stat-box">
         <div class="stat-num" id="stat-acheteurs">0</div>
@@ -633,10 +633,10 @@
   <!-- SECTION MES FORMATIONS -->
   <div id="section-formations" style="display:none">
     <div class="section-header">
-      <div class="section-title">Mes formations</div>
+      <div class="section-title">Mes packs</div>
       <button class="btn btn-primary" id="btn-new-pack">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="16" height="16"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-        Nouvelle formation
+        Nouveau pack
       </button>
     </div>
     <div id="packs-container">
@@ -697,10 +697,12 @@
         <div class="form-hint">La bande-annonce de ta formation. Pour le contenu, utilise plutôt les leçons ci-dessous.</div>
       </div>
       <div class="form-group">
-        <label class="form-label">📚 Leçons de la formation</label>
-        <div class="form-hint">Structure ta formation en plusieurs leçons vidéo, comme une vraie classroom (façon Skool). Optionnel — laisse vide pour une formation à vidéo unique.</div>
-        <div id="lecons-list" style="display:flex;flex-direction:column;gap:10px;margin-top:10px;"></div>
-        <button type="button" class="btn btn-ghost btn-sm" id="btn-add-lecon" style="margin-top:8px;">+ Ajouter une leçon</button>
+        <label class="form-label">🖼️ Contenu du pack — images</label>
+        <div class="form-hint">Ajoute les images de ton pack (croquis, planches, pages d'ebook…). Tu peux en mettre plus de 100 — elles ne seront visibles que par les acheteurs.</div>
+        <div id="pack-images-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(72px,1fr));gap:8px;margin-top:10px;"></div>
+        <button type="button" class="btn btn-ghost btn-sm" id="btn-add-images" style="margin-top:10px;">📷 Ajouter des images</button>
+        <input type="file" id="pack-images-input" accept="image/*" multiple style="display:none;" />
+        <span id="pack-images-status" style="font-size:.78rem;color:var(--muted);margin-left:8px;"></span>
       </div>
       <div class="form-group">
         <label class="form-label" for="f-objectifs">Objectifs (un par ligne)</label>
@@ -976,111 +978,47 @@
     return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 
-  /* ── LEÇONS (constructeur dynamique) ── */
-  function addLeconRow(titre, video_url, type, images, fichier_url) {
-    const list = document.getElementById('lecons-list');
-    const row = document.createElement('div');
-    row.className = 'lecon-row';
-    row.dataset.images = JSON.stringify(images || []);
-    row.dataset.fichier = fichier_url || '';
-    row.style.cssText = 'display:flex;gap:8px;align-items:flex-start;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px;';
-    const t = type || 'video';
-    row.innerHTML =
-      '<div style="flex:1;display:flex;flex-direction:column;gap:6px;">' +
-        '<input class="form-input lecon-titre" type="text" placeholder="Titre de la leçon (ex: Leçon 1 — Les bases)" value="' + escHtml(titre || '') + '" />' +
-        '<select class="form-input lecon-type">' +
-          '<option value="video"' + (t === 'video' ? ' selected' : '') + '>🎬 Vidéo (YouTube, Vimeo…)</option>' +
-          '<option value="images"' + (t === 'images' ? ' selected' : '') + '>🖼️ Pack d\'images (croquis, planches…)</option>' +
-          '<option value="fichier"' + (t === 'fichier' ? ' selected' : '') + '>📎 Fichier téléchargeable (PDF, ZIP…)</option>' +
-        '</select>' +
-        '<input class="form-input lecon-video" type="url" placeholder="URL vidéo (YouTube, Vimeo...)" value="' + escHtml(video_url || '') + '" style="' + (t === 'video' ? '' : 'display:none;') + '" />' +
-        '<div class="lecon-images-zone" style="' + (t === 'images' ? '' : 'display:none;') + '">' +
-          '<button type="button" class="btn btn-ghost btn-sm lecon-images-btn">📷 Ajouter des images</button>' +
-          '<input type="file" class="lecon-images-input" accept="image/*" multiple style="display:none;" />' +
-          '<span class="lecon-images-status" style="font-size:.75rem;color:var(--muted);margin-left:8px;">' + ((images || []).length ? '✅ ' + images.length + ' image(s)' : '') + '</span>' +
-        '</div>' +
-        '<div class="lecon-fichier-zone" style="' + (t === 'fichier' ? '' : 'display:none;') + '">' +
-          '<button type="button" class="btn btn-ghost btn-sm lecon-fichier-btn">📎 Choisir un fichier</button>' +
-          '<input type="file" class="lecon-fichier-input" accept=".pdf,.zip,.rar,.psd,.png,.jpg" style="display:none;" />' +
-          '<span class="lecon-fichier-status" style="font-size:.75rem;color:var(--muted);margin-left:8px;">' + (fichier_url ? '✅ Fichier ajouté' : '') + '</span>' +
-        '</div>' +
-      '</div>' +
-      '<button type="button" class="btn-remove-lecon" title="Supprimer" style="background:none;border:none;color:var(--danger);font-size:1.1rem;cursor:pointer;padding:4px;">✕</button>';
-    row.querySelector('.btn-remove-lecon').addEventListener('click', () => row.remove());
-
-    // Bascule des zones selon le type
-    row.querySelector('.lecon-type').addEventListener('change', function() {
-      row.querySelector('.lecon-video').style.display = this.value === 'video' ? '' : 'none';
-      row.querySelector('.lecon-images-zone').style.display = this.value === 'images' ? '' : 'none';
-      row.querySelector('.lecon-fichier-zone').style.display = this.value === 'fichier' ? '' : 'none';
-    });
-
-    // Upload direct des images de la leçon
-    row.querySelector('.lecon-images-btn').addEventListener('click', () => row.querySelector('.lecon-images-input').click());
-    row.querySelector('.lecon-images-input').addEventListener('change', async function() {
-      const files = Array.from(this.files || []);
-      if (!files.length) return;
-      const status = row.querySelector('.lecon-images-status');
-      status.textContent = '⏳ Envoi de ' + files.length + ' image(s)…';
-      const urls = JSON.parse(row.dataset.images || '[]');
-      for (let i = 0; i < files.length; i++) {
-        const f = files[i];
-        if (f.size > 8 * 1024 * 1024) { showToast('"' + f.name + '" dépasse 8 Mo, ignorée', 'error'); continue; }
-        const ext = f.name.split('.').pop() || 'jpg';
-        const path = 'lecons/' + currentUser.id + '_' + Date.now() + '_' + i + '.' + ext;
-        const { error } = await sb.storage.from('covers').upload(path, f, { upsert: true });
-        if (!error) {
-          const { data: pub } = sb.storage.from('covers').getPublicUrl(path);
-          if (pub?.publicUrl) urls.push(pub.publicUrl);
-        }
-        status.textContent = '⏳ ' + (i + 1) + '/' + files.length + '…';
-      }
-      row.dataset.images = JSON.stringify(urls);
-      status.textContent = '✅ ' + urls.length + ' image(s)';
-    });
-
-    // Upload direct du fichier de la leçon
-    row.querySelector('.lecon-fichier-btn').addEventListener('click', () => row.querySelector('.lecon-fichier-input').click());
-    row.querySelector('.lecon-fichier-input').addEventListener('change', async function() {
-      const f = this.files[0];
-      if (!f) return;
-      const status = row.querySelector('.lecon-fichier-status');
-      if (f.size > 40 * 1024 * 1024) { showToast('Fichier trop lourd (max 40 Mo)', 'error'); return; }
-      status.textContent = '⏳ Envoi…';
-      const ext = f.name.split('.').pop() || 'bin';
-      const path = 'lecons-fichiers/' + currentUser.id + '_' + Date.now() + '.' + ext;
+  /* ── IMAGES DU PACK (contenu vendu) ── */
+  let packImages = [];
+  function renderPackImages() {
+    const grid = document.getElementById('pack-images-grid');
+    grid.innerHTML = packImages.map((u, i) =>
+      '<div style="position:relative;aspect-ratio:1;border-radius:10px;overflow:hidden;border:1px solid var(--border);">' +
+        '<img src="' + escHtml(u) + '" style="width:100%;height:100%;object-fit:cover;display:block;" alt="" />' +
+        '<button type="button" data-i="' + i + '" class="pack-img-del" style="position:absolute;top:3px;right:3px;width:20px;height:20px;border-radius:50%;background:rgba(0,0,0,0.6);color:#fff;border:none;font-size:.65rem;cursor:pointer;">✕</button>' +
+      '</div>'
+    ).join('');
+    grid.querySelectorAll('.pack-img-del').forEach(b => b.addEventListener('click', () => {
+      packImages.splice(parseInt(b.dataset.i), 1);
+      renderPackImages();
+    }));
+    document.getElementById('pack-images-status').textContent = packImages.length ? packImages.length + ' image(s)' : '';
+  }
+  function getPackImages() { return packImages; }
+  document.getElementById('btn-add-images').addEventListener('click', () => document.getElementById('pack-images-input').click());
+  document.getElementById('pack-images-input').addEventListener('change', async function() {
+    const files = Array.from(this.files || []);
+    this.value = '';
+    if (!files.length) return;
+    const status = document.getElementById('pack-images-status');
+    for (let i = 0; i < files.length; i++) {
+      const f = files[i];
+      if (f.size > 8 * 1024 * 1024) { showToast('"' + f.name + '" dépasse 8 Mo, ignorée', 'error'); continue; }
+      status.textContent = '⏳ ' + (i + 1) + '/' + files.length + '…';
+      const ext = f.name.split('.').pop() || 'jpg';
+      const path = 'pack-contenus/' + currentUser.id + '_' + Date.now() + '_' + i + '.' + ext;
       const { error } = await sb.storage.from('covers').upload(path, f, { upsert: true });
-      if (error) { status.textContent = '❌ ' + error.message; return; }
-      const { data: pub } = sb.storage.from('covers').getPublicUrl(path);
-      row.dataset.fichier = pub?.publicUrl || '';
-      status.textContent = '✅ Fichier ajouté';
-    });
-
-    list.appendChild(row);
-  }
-  document.getElementById('btn-add-lecon').addEventListener('click', () => addLeconRow());
-  function getLeconsFromForm() {
-    return Array.from(document.querySelectorAll('#lecons-list .lecon-row')).map((row, i) => ({
-      titre: row.querySelector('.lecon-titre').value.trim(),
-      type: row.querySelector('.lecon-type').value,
-      video_url: row.querySelector('.lecon-video').value.trim() || null,
-      images: JSON.parse(row.dataset.images || '[]'),
-      fichier_url: row.dataset.fichier || null,
-      ordre: i
-    })).filter(l => l.titre || l.video_url || l.images.length || l.fichier_url);
-  }
+      if (!error) {
+        const { data: pub } = sb.storage.from('covers').getPublicUrl(path);
+        if (pub?.publicUrl) packImages.push(pub.publicUrl);
+      }
+    }
+    renderPackImages();
+  });
 
   /* ── MODAL NOUVELLE FORMATION ── */
   async function openNewModal() {
-    if (!userProfile?.espace_premium) {
-      const { count } = await sb.from('packs_tutoriels').select('id', { count: 'exact', head: true }).eq('auteur_id', currentUser.id);
-      if ((count || 0) >= 2) {
-        showToast('Limite de 2 formations gratuites atteinte — passe Premium pour en créer plus 💎', 'error');
-        setTimeout(() => window.location.href = 'index.html?premium=1', 1400);
-        return;
-      }
-    }
-    document.getElementById('modal-title').textContent = 'Nouvelle formation';
+    document.getElementById('modal-title').textContent = 'Nouveau pack';
     document.getElementById('submit-label').textContent = 'Créer la formation';
     document.getElementById('edit-pack-id').value = '';
     document.getElementById('pack-form').reset();
@@ -1088,7 +1026,7 @@
     document.getElementById('f-image').value = '';
     document.getElementById('f-image-status').textContent = '';
     document.getElementById('f-prix').value = '2.00';
-    document.getElementById('lecons-list').innerHTML = '';
+    packImages = []; renderPackImages();
     document.getElementById('modal-overlay').classList.add('open');
   }
 
@@ -1247,12 +1185,8 @@
     document.getElementById('f-video').value = pack.contenu_url || '';
     document.getElementById('f-objectifs').value = Array.isArray(pack.objectifs) ? pack.objectifs.join('\n') : '';
     document.getElementById('f-niveau').value = pack.niveau || 'Tous niveaux';
-    const leconsList = document.getElementById('lecons-list');
-    leconsList.innerHTML = '';
-    try {
-      const { data: lecons } = await sb.from('pack_lecons').select('*').eq('pack_id', packId).order('ordre', { ascending: true });
-      (lecons || []).forEach(l => addLeconRow(l.titre, l.video_url, l.type, l.images, l.fichier_url));
-    } catch (e) { /* table pas encore créée côté SQL, on ignore */ }
+    packImages = Array.isArray(pack.images) ? pack.images.filter(Boolean) : [];
+    renderPackImages();
     document.getElementById('modal-overlay').classList.add('open');
   }
 
@@ -1280,18 +1214,9 @@
     const editId = document.getElementById('edit-pack-id').value;
 
     try {
-      if (!editId && !userProfile?.espace_premium) {
-        const { count } = await sb.from('packs_tutoriels').select('id', { count: 'exact', head: true }).eq('auteur_id', currentUser.id);
-        if ((count || 0) >= 2) {
-          showToast('Limite de 2 formations gratuites atteinte — passe Premium 💎', 'error');
-          submitBtn.disabled = false;
-          submitBtn.innerHTML = '<span id="submit-label">Créer la formation</span>';
-          return;
-        }
-      }
       let packIdFinal = editId;
       if (editId) {
-        const row = { titre, description, prix, image_url, contenu_url, objectifs, niveau };
+        const row = { titre, description, prix, image_url, contenu_url, objectifs, niveau, images: getPackImages() };
         let { error } = await sb.from('packs_tutoriels').update(row).eq('id', editId).eq('auteur_id', currentUser.id);
         if (error && /column|schema cache/i.test(error.message || '')) {
           ({ error } = await sb.from('packs_tutoriels')
@@ -1299,9 +1224,9 @@
             .eq('id', editId).eq('auteur_id', currentUser.id));
         }
         if (error) throw error;
-        showToast('Formation mise à jour !', 'success');
+        showToast('Pack mis à jour !', 'success');
       } else {
-        const row = { titre, description, prix, image_url, contenu_url, objectifs, niveau, auteur_id: currentUser.id, auteur_nom: userProfile.username };
+        const row = { titre, description, prix, image_url, contenu_url, objectifs, niveau, images: getPackImages(), auteur_id: currentUser.id, auteur_nom: userProfile.username };
         let { data: inserted, error } = await sb.from('packs_tutoriels').insert(row).select('id').single();
         if (error && /column|schema cache/i.test(error.message || '')) {
           ({ data: inserted, error } = await sb.from('packs_tutoriels')
@@ -1310,22 +1235,7 @@
         }
         if (error) throw error;
         packIdFinal = inserted?.id;
-        showToast('Formation créée !', 'success');
-      }
-
-      // Leçons — best-effort (silencieux si la table n'existe pas encore côté SQL)
-      if (packIdFinal) {
-        try {
-          const lecons = getLeconsFromForm();
-          await sb.from('pack_lecons').delete().eq('pack_id', packIdFinal);
-          if (lecons.length) {
-            let { error: lecErr } = await sb.from('pack_lecons').insert(lecons.map(l => ({ ...l, pack_id: packIdFinal })));
-            if (lecErr && /column|schema cache/i.test(lecErr.message || '')) {
-              // Colonnes type/images/fichier_url pas encore créées côté SQL : retomber sur le format simple
-              await sb.from('pack_lecons').insert(lecons.map(l => ({ titre: l.titre, video_url: l.video_url, ordre: l.ordre, pack_id: packIdFinal })));
-            }
-          }
-        } catch (e) { /* ignoré */ }
+        showToast('Pack créé !', 'success');
       }
 
       closeModal();
