@@ -314,6 +314,27 @@
     }
     .lesson-file-btn:hover { transform: translateY(-2px); }
 
+    /* ── GALERIE DU PACK & TEASER ── */
+    .pack-gallery { display: flex; flex-direction: column; gap: 14px; }
+    .pack-gallery img {
+      width: 100%; display: block; border-radius: 14px;
+      box-shadow: 0 12px 36px -8px rgba(35,20,90,0.2);
+    }
+    .pack-teaser { text-align: center; padding: 8px 0 4px; }
+    .pack-teaser-count {
+      font-family: 'Syne', sans-serif; font-size: 2.6rem; font-weight: 800;
+      background: linear-gradient(135deg, var(--purple), var(--pink));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+      line-height: 1;
+    }
+    .pack-teaser-label { color: var(--muted); font-size: .88rem; margin: 6px 0 16px; }
+    .pack-teaser-blur { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+    .pack-teaser-blur img {
+      width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 10px;
+      filter: blur(14px) saturate(1.2); transform: scale(1.05);
+      pointer-events: none; user-select: none;
+    }
+
     /* ── CURRICULUM (aperçu verrouillé) ── */
     .curriculum-list { display: flex; flex-direction: column; gap: 6px; }
     .curriculum-item {
@@ -450,7 +471,7 @@
     <a href="index.html" class="univ-nav-lk">Accueil</a>
     <a href="recherche.html" class="univ-nav-lk">Mangas</a>
     <a href="tutoriels.html" class="univ-nav-lk active">Tutoriels</a>
-    <a href="#" class="univ-nav-lk" onclick="openModal();return false;">Premium</a>
+    <a href="premium.html" class="univ-nav-lk">Espace Créateur</a>
   </div>
   <div class="univ-nav-search">
     <input type="text" id="navSearchInput" class="univ-nav-si" placeholder="Rechercher…" onkeydown="if(event.key==='Enter')doSearch()" />
@@ -475,7 +496,7 @@
   <a href="index.html" class="univ-d-item"><div class="univ-d-icon">🏠</div>Accueil</a>
   <a href="recherche.html" class="univ-d-item"><div class="univ-d-icon">📖</div>Manga & BD</a>
   <a href="tutoriels.html" class="univ-d-item"><div class="univ-d-icon">🎓</div>Tutoriels <span class="univ-d-badge teal">NOUVEAU</span></a>
-  <a href="#" class="univ-d-item" onclick="openModal();closeDrawer();return false;"><div class="univ-d-icon">💎</div>Premium <span class="univ-d-badge orange">PRO</span></a>
+  <a href="premium.html" class="univ-d-item"><div class="univ-d-icon">🎨</div>Espace Créateur <span class="univ-d-badge teal">GRATUIT</span></a>
   <a href="communaute.html" class="univ-d-item"><div class="univ-d-icon">👥</div>Communauté</a>
   <div class="univ-d-divider"></div>
   <div class="univ-d-sec">Mon compte</div>
@@ -734,13 +755,13 @@ async function loadPack(packId) {
           btn.style.display = 'block';
         });
       }
-      await loadClassroom(data);
+      showPackGallery(data);
     }
   }
 
-  // Programme visible par tous (curriculum verrouillé façon Skool si pas d'accès)
+  // Aperçu verrouillé pour les visiteurs sans accès
   if (!currentPack.accesAutorise) {
-    await loadCurriculumPreview(packId);
+    showPackTeaser(data);
   }
 
   await loadAvis(packId);
@@ -877,6 +898,40 @@ function lessonContentHtml(l) {
       '</div>';
   }
   return videoEmbedHtml(l.video_url);
+}
+
+// ── CONTENU DU PACK (images pour les acheteurs) ──
+function showPackGallery(pack) {
+  const imgs = Array.isArray(pack.images) ? pack.images.filter(Boolean) : [];
+  if (!imgs.length) return;
+  const section = document.createElement('div');
+  section.className = 'section-card';
+  section.innerHTML =
+    '<div class="section-title">🖼️ Contenu du pack <span style="margin-left:auto;font-size:.72rem;color:var(--muted);font-weight:600;">' + imgs.length + ' image' + (imgs.length > 1 ? 's' : '') + '</span></div>' +
+    '<div class="pack-gallery">' +
+    imgs.map((u, i) => '<a href="' + escapeHtml(u) + '" target="_blank" rel="noopener"><img src="' + escapeHtml(u) + '" alt="Image ' + (i + 1) + '" loading="lazy" /></a>').join('') +
+    '</div>';
+  const avisSection = document.getElementById('avisSection');
+  avisSection.parentNode.insertBefore(section, avisSection);
+}
+
+// ── TEASER VERROUILLÉ (visiteurs sans accès) ──
+function showPackTeaser(pack) {
+  const imgs = Array.isArray(pack.images) ? pack.images.filter(Boolean) : [];
+  if (!imgs.length) return;
+  const section = document.createElement('div');
+  section.className = 'section-card';
+  section.innerHTML =
+    '<div class="section-title">🔒 Contenu du pack</div>' +
+    '<div class="pack-teaser">' +
+      '<div class="pack-teaser-count">' + imgs.length + '</div>' +
+      '<div class="pack-teaser-label">image' + (imgs.length > 1 ? 's' : '') + ' haute qualité t\'attendent dans ce pack</div>' +
+      '<div class="pack-teaser-blur">' +
+      imgs.slice(0, 4).map(u => '<img src="' + escapeHtml(u) + '" alt="" loading="lazy" />').join('') +
+      '</div>' +
+    '</div>';
+  const avisSection = document.getElementById('avisSection');
+  avisSection.parentNode.insertBefore(section, avisSection);
 }
 
 // ── AVIS ──
