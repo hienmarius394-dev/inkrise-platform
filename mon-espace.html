@@ -145,12 +145,6 @@
       border: 1px solid rgba(124, 111, 239, 0.4);
     }
 
-    .badge-premium {
-      background: rgba(240, 82, 42, 0.15);
-      color: #f5a623;
-      border: 1px solid rgba(245, 166, 35, 0.4);
-    }
-
     /* ── CREATOR NAV ── */
     .creator-nav {
       display: flex;
@@ -902,7 +896,7 @@
     // Profile check
     const { data: profile } = await db
       .from('profiles')
-      .select('username, bio, avatar_url, is_creator, espace_premium')
+      .select('username, bio, avatar_url, is_creator')
       .eq('id', userId)
       .single();
 

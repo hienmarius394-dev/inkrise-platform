@@ -717,7 +717,7 @@ document.addEventListener('DOMContentLoaded', function() {
   updateNavAuth(session);
 
   try {
-    const creatorRes = await sb.from('profiles').select('id, username, bio, avatar_url, espace_premium').eq('id', state.creatorId).maybeSingle();
+    const creatorRes = await sb.from('profiles').select('id, username, bio, avatar_url').eq('id', state.creatorId).maybeSingle();
     if (creatorRes.error) throw creatorRes.error;
     if (!creatorRes.data) throw new Error('PROFILE_NOT_FOUND');
     state.creator = creatorRes.data;
@@ -872,9 +872,6 @@ function render() {
   html += '<div class="creator-name-row">';
   html += '<span class="creator-username">' + escHtml(state.creator.username) + '</span>';
   html += '<span class="creator-badge">Créateur</span>';
-  if (state.creator.espace_premium) {
-    html += '<span class="creator-premium">💎 Premium</span>';
-  }
   html += '</div>';
   if (state.creator.bio) {
     html += '<div class="creator-bio">' + escHtml(state.creator.bio) + '</div>';

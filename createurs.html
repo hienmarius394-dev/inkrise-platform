@@ -206,7 +206,6 @@
       letter-spacing: .3px; text-transform: uppercase;
     }
     .badge-creator { background: rgba(124,111,239,.15); color: var(--purple2); border: 1px solid rgba(124,111,239,.25); }
-    .badge-premium { background: rgba(245,200,66,.12); color: var(--gold); border: 1px solid rgba(245,200,66,.25); }
 
     .creator-name {
       font-family: 'Syne', sans-serif;
@@ -486,7 +485,7 @@
       { data: allFollows },
       { data: allMangas },
     ] = await Promise.all([
-      sb.from('profiles').select('id, username, bio, avatar_url, is_creator, espace_premium, created_at').eq('is_creator', true).order('created_at', { ascending: false }),
+      sb.from('profiles').select('id, username, bio, avatar_url, is_creator, created_at').eq('is_creator', true).order('created_at', { ascending: false }),
       sb.from('follows').select('followed_id'),
       sb.from('mangas').select('auteur_id'),
     ]);
@@ -552,7 +551,6 @@
       ? `<div class="creator-avatar"><img src="${c.avatar_url}" alt="${escHtml(c.username)}" loading="lazy" onerror="this.parentElement.textContent='${(c.username || 'U')[0].toUpperCase()}'" /></div>`
       : `<div class="creator-avatar">${(c.username || 'U')[0].toUpperCase()}</div>`;
 
-    const premiumBadge = c.espace_premium ? `<span class="badge badge-premium">💎 Premium</span>` : '';
 
     let followBtn = '';
     if (!isMe && currentUser !== null) {
@@ -566,7 +564,6 @@
         ${avatarHtml}
         <div class="creator-badges">
           <span class="badge badge-creator">Créateur</span>
-          ${premiumBadge}
         </div>
         <div class="creator-name">${escHtml(c.username || 'Anonyme')}</div>
         <div class="creator-bio">${escHtml(bio)}</div>
