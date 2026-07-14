@@ -36,7 +36,11 @@
 
     body {
       font-family: 'DM Sans', sans-serif;
-      background: var(--bg);
+      background:
+        radial-gradient(640px 420px at 6% -6%, rgba(124,92,252,0.14), transparent 60%),
+        radial-gradient(560px 400px at 100% 8%, rgba(245,200,66,0.10), transparent 60%),
+        radial-gradient(700px 460px at 50% 115%, rgba(255,95,168,0.08), transparent 60%),
+        var(--bg);
       color: var(--text);
       min-height: 100vh;
       padding-bottom: 90px;
@@ -128,21 +132,39 @@
 
     /* ── HERO ── */
     .hero {
-      background: linear-gradient(135deg, #1a1530 0%, #1e1a3a 100%);
-      border: 1px solid rgba(124,111,239,0.25);
-      border-radius: 20px;
-      padding: 28px 28px 24px;
+      background:
+        radial-gradient(480px 260px at 85% -20%, rgba(245,200,66,0.20), transparent 65%),
+        radial-gradient(520px 300px at -10% 110%, rgba(255,95,168,0.16), transparent 65%),
+        linear-gradient(140deg, #171128 0%, #241a4a 55%, #1b1438 100%);
+      border: 1px solid rgba(245,200,66,0.22);
+      border-radius: 26px;
+      padding: 34px 30px 28px;
       margin-bottom: 28px;
       position: relative;
       overflow: hidden;
+      box-shadow: 0 26px 70px -18px rgba(36,26,74,0.55);
     }
     .hero::before {
       content: '';
       position: absolute;
-      top: -40px; right: -40px;
-      width: 200px; height: 200px;
-      background: radial-gradient(circle, rgba(124,111,239,0.18) 0%, transparent 70%);
+      top: -60px; right: -60px;
+      width: 280px; height: 280px;
+      background: radial-gradient(circle, rgba(124,92,252,0.35) 0%, transparent 70%);
       pointer-events: none;
+      animation: heroGlow 9s ease-in-out infinite alternate;
+    }
+    .hero::after {
+      content: '';
+      position: absolute;
+      bottom: -80px; left: 10%;
+      width: 320px; height: 220px;
+      background: radial-gradient(circle, rgba(245,200,66,0.14) 0%, transparent 70%);
+      pointer-events: none;
+      animation: heroGlow 12s ease-in-out infinite alternate-reverse;
+    }
+    @keyframes heroGlow {
+      from { transform: translate(0,0) scale(1); opacity: .85; }
+      to   { transform: translate(-24px,14px) scale(1.15); opacity: 1; }
     }
     .hero-title {
       font-family: 'Syne', sans-serif;
@@ -151,7 +173,7 @@
       margin-bottom: 6px;
       color: #fff;
     }
-    .hero-title span { color: var(--gold); }
+    .hero-title span { color: var(--gold); text-shadow: 0 0 24px rgba(245,200,66,0.45); }
     .badge-premium {
       display: inline-flex;
       align-items: center;
@@ -173,12 +195,15 @@
       flex-wrap: wrap;
     }
     .stat-box {
-      background: rgba(255,255,255,0.04);
-      border: 1px solid var(--border);
-      border-radius: 12px;
+      background: rgba(255,255,255,0.07);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 14px;
       padding: 12px 20px;
       min-width: 100px;
     }
+    .stat-label { color: rgba(255,255,255,0.55); }
     .stat-num {
       font-family: 'Syne', sans-serif;
       font-size: 1.5rem;
@@ -205,6 +230,8 @@
       font-family: 'Syne', sans-serif;
       font-size: 1.15rem;
       font-weight: 800;
+      background: linear-gradient(135deg, var(--text), #4a3f8f);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
     }
 
     /* ── BTN ── */
@@ -225,8 +252,9 @@
     .btn-primary {
       background: linear-gradient(135deg, var(--purple), var(--pink));
       color: #fff;
+      box-shadow: 0 8px 24px -6px rgba(124,92,252,0.45);
     }
-    .btn-primary:hover { opacity: 0.88; }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 14px 32px -6px rgba(124,92,252,0.55); }
     .btn-ghost {
       background: rgba(0,0,0,0.05);
       color: var(--text);
@@ -260,7 +288,7 @@
       transition: border-color .2s, transform .2s, box-shadow .2s;
       position: relative;
     }
-    .pack-card:hover { border-color: rgba(124,111,239,0.4); transform: translateY(-4px); box-shadow: 0 14px 34px rgba(124,111,239,0.18); }
+    .pack-card:hover { border-color: rgba(124,92,252,0.45); transform: translateY(-6px) scale(1.01); box-shadow: 0 24px 54px -10px rgba(124,92,252,0.30); }
     .pack-img-wrap { position: relative; }
     .pack-img {
       width: 100%;
