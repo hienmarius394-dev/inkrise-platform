@@ -269,6 +269,53 @@
     .btn-danger:hover { background: rgba(224,92,110,0.24); }
     .btn-sm { padding: 7px 14px; font-size: 0.8rem; }
 
+    /* ── SÉLECTEUR DE COUVERTURE ── */
+    .pack-cover-picker {
+      position: relative; width: 100%; aspect-ratio: 16/9;
+      border-radius: 14px; overflow: hidden; cursor: pointer;
+      background: rgba(124,92,252,0.05);
+      border: 2px dashed rgba(124,92,252,0.3);
+      display: flex; align-items: center; justify-content: center;
+      transition: all .2s;
+    }
+    .pack-cover-picker:hover { border-color: var(--purple); background: rgba(124,92,252,0.09); }
+    .pack-cover-picker img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+    .pack-cover-picker-empty {
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+      color: var(--muted); font-size: .85rem; font-weight: 600; text-align: center; padding: 10px;
+    }
+    .pack-cover-picker-hint { font-size: .72rem; font-weight: 500; color: var(--text-3); }
+    .pack-cover-picker-edit {
+      position: absolute; bottom: 10px; right: 10px;
+      background: rgba(0,0,0,0.55); color: #fff; font-size: .75rem; font-weight: 700;
+      padding: 6px 13px; border-radius: 100px; backdrop-filter: blur(6px);
+    }
+
+    /* ── MODAL RECADRAGE ── */
+    .crop-overlay {
+      display: none; position: fixed; inset: 0; background: rgba(20,15,45,0.6);
+      backdrop-filter: blur(6px); z-index: 400;
+      align-items: center; justify-content: center; padding: 20px;
+    }
+    .crop-overlay.open { display: flex; }
+    .crop-box {
+      background: #fff; border-radius: 20px; padding: 24px;
+      width: 100%; max-width: 460px;
+      box-shadow: 0 30px 80px rgba(20,15,45,0.4);
+    }
+    .crop-box-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.05rem; margin-bottom: 14px; text-align: center; }
+    .crop-frame {
+      position: relative; width: 100%; aspect-ratio: 16/9;
+      background: #14102a; border-radius: 12px; overflow: hidden;
+      cursor: grab; touch-action: none; user-select: none;
+    }
+    .crop-frame.dragging { cursor: grabbing; }
+    .crop-frame img { position: absolute; top: 0; left: 0; max-width: none; max-height: none; pointer-events: none; }
+    .crop-zoom { display: flex; align-items: center; gap: 10px; margin-top: 14px; }
+    .crop-zoom input { flex: 1; }
+    .crop-actions { display: flex; gap: 10px; margin-top: 16px; }
+    .crop-actions .btn { flex: 1; justify-content: center; }
+
     /* ── CARDS ── */
     .packs-grid {
       display: grid;
@@ -630,19 +677,24 @@
         <div class="form-hint">Mets 0 pour une formation gratuite.</div>
       </div>
       <div class="form-group">
-        <label class="form-label">Image de couverture (optionnelle)</label>
-        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
-          <img id="f-image-preview" src="" alt="" style="display:none;width:88px;height:56px;object-fit:cover;border-radius:8px;border:1px solid var(--border);" />
-          <label for="f-image-file" class="btn btn-ghost btn-sm" style="cursor:pointer;">📷 Choisir une image</label>
-          <input type="file" id="f-image-file" accept="image/*" style="display:none;" />
-          <span id="f-image-status" style="font-size:0.78rem;color:var(--muted);"></span>
+        <label class="form-label">Image de couverture</label>
+        <div class="pack-cover-picker" id="packCoverPicker" onclick="document.getElementById('f-image-file').click()">
+          <img id="f-image-preview" src="" alt="" style="display:none;" />
+          <div class="pack-cover-picker-empty" id="packCoverEmpty">
+            <span style="font-size:1.8rem;">🖼️</span>
+            <span>Ajoute une belle couverture</span>
+            <span class="pack-cover-picker-hint">Tu pourras la recadrer et zoomer ✂️</span>
+          </div>
+          <div class="pack-cover-picker-edit" id="packCoverEditBtn" style="display:none;">📷 Changer</div>
         </div>
-        <input class="form-input" type="url" id="f-image" placeholder="https://... (ou colle une URL directement)" style="margin-top:8px;" />
+        <input type="file" id="f-image-file" accept="image/*" style="display:none;" />
+        <input type="hidden" id="f-image" />
+        <span id="f-image-status" style="font-size:0.78rem;color:var(--muted);"></span>
       </div>
       <div class="form-group">
-        <label class="form-label" for="f-video">Lien vidéo (optionnel)</label>
-        <input class="form-input" type="url" id="f-video" placeholder="URL YouTube, Vimeo, ou fichier vidéo..." />
-        <div class="form-hint">Ex : https://www.youtube.com/watch?v=... ou https://vimeo.com/...</div>
+        <label class="form-label" for="f-video">Vidéo de présentation (optionnel)</label>
+        <input class="form-input" type="url" id="f-video" placeholder="URL YouTube ou Vimeo…" />
+        <div class="form-hint">La bande-annonce de ta formation. Pour le contenu, utilise plutôt les leçons ci-dessous.</div>
       </div>
       <div class="form-group">
         <label class="form-label">📚 Leçons de la formation</label>
@@ -671,6 +723,24 @@
         </button>
       </div>
     </form>
+  </div>
+</div>
+
+<!-- ── MODAL RECADRAGE COUVERTURE ── -->
+<div class="crop-overlay" id="cropOverlay">
+  <div class="crop-box">
+    <div class="crop-box-title">✂️ Recadre ta couverture</div>
+    <div class="crop-frame" id="cropFrame">
+      <img id="cropImg" src="" alt="" />
+    </div>
+    <div class="crop-zoom">
+      <span>🔍</span>
+      <input type="range" id="cropZoom" min="1" max="3" step="0.01" value="1" />
+    </div>
+    <div class="crop-actions">
+      <button type="button" class="btn btn-ghost" id="cropCancel">Annuler</button>
+      <button type="button" class="btn btn-primary" id="cropConfirm">✅ Valider</button>
+    </div>
   </div>
 </div>
 
@@ -1014,7 +1084,8 @@
     document.getElementById('submit-label').textContent = 'Créer la formation';
     document.getElementById('edit-pack-id').value = '';
     document.getElementById('pack-form').reset();
-    document.getElementById('f-image-preview').style.display = 'none';
+    setCoverPreview(null);
+    document.getElementById('f-image').value = '';
     document.getElementById('f-image-status').textContent = '';
     document.getElementById('f-prix').value = '2.00';
     document.getElementById('lecons-list').innerHTML = '';
@@ -1029,37 +1100,127 @@
   document.getElementById('modal-close').addEventListener('click', closeModal);
   document.getElementById('modal-cancel').addEventListener('click', closeModal);
 
-  /* ── UPLOAD IMAGE DE COUVERTURE DU PACK ── */
+  /* ── RECADRAGE + UPLOAD DE LA COUVERTURE DU PACK ── */
+  let cropState = { zoom: 1, x: 0, y: 0, naturalW: 0, naturalH: 0, resolve: null };
+
+  function setCoverPreview(url) {
+    const preview = document.getElementById('f-image-preview');
+    const empty = document.getElementById('packCoverEmpty');
+    const editBtn = document.getElementById('packCoverEditBtn');
+    if (url) {
+      preview.src = url; preview.style.display = '';
+      empty.style.display = 'none'; editBtn.style.display = '';
+    } else {
+      preview.style.display = 'none';
+      empty.style.display = 'flex'; editBtn.style.display = 'none';
+    }
+  }
+
+  function openCropModal(file) {
+    return new Promise((resolve) => {
+      const img = document.getElementById('cropImg');
+      document.getElementById('cropZoom').value = 1;
+      cropState = { zoom: 1, x: 0, y: 0, naturalW: 0, naturalH: 0, resolve };
+      const reader = new FileReader();
+      reader.onload = e => { img.onload = () => initCropPosition(); img.src = e.target.result; };
+      reader.readAsDataURL(file);
+      document.getElementById('cropOverlay').classList.add('open');
+    });
+  }
+  function initCropPosition() {
+    const frame = document.getElementById('cropFrame');
+    const img = document.getElementById('cropImg');
+    cropState.naturalW = img.naturalWidth;
+    cropState.naturalH = img.naturalHeight;
+    const fw = frame.clientWidth, fh = frame.clientHeight;
+    const s = Math.max(fw / cropState.naturalW, fh / cropState.naturalH);
+    img.style.width = (cropState.naturalW * s) + 'px';
+    img.style.height = (cropState.naturalH * s) + 'px';
+    cropState.x = (fw - cropState.naturalW * s) / 2;
+    cropState.y = (fh - cropState.naturalH * s) / 2;
+    applyCropTransform();
+  }
+  function applyCropTransform() {
+    const img = document.getElementById('cropImg');
+    img.style.left = cropState.x + 'px';
+    img.style.top = cropState.y + 'px';
+  }
+  function clampCropPosition() {
+    const frame = document.getElementById('cropFrame');
+    const img = document.getElementById('cropImg');
+    const minX = Math.min(0, frame.clientWidth - img.offsetWidth);
+    const minY = Math.min(0, frame.clientHeight - img.offsetHeight);
+    cropState.x = Math.max(minX, Math.min(0, cropState.x));
+    cropState.y = Math.max(minY, Math.min(0, cropState.y));
+  }
+  (function bindCrop() {
+    const frame = document.getElementById('cropFrame');
+    let drag = false, sx = 0, sy = 0, ox = 0, oy = 0;
+    const down = (cx, cy) => { drag = true; frame.classList.add('dragging'); sx = cx; sy = cy; ox = cropState.x; oy = cropState.y; };
+    const move = (cx, cy) => { if (!drag) return; cropState.x = ox + (cx - sx); cropState.y = oy + (cy - sy); clampCropPosition(); applyCropTransform(); };
+    const up = () => { drag = false; frame.classList.remove('dragging'); };
+    frame.addEventListener('mousedown', e => down(e.clientX, e.clientY));
+    window.addEventListener('mousemove', e => move(e.clientX, e.clientY));
+    window.addEventListener('mouseup', up);
+    frame.addEventListener('touchstart', e => { const t = e.touches[0]; down(t.clientX, t.clientY); }, { passive: true });
+    frame.addEventListener('touchmove', e => { const t = e.touches[0]; move(t.clientX, t.clientY); }, { passive: true });
+    frame.addEventListener('touchend', up);
+    document.getElementById('cropZoom').addEventListener('input', function() {
+      if (!cropState.naturalW) return;
+      const img = document.getElementById('cropImg');
+      const fw = frame.clientWidth, fh = frame.clientHeight;
+      const base = Math.max(fw / cropState.naturalW, fh / cropState.naturalH);
+      const z = parseFloat(this.value);
+      const nw = cropState.naturalW * base * z, nh = cropState.naturalH * base * z;
+      const cx = fw / 2 - cropState.x, cy = fh / 2 - cropState.y;
+      const rx = cx / img.offsetWidth, ry = cy / img.offsetHeight;
+      img.style.width = nw + 'px'; img.style.height = nh + 'px';
+      cropState.x = fw / 2 - rx * nw;
+      cropState.y = fh / 2 - ry * nh;
+      clampCropPosition();
+      applyCropTransform();
+    });
+  })();
+  document.getElementById('cropCancel').addEventListener('click', () => {
+    document.getElementById('cropOverlay').classList.remove('open');
+    if (cropState.resolve) cropState.resolve(null);
+  });
+  document.getElementById('cropConfirm').addEventListener('click', () => {
+    const frame = document.getElementById('cropFrame');
+    const img = document.getElementById('cropImg');
+    const scale = img.offsetWidth / cropState.naturalW;
+    const canvas = document.createElement('canvas');
+    canvas.width = 1200; canvas.height = 675;
+    canvas.getContext('2d').drawImage(img,
+      -cropState.x / scale, -cropState.y / scale,
+      frame.clientWidth / scale, frame.clientHeight / scale,
+      0, 0, 1200, 675);
+    canvas.toBlob(blob => {
+      document.getElementById('cropOverlay').classList.remove('open');
+      if (cropState.resolve) cropState.resolve(blob ? new File([blob], 'cover.jpg', { type: 'image/jpeg' }) : null);
+    }, 'image/jpeg', 0.88);
+  });
+
   document.getElementById('f-image-file').addEventListener('change', async function() {
     const file = this.files[0];
+    this.value = '';
     if (!file) return;
+    const cropped = await openCropModal(file);
+    if (!cropped) return;
     const statusEl = document.getElementById('f-image-status');
-    const preview = document.getElementById('f-image-preview');
-
-    const reader = new FileReader();
-    reader.onload = e => { preview.src = e.target.result; preview.style.display = ''; };
-    reader.readAsDataURL(file);
-
-    statusEl.textContent = 'Envoi en cours…';
+    statusEl.textContent = '⏳ Envoi en cours…';
     try {
-      const ext = file.name.split('.').pop() || 'jpg';
-      const fileName = 'packs/' + currentUser.id + '_' + Date.now() + '.' + ext;
-      const { data: uplData, error: uplErr } = await sb.storage.from('covers').upload(fileName, file, { upsert: true });
+      const fileName = 'packs/' + currentUser.id + '_' + Date.now() + '.jpg';
+      const { data: uplData, error: uplErr } = await sb.storage.from('covers').upload(fileName, cropped, { upsert: true });
       if (uplErr || !uplData) throw uplErr || new Error('Upload échoué');
       const { data: pubData } = sb.storage.from('covers').getPublicUrl(fileName);
       if (!pubData?.publicUrl) throw new Error('URL publique introuvable');
       document.getElementById('f-image').value = pubData.publicUrl;
-      statusEl.textContent = '✅ Image ajoutée';
+      setCoverPreview(pubData.publicUrl);
+      statusEl.textContent = '✅ Couverture ajoutée';
     } catch (err) {
       statusEl.textContent = 'Erreur : ' + (err.message || 'upload impossible');
     }
-  });
-
-  // Aperçu si une URL est collée/déjà présente (création vs édition)
-  document.getElementById('f-image').addEventListener('input', function() {
-    const preview = document.getElementById('f-image-preview');
-    if (this.value.trim()) { preview.src = this.value.trim(); preview.style.display = ''; }
-    else { preview.style.display = 'none'; }
   });
   document.getElementById('modal-overlay').addEventListener('click', function(e) {
     if (e.target === this) closeModal();
@@ -1078,10 +1239,9 @@
     document.getElementById('f-prix').value = pack.prix != null ? pack.prix : '2.00';
     document.getElementById('f-image').value = pack.image_url || '';
     if (pack.image_url) {
-      document.getElementById('f-image-preview').src = pack.image_url;
-      document.getElementById('f-image-preview').style.display = '';
+      setCoverPreview(pack.image_url);
     } else {
-      document.getElementById('f-image-preview').style.display = 'none';
+      setCoverPreview(null);
     }
     document.getElementById('f-image-status').textContent = '';
     document.getElementById('f-video').value = pack.contenu_url || '';
