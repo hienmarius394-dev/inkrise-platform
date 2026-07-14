@@ -906,27 +906,97 @@
   }
 
   /* ── LEÇONS (constructeur dynamique) ── */
-  function addLeconRow(titre, video_url) {
+  function addLeconRow(titre, video_url, type, images, fichier_url) {
     const list = document.getElementById('lecons-list');
     const row = document.createElement('div');
     row.className = 'lecon-row';
+    row.dataset.images = JSON.stringify(images || []);
+    row.dataset.fichier = fichier_url || '';
     row.style.cssText = 'display:flex;gap:8px;align-items:flex-start;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px;';
+    const t = type || 'video';
     row.innerHTML =
       '<div style="flex:1;display:flex;flex-direction:column;gap:6px;">' +
         '<input class="form-input lecon-titre" type="text" placeholder="Titre de la leçon (ex: Leçon 1 — Les bases)" value="' + escHtml(titre || '') + '" />' +
-        '<input class="form-input lecon-video" type="url" placeholder="URL vidéo (YouTube, Vimeo...)" value="' + escHtml(video_url || '') + '" />' +
+        '<select class="form-input lecon-type">' +
+          '<option value="video"' + (t === 'video' ? ' selected' : '') + '>🎬 Vidéo (YouTube, Vimeo…)</option>' +
+          '<option value="images"' + (t === 'images' ? ' selected' : '') + '>🖼️ Pack d\'images (croquis, planches…)</option>' +
+          '<option value="fichier"' + (t === 'fichier' ? ' selected' : '') + '>📎 Fichier téléchargeable (PDF, ZIP…)</option>' +
+        '</select>' +
+        '<input class="form-input lecon-video" type="url" placeholder="URL vidéo (YouTube, Vimeo...)" value="' + escHtml(video_url || '') + '" style="' + (t === 'video' ? '' : 'display:none;') + '" />' +
+        '<div class="lecon-images-zone" style="' + (t === 'images' ? '' : 'display:none;') + '">' +
+          '<button type="button" class="btn btn-ghost btn-sm lecon-images-btn">📷 Ajouter des images</button>' +
+          '<input type="file" class="lecon-images-input" accept="image/*" multiple style="display:none;" />' +
+          '<span class="lecon-images-status" style="font-size:.75rem;color:var(--muted);margin-left:8px;">' + ((images || []).length ? '✅ ' + images.length + ' image(s)' : '') + '</span>' +
+        '</div>' +
+        '<div class="lecon-fichier-zone" style="' + (t === 'fichier' ? '' : 'display:none;') + '">' +
+          '<button type="button" class="btn btn-ghost btn-sm lecon-fichier-btn">📎 Choisir un fichier</button>' +
+          '<input type="file" class="lecon-fichier-input" accept=".pdf,.zip,.rar,.psd,.png,.jpg" style="display:none;" />' +
+          '<span class="lecon-fichier-status" style="font-size:.75rem;color:var(--muted);margin-left:8px;">' + (fichier_url ? '✅ Fichier ajouté' : '') + '</span>' +
+        '</div>' +
       '</div>' +
       '<button type="button" class="btn-remove-lecon" title="Supprimer" style="background:none;border:none;color:var(--danger);font-size:1.1rem;cursor:pointer;padding:4px;">✕</button>';
     row.querySelector('.btn-remove-lecon').addEventListener('click', () => row.remove());
+
+    // Bascule des zones selon le type
+    row.querySelector('.lecon-type').addEventListener('change', function() {
+      row.querySelector('.lecon-video').style.display = this.value === 'video' ? '' : 'none';
+      row.querySelector('.lecon-images-zone').style.display = this.value === 'images' ? '' : 'none';
+      row.querySelector('.lecon-fichier-zone').style.display = this.value === 'fichier' ? '' : 'none';
+    });
+
+    // Upload direct des images de la leçon
+    row.querySelector('.lecon-images-btn').addEventListener('click', () => row.querySelector('.lecon-images-input').click());
+    row.querySelector('.lecon-images-input').addEventListener('change', async function() {
+      const files = Array.from(this.files || []);
+      if (!files.length) return;
+      const status = row.querySelector('.lecon-images-status');
+      status.textContent = '⏳ Envoi de ' + files.length + ' image(s)…';
+      const urls = JSON.parse(row.dataset.images || '[]');
+      for (let i = 0; i < files.length; i++) {
+        const f = files[i];
+        if (f.size > 8 * 1024 * 1024) { showToast('"' + f.name + '" dépasse 8 Mo, ignorée', 'error'); continue; }
+        const ext = f.name.split('.').pop() || 'jpg';
+        const path = 'lecons/' + currentUser.id + '_' + Date.now() + '_' + i + '.' + ext;
+        const { error } = await sb.storage.from('covers').upload(path, f, { upsert: true });
+        if (!error) {
+          const { data: pub } = sb.storage.from('covers').getPublicUrl(path);
+          if (pub?.publicUrl) urls.push(pub.publicUrl);
+        }
+        status.textContent = '⏳ ' + (i + 1) + '/' + files.length + '…';
+      }
+      row.dataset.images = JSON.stringify(urls);
+      status.textContent = '✅ ' + urls.length + ' image(s)';
+    });
+
+    // Upload direct du fichier de la leçon
+    row.querySelector('.lecon-fichier-btn').addEventListener('click', () => row.querySelector('.lecon-fichier-input').click());
+    row.querySelector('.lecon-fichier-input').addEventListener('change', async function() {
+      const f = this.files[0];
+      if (!f) return;
+      const status = row.querySelector('.lecon-fichier-status');
+      if (f.size > 40 * 1024 * 1024) { showToast('Fichier trop lourd (max 40 Mo)', 'error'); return; }
+      status.textContent = '⏳ Envoi…';
+      const ext = f.name.split('.').pop() || 'bin';
+      const path = 'lecons-fichiers/' + currentUser.id + '_' + Date.now() + '.' + ext;
+      const { error } = await sb.storage.from('covers').upload(path, f, { upsert: true });
+      if (error) { status.textContent = '❌ ' + error.message; return; }
+      const { data: pub } = sb.storage.from('covers').getPublicUrl(path);
+      row.dataset.fichier = pub?.publicUrl || '';
+      status.textContent = '✅ Fichier ajouté';
+    });
+
     list.appendChild(row);
   }
   document.getElementById('btn-add-lecon').addEventListener('click', () => addLeconRow());
   function getLeconsFromForm() {
     return Array.from(document.querySelectorAll('#lecons-list .lecon-row')).map((row, i) => ({
       titre: row.querySelector('.lecon-titre').value.trim(),
-      video_url: row.querySelector('.lecon-video').value.trim(),
+      type: row.querySelector('.lecon-type').value,
+      video_url: row.querySelector('.lecon-video').value.trim() || null,
+      images: JSON.parse(row.dataset.images || '[]'),
+      fichier_url: row.dataset.fichier || null,
       ordre: i
-    })).filter(l => l.titre || l.video_url);
+    })).filter(l => l.titre || l.video_url || l.images.length || l.fichier_url);
   }
 
   /* ── MODAL NOUVELLE FORMATION ── */
@@ -1020,7 +1090,7 @@
     leconsList.innerHTML = '';
     try {
       const { data: lecons } = await sb.from('pack_lecons').select('*').eq('pack_id', packId).order('ordre', { ascending: true });
-      (lecons || []).forEach(l => addLeconRow(l.titre, l.video_url));
+      (lecons || []).forEach(l => addLeconRow(l.titre, l.video_url, l.type, l.images, l.fichier_url));
     } catch (e) { /* table pas encore créée côté SQL, on ignore */ }
     document.getElementById('modal-overlay').classList.add('open');
   }
@@ -1088,7 +1158,11 @@
           const lecons = getLeconsFromForm();
           await sb.from('pack_lecons').delete().eq('pack_id', packIdFinal);
           if (lecons.length) {
-            await sb.from('pack_lecons').insert(lecons.map(l => ({ ...l, pack_id: packIdFinal })));
+            let { error: lecErr } = await sb.from('pack_lecons').insert(lecons.map(l => ({ ...l, pack_id: packIdFinal })));
+            if (lecErr && /column|schema cache/i.test(lecErr.message || '')) {
+              // Colonnes type/images/fichier_url pas encore créées côté SQL : retomber sur le format simple
+              await sb.from('pack_lecons').insert(lecons.map(l => ({ titre: l.titre, video_url: l.video_url, ordre: l.ordre, pack_id: packIdFinal })));
+            }
           }
         } catch (e) { /* ignoré */ }
       }

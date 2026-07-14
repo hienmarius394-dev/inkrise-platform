@@ -330,6 +330,9 @@ ALTER TABLE pack_lecons ADD COLUMN IF NOT EXISTS video_url TEXT;
 ALTER TABLE pack_lecons ADD COLUMN IF NOT EXISTS module TEXT;
 ALTER TABLE pack_lecons ADD COLUMN IF NOT EXISTS ordre INT DEFAULT 0;
 ALTER TABLE pack_lecons ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT now();
+ALTER TABLE pack_lecons ADD COLUMN IF NOT EXISTS type TEXT DEFAULT 'video';          -- video|images|fichier
+ALTER TABLE pack_lecons ADD COLUMN IF NOT EXISTS images TEXT[] DEFAULT '{}';         -- pack d'images (croquis, planches…)
+ALTER TABLE pack_lecons ADD COLUMN IF NOT EXISTS fichier_url TEXT;                   -- ressource téléchargeable (PDF, ZIP…)
 
 CREATE TABLE IF NOT EXISTS pack_progression (
   id BIGSERIAL PRIMARY KEY,
