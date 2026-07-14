@@ -721,7 +721,7 @@ async function loadChapter() {
   document.getElementById('noPages').style.display = 'none';
 
   // Titre
-  const chapTitle = chapitre.titre || `Chapitre ${chapitre.numero}`;
+  const chapTitle = `Chapitre ${chapitre.numero}`;
   document.getElementById('topbarChap').textContent = chapTitle;
   document.title = `${chapTitle} — ${manga?.titre || ''} — Inkrise`;
 
@@ -950,7 +950,7 @@ function setMode(mode, reload = true) {
 function buildChapSelect() {
   const sel = document.getElementById('chapSelect');
   sel.innerHTML = allChaps.map(c =>
-    `<option value="${c.id}" ${c.id === chapitre.id ? 'selected' : ''}>${c.titre || 'Chapitre ' + c.numero}</option>`
+    `<option value="${c.id}" ${c.id === chapitre.id ? 'selected' : ''}>Chapitre ${c.numero}</option>`
   ).join('');
 }
 
