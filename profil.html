@@ -796,7 +796,7 @@
       <div class="empty-icon">📖</div>
       <h3>Aucun manga publié pour l'instant</h3>
       <p>Tu n'as pas encore publié de manga.<br>Commence dès maintenant et partage ton univers !</p>
-      <button class="btn-upload" onclick="document.getElementById('btnOpenPlans').click()">Commencer à publier</button>
+      <button class="btn-upload" onclick="if(userProfile?.is_creator){window.location.href='upload-manga.html'}else{document.getElementById('btnOpenPlans').click()}">Commencer à publier</button>
     </div>
   </div>
 
@@ -1185,10 +1185,11 @@
     let   totalVues   = 0;
     let   totalChaps  = 0;
 
+    document.getElementById('btnUpload').style.display = userProfile?.is_creator ? 'inline-flex' : 'none';
+
     if (mangas && mangas.length > 0) {
       document.getElementById('mangaGrid').style.display = 'grid';
       document.getElementById('mangaEmpty').style.display = 'none';
-      document.getElementById('btnUpload').style.display = 'inline-flex';
 
       const grid = document.getElementById('mangaGrid');
       grid.innerHTML = '';
@@ -1268,38 +1269,10 @@
     gridEl.style.display = 'grid';
     emptyEl.style.display = 'none';
 
-    // Progression (best-effort — tables pack_lecons / pack_progression peut-être pas encore créées)
-    let leconsByPack = new Map();
-    let doneLeconIds = new Set();
-    try {
-      const { data: lecons } = await sb.from('pack_lecons').select('id, pack_id').in('pack_id', packs.map(p => p.id));
-      (lecons || []).forEach(l => {
-        if (!leconsByPack.has(l.pack_id)) leconsByPack.set(l.pack_id, []);
-        leconsByPack.get(l.pack_id).push(l.id);
-      });
-      const allLeconIds = (lecons || []).map(l => l.id);
-      if (allLeconIds.length) {
-        const { data: prog } = await sb.from('pack_progression').select('lecon_id').eq('user_id', currentUser.id).in('lecon_id', allLeconIds);
-        doneLeconIds = new Set((prog || []).map(p => p.lecon_id));
-      }
-    } catch (e) { /* ignoré */ }
-
     gridEl.innerHTML = packs.map(p => {
       const cover = p.image_url
         ? '<img class="manga-cover" src="' + escFormation(p.image_url) + '" alt="" loading="lazy" />'
         : '<div class="manga-cover-placeholder">🎓</div>';
-      const leconIds = leconsByPack.get(p.id) || [];
-      let progressHtml = '';
-      if (leconIds.length) {
-        const done = leconIds.filter(id => doneLeconIds.has(id)).length;
-        const pct = Math.round(done / leconIds.length * 100);
-        progressHtml = '<div style="padding:0 12px 10px;">' +
-          '<div style="height:5px;border-radius:3px;background:var(--surface2);overflow:hidden;">' +
-            '<div style="height:100%;width:' + pct + '%;background:linear-gradient(90deg,var(--accent),var(--purple));"></div>' +
-          '</div>' +
-          '<div style="font-size:.68rem;color:var(--muted);margin-top:4px;">' + done + '/' + leconIds.length + ' leçons</div>' +
-        '</div>';
-      }
       const isAuteur = p.auteur_id === currentUser.id;
       return '<a href="pack.html?id=' + p.id + '" class="manga-card" style="display:block;text-decoration:none;color:inherit;">' +
         cover +
@@ -1307,7 +1280,6 @@
           '<div class="manga-title">' + escFormation(p.titre || 'Sans titre') + '</div>' +
           '<div class="manga-meta"><span>' + (isAuteur ? '✏️ Créée par toi' : '🎓 Achetée') + '</span></div>' +
         '</div>' +
-        progressHtml +
       '</a>';
     }).join('');
   }
