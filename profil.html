@@ -1051,6 +1051,9 @@
 
     userProfile = profile;
 
+    const creatorBannerEl = document.getElementById('creatorBanner');
+    if (creatorBannerEl) creatorBannerEl.style.display = profile?.is_creator ? 'none' : 'flex';
+
     const username = profile?.username || currentUser.user_metadata?.username || currentUser.email.split('@')[0];
     const initial  = username[0].toUpperCase();
 
