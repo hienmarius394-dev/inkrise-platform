@@ -58,6 +58,7 @@ CREATE TABLE IF NOT EXISTS mangas (
   abonnes BIGINT NOT NULL DEFAULT 0,    -- compteur entretenu par trigger (abonnements_manga)
   adulte BOOLEAN NOT NULL DEFAULT false,
   commentaires_actifs BOOLEAN NOT NULL DEFAULT true,
+  langue TEXT NOT NULL DEFAULT 'fr',
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 ALTER TABLE mangas ADD COLUMN IF NOT EXISTS auteur_id UUID REFERENCES profiles(id) ON DELETE CASCADE;
@@ -72,6 +73,7 @@ ALTER TABLE mangas ADD COLUMN IF NOT EXISTS abonnes BIGINT DEFAULT 0;
 ALTER TABLE mangas ADD COLUMN IF NOT EXISTS adulte BOOLEAN DEFAULT false;
 ALTER TABLE mangas ADD COLUMN IF NOT EXISTS commentaires_actifs BOOLEAN DEFAULT true;
 ALTER TABLE mangas ADD COLUMN IF NOT EXISTS genres TEXT[] DEFAULT '{}';
+ALTER TABLE mangas ADD COLUMN IF NOT EXISTS langue TEXT DEFAULT 'fr';
 CREATE INDEX IF NOT EXISTS idx_mangas_auteur ON mangas(auteur_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_mangas_vues ON mangas(vues DESC);
 
