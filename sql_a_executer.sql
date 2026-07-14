@@ -314,6 +314,25 @@ ALTER TABLE avis_packs ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES profiles
 ALTER TABLE avis_packs ADD COLUMN IF NOT EXISTS commentaire TEXT;
 ALTER TABLE avis_packs ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT now();
 
+-- Paiements CinetPay (1 ligne = 1 tentative de paiement d'un pack).
+-- Le webhook (edge function) passe le statut à 'paye' et crée l'achat.
+CREATE TABLE IF NOT EXISTS paiements (
+  id BIGSERIAL PRIMARY KEY,
+  transaction_id TEXT UNIQUE NOT NULL,
+  pack_id BIGINT NOT NULL REFERENCES packs_tutoriels(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  montant NUMERIC NOT NULL,
+  statut TEXT NOT NULL DEFAULT 'en_attente',   -- en_attente|paye|refuse
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+ALTER TABLE paiements ENABLE ROW LEVEL SECURITY;
+-- Chacun ne voit que ses propres paiements ; personne n'écrit depuis le
+-- navigateur (seules les edge functions, en service_role, écrivent).
+DROP POLICY IF EXISTS "paiements select own" ON paiements;
+CREATE POLICY "paiements select own" ON paiements FOR SELECT TO authenticated USING (user_id = auth.uid());
+GRANT SELECT ON paiements TO authenticated;
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated;
+
 CREATE TABLE IF NOT EXISTS pack_lecons (
   id BIGSERIAL PRIMARY KEY,
   pack_id BIGINT NOT NULL REFERENCES packs_tutoriels(id) ON DELETE CASCADE,
