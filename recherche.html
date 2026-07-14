@@ -250,7 +250,7 @@
   <a href="index.html" class="univ-nav-logo">INKRISE</a>
   <div class="univ-nav-links-d">
     <a href="index.html" class="univ-nav-lk">Accueil</a>
-    <a href="manga.html" class="univ-nav-lk">Mangas</a>
+    <a href="recherche.html" class="univ-nav-lk active">Mangas</a>
     <a href="tutoriels.html" class="univ-nav-lk">Tutoriels</a>
     <a href="#" class="univ-nav-lk" onclick="openModal();return false;">Premium</a>
   </div>
@@ -275,7 +275,7 @@
   </div>
   <div class="univ-d-sec">Explorer</div>
   <a href="index.html" class="univ-d-item"><div class="univ-d-icon">🏠</div>Accueil</a>
-  <a href="manga.html" class="univ-d-item"><div class="univ-d-icon">📖</div>Manga & BD</a>
+  <a href="recherche.html" class="univ-d-item"><div class="univ-d-icon">📖</div>Manga & BD</a>
   <a href="tutoriels.html" class="univ-d-item"><div class="univ-d-icon">🎓</div>Tutoriels <span class="univ-d-badge teal">GRATUIT</span></a>
   <a href="#" class="univ-d-item" onclick="openModal();closeDrawer();return false;"><div class="univ-d-icon">💎</div>Premium <span class="univ-d-badge orange">PRO</span></a>
   <a href="communaute.html" class="univ-d-item"><div class="univ-d-icon">👥</div>Communauté</a>
@@ -430,24 +430,31 @@ function renderPacks(packs) {
 
 async function doSearchPage() {
   const wrap = document.getElementById('mainContent');
+  const browseAll = !query;
 
-  if (!query) {
-    wrap.innerHTML = `<div class="empty-term"><div class="empty-term-icon">🔍</div><p>Saisis un terme dans la barre de recherche pour trouver des mangas ou des créateurs.</p></div>`;
-    return;
+  if (browseAll) {
+    document.getElementById('heroTitle').innerHTML = `📖 Tous les mangas`;
+    document.title = 'Mangas — Inkrise';
+  } else {
+    document.getElementById('heroTitle').innerHTML = `Résultats pour <em>« ${escapeHtml(query)} »</em>`;
+    document.getElementById('heroSearchInput').value = query;
+    document.getElementById('navSearchInput').value = query;
+    document.title = `"${query}" — Inkrise`;
   }
 
-  document.getElementById('heroTitle').innerHTML = `Résultats pour <em>« ${escapeHtml(query)} »</em>`;
-  document.getElementById('heroSearchInput').value = query;
-  document.getElementById('navSearchInput').value = query;
-  document.title = `"${query}" — Inkrise`;
-
-  wrap.innerHTML = `<div class="page-loading" id="loader"><div class="loading-ring"></div><span>Recherche en cours…</span></div>`;
+  wrap.innerHTML = `<div class="page-loading" id="loader"><div class="loading-ring"></div><span>${browseAll ? 'Chargement des mangas…' : 'Recherche en cours…'}</span></div>`;
 
   const term = query;
   const [{ data: mangas, error: eM }, { data: profiles, error: eP }, { data: packs, error: ePk }] = await Promise.all([
-    sb.from('mangas').select('*').neq('statut','brouillon').or(`titre.ilike.%${term}%,synopsis.ilike.%${term}%`).limit(20),
-    sb.from('profiles').select('*').or(`username.ilike.%${term}%,bio.ilike.%${term}%`).limit(20),
-    sb.from('packs_tutoriels').select('*').or(`titre.ilike.%${term}%,description.ilike.%${term}%`).limit(20),
+    browseAll
+      ? sb.from('mangas').select('*').neq('statut','brouillon').order('created_at', { ascending: false }).limit(40)
+      : sb.from('mangas').select('*').neq('statut','brouillon').or(`titre.ilike.%${term}%,synopsis.ilike.%${term}%`).limit(20),
+    browseAll
+      ? Promise.resolve({ data: [] })
+      : sb.from('profiles').select('*').or(`username.ilike.%${term}%,bio.ilike.%${term}%`).limit(20),
+    browseAll
+      ? Promise.resolve({ data: [] })
+      : sb.from('packs_tutoriels').select('*').or(`titre.ilike.%${term}%,description.ilike.%${term}%`).limit(20),
   ]);
 
   const mangaList  = mangas  || [];
@@ -455,12 +462,20 @@ async function doSearchPage() {
   const packList   = packs   || [];
 
   if (!mangaList.length && !profilList.length && !packList.length) {
-    wrap.innerHTML = `
+    wrap.innerHTML = browseAll
+      ? `
+      <div class="no-results">
+        <div class="no-results-icon">📖</div>
+        <h2>Aucun manga publié pour l'instant</h2>
+        <p>Reviens bientôt, ou publie le tien !</p>
+        <a href="upload-manga.html" class="btn-retry">Publier un manga</a>
+      </div>`
+      : `
       <div class="no-results">
         <div class="no-results-icon">😕</div>
         <h2>Aucun résultat</h2>
         <p>Aucun manga, créateur ni pack ne correspond à <strong>« ${escapeHtml(query)} »</strong>.</p>
-        <a href="manga.html" class="btn-retry">Voir tous les mangas</a>
+        <a href="recherche.html" class="btn-retry">Voir tous les mangas</a>
       </div>`;
     return;
   }
@@ -501,7 +516,9 @@ async function doSearchPage() {
   }
 
   const total = mangaList.length + profilList.length + packList.length;
-  document.getElementById('heroTitle').innerHTML = `Résultats pour <em>« ${escapeHtml(query)} »</em> <span style="color:var(--muted);font-size:.85rem;font-weight:600;">(${total})</span>`;
+  document.getElementById('heroTitle').innerHTML = browseAll
+    ? `📖 Tous les mangas <span style="color:var(--muted);font-size:.85rem;font-weight:600;">(${total})</span>`
+    : `Résultats pour <em>« ${escapeHtml(query)} »</em> <span style="color:var(--muted);font-size:.85rem;font-weight:600;">(${total})</span>`;
 
   wrap.innerHTML = html;
 }
