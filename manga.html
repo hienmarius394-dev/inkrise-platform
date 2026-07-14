@@ -8,26 +8,27 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     :root {
-      --bg:       #ffffff;
-      --surface:  #f2f2f7;
-      --surface2: #e5e5ea;
-      --surface3: #d8d8dd;
-      --purple:   #7c6fef;
+      --bg:       #faf9fd;
+      --surface:  #f4f2fb;
+      --surface2: #ece8f8;
+      --surface3: #ddd6f3;
+      --purple:   #7c5cfc;
       --purple2:  #a594f9;
-      --accent:  #7c6fef;
+      --pink:     #ff5fa8;
+      --accent:  #7c5cfc;
       --green:    #3ddc84;
       --amber:    #f5a623;
       --text:     #1c1c1e;
       --muted:    #8e8e93;
       --border:   rgba(0,0,0,0.08);
-      --border2:  rgba(124,111,239,0.15);
+      --border2:  rgba(124,92,252,0.18);
       --bg-2:#f7f7fa; --bg-3:#ededf2;
       --surface-2:#e5e5ea;
       --orange:#ff6b35; --orange-light:#ff8a5c;
-      --teal:#00c9a7; --danger:#ff3d71;
+      --teal:#0fb8a6; --danger:#ff3d71;
       --text-2:#48484a; --text-3:#8e8e93;
       --radius:12px; --radius-lg:16px; --radius-xl:20px;
-      --shadow:0 2px 12px rgba(0,0,0,0.06); --shadow-lg:0 8px 32px rgba(0,0,0,0.1);
+      --shadow:0 2px 12px rgba(0,0,0,0.06); --shadow-lg:0 8px 32px rgba(124,92,252,0.12);
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -91,17 +92,17 @@
     .hero-banner {
       position: relative; overflow: hidden;
       height: 320px;
-      background: linear-gradient(180deg, #1a0a2e 0%, var(--bg) 100%);
+      background: linear-gradient(160deg, #241454 0%, #4a2f8f 55%, var(--bg) 100%);
     }
     .hero-bg {
       position: absolute; inset: 0;
       background-size: cover; background-position: center;
-      filter: blur(24px) brightness(0.25);
-      transform: scale(1.1);
+      filter: blur(28px) brightness(0.35) saturate(1.2);
+      transform: scale(1.15);
     }
     .hero-gradient {
       position: absolute; inset: 0;
-      background: linear-gradient(180deg, transparent 30%, var(--bg) 100%);
+      background: linear-gradient(180deg, rgba(36,20,84,0.15) 0%, var(--bg) 100%);
     }
     .hero-content {
       position: relative; z-index: 2;
@@ -193,13 +194,13 @@
     }
     .btn-read-first {
       display: inline-flex; align-items: center; gap: 8px;
-      background: linear-gradient(135deg, var(--purple), #5040c8);
+      background: linear-gradient(135deg, var(--purple), var(--pink));
       color: #fff; border: none; padding: 13px 28px; border-radius: 12px;
       font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 700;
       cursor: pointer; text-decoration: none; transition: all .25s;
-      box-shadow: 0 4px 20px rgba(124,111,239,0.35);
+      box-shadow: 0 4px 20px rgba(124,92,252,0.35);
     }
-    .btn-read-first:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(124,111,239,0.5); }
+    .btn-read-first:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(124,92,252,0.5); }
 
     .btn-continue {
       display: inline-flex; align-items: center; gap: 8px;
@@ -306,11 +307,14 @@
 
     /* ── DESCRIPTION ── */
     .section-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.6);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(124,92,252,0.1);
       border-radius: 18px;
       padding: 24px 26px;
       margin-bottom: 20px;
+      box-shadow: 0 4px 20px rgba(124,92,252,0.06);
     }
     .section-title {
       font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 700;
@@ -421,19 +425,23 @@
 
     /* Auteur card */
     .author-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.6);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(124,92,252,0.1);
       border-radius: 18px;
       padding: 20px 22px;
       margin-bottom: 16px;
       text-align: center;
+      box-shadow: 0 4px 20px rgba(124,92,252,0.06);
     }
     .author-avatar {
       width: 60px; height: 60px; border-radius: 50%;
-      background: linear-gradient(135deg, var(--purple), #5040c8);
+      background: linear-gradient(135deg, var(--purple), var(--pink));
       display: flex; align-items: center; justify-content: center;
       font-size: 1.5rem; font-weight: 800; color: #fff;
       margin: 0 auto 12px; text-transform: uppercase;
+      overflow: hidden;
     }
     .author-name { font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 700; margin-bottom: 4px; }
     .author-sub  { font-size: 0.78rem; color: var(--muted); margin-bottom: 14px; }

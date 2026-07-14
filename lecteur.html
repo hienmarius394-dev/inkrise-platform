@@ -11,8 +11,9 @@
     --bg:      #ffffff;
     --surface: #f2f2f7;
     --surface2:#e5e5ea;
-    --purple:  #7c6fef;
+    --purple:  #7c5cfc;
     --purple2: #a594f9;
+    --pink:    #ff5fa8;
     --green:   #3ddc84;
     --amber:   #f5a623;
     --accent:  #7c6fef;
@@ -124,7 +125,7 @@
       cursor: pointer; transition: all .2s;
       font-family: 'DM Sans', sans-serif;
     }
-    .mode-btn.active { background: var(--purple); color: #fff; }
+    .mode-btn.active { background: linear-gradient(135deg, var(--purple), var(--pink)); color: #fff; }
 
     /* Chapitre nav */
     .chap-nav {
@@ -177,11 +178,12 @@
       cursor: pointer; transition: all .25s;
     }
     .page-nav-btn:hover:not(:disabled) {
-      background: var(--purple); border-color: var(--purple);
+      background: linear-gradient(135deg, var(--purple), var(--pink)); border-color: var(--purple);
+      color: #fff;
       transform: translateY(-1px);
     }
     .page-nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-    .page-nav-btn.primary { background: var(--purple); border-color: var(--purple); }
+    .page-nav-btn.primary { background: linear-gradient(135deg, var(--purple), var(--pink)); border-color: var(--purple); color: #fff; }
 
     .page-indicator {
       font-family: 'Syne', sans-serif; font-size: 0.9rem; font-weight: 700;
