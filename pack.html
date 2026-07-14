@@ -560,6 +560,17 @@
   </div>
 </div>
 
+<!-- MODAL INSCRIPTION REQUISE -->
+<div class="modal-overlay" id="signupModal" onclick="if(event.target===this)closeSignupModal()">
+  <div class="modal">
+    <button class="modal-x" onclick="closeSignupModal()">✕</button>
+    <div class="modal-icon">🔒</div>
+    <div class="modal-title">Crée ton compte pour continuer</div>
+    <div class="modal-sub">La lecture des mangas et la visite des profils sont libres — mais pour t'abonner, liker, commenter ou accéder aux formations, il faut un compte Inkrise. C'est gratuit et ça prend 30 secondes !</div>
+    <a href="auth.html" class="btn-close" style="display:block;width:100%;background:linear-gradient(135deg,var(--purple),#5040c8);color:#fff;border:none;border-radius:12px;padding:12px;font-weight:800;text-decoration:none;text-align:center;font-family:'Syne',sans-serif;">Créer mon compte</a>
+  </div>
+</div>
+
 <!-- MODAL PAIEMENT -->
 <div class="modal-overlay" id="stripeModal" onclick="if(event.target===this)closeModal()">
   <div class="modal">
@@ -935,6 +946,10 @@ async function loadCreatorProfile(auteurId) {
 }
 
 function handleBuy() {
+  if (!currentUser) {
+    document.getElementById('signupModal').classList.add('open');
+    return;
+  }
   if (currentPack && currentPack.accesAutorise) {
     handleDownload();
     return;
@@ -981,6 +996,9 @@ function handleDownload() {
 
 function closeModal() {
   document.getElementById('stripeModal').classList.remove('open');
+}
+function closeSignupModal() {
+  document.getElementById('signupModal').classList.remove('open');
 }
 
 // ── HELPERS ──
