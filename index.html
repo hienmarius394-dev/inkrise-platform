@@ -227,6 +227,21 @@ h1,h2,h3,.logo { font-family: 'Syne', sans-serif; }
 .manga-card-footer { display: flex; justify-content: space-between; align-items: center; }
 .manga-card-genre { font-size: 10px; color: var(--text-2); background: rgba(124,92,252,0.08); padding: 3px 8px; border-radius: 100px; font-weight: 600; border: 1px solid var(--glass-border); }
 .manga-card-likes { font-size: 11px; font-weight: 800; color: var(--orange); }
+.manga-card-synopsis {
+  font-size: 11px; color: var(--text-2); line-height: 1.4; margin-bottom: 8px;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.manga-flag-badge {
+  position: absolute; bottom: 8px; left: 8px; z-index: 2;
+  width: 22px; height: 22px; border-radius: 50%; background: #fff;
+  display: flex; align-items: center; justify-content: center; font-size: 11px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+}
+.manga-adult-badge {
+  position: absolute; bottom: 8px; left: 34px; z-index: 2;
+  background: var(--orange); color: #fff; font-size: 9px; font-weight: 800;
+  padding: 3px 8px; border-radius: 100px; box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+}
 
 .c1{background:linear-gradient(145deg,#7c5cfc,#a78bfa)}
 .c2{background:linear-gradient(145deg,#0fb8a6,#5eead4)}
@@ -444,6 +459,7 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
 const COLORS = ['c1','c2','c3','c4','c5','c6']
 const TYPE_LABELS = { manga:'Manga', manhwa:'Manhwa', manhua:'Manhua', webtoon:'Webtoon', bd:'BD', roman:'Roman' }
+const LANG_FLAGS = { fr:'🇫🇷', en:'🇬🇧', jp:'🇯🇵', kr:'🇰🇷', cn:'🇨🇳', es:'🇪🇸' }
 
 // DRAWER
 function openDrawer() {
@@ -613,7 +629,7 @@ async function loadFeatured() {
 // POPULAIRES
 async function loadPopulaires() {
   const { data: mangas } = await supabaseClient.from('mangas')
-    .select('id, titre, type, vues, created_at, couverture_url')
+    .select('id, titre, type, vues, created_at, couverture_url, synopsis, langue, adulte')
         .neq('statut', 'brouillon')
         .order('vues', { ascending: false }).limit(6)
   const grid = document.getElementById('populairesGrid')
@@ -621,13 +637,17 @@ async function loadPopulaires() {
   grid.innerHTML = mangas.map((m, i) => {
       const bg = m.couverture_url ? `background:url('${m.couverture_url}') center/cover no-repeat;` : ''
       const colorBg = !m.couverture_url ? colorClass(i) : ''
+      const flag = LANG_FLAGS[(m.langue||'fr').toLowerCase()] || '🌐'
       return `<a href="manga.html?id=${m.id}" class="manga-card-2">
         <div class="manga-cover ${colorBg}" style="${bg}">
           <div class="manga-time-badge">🕐 ${timeAgo(m.created_at)}</div>
           <div class="manga-cover-deco">📖</div>
+          <span class="manga-flag-badge">${flag}</span>
+          ${m.adulte ? '<span class="manga-adult-badge">18+</span>' : ''}
         </div>
         <div class="manga-card-body">
           <div class="manga-card-title">${m.titre || 'Sans titre'}</div>
+          <div class="manga-card-synopsis">${escapeHtml(m.synopsis || 'Aucune description.')}</div>
           <div class="manga-card-footer">
             <span class="manga-card-genre">${TYPE_LABELS[m.type]||'Manga'}</span>
             <span class="manga-card-likes">👁 ${m.vues || 0}</span>
@@ -640,7 +660,7 @@ async function loadPopulaires() {
 // DERNIERS
 async function loadDerniers() {
   const { data: mangas } = await supabaseClient.from('mangas')
-    .select('id, titre, type, created_at, couverture_url')
+    .select('id, titre, type, created_at, couverture_url, synopsis, langue, adulte')
         .neq('statut', 'brouillon')
         .order('created_at', { ascending: false }).limit(6)
   const grid = document.getElementById('derniersGrid')
@@ -648,13 +668,17 @@ async function loadDerniers() {
   grid.innerHTML = mangas.map((m, i) => {
     const bg = m.couverture_url ? `background:url('${m.couverture_url}') center/cover no-repeat;` : ''
     const colorBg = !m.couverture_url ? colorClass(i+2) : ''
+    const flag = LANG_FLAGS[(m.langue||'fr').toLowerCase()] || '🌐'
     return `<a href="manga.html?id=${m.id}" class="manga-card-2">
       <div class="manga-cover ${colorBg}" style="${bg}">
         <div class="manga-time-badge">✨ ${timeAgo(m.created_at)}</div>
         <div class="manga-cover-deco">📖</div>
+        <span class="manga-flag-badge">${flag}</span>
+        ${m.adulte ? '<span class="manga-adult-badge">18+</span>' : ''}
       </div>
       <div class="manga-card-body">
         <div class="manga-card-title">${m.titre || 'Sans titre'}</div>
+        <div class="manga-card-synopsis">${escapeHtml(m.synopsis || 'Aucune description.')}</div>
         <div class="manga-card-footer">
           <span class="manga-card-genre">${TYPE_LABELS[m.type]||'Manga'}</span>
           <span class="manga-card-likes" style="color:var(--teal);">NEW</span>
