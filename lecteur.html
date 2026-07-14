@@ -264,10 +264,11 @@
 
     /* ── MODE SCROLL (webtoon/manhwa) ── */
     .scroll-viewer {
-      max-width: var(--scroll-w, 800px);
+      width: var(--scroll-w, 100%);
+      max-width: 800px;
       margin: 0 auto;
       padding: 0 0 80px;
-      transition: max-width .2s ease;
+      transition: width .2s ease;
     }
     .scroll-viewer.hidden { display: none; }
 
@@ -582,14 +583,14 @@
 <div class="bottombar" id="bottombar">
   <button class="page-nav-btn" id="btnPrevPage" onclick="prevPage()">← Précédente</button>
   <div class="scroll-width-ctrl">
-    <button class="scroll-width-btn" onclick="adjustScrollWidth(-100)" title="Réduire la taille des pages">−</button>
+    <button class="scroll-width-btn" onclick="adjustScrollWidth(-10)" title="Réduire la taille des pages">−</button>
   </div>
   <div class="page-indicator">
     <span id="pageNum">1</span>
     <span id="pageTotalLabel">sur 0</span>
   </div>
   <div class="scroll-width-ctrl">
-    <button class="scroll-width-btn" onclick="adjustScrollWidth(100)" title="Agrandir la taille des pages">+</button>
+    <button class="scroll-width-btn" onclick="adjustScrollWidth(10)" title="Agrandir la taille des pages">+</button>
   </div>
   <button class="page-nav-btn primary" id="btnNextPage" onclick="nextPage()">Suivante →</button>
 </div>
@@ -867,11 +868,10 @@ function renderScrollMode() {
   document.querySelectorAll('.scroll-page').forEach(img => scrollPageObserver.observe(img));
 }
 
-function adjustScrollWidth(delta) {
-  const viewer = document.getElementById('scrollViewer');
-  const current = parseInt(getComputedStyle(viewer).maxWidth, 10) || 800;
-  const next = Math.max(400, Math.min(1100, current + delta));
-  document.documentElement.style.setProperty('--scroll-w', next + 'px');
+let scrollWidthPct = 100;
+function adjustScrollWidth(deltaPct) {
+  scrollWidthPct = Math.max(50, Math.min(100, scrollWidthPct + deltaPct));
+  document.documentElement.style.setProperty('--scroll-w', scrollWidthPct + '%');
 }
 
 // ── NAVIGATION PAGES ──
