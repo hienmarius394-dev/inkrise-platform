@@ -230,6 +230,21 @@ ALTER TABLE commentaires ADD COLUMN IF NOT EXISTS parent_id BIGINT REFERENCES co
 ALTER TABLE commentaires ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT now();
 CREATE INDEX IF NOT EXISTS idx_commentaires_chapitre ON commentaires(chapitre_id, created_at DESC);
 
+-- Neutralise les colonnes-résidus NOT NULL d'un ancien schéma "commentaires"
+-- (ex : colonne "cle") qui bloquent les insertions du frontend actuel.
+DO $$
+DECLARE col RECORD;
+BEGIN
+  FOR col IN
+    SELECT column_name FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'commentaires'
+      AND is_nullable = 'NO' AND column_default IS NULL
+      AND column_name NOT IN ('id', 'manga_id', 'user_id', 'contenu', 'created_at')
+  LOOP
+    EXECUTE format('ALTER TABLE commentaires ALTER COLUMN %I DROP NOT NULL', col.column_name);
+  END LOOP;
+END $$;
+
 CREATE TABLE IF NOT EXISTS commentaire_likes (
   id BIGSERIAL PRIMARY KEY,
   commentaire_id BIGINT NOT NULL REFERENCES commentaires(id) ON DELETE CASCADE,
