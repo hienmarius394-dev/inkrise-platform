@@ -11,7 +11,7 @@
       --bg: #ffffff;
       --surface: #f2f2f7;
       --surface2: #e5e5ea;
-      --accent: #7c6fef;
+      --accent: #7c5cfc;
       --accent2: #a89af7;
       --purple: #9b59f5;
       --text: #1c1c1e;
@@ -50,22 +50,22 @@
 
     /* ── NAV UNIVERSEL ── */
         .univ-nav { position: sticky; top: 0; z-index: 100; background: rgba(255,255,255,0.96); backdrop-filter: blur(14px); border-bottom: 1px solid rgba(0,0,0,0.08); padding: 0 16px; height: 58px; display: flex; align-items: center; gap: 8px; }
-        .univ-nav-logo { font-family: 'Syne', sans-serif; font-size: 1.2rem; font-weight: 900; text-decoration: none; background: linear-gradient(135deg, #7c6fef, #a594f9); -webkit-background-clip: text; -webkit-text-fill-color: transparent; flex-shrink: 0; letter-spacing: 1px; }
+        .univ-nav-logo { font-family: 'Syne', sans-serif; font-size: 1.2rem; font-weight: 900; text-decoration: none; background: linear-gradient(135deg, #7c5cfc, #a594f9); -webkit-background-clip: text; -webkit-text-fill-color: transparent; flex-shrink: 0; letter-spacing: 1px; }
         .univ-nav-links-d { display: flex; align-items: center; gap: 2px; flex: 1; margin: 0 8px; }
         @media (max-width: 680px) { .univ-nav-links-d { display: none; } }
         .univ-nav-lk { color: rgba(0,0,0,0.6); font-size: .82rem; font-weight: 600; text-decoration: none; padding: 5px 10px; border-radius: 7px; transition: all .2s; white-space: nowrap; font-family: 'DM Sans', sans-serif; }
-        .univ-nav-lk:hover { color: #1c1c1e; background: rgba(255,255,255,0.06); }
+        .univ-nav-lk:hover { color: #1c1c1e; background: rgba(0,0,0,0.05); }
         .univ-nav-lk.active { color: var(--purple2); background: rgba(124,111,239,0.1); }
-        .univ-nav-search { display: flex; align-items: center; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1); border-radius: 18px; overflow: hidden; max-width: 200px; flex-shrink: 0; }
+        .univ-nav-search { display: flex; align-items: center; background: rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.08); border-radius: 18px; overflow: hidden; max-width: 200px; flex-shrink: 0; }
         @media (max-width: 480px) { .univ-nav-search { max-width: 110px; } }
         .univ-nav-si { background: none; border: none; outline: none; color: #1c1c1e; font-size: .8rem; padding: 7px 10px; width: 100%; font-family: 'DM Sans', sans-serif; }
         .univ-nav-si::placeholder { color: rgba(0,0,0,.35); }
         .univ-nav-sb { background: none; border: none; cursor: pointer; padding: 6px 8px; font-size: 13px; color: rgba(0,0,0,.5); flex-shrink: 0; }
-        .univ-nav-sb:hover { color: #7c6fef; }
+        .univ-nav-sb:hover { color: #7c5cfc; }
         .nav-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
         .nav-connexion-btn { color: var(--text-2); font-size: .8rem; font-weight: 600; padding: 6px 13px; border-radius: 20px; border: 1px solid rgba(0,0,0,.15); text-decoration: none; transition: all .2s; white-space: nowrap; }
         .nav-connexion-btn:hover { border-color: var(--purple); color: var(--purple); }
-        .nav-avatar-btn { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #7c6fef, #5040c8); display: none; align-items: center; justify-content: center; font-size: .85rem; font-weight: 700; color: #fff; text-decoration: none; text-transform: uppercase; }
+        .nav-avatar-btn { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #7c5cfc, #5040c8); display: none; align-items: center; justify-content: center; font-size: .85rem; font-weight: 700; color: #fff; text-decoration: none; text-transform: uppercase; }
         .nav-avatar-btn.show { display: flex; }
         .nav-notif-link { position: relative; display: none; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 8px; background: rgba(0,0,0,.05); border: 1px solid rgba(0,0,0,.08); text-decoration: none; font-size: .95rem; transition: all .2s; }
         .nav-notif-link.show { display: flex; }
@@ -81,7 +81,7 @@
         .univ-drawer { position: fixed; top: 0; right: 0; width: 270px; height: 100%; background: #ffffff; z-index: 151; overflow-y: auto; transform: translateX(100%); transition: transform .28s cubic-bezier(.4,0,.2,1); box-shadow: -4px 0 32px rgba(0,0,0,.12); border-left: 1px solid var(--border); }
         .univ-drawer.open { transform: translateX(0); }
         .univ-d-hdr { display: flex; align-items: center; justify-content: space-between; padding: 16px; border-bottom: 1px solid var(--border); }
-        .univ-d-logo { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 900; text-decoration: none; background: linear-gradient(135deg, #7c6fef, #a594f9); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .univ-d-logo { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 900; text-decoration: none; background: linear-gradient(135deg, #7c5cfc, #a594f9); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         .univ-d-close { width: 30px; height: 30px; border-radius: 50%; background: rgba(0,0,0,.06); border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; color: var(--text-2); }
         .univ-d-sec { font-size: .65rem; font-weight: 800; color: var(--text-3); letter-spacing: 1.5px; text-transform: uppercase; padding: 14px 16px 5px; }
         .univ-d-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; margin: 2px 8px; text-decoration: none; color: var(--text); font-weight: 600; font-size: .88rem; cursor: pointer; transition: background .15s; border: none; background: none; width: calc(100% - 16px); text-align: left; border-radius: 9px; font-family: 'DM Sans', sans-serif; }
@@ -273,10 +273,10 @@
     }
     .creator-banner-text { flex: 1; }
     .creator-banner-text h3 {
-      font-size: 1.15rem; font-weight: 800; margin-bottom: 6px;
+      font-size: 1.15rem; font-weight: 800; margin-bottom: 6px; color: #fff;
     }
     .creator-banner-text p {
-      font-size: 0.85rem; color: var(--muted); line-height: 1.5;
+      font-size: 0.85rem; color: rgba(255,255,255,0.72); line-height: 1.5;
     }
     .btn-creator {
       background: linear-gradient(135deg, var(--purple), #5e2dcf);
@@ -407,7 +407,7 @@
     }
     .info-row:last-child { border-bottom: none; }
     .info-row label { font-size: 0.8rem; color: var(--muted); font-weight: 700; min-width: 100px; }
-    .info-row value { font-size: 0.88rem; color: var(--text); flex: 1; }
+    .info-row span.info-val, .info-row value { font-size: 0.88rem; color: var(--text); flex: 1; }
     .info-row input {
       flex: 1; background: var(--surface2); border: 1px solid var(--border);
       border-radius: 8px; padding: 8px 12px; color: var(--text);
@@ -574,7 +574,7 @@
     }
     .toast.show { transform: translateY(0); opacity: 1; }
     .toast.success { border-color: #4ade80; color: #4ade80; }
-    .toast.error { border-color: var(--accent); color: var(--accent); }
+    .toast.error { border-color: var(--danger); color: var(--danger); }
 
     /* Responsive */
     @media (max-width: 600px) {
@@ -643,7 +643,7 @@
 .univ-bnav-item.active{color:var(--purple);}
 .univ-bnav-icon{font-size:20px;}
 .univ-bnav-label{font-size:.6rem;font-weight:800;font-family:'DM Sans',sans-serif;}
-.univ-bnav-search{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#7c6fef,#5040c8);border:none;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;margin-top:-18px;box-shadow:0 4px 18px rgba(124,111,239,.5);transition:transform .2s;flex-shrink:0;}
+.univ-bnav-search{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#7c5cfc,#5040c8);border:none;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;margin-top:-18px;box-shadow:0 4px 18px rgba(124,111,239,.5);transition:transform .2s;flex-shrink:0;}
 .univ-bnav-search:hover{transform:scale(1.08);}
 
 /* ── Premium Toggle ── */
@@ -830,7 +830,7 @@
     <div class="info-card">
       <h3>📈 Activité</h3>
       <div style="color:var(--muted); font-size:0.88rem; padding:20px 0; text-align:center;">
-        Les graphiques d'activité détaillés seront disponibles avec le plan Créateur Standard ou Pro.
+        Les graphiques d'activité détaillés arriveront bientôt avec le plan Premium.
       </div>
     </div>
   </div>
@@ -861,15 +861,15 @@
       </div>
       <div class="info-row">
         <label>Email</label>
-        <value id="displayEmail" style="color:var(--muted);">—</value>
+        <span id="displayEmail" style="color:var(--muted);">—</span>
       </div>
       <div class="info-row">
         <label>Membre depuis</label>
-        <value id="displayJoined" style="color:var(--muted);">—</value>
+        <span id="displayJoined" style="color:var(--muted);">—</span>
       </div>
       <div class="info-row">
         <label>Plan actuel</label>
-        <value id="displayPlan" style="color:var(--purple); font-weight:800;">Débutant gratuit</value>
+        <span id="displayPlan" style="color:var(--purple); font-weight:800;">Débutant gratuit</span>
       </div>
       <button class="btn-save" id="btnSave">💾 Sauvegarder</button>
     </div>
@@ -1159,7 +1159,7 @@
         premiumBtn.disabled = true;
         premiumBtn.style.cursor = 'default';
       } else {
-        premiumBtn.textContent = 'Passer Premium';
+        premiumBtn.textContent = '🔒 Bientôt disponible';
         premiumBtn.disabled = false;
         premiumBtn.style.cursor = 'pointer';
       }
@@ -1659,9 +1659,9 @@
       const div = document.createElement('div');
       div.className = 'creator-item';
       div.innerHTML = `
-        <div class="creator-avatar-sm">${f.username[0].toUpperCase()}</div>
+        <div class="creator-avatar-sm">${escFormation((f.username||'?')[0].toUpperCase())}</div>
         <div class="creator-info">
-          <div class="creator-info-name">${f.username}</div>
+          <div class="creator-info-name">${escFormation(f.username)}</div>
           <div class="creator-info-since">Suivi depuis le ${since}</div>
         </div>
         <button class="btn-unfollow">Ne plus suivre</button>
@@ -1716,7 +1716,7 @@
       div.innerHTML = `
         <div class="notif-icon">${n.type === 'new_chapter' ? '📖' : '🔔'}</div>
         <div class="notif-content">
-          <div class="notif-msg">${n.message || 'Nouvelle notification'}</div>
+          <div class="notif-msg">${escFormation(n.message || 'Nouvelle notification')}</div>
           <div class="notif-date">${date}</div>
         </div>
         ${!n.lu ? `<button class="btn-read">✓ Lu</button>` : ''}

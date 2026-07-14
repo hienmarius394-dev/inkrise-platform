@@ -111,8 +111,11 @@ CREATE TABLE IF NOT EXISTS vues (
 ALTER TABLE vues ADD COLUMN IF NOT EXISTS manga_id BIGINT REFERENCES mangas(id) ON DELETE CASCADE;
 ALTER TABLE vues ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES profiles(id) ON DELETE CASCADE;
 ALTER TABLE vues ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT now();
-CREATE UNIQUE INDEX IF NOT EXISTS uniq_vues_manga_user
-  ON vues(manga_id, user_id) WHERE user_id IS NOT NULL;
+-- Index unique NON partiel : requis pour que l'upsert onConflict(manga_id,user_id)
+-- du frontend fonctionne (un index partiel n'est pas inférable par ON CONFLICT,
+-- ce qui faisait échouer silencieusement le comptage des vues).
+DROP INDEX IF EXISTS uniq_vues_manga_user;
+CREATE UNIQUE INDEX IF NOT EXISTS uniq_vues_pair ON vues(manga_id, user_id);
 
 CREATE OR REPLACE FUNCTION public.bump_manga_vues()
 RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
@@ -229,6 +232,21 @@ ALTER TABLE commentaires ADD COLUMN IF NOT EXISTS contenu TEXT;
 ALTER TABLE commentaires ADD COLUMN IF NOT EXISTS parent_id BIGINT REFERENCES commentaires(id) ON DELETE CASCADE;
 ALTER TABLE commentaires ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT now();
 CREATE INDEX IF NOT EXISTS idx_commentaires_chapitre ON commentaires(chapitre_id, created_at DESC);
+
+-- Neutralise les colonnes-résidus NOT NULL d'un ancien schéma "commentaires"
+-- (ex : colonne "cle") qui bloquent les insertions du frontend actuel.
+DO $$
+DECLARE col RECORD;
+BEGIN
+  FOR col IN
+    SELECT column_name FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'commentaires'
+      AND is_nullable = 'NO' AND column_default IS NULL
+      AND column_name NOT IN ('id', 'manga_id', 'user_id', 'contenu', 'created_at')
+  LOOP
+    EXECUTE format('ALTER TABLE commentaires ALTER COLUMN %I DROP NOT NULL', col.column_name);
+  END LOOP;
+END $$;
 
 CREATE TABLE IF NOT EXISTS commentaire_likes (
   id BIGSERIAL PRIMARY KEY,

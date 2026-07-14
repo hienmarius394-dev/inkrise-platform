@@ -1370,7 +1370,7 @@ function bindCreatePost() {
 function bindReactions() {
   document.querySelectorAll('.reaction-btn').forEach(btn => {
     btn.addEventListener('click', async function() {
-      if (!state.visitor) { showToast('Connectez-vous pour réagir', 'error'); return; }
+      if (!state.visitor) { showToast('Connecte-toi pour réagir 🔒', 'error'); setTimeout(() => window.location.href = 'auth.html', 900); return; }
       const postId = parseInt(this.getAttribute('data-post'));
       const type = this.getAttribute('data-type');
       const existing = state.reactions[postId]?.find(r => r.user_id === state.visitor.id);
@@ -1552,7 +1552,7 @@ function bindSondageVote() {
     el.addEventListener('click', function() {
       const parentDisplay = this.closest('.sondage-display');
       if (parentDisplay && parentDisplay.getAttribute('data-voted') === '1') return; /* déjà voté */
-      if (!state.visitor) { showToast('Connectez-vous pour voter', 'error'); return; }
+      if (!state.visitor) { showToast('Connecte-toi pour voter 🔒', 'error'); setTimeout(() => window.location.href = 'auth.html', 900); return; }
       const postId = this.getAttribute('data-post');
       const optId = parseInt(this.getAttribute('data-optid'));
       const parent = this.closest('.sondage-display');
@@ -1569,7 +1569,7 @@ function bindSondageVote() {
   /* Submit vote */
   document.querySelectorAll('.sondage-vote-btn').forEach(btn => {
     btn.addEventListener('click', async function() {
-      if (!state.visitor) { showToast('Connectez-vous pour voter', 'error'); return; }
+      if (!state.visitor) { showToast('Connecte-toi pour voter 🔒', 'error'); setTimeout(() => window.location.href = 'auth.html', 900); return; }
       const optId = parseInt(this.dataset.optid);
       if (!optId) { showToast('Sélectionnez une option', 'error'); return; }
       const postId = parseInt(this.getAttribute('data-post'));
