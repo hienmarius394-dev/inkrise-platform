@@ -206,7 +206,8 @@ h1,h2,h3,.logo { font-family: 'Syne', sans-serif; }
 .featured-meta-h { font-size: 10px; color: var(--text-3); display: flex; justify-content: space-between; }
 
 /* ── GRILLE 2 COL (cartes verre) ── */
-.manga-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 0 12px; }
+.manga-grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; padding: 0 12px; max-width: 640px; margin: 0 auto; }
+@media (min-width: 720px) { .manga-grid-2 { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); max-width: 1100px; } }
 .manga-card-2 {
   background: var(--glass-strong); border: 1px solid var(--glass-border); border-radius: var(--radius-lg); overflow: hidden; cursor: pointer;
   box-shadow: var(--shadow); text-decoration: none; color: inherit; transition: transform 0.25s, box-shadow 0.25s; display: block;
