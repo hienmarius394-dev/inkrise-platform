@@ -158,7 +158,16 @@
       transition: transform .3s ease;
     }
     .bottombar.hidden { transform: translateY(100%); }
-    .bottombar.scroll-mode { display: none; }
+    .bottombar.scroll-mode .page-nav-btn { display: none; }
+    .scroll-width-ctrl { display: none; align-items: center; gap: 4px; }
+    .bottombar.scroll-mode .scroll-width-ctrl { display: flex; }
+    .scroll-width-btn {
+      width: 28px; height: 28px; border-radius: 8px;
+      background: var(--surface2); border: 1px solid var(--border);
+      color: var(--text); font-size: 1rem; font-weight: 800; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .scroll-width-btn:hover { background: var(--surface3); }
 
     .page-nav-btn {
       display: flex; align-items: center; gap: 6px;
@@ -253,9 +262,10 @@
 
     /* ── MODE SCROLL (webtoon/manhwa) ── */
     .scroll-viewer {
-      max-width: 800px;
+      max-width: var(--scroll-w, 800px);
       margin: 0 auto;
       padding: 0 0 80px;
+      transition: max-width .2s ease;
     }
     .scroll-viewer.hidden { display: none; }
 
@@ -569,9 +579,15 @@
 <!-- BOTTOMBAR (mode pages) -->
 <div class="bottombar" id="bottombar">
   <button class="page-nav-btn" id="btnPrevPage" onclick="prevPage()">← Précédente</button>
+  <div class="scroll-width-ctrl">
+    <button class="scroll-width-btn" onclick="adjustScrollWidth(-100)" title="Réduire la taille des pages">−</button>
+  </div>
   <div class="page-indicator">
     <span id="pageNum">1</span>
     <span id="pageTotalLabel">sur 0</span>
+  </div>
+  <div class="scroll-width-ctrl">
+    <button class="scroll-width-btn" onclick="adjustScrollWidth(100)" title="Agrandir la taille des pages">+</button>
   </div>
   <button class="page-nav-btn primary" id="btnNextPage" onclick="nextPage()">Suivante →</button>
 </div>
@@ -824,12 +840,36 @@ function showPage(idx) {
   scheduleSaveProgress();
 }
 
+let scrollPageObserver = null;
 function renderScrollMode() {
   const viewer = document.getElementById('scrollViewer');
   viewer.classList.remove('hidden');
   viewer.innerHTML = pages.map((url, i) =>
-    `<img class="scroll-page" src="${url}" alt="Page ${i+1}" loading="lazy" />`
+    `<img class="scroll-page" src="${url}" alt="Page ${i+1}" data-i="${i}" loading="lazy" />`
   ).join('');
+
+  document.getElementById('pageNum').textContent = 1;
+  document.getElementById('pageTotalLabel').textContent = `sur ${pages.length}`;
+
+  if (scrollPageObserver) scrollPageObserver.disconnect();
+  scrollPageObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const idx = parseInt(entry.target.dataset.i, 10);
+        currentPage = idx;
+        document.getElementById('pageNum').textContent = idx + 1;
+        scheduleSaveProgress();
+      }
+    });
+  }, { threshold: 0.5 });
+  document.querySelectorAll('.scroll-page').forEach(img => scrollPageObserver.observe(img));
+}
+
+function adjustScrollWidth(delta) {
+  const viewer = document.getElementById('scrollViewer');
+  const current = parseInt(getComputedStyle(viewer).maxWidth, 10) || 800;
+  const next = Math.max(400, Math.min(1100, current + delta));
+  document.documentElement.style.setProperty('--scroll-w', next + 'px');
 }
 
 // ── NAVIGATION PAGES ──
@@ -1202,7 +1242,7 @@ async function submitComment() {
     contenu: text,
     parent_id: null
   });
-  if (error) { showToast('Erreur lors de la publication'); }
+  if (error) { showToast('Erreur : ' + error.message); }
   else { textarea.value = ''; await loadComments(mangaId, chapitreId); }
   btn.disabled = false; btn.textContent = 'Publier';
 }
@@ -1219,7 +1259,7 @@ async function submitReply(parentId) {
     contenu: text,
     parent_id: parentId
   });
-  if (error) { showToast('Erreur lors de la réponse'); }
+  if (error) { showToast('Erreur : ' + error.message); }
   else { await loadComments(mangaId, chapitreId); }
 }
 
