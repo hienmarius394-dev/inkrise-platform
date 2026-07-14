@@ -744,6 +744,7 @@
     <!-- Tabs -->
     <div class="profile-tabs">
       <button class="ptab active" data-tab="mangas">📚 Mes Mangas</button>
+      <button class="ptab" data-tab="formations">🎓 Formations</button>
       <button class="ptab" data-tab="stats">📊 Statistiques</button>
       <button class="ptab" data-tab="infos">⚙️ Mon Compte</button>
       <button class="ptab" data-tab="suivis">👥 Suivis</button>
@@ -783,6 +784,27 @@
       <h3>Aucun manga publié pour l'instant</h3>
       <p>Tu n'as pas encore publié de manga.<br>Commence dès maintenant et partage ton univers !</p>
       <button class="btn-upload" onclick="document.getElementById('btnOpenPlans').click()">Commencer à publier</button>
+    </div>
+  </div>
+
+  <!-- TAB : Mes Formations -->
+  <div class="tab-panel" id="tab-formations">
+    <div class="section-header">
+      <div class="section-title">Mes Formations</div>
+      <a href="tutoriels.html" class="btn-upload" style="text-decoration:none;">Découvrir les formations</a>
+    </div>
+
+    <div id="formationsLoading" class="loading-dots">
+      <span></span><span></span><span></span>
+    </div>
+
+    <div class="manga-grid" id="formationsGrid" style="display:none;"></div>
+
+    <div id="formationsEmpty" class="empty-state" style="display:none;">
+      <div class="empty-icon">🎓</div>
+      <h3>Aucune formation pour l'instant</h3>
+      <p>Achète ou publie une formation pour la retrouver ici, avec ta progression.</p>
+      <a href="tutoriels.html" class="btn-upload" style="text-decoration:none;display:inline-block;margin-top:10px;">Voir les formations</a>
     </div>
   </div>
 
@@ -985,6 +1007,7 @@
     updateNav(session);
     await loadProfile();
     await loadMangas();
+    loadFormations();
     await loadSuivis();
     await loadNotifications();
     if (window.location.hash === '#notifications') activateNotifTab();
@@ -1239,6 +1262,82 @@
     document.getElementById('statsVues').textContent     = totalVues;
         document.getElementById('statsMangas').textContent   = totalMangas;
     document.getElementById('statsChapitres').textContent = totalChaps;
+  }
+
+  // ── MES FORMATIONS (achetées + créées) ──
+  function escFormation(str) {
+    const d = document.createElement('div');
+    d.textContent = String(str ?? '');
+    return d.innerHTML;
+  }
+  async function loadFormations() {
+    const loadingEl = document.getElementById('formationsLoading');
+    const gridEl = document.getElementById('formationsGrid');
+    const emptyEl = document.getElementById('formationsEmpty');
+    loadingEl.style.display = 'flex';
+
+    const [{ data: achats }, { data: crees }] = await Promise.all([
+      sb.from('achats_packs').select('packs_tutoriels(*)').eq('user_id', currentUser.id),
+      sb.from('packs_tutoriels').select('*').eq('auteur_id', currentUser.id),
+    ]);
+
+    const byId = new Map();
+    (achats || []).forEach(a => { if (a.packs_tutoriels) byId.set(a.packs_tutoriels.id, a.packs_tutoriels); });
+    (crees || []).forEach(p => byId.set(p.id, p));
+    const packs = Array.from(byId.values());
+
+    loadingEl.style.display = 'none';
+
+    if (!packs.length) {
+      gridEl.style.display = 'none';
+      emptyEl.style.display = 'block';
+      return;
+    }
+    gridEl.style.display = 'grid';
+    emptyEl.style.display = 'none';
+
+    // Progression (best-effort — tables pack_lecons / pack_progression peut-être pas encore créées)
+    let leconsByPack = new Map();
+    let doneLeconIds = new Set();
+    try {
+      const { data: lecons } = await sb.from('pack_lecons').select('id, pack_id').in('pack_id', packs.map(p => p.id));
+      (lecons || []).forEach(l => {
+        if (!leconsByPack.has(l.pack_id)) leconsByPack.set(l.pack_id, []);
+        leconsByPack.get(l.pack_id).push(l.id);
+      });
+      const allLeconIds = (lecons || []).map(l => l.id);
+      if (allLeconIds.length) {
+        const { data: prog } = await sb.from('pack_progression').select('lecon_id').eq('user_id', currentUser.id).in('lecon_id', allLeconIds);
+        doneLeconIds = new Set((prog || []).map(p => p.lecon_id));
+      }
+    } catch (e) { /* ignoré */ }
+
+    gridEl.innerHTML = packs.map(p => {
+      const cover = p.image_url
+        ? '<img class="manga-cover" src="' + escFormation(p.image_url) + '" alt="" loading="lazy" />'
+        : '<div class="manga-cover-placeholder">🎓</div>';
+      const leconIds = leconsByPack.get(p.id) || [];
+      let progressHtml = '';
+      if (leconIds.length) {
+        const done = leconIds.filter(id => doneLeconIds.has(id)).length;
+        const pct = Math.round(done / leconIds.length * 100);
+        progressHtml = '<div style="padding:0 12px 10px;">' +
+          '<div style="height:5px;border-radius:3px;background:var(--surface2);overflow:hidden;">' +
+            '<div style="height:100%;width:' + pct + '%;background:linear-gradient(90deg,var(--accent),var(--purple));"></div>' +
+          '</div>' +
+          '<div style="font-size:.68rem;color:var(--muted);margin-top:4px;">' + done + '/' + leconIds.length + ' leçons</div>' +
+        '</div>';
+      }
+      const isAuteur = p.auteur_id === currentUser.id;
+      return '<a href="pack.html?id=' + p.id + '" class="manga-card" style="display:block;text-decoration:none;color:inherit;">' +
+        cover +
+        '<div class="manga-info">' +
+          '<div class="manga-title">' + escFormation(p.titre || 'Sans titre') + '</div>' +
+          '<div class="manga-meta"><span>' + (isAuteur ? '✏️ Créée par toi' : '🎓 Achetée') + '</span></div>' +
+        '</div>' +
+        progressHtml +
+      '</a>';
+    }).join('');
   }
 
   // ── TABS ──
