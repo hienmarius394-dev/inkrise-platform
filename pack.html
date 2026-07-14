@@ -227,93 +227,6 @@
       display: flex; align-items: center; justify-content: center; gap: 5px;
     }
 
-    /* ── CLASSROOM (leçons, style Skool) ── */
-    .classroom-wrap { margin-bottom: 28px; }
-    .classroom-grid {
-      display: grid;
-      grid-template-columns: 1fr 300px;
-      gap: 20px;
-      align-items: start;
-    }
-    @media (max-width: 720px) { .classroom-grid { grid-template-columns: 1fr; } }
-    .classroom-main { min-width: 0; }
-    .classroom-player {
-      position: relative; width: 100%; aspect-ratio: 16/9;
-      background: #0c0a18; border-radius: 16px; overflow: hidden;
-      display: flex; align-items: center; justify-content: center;
-      margin-bottom: 14px;
-    }
-    .classroom-player iframe, .classroom-player video { width: 100%; height: 100%; border: none; }
-    .classroom-player-empty { color: var(--muted); font-size: .85rem; }
-    .classroom-lesson-title { font-family: 'Syne', sans-serif; font-size: 1.15rem; font-weight: 800; margin-bottom: 6px; }
-    .classroom-lesson-desc { font-size: .85rem; color: var(--text-2); line-height: 1.6; margin-bottom: 14px; }
-    .btn-mark-done {
-      display: inline-flex; align-items: center; gap: 8px;
-      background: rgba(124,111,239,.12); border: 1px solid rgba(124,111,239,.3);
-      color: var(--purple2); font-weight: 800; font-size: .88rem;
-      padding: 10px 18px; border-radius: 12px; cursor: pointer; transition: all .2s;
-      font-family: 'DM Sans', sans-serif;
-    }
-    .btn-mark-done:hover { background: rgba(124,111,239,.2); }
-    .btn-mark-done.done { background: rgba(61,220,132,.15); border-color: rgba(61,220,132,.35); color: var(--green); cursor: default; }
-    .classroom-sidebar {
-      background: rgba(255,255,255,0.65);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-      border: 1px solid rgba(124,92,252,0.1);
-      box-shadow: 0 4px 20px rgba(124,92,252,0.06);
-      border-radius: 16px; padding: 16px; max-height: 560px;
-      display: flex; flex-direction: column;
-    }
-    .classroom-progress { margin-bottom: 14px; }
-    .classroom-progress-label { display: flex; justify-content: space-between; font-size: .78rem; font-weight: 700; color: var(--text-2); margin-bottom: 6px; }
-    .classroom-progress-bar { height: 7px; border-radius: 4px; background: var(--surface2); overflow: hidden; }
-    .classroom-progress-fill { height: 100%; background: linear-gradient(90deg, var(--purple), var(--purple2)); transition: width .3s; }
-    .lessons-list { display: flex; flex-direction: column; gap: 4px; overflow-y: auto; }
-    .lesson-item {
-      display: flex; align-items: center; gap: 10px;
-      text-align: left; background: none; border: none; cursor: pointer;
-      padding: 10px 8px; border-radius: 10px; font-family: 'DM Sans', sans-serif;
-      color: var(--text); transition: background .15s;
-    }
-    .lesson-item:hover { background: var(--surface2); }
-    .lesson-item.active { background: rgba(124,111,239,.12); }
-    .lesson-check {
-      flex-shrink: 0; width: 24px; height: 24px; border-radius: 50%;
-      background: var(--surface2); border: 1px solid var(--border);
-      display: flex; align-items: center; justify-content: center;
-      font-size: .72rem; font-weight: 800; color: var(--muted);
-    }
-    .lesson-check.done { background: rgba(61,220,132,.18); border-color: rgba(61,220,132,.4); color: var(--green); }
-    .lesson-title { font-size: .85rem; font-weight: 600; }
-
-    /* ── LEÇONS : galerie d'images & fichier ── */
-    .classroom-player:has(.lesson-gallery),
-    .classroom-player:has(.lesson-file) { aspect-ratio: auto; min-height: 180px; background: transparent; display: block; }
-    .lesson-gallery { display: flex; flex-direction: column; gap: 14px; width: 100%; }
-    .lesson-gallery img {
-      width: 100%; display: block; border-radius: 14px;
-      box-shadow: 0 12px 36px -8px rgba(35,20,90,0.22);
-    }
-    .lesson-file {
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      gap: 10px; padding: 44px 20px;
-      background: rgba(255,255,255,0.65);
-      border: 1px dashed rgba(124,92,252,0.35);
-      border-radius: 16px; text-align: center;
-    }
-    .lesson-file-icon { font-size: 2.4rem; }
-    .lesson-file-name { font-weight: 700; font-size: .92rem; color: var(--text-2); }
-    .lesson-file-btn {
-      display: inline-flex; align-items: center; gap: 8px;
-      background: linear-gradient(135deg, var(--purple), var(--pink));
-      color: #fff; text-decoration: none; font-weight: 800; font-size: .9rem;
-      padding: 11px 24px; border-radius: 12px;
-      box-shadow: 0 8px 24px -6px rgba(124,92,252,0.45);
-      transition: transform .2s;
-    }
-    .lesson-file-btn:hover { transform: translateY(-2px); }
-
     /* ── GALERIE DU PACK & TEASER ── */
     .pack-gallery { display: flex; flex-direction: column; gap: 14px; }
     .pack-gallery img {
@@ -333,31 +246,6 @@
       width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: 10px;
       filter: blur(14px) saturate(1.2); transform: scale(1.05);
       pointer-events: none; user-select: none;
-    }
-
-    /* ── CURRICULUM (aperçu verrouillé) ── */
-    .curriculum-list { display: flex; flex-direction: column; gap: 6px; }
-    .curriculum-item {
-      display: flex; align-items: center; gap: 12px;
-      padding: 12px 14px; border-radius: 12px;
-      background: rgba(124,92,252,0.05);
-      border: 1px solid rgba(124,92,252,0.08);
-      transition: all .2s;
-    }
-    .curriculum-item:hover { background: rgba(124,92,252,0.09); transform: translateX(3px); }
-    .curriculum-num {
-      flex-shrink: 0; width: 26px; height: 26px; border-radius: 50%;
-      background: linear-gradient(135deg, var(--purple), var(--pink));
-      color: #fff; font-size: .74rem; font-weight: 800;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .curriculum-title { flex: 1; font-size: .88rem; font-weight: 600; }
-    .curriculum-lock { font-size: .85rem; opacity: .55; }
-    .curriculum-cta {
-      margin-top: 14px; padding: 12px 16px; border-radius: 12px;
-      background: linear-gradient(135deg, rgba(124,92,252,0.10), rgba(255,95,168,0.08));
-      border: 1px solid rgba(124,92,252,0.18);
-      font-size: .82rem; color: var(--text-2); line-height: 1.55; text-align: center;
     }
 
     /* ── LEARN LIST ── */
@@ -545,25 +433,6 @@
 
   <!-- Main -->
   <div class="main-wrap">
-
-    <!-- CLASSROOM (visible si accès autorisé + leçons définies) -->
-    <div class="classroom-wrap" id="classroomWrap" style="display:none;">
-      <div class="classroom-grid">
-        <div class="classroom-main">
-          <div class="classroom-player" id="classroomPlayer"></div>
-          <div class="classroom-lesson-title" id="classroomLessonTitle"></div>
-          <div class="classroom-lesson-desc" id="classroomLessonDesc"></div>
-          <button type="button" class="btn-mark-done" id="btnMarkDone">Marquer comme terminée</button>
-        </div>
-        <div class="classroom-sidebar">
-          <div class="classroom-progress">
-            <div class="classroom-progress-label"><span id="progressLabel">0/0 leçons</span><span id="progressPct">0%</span></div>
-            <div class="classroom-progress-bar"><div class="classroom-progress-fill" id="progressFill" style="width:0%;"></div></div>
-          </div>
-          <div class="lessons-list" id="lessonsList"></div>
-        </div>
-      </div>
-    </div>
 
     <div class="content-grid">
 
@@ -765,139 +634,6 @@ async function loadPack(packId) {
   }
 
   await loadAvis(packId);
-}
-
-// ── PROGRAMME (aperçu verrouillé pour les visiteurs sans accès) ──
-async function loadCurriculumPreview(packId) {
-  let list = [];
-  try {
-    const { data } = await sb.from('pack_lecons').select('id, titre, ordre').eq('pack_id', packId).order('ordre', { ascending: true });
-    list = data || [];
-  } catch (e) { return; }
-  if (!list.length) return;
-
-  const section = document.createElement('div');
-  section.className = 'section-card';
-  section.innerHTML =
-    '<div class="section-title">🎓 Programme de la formation <span style="margin-left:auto;font-size:.72rem;color:var(--muted);font-weight:600;">' + list.length + ' leçon' + (list.length > 1 ? 's' : '') + '</span></div>' +
-    '<div class="curriculum-list">' +
-    list.map((l, i) =>
-      '<div class="curriculum-item">' +
-        '<span class="curriculum-num">' + (i + 1) + '</span>' +
-        '<span class="curriculum-title">' + escapeHtml(l.titre || 'Leçon ' + (i + 1)) + '</span>' +
-        '<span class="curriculum-lock">🔒</span>' +
-      '</div>'
-    ).join('') +
-    '</div>' +
-    '<div class="curriculum-cta">Débloque la formation pour accéder à toutes les leçons, suivre ta progression et apprendre à ton rythme ✨</div>';
-
-  const avisSection = document.getElementById('avisSection');
-  avisSection.parentNode.insertBefore(section, avisSection);
-}
-
-// ── CLASSROOM (leçons multiples, style Skool) ──
-let lecons = [];
-let progressionSet = new Set();
-let currentLeconIndex = 0;
-
-async function loadClassroom(pack) {
-  try {
-    const { data } = await sb.from('pack_lecons').select('*').eq('pack_id', pack.id).order('ordre', { ascending: true });
-    lecons = data || [];
-  } catch (e) { lecons = []; }
-  if (!lecons.length) return; // formation à vidéo unique (legacy) : on garde le flux acheter/regarder existant
-
-  if (currentUser) {
-    try {
-      const { data: prog } = await sb.from('pack_progression').select('lecon_id')
-        .eq('user_id', currentUser.id).in('lecon_id', lecons.map(l => l.id));
-      progressionSet = new Set((prog || []).map(p => p.lecon_id));
-    } catch (e) { /* table pas encore créée */ }
-  }
-
-  // La classroom remplace le CTA d'achat une fois l'accès acquis
-  document.getElementById('buyCardMobile').style.display = 'none';
-  document.getElementById('buyCardDesktop').style.display = 'none';
-  document.getElementById('classroomWrap').style.display = 'block';
-
-  selectLesson(0);
-}
-
-function renderLessonsList() {
-  const el = document.getElementById('lessonsList');
-  el.innerHTML = lecons.map((l, i) => {
-    const done = progressionSet.has(l.id);
-    return '<button type="button" class="lesson-item ' + (i === currentLeconIndex ? 'active' : '') + '" data-i="' + i + '">' +
-      '<span class="lesson-check ' + (done ? 'done' : '') + '">' + (done ? '✓' : (i + 1)) + '</span>' +
-      '<span class="lesson-title">' + escapeHtml(l.titre || 'Leçon ' + (i + 1)) + '</span>' +
-      '</button>';
-  }).join('');
-  el.querySelectorAll('.lesson-item').forEach(btn => btn.addEventListener('click', () => selectLesson(parseInt(btn.dataset.i))));
-  updateProgressBar();
-}
-
-function updateProgressBar() {
-  const total = lecons.length;
-  const done = lecons.filter(l => progressionSet.has(l.id)).length;
-  document.getElementById('progressLabel').textContent = done + '/' + total + ' leçons';
-  document.getElementById('progressPct').textContent = (total ? Math.round(done / total * 100) : 0) + '%';
-  document.getElementById('progressFill').style.width = (total ? (done / total * 100) : 0) + '%';
-}
-
-function selectLesson(i) {
-  currentLeconIndex = i;
-  const l = lecons[i];
-  document.getElementById('classroomLessonTitle').textContent = l.titre || 'Leçon ' + (i + 1);
-  document.getElementById('classroomLessonDesc').textContent = l.description || '';
-  document.getElementById('classroomPlayer').innerHTML = lessonContentHtml(l);
-  const done = progressionSet.has(l.id);
-  const btn = document.getElementById('btnMarkDone');
-  btn.textContent = done ? '✅ Terminée' : 'Marquer comme terminée';
-  btn.classList.toggle('done', done);
-  renderLessonsList();
-}
-
-document.getElementById('btnMarkDone').addEventListener('click', async () => {
-  if (!currentUser) { window.location.href = 'auth.html'; return; }
-  const l = lecons[currentLeconIndex];
-  if (!l || progressionSet.has(l.id)) return;
-  progressionSet.add(l.id);
-  selectLesson(currentLeconIndex);
-  try {
-    await sb.from('pack_progression').upsert(
-      { user_id: currentUser.id, lecon_id: l.id, termine: true },
-      { onConflict: 'user_id,lecon_id' }
-    );
-  } catch (e) { /* ignoré */ }
-  showToast('✅ Leçon marquée comme terminée');
-});
-
-function videoEmbedHtml(url) {
-  if (!url) return '<div class="classroom-player-empty">Pas de vidéo pour cette leçon</div>';
-  const yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)/);
-  if (yt) return '<iframe src="https://www.youtube.com/embed/' + yt[1] + '" allowfullscreen></iframe>';
-  const vimeo = url.match(/vimeo\.com\/(\d+)/);
-  if (vimeo) return '<iframe src="https://player.vimeo.com/video/' + vimeo[1] + '" allowfullscreen></iframe>';
-  if (/\.(mp4|webm|ogg)(\?|$)/i.test(url)) return '<video src="' + escapeHtml(url) + '" controls></video>';
-  return '<div class="classroom-player-empty">Format vidéo non reconnu</div>';
-}
-
-// Contenu d'une leçon selon son type : vidéo, pack d'images, ou fichier
-function lessonContentHtml(l) {
-  const imgs = Array.isArray(l.images) ? l.images.filter(Boolean) : [];
-  if ((l.type === 'images' || (!l.video_url && imgs.length)) && imgs.length) {
-    return '<div class="lesson-gallery">' +
-      imgs.map((u, i) => '<a href="' + escapeHtml(u) + '" target="_blank" rel="noopener"><img src="' + escapeHtml(u) + '" alt="Image ' + (i + 1) + '" loading="lazy" /></a>').join('') +
-      '</div>';
-  }
-  if ((l.type === 'fichier' || (!l.video_url && l.fichier_url)) && l.fichier_url) {
-    return '<div class="lesson-file">' +
-      '<div class="lesson-file-icon">📎</div>' +
-      '<div class="lesson-file-name">Ressource téléchargeable</div>' +
-      '<a class="lesson-file-btn" href="' + escapeHtml(l.fichier_url) + '" target="_blank" rel="noopener">📥 Télécharger</a>' +
-      '</div>';
-  }
-  return videoEmbedHtml(l.video_url);
 }
 
 // ── CONTENU DU PACK (images pour les acheteurs) ──
@@ -1191,7 +927,6 @@ function escapeHtml(str) {
   d.textContent = String(str);
   return d.innerHTML;
 }
-function openModal() { window.location.href = 'index.html?premium=1'; }
 
 // ── NAV ──
 function openDrawer()  { document.getElementById('univDrawer').classList.add('open'); document.getElementById('univOverlay').classList.add('open'); document.body.style.overflow = 'hidden'; }
