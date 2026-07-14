@@ -157,7 +157,7 @@
 
     /* ── FORM ── */
     .form-group { margin-bottom: 20px; }
-    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
     @media (max-width: 600px) { .form-row { grid-template-columns: 1fr; } }
 
     label {
@@ -681,6 +681,17 @@
           <option value="termine">Terminé</option>
           <option value="pause">En pause</option>
           <option value="hiatus">Hiatus</option>
+        </select>
+      </div>
+      <div class="form-group" style="margin-bottom:0;">
+        <label>Langue</label>
+        <select id="inputLangue">
+          <option value="fr">🇫🇷 Français</option>
+          <option value="en">🇬🇧 Anglais</option>
+          <option value="jp">🇯🇵 Japonais</option>
+          <option value="kr">🇰🇷 Coréen</option>
+          <option value="cn">🇨🇳 Chinois</option>
+          <option value="es">🇪🇸 Espagnol</option>
         </select>
       </div>
     </div>
@@ -1267,6 +1278,7 @@ async function publishManga(draft = false) {
           created_at:  new Date().toISOString(),
           adulte:      document.getElementById('toggleAdult').checked,
           commentaires_actifs: document.getElementById('toggleComments').checked,
+          langue:      document.getElementById('inputLangue').value,
         };
 
     const { data: manga, error: mangaErr } = await insertLenient(sb, 'mangas', mangaPayload,
