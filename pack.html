@@ -443,7 +443,7 @@
         <div class="buy-card" id="buyCardMobile" style="display:none;">
           <div class="buy-price-display" id="buyPriceMobile">2€</div>
           <div class="buy-price-sub">Accès à vie · Téléchargement inclus</div>
-          <button class="btn-buy" id="buyBtnMobile" onclick="handleBuy()">Acheter — 2€</button>
+          <button class="btn-buy" id="buyBtnMobile" onclick="handleBuy()">Acheter</button>
           <a href="#" class="btn-watch" id="watchBtnMobile" style="display:none;">▶ Regarder la vidéo</a>
           <div class="buy-guarantee">🔒 Paiement sécurisé</div>
         </div>
@@ -477,7 +477,7 @@
         <div class="buy-card" id="buyCardDesktop">
           <div class="buy-price-display" id="buyPriceDesktop">2€</div>
           <div class="buy-price-sub">Accès à vie · Téléchargement inclus</div>
-          <button class="btn-buy" id="buyBtnDesktop" onclick="handleBuy()">Acheter — 2€</button>
+          <button class="btn-buy" id="buyBtnDesktop" onclick="handleBuy()">Acheter</button>
           <a href="#" class="btn-watch" id="watchBtnDesktop" style="display:none;">▶ Regarder la vidéo</a>
           <div class="buy-guarantee">🔒 Paiement sécurisé</div>
         </div>
@@ -584,6 +584,10 @@ async function init() {
   }
 
   await loadPack(packId);
+
+  // Retour de la page de paiement CinetPay
+  const txRetour = params.get('paiement');
+  if (txRetour && currentUser) checkRetourPaiement(txRetour);
 }
 
 async function loadPack(packId) {
@@ -768,7 +772,7 @@ function renderPack(pack) {
 
   const prix = Number(pack.prix);
   const isFree = prix === 0 || isNaN(prix);
-  const priceLabel = isFree ? 'GRATUIT' : `${prix % 1 === 0 ? prix : prix.toFixed(2)}€`;
+  const priceLabel = isFree ? 'GRATUIT' : `${Math.round(prix).toLocaleString('fr-FR')} FCFA`;
 
   const heroPriceEl = document.getElementById('heroPrice');
   heroPriceEl.textContent = priceLabel;
@@ -867,7 +871,47 @@ function handleBuy() {
     handleDownload();
     return;
   }
-  document.getElementById('stripeModal').classList.add('open');
+  startPaiement();
+}
+
+// ── PAIEMENT CINETPAY (Mobile Money + carte) ──
+async function startPaiement() {
+  const btns = ['buyBtnMobile', 'buyBtnDesktop'].map(id => document.getElementById(id));
+  btns.forEach(b => { if (b) { b.disabled = true; b.textContent = '⏳ Préparation…'; } });
+  try {
+    const { data, error } = await sb.functions.invoke('cinetpay-init', {
+      body: { pack_id: currentPack.id }
+    });
+    if (error || !data?.payment_url) {
+      const msg = data?.error || error?.message || 'réessaie dans un instant';
+      showToast('Paiement indisponible : ' + msg, 'error');
+      btns.forEach(b => { if (b) { b.disabled = false; b.textContent = 'Acheter'; } });
+      return;
+    }
+    window.location.href = data.payment_url; // page de paiement CinetPay
+  } catch (e) {
+    showToast('Erreur : ' + (e.message || 'paiement indisponible'), 'error');
+    btns.forEach(b => { if (b) { b.disabled = false; b.textContent = 'Acheter'; } });
+  }
+}
+
+// ── RETOUR DE PAIEMENT : vérifier le statut (le webhook valide côté serveur) ──
+async function checkRetourPaiement(txid) {
+  showToast('⏳ Vérification du paiement…', 'info');
+  for (let i = 0; i < 8; i++) {
+    const { data } = await sb.from('paiements').select('statut').eq('transaction_id', txid).maybeSingle();
+    if (data?.statut === 'paye') {
+      showToast('🎉 Paiement confirmé ! Le pack est à toi.', 'success');
+      setTimeout(() => window.location.href = 'pack.html?id=' + currentPack.id, 1200);
+      return;
+    }
+    if (data?.statut === 'refuse') {
+      showToast('❌ Paiement refusé ou annulé.', 'error');
+      return;
+    }
+    await new Promise(r => setTimeout(r, 2500));
+  }
+  showToast('Paiement en cours de validation — recharge la page dans une minute.', 'info');
 }
 
 function isVideoUrl(url) {
