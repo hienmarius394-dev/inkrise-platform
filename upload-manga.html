@@ -428,8 +428,11 @@
     }
     .progress-overlay.show { display: flex; }
     .progress-box {
-      background: var(--surface);
-      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.85);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(124,92,252,0.1);
+      box-shadow: 0 4px 20px rgba(124,92,252,0.06);
       border-radius: 20px;
       padding: 40px 48px;
       text-align: center; min-width: 320px;
@@ -499,8 +502,11 @@
     /* Toast */
     .toast {
       position: fixed; bottom: 24px; right: 24px;
-      background: var(--surface);
-      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.85);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(124,92,252,0.1);
+      box-shadow: 0 4px 20px rgba(124,92,252,0.06);
       border-radius: 12px; padding: 13px 18px;
       font-size: 0.85rem; font-weight: 600;
       z-index: 9999; display: flex; align-items: center; gap: 8px;
