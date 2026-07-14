@@ -696,6 +696,25 @@
       </div>
     </div>
 
+    <div class="form-row">
+      <div class="form-group" style="margin-bottom:0;">
+        <label>Sens de lecture</label>
+        <select id="inputSensLecture">
+          <option value="rl">← Droite vers Gauche (manga)</option>
+          <option value="lr">Gauche vers Droite (BD/comics) →</option>
+        </select>
+      </div>
+      <div class="form-group" style="margin-bottom:0;">
+        <label>Classification d'âge</label>
+        <select id="inputAge">
+          <option value="tout_public">Tout public</option>
+          <option value="12+">12+</option>
+          <option value="16+">16+</option>
+          <option value="18+">18+</option>
+        </select>
+      </div>
+    </div>
+
     <!-- Hint format dynamique -->
     <div id="formatHint" style="margin-top:16px; padding:14px 18px; border-radius:12px; background:rgba(124,111,239,0.07); border:1px solid rgba(124,111,239,0.2); display:flex; align-items:flex-start; gap:12px;">
       <span style="font-size:1.3rem; flex-shrink:0;" id="formatIcon">📖</span>
@@ -787,16 +806,6 @@
       </label>
     </div>
 
-    <div class="toggle-row">
-      <div class="toggle-info">
-        <strong>Contenu adulte (18+)</strong>
-        <span>Ajoute un avertissement de contenu mature</span>
-      </div>
-      <label class="toggle">
-        <input type="checkbox" id="toggleAdult" />
-        <span class="toggle-slider"></span>
-      </label>
-    </div>
   </div>
 
   <!-- SUBMIT -->
@@ -1038,8 +1047,13 @@ function bindEvents() {
     document.getElementById('formatDesc').innerHTML    = info.desc;
   }
 
+  const SENS_DEFAUT = { manga: 'rl', manhwa: 'lr', manhua: 'lr', webtoon: 'lr', bd: 'lr', roman: 'lr' };
   const typeSelect = document.getElementById('inputType');
-  typeSelect.addEventListener('change', () => updateFormatHint(typeSelect.value));
+  const sensSelect = document.getElementById('inputSensLecture');
+  typeSelect.addEventListener('change', () => {
+    updateFormatHint(typeSelect.value);
+    sensSelect.value = SENS_DEFAUT[typeSelect.value] || 'rl';
+  });
   updateFormatHint(typeSelect.value); // init
 
   // Char counters
@@ -1276,9 +1290,11 @@ async function publishManga(draft = false) {
           genres:      selectedGenres,
           couverture_url: coverUrl,
           created_at:  new Date().toISOString(),
-          adulte:      document.getElementById('toggleAdult').checked,
+          adulte:      ['16+', '18+'].includes(document.getElementById('inputAge').value),
           commentaires_actifs: document.getElementById('toggleComments').checked,
           langue:      document.getElementById('inputLangue').value,
+          sens_lecture: document.getElementById('inputSensLecture').value,
+          age_recommande: document.getElementById('inputAge').value,
         };
 
     const { data: manga, error: mangaErr } = await insertLenient(sb, 'mangas', mangaPayload,

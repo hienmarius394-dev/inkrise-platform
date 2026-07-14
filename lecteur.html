@@ -669,8 +669,9 @@ async function init() {
   setupNav();
 
   // Charger le manga
-  const { data: m } = await sb.from('mangas').select('id, titre, type').eq('id', mangaId).single();
+  const { data: m } = await sb.from('mangas').select('id, titre, type, sens_lecture').eq('id', mangaId).single();
   manga = m;
+  applyReadingDirection();
 
   // Charger tous les chapitres
   const { data: chaps } = await sb.from('chapitres').select('*').eq('manga_id', mangaId).order('numero', { ascending: true });
@@ -874,6 +875,19 @@ function adjustScrollWidth(deltaPct) {
   document.documentElement.style.setProperty('--scroll-w', scrollWidthPct + '%');
 }
 
+// ── SENS DE LECTURE ──
+function applyReadingDirection() {
+  const rl = manga?.sens_lecture !== 'lr'; // défaut : droite → gauche (manga japonais)
+  const leftZone  = document.querySelector('.click-zone.left');
+  const rightZone = document.querySelector('.click-zone.right');
+  if (leftZone && rightZone) {
+    leftZone.onclick  = () => (rl ? nextPage() : prevPage());
+    rightZone.onclick = () => (rl ? prevPage() : nextPage());
+    leftZone.querySelector('.click-zone-icon').textContent  = rl ? '›' : '‹';
+    rightZone.querySelector('.click-zone-icon').textContent = rl ? '‹' : '›';
+  }
+}
+
 // ── NAVIGATION PAGES ──
 function prevPage() {
   if (currentPage > 0) {
@@ -984,8 +998,9 @@ function bindEvents() {
   // Clavier
   document.addEventListener('keydown', e => {
     if (readMode === 'pages') {
-      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextPage();
-      if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   prevPage();
+      const rl = manga?.sens_lecture !== 'lr';
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') rl ? prevPage() : nextPage();
+      if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   rl ? nextPage() : prevPage();
     }
   });
 
