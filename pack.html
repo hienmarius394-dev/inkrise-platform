@@ -287,6 +287,31 @@
     .lesson-check.done { background: rgba(61,220,132,.18); border-color: rgba(61,220,132,.4); color: var(--green); }
     .lesson-title { font-size: .85rem; font-weight: 600; }
 
+    /* ── CURRICULUM (aperçu verrouillé) ── */
+    .curriculum-list { display: flex; flex-direction: column; gap: 6px; }
+    .curriculum-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 14px; border-radius: 12px;
+      background: rgba(124,92,252,0.05);
+      border: 1px solid rgba(124,92,252,0.08);
+      transition: all .2s;
+    }
+    .curriculum-item:hover { background: rgba(124,92,252,0.09); transform: translateX(3px); }
+    .curriculum-num {
+      flex-shrink: 0; width: 26px; height: 26px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--purple), var(--pink));
+      color: #fff; font-size: .74rem; font-weight: 800;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .curriculum-title { flex: 1; font-size: .88rem; font-weight: 600; }
+    .curriculum-lock { font-size: .85rem; opacity: .55; }
+    .curriculum-cta {
+      margin-top: 14px; padding: 12px 16px; border-radius: 12px;
+      background: linear-gradient(135deg, rgba(124,92,252,0.10), rgba(255,95,168,0.08));
+      border: 1px solid rgba(124,92,252,0.18);
+      font-size: .82rem; color: var(--text-2); line-height: 1.55; text-align: center;
+    }
+
     /* ── LEARN LIST ── */
     .learn-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
     .learn-item {
@@ -685,7 +710,40 @@ async function loadPack(packId) {
     }
   }
 
+  // Programme visible par tous (curriculum verrouillé façon Skool si pas d'accès)
+  if (!currentPack.accesAutorise) {
+    await loadCurriculumPreview(packId);
+  }
+
   await loadAvis(packId);
+}
+
+// ── PROGRAMME (aperçu verrouillé pour les visiteurs sans accès) ──
+async function loadCurriculumPreview(packId) {
+  let list = [];
+  try {
+    const { data } = await sb.from('pack_lecons').select('id, titre, ordre').eq('pack_id', packId).order('ordre', { ascending: true });
+    list = data || [];
+  } catch (e) { return; }
+  if (!list.length) return;
+
+  const section = document.createElement('div');
+  section.className = 'section-card';
+  section.innerHTML =
+    '<div class="section-title">🎓 Programme de la formation <span style="margin-left:auto;font-size:.72rem;color:var(--muted);font-weight:600;">' + list.length + ' leçon' + (list.length > 1 ? 's' : '') + '</span></div>' +
+    '<div class="curriculum-list">' +
+    list.map((l, i) =>
+      '<div class="curriculum-item">' +
+        '<span class="curriculum-num">' + (i + 1) + '</span>' +
+        '<span class="curriculum-title">' + escapeHtml(l.titre || 'Leçon ' + (i + 1)) + '</span>' +
+        '<span class="curriculum-lock">🔒</span>' +
+      '</div>'
+    ).join('') +
+    '</div>' +
+    '<div class="curriculum-cta">Débloque la formation pour accéder à toutes les leçons, suivre ta progression et apprendre à ton rythme ✨</div>';
+
+  const avisSection = document.getElementById('avisSection');
+  avisSection.parentNode.insertBefore(section, avisSection);
 }
 
 // ── CLASSROOM (leçons multiples, style Skool) ──
