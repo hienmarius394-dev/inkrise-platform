@@ -273,6 +273,11 @@ async function init() {
 
   if (!hasAccess) {
     document.getElementById('accessDenied').style.display = 'block';
+    if (!currentUser) {
+      // Le vrai blocage est l'absence de connexion, pas l'achat
+      document.querySelector('#accessDenied h2').textContent = 'Connecte-toi pour continuer';
+      document.querySelector('#accessDenied p').innerHTML = 'Cette vidéo est réservée aux membres. <a href="auth.html" style="color:var(--purple2);font-weight:700;">Crée ton compte gratuitement</a> pour y accéder.';
+    }
     return;
   }
 

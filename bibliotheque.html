@@ -28,7 +28,7 @@ body { background: var(--ink); color: var(--text); font-family: 'DM Sans', sans-
 .univ-nav-lk { color: rgba(0,0,0,0.6); font-size: .82rem; font-weight: 600; text-decoration: none; padding: 5px 10px; border-radius: 7px; transition: all .2s; white-space: nowrap; font-family: 'DM Sans', sans-serif; }
 .univ-nav-lk:hover { color: #1c1c1e; background: rgba(255,255,255,0.06); }
 .univ-nav-lk.active { color: var(--purple2); background: rgba(124,111,239,0.1); }
-.univ-nav-search { display: flex; align-items: center; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1); border-radius: 18px; overflow: hidden; max-width: 200px; flex-shrink: 0; }
+.univ-nav-search { display: flex; align-items: center; background: rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.08); border-radius: 18px; overflow: hidden; max-width: 200px; flex-shrink: 0; }
 @media (max-width: 480px) { .univ-nav-search { max-width: 110px; } }
 .univ-nav-si { background: none; border: none; outline: none; color: #1c1c1e; font-size: .8rem; padding: 7px 10px; width: 100%; font-family: 'DM Sans', sans-serif; }
 .univ-nav-si::placeholder { color: rgba(0,0,0,.35); }
@@ -309,7 +309,7 @@ async function loadLibrary(){
         <div class="library-empty-icon">📚</div>
         <div class="library-empty-title">Ta bibliothèque est vide</div>
         <div class="library-empty-text">Ajoute des mangas à ta bibliothèque pour les retrouver ici et reprendre ta lecture où tu t'es arrêté.</div>
-        <a href="manga.html" class="btn-primary">Parcourir les mangas</a>
+        <a href="recherche.html" class="btn-primary">Parcourir les mangas</a>
       </div>`;
     return;
   }

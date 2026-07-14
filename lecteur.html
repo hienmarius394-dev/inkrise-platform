@@ -11,6 +11,7 @@
     --bg:      #ffffff;
     --surface: #f2f2f7;
     --surface2:#e5e5ea;
+    --surface3:#d8d8dd;
     --purple:  #7c5cfc;
     --purple2: #a594f9;
     --pink:    #ff5fa8;
@@ -44,9 +45,9 @@
     .univ-nav-links-d { display: flex; align-items: center; gap: 2px; flex: 1; margin: 0 8px; }
     @media (max-width: 680px) { .univ-nav-links-d { display: none; } }
     .univ-nav-lk { color: rgba(0,0,0,0.6); font-size: .82rem; font-weight: 600; text-decoration: none; padding: 5px 10px; border-radius: 7px; transition: all .2s; white-space: nowrap; font-family: 'DM Sans', sans-serif; }
-    .univ-nav-lk:hover { color: #1c1c1e; background: rgba(255,255,255,0.06); }
+    .univ-nav-lk:hover { color: #1c1c1e; background: rgba(0,0,0,0.05); }
     .univ-nav-lk.active { color: var(--purple2); background: rgba(124,111,239,0.1); }
-    .univ-nav-search { display: flex; align-items: center; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1); border-radius: 18px; overflow: hidden; max-width: 200px; flex-shrink: 0; }
+    .univ-nav-search { display: flex; align-items: center; background: rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.08); border-radius: 18px; overflow: hidden; max-width: 200px; flex-shrink: 0; }
     @media (max-width: 480px) { .univ-nav-search { max-width: 110px; } }
     .univ-nav-si { background: none; border: none; outline: none; color: #1c1c1e; font-size: .8rem; padding: 7px 10px; width: 100%; font-family: 'DM Sans', sans-serif; }
     .univ-nav-si::placeholder { color: rgba(0,0,0,.35); }
@@ -669,7 +670,7 @@ async function init() {
   setupNav();
 
   // Charger le manga
-  const { data: m } = await sb.from('mangas').select('id, titre, type, sens_lecture').eq('id', mangaId).single();
+  const { data: m } = await sb.from('mangas').select('id, titre, type, sens_lecture, commentaires_actifs').eq('id', mangaId).single();
   manga = m;
   applyReadingDirection();
 
@@ -770,7 +771,7 @@ async function loadChapter() {
   updateChapNav();
   updateSidebarActive();
   window.scrollTo(0, 0);
-  loadComments(mangaId, chapitreId);
+  loadComments(mangaId, chapitre.id);
 }
 
 // ── PLACEHOLDER (pas de pages uploadées) ──
@@ -1094,6 +1095,11 @@ async function setupNav() {
 let currentUser = null;
 
 async function loadComments(mId, cId) {
+  // Le créateur peut désactiver les commentaires sur son manga
+  if (manga && manga.commentaires_actifs === false) {
+    document.getElementById('commentsSection').style.display = 'none';
+    return;
+  }
   document.getElementById('commentsSpinner').style.display = 'block';
   document.getElementById('commentsList').innerHTML = '';
   document.getElementById('commentsCount').textContent = '0';
@@ -1254,13 +1260,13 @@ async function submitComment() {
   btn.disabled = true; btn.textContent = 'Publication…';
   const { error } = await sb.from('commentaires').insert({
     manga_id: parseInt(mangaId),
-    chapitre_id: parseInt(chapitreId),
+    chapitre_id: chapitre.id,
     user_id: currentUser.id,
     contenu: text,
     parent_id: null
   });
   if (error) { showToast('Erreur : ' + error.message); }
-  else { textarea.value = ''; await loadComments(mangaId, chapitreId); }
+  else { textarea.value = ''; await loadComments(mangaId, chapitre.id); }
   btn.disabled = false; btn.textContent = 'Publier';
 }
 
@@ -1271,13 +1277,13 @@ async function submitReply(parentId) {
   if (!text) return;
   const { error } = await sb.from('commentaires').insert({
     manga_id: parseInt(mangaId),
-    chapitre_id: parseInt(chapitreId),
+    chapitre_id: chapitre.id,
     user_id: currentUser.id,
     contenu: text,
     parent_id: parentId
   });
   if (error) { showToast('Erreur : ' + error.message); }
-  else { await loadComments(mangaId, chapitreId); }
+  else { await loadComments(mangaId, chapitre.id); }
 }
 
 async function toggleLike(commentId) {

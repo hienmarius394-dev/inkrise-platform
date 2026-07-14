@@ -1339,7 +1339,7 @@ async function publishManga(draft = false) {
 
                 uploadedCount++;
                 const pct = 70 + Math.round((uploadedCount / totalPagesToUpload) * 25);
-                setProgress(pct, 'Upload des pages…', `${uploadedCount}/${totalPagesToUpload} pages`, 'Upload ' + i + 1 + '/' + chapitres.length);
+                setProgress(pct, 'Upload des pages…', `${uploadedCount}/${totalPagesToUpload} pages`, 'Upload ' + (i + 1) + '/' + chapitres.length);
               }
             }
           }

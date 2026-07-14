@@ -38,7 +38,7 @@
     .univ-nav-links-d { display: flex; align-items: center; gap: 2px; flex: 1; margin: 0 8px; }
     @media (max-width: 680px) { .univ-nav-links-d { display: none; } }
     .univ-nav-lk { color: rgba(0,0,0,0.6); font-size: .82rem; font-weight: 600; text-decoration: none; padding: 5px 10px; border-radius: 7px; transition: all .2s; white-space: nowrap; font-family: 'DM Sans', sans-serif; }
-    .univ-nav-lk:hover { color: #1c1c1e; background: rgba(255,255,255,0.06); }
+    .univ-nav-lk:hover { color: #1c1c1e; background: rgba(0,0,0,0.05); }
     .univ-nav-search { display: flex; align-items: center; background: rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.08); border-radius: 18px; overflow: hidden; max-width: 200px; flex-shrink: 0; }
     @media (max-width: 480px) { .univ-nav-search { max-width: 110px; } }
     .univ-nav-si { background: none; border: none; outline: none; color: #1c1c1e; font-size: .8rem; padding: 7px 10px; width: 100%; font-family: 'DM Sans', sans-serif; }
@@ -282,7 +282,7 @@
     }
     .toast.show    { transform: translateY(0); opacity: 1; }
     .toast.success { border-color: var(--green);  color: var(--green); }
-    .toast.error   { border-color: var(--accent); color: var(--accent); }
+    .toast.error   { border-color: #ff3d71; color: #ff3d71; }
     .toast.info    { border-color: var(--purple); color: var(--purple2); }
   </style>
 </head>
@@ -658,7 +658,7 @@ document.getElementById('btnFollowAuthor').addEventListener('click', async () =>
       followerCount++;
       document.getElementById('statFollowers').textContent = followerCount;
       showToast('✅ Tu suis maintenant ce créateur !', 'success');
-      askNotifPermission(profile?.username || 'ce créateur');
+      askNotifPermission(document.getElementById('authorUsername')?.textContent || 'ce créateur');
       // Notification de follow (best-effort, jamais pour soi-même)
       if (auteurId !== currentUser.id) {
         await sb.from('notifications').insert({

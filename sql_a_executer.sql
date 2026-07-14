@@ -111,8 +111,11 @@ CREATE TABLE IF NOT EXISTS vues (
 ALTER TABLE vues ADD COLUMN IF NOT EXISTS manga_id BIGINT REFERENCES mangas(id) ON DELETE CASCADE;
 ALTER TABLE vues ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES profiles(id) ON DELETE CASCADE;
 ALTER TABLE vues ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT now();
-CREATE UNIQUE INDEX IF NOT EXISTS uniq_vues_manga_user
-  ON vues(manga_id, user_id) WHERE user_id IS NOT NULL;
+-- Index unique NON partiel : requis pour que l'upsert onConflict(manga_id,user_id)
+-- du frontend fonctionne (un index partiel n'est pas inférable par ON CONFLICT,
+-- ce qui faisait échouer silencieusement le comptage des vues).
+DROP INDEX IF EXISTS uniq_vues_manga_user;
+CREATE UNIQUE INDEX IF NOT EXISTS uniq_vues_pair ON vues(manga_id, user_id);
 
 CREATE OR REPLACE FUNCTION public.bump_manga_vues()
 RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
