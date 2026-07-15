@@ -772,7 +772,7 @@ function renderPack(pack) {
 
   const prix = Number(pack.prix);
   const isFree = prix === 0 || isNaN(prix);
-  const priceLabel = isFree ? 'GRATUIT' : `${Math.round(prix).toLocaleString('fr-FR')} FCFA`;
+  const priceLabel = isFree ? 'GRATUIT' : `${prix % 1 === 0 ? prix : prix.toFixed(2)}€`;
 
   const heroPriceEl = document.getElementById('heroPrice');
   heroPriceEl.textContent = priceLabel;

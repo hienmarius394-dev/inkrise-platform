@@ -53,15 +53,18 @@ Deno.serve(async (req) => {
       .maybeSingle();
     if (deja) return json({ error: "Tu possèdes déjà ce pack" }, 400);
 
-    // CinetPay : montant en XOF, multiple de 5
-    const montant = Math.max(100, Math.round(prix / 5) * 5);
+    // CinetPay facture en XOF. Le prix du pack est affiché en € sur le site
+    // (l'euro et le franc CFA XOF sont à parité fixe : 1 € = 655,957 XOF),
+    // on convertit donc ici. CinetPay exige un montant multiple de 5.
+    const XOF_PAR_EUR = 655.957;
+    const montantXof = Math.max(100, Math.round((prix * XOF_PAR_EUR) / 5) * 5);
     const transaction_id = `inkrise_${pack.id}_${Date.now()}_${crypto.randomUUID().slice(0, 8)}`;
 
     const { error: insErr } = await supabase.from("paiements").insert({
       transaction_id,
       pack_id: pack.id,
       user_id: user.id,
-      montant,
+      montant: montantXof,
       statut: "en_attente",
     });
     if (insErr) return json({ error: "Init paiement impossible : " + insErr.message }, 500);
@@ -71,7 +74,7 @@ Deno.serve(async (req) => {
       apikey: Deno.env.get("CINETPAY_APIKEY"),
       site_id: Deno.env.get("CINETPAY_SITE_ID"),
       transaction_id,
-      amount: montant,
+      amount: montantXof,
       currency: "XOF",
       description: ("Pack Inkrise : " + (pack.titre || "pack")).slice(0, 100),
       notify_url: Deno.env.get("SUPABASE_URL") + "/functions/v1/cinetpay-webhook",

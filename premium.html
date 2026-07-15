@@ -672,9 +672,9 @@
         <textarea class="form-textarea" id="f-desc" placeholder="Décris ta formation en quelques phrases..."></textarea>
       </div>
       <div class="form-group">
-        <label class="form-label" for="f-prix">Prix (FCFA) <span>*</span></label>
-        <input class="form-input" type="number" id="f-prix" min="0" step="5" placeholder="500" value="500" required />
-        <div class="form-hint">Mets 0 pour un pack gratuit. Paiement par Mobile Money (Orange, MTN, Moov, Wave) et carte bancaire. Inkrise prend 10% par vente — tu gardes 90%.</div>
+        <label class="form-label" for="f-prix">Prix (€) <span>*</span></label>
+        <input class="form-input" type="number" id="f-prix" min="0" step="0.5" placeholder="2.00" value="2.00" required />
+        <div class="form-hint">Mets 0 pour un pack gratuit. Le paiement (carte bancaire ou mobile) est proposé automatiquement selon le pays de l'acheteur. Inkrise prend 10% par vente — tu gardes 90%.</div>
       </div>
       <div class="form-group">
         <label class="form-label">Image de couverture</label>
@@ -937,7 +937,7 @@
     packs.forEach(pack => {
       const buyers = buyerCounts[pack.id] || 0;
       const prix = parseFloat(pack.prix || 0);
-      const prixStr = prix === 0 ? 'Gratuit' : Math.round(prix).toLocaleString('fr-FR') + ' FCFA';
+      const prixStr = prix === 0 ? 'Gratuit' : (prix % 1 === 0 ? prix : prix.toFixed(2)) + ' €';
 
       const card = document.createElement('div');
       card.className = 'pack-card';
@@ -1025,7 +1025,7 @@
     setCoverPreview(null);
     document.getElementById('f-image').value = '';
     document.getElementById('f-image-status').textContent = '';
-    document.getElementById('f-prix').value = '500';
+    document.getElementById('f-prix').value = '2.00';
     packImages = []; renderPackImages();
     document.getElementById('modal-overlay').classList.add('open');
   }
@@ -1174,7 +1174,7 @@
     document.getElementById('edit-pack-id').value = packId;
     document.getElementById('f-titre').value = pack.titre || '';
     document.getElementById('f-desc').value = pack.description || '';
-    document.getElementById('f-prix').value = pack.prix != null ? pack.prix : '500';
+    document.getElementById('f-prix').value = pack.prix != null ? pack.prix : '2.00';
     document.getElementById('f-image').value = pack.image_url || '';
     if (pack.image_url) {
       setCoverPreview(pack.image_url);
