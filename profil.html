@@ -470,11 +470,12 @@
     .info-row label { font-size: 0.8rem; color: var(--muted); font-weight: 700; min-width: 100px; }
     .info-row span.info-val, .info-row value { font-size: 0.88rem; color: var(--text); flex: 1; }
     .info-row input {
-      flex: 1; background: var(--surface2); border: 1px solid var(--border);
+      flex: 1; min-width: 0; background: var(--surface2); border: 1px solid var(--border);
       border-radius: 8px; padding: 8px 12px; color: var(--text);
       font-size: 0.88rem; font-family: 'Nunito', sans-serif;
       outline: none; transition: border-color .2s;
     }
+    .info-row span { overflow-wrap: anywhere; }
     .info-row input:focus { border-color: var(--purple); }
     .btn-save {
       background: linear-gradient(135deg, var(--purple), var(--pink));
@@ -520,6 +521,24 @@
       transition: all .2s; align-self: flex-start;
     }
     .btn-add-link:hover { border-color: var(--purple); color: var(--purple); }
+    /* Sur mobile, le label + select + input + bouton ne tiennent pas sur une
+       ligne : on empile le label au-dessus de la liste de liens */
+    @media (max-width: 600px) {
+      .info-row-social { flex-direction: column; align-items: stretch !important; gap: 8px; }
+      .info-row-social label { padding-top: 0 !important; min-width: 0; }
+      .social-link-row select { width: 108px; }
+    }
+
+    /* Badges liens sociaux sur le hero du profil */
+    .profile-socials { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+    .profile-social-link {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(124,92,252,0.1); border: 1px solid rgba(124,92,252,0.25);
+      color: var(--text); padding: 5px 12px; border-radius: 20px;
+      font-size: 0.78rem; font-weight: 700;
+      text-decoration: none; transition: all .2s;
+    }
+    .profile-social-link:hover { background: rgba(124,92,252,0.2); border-color: var(--purple); color: var(--purple); }
 
     /* ── MODAL PLANS ── */
     .modal-overlay {
@@ -821,6 +840,7 @@
           <span class="plan-dot"></span>
           <span id="planName">Membre</span>
         </div>
+        <div class="profile-socials" id="profileSocials" style="display:none;"></div>
         <div class="profile-stats">
           <div class="stat-item">
             <div class="stat-num" id="statMangas">0</div>
@@ -982,7 +1002,7 @@
         <label>Plan actuel</label>
         <span id="displayPlan" style="color:var(--purple); font-weight:800;">Membre</span>
       </div>
-      <div class="info-row" style="align-items:flex-start;">
+      <div class="info-row info-row-social" style="align-items:flex-start;">
         <label style="padding-top:8px;">Réseaux sociaux</label>
         <div style="flex:1;display:flex;flex-direction:column;gap:10px;">
           <div class="social-links-list" id="socialLinksList"></div>
@@ -1124,6 +1144,19 @@
 
   document.getElementById('btnAddSocialLink').addEventListener('click', () => addSocialLinkRow());
 
+  function renderProfileSocials(links) {
+    const el = document.getElementById('profileSocials');
+    const valid = (links || []).filter(l => l && l.url);
+    if (!valid.length) { el.style.display = 'none'; el.innerHTML = ''; return; }
+    el.style.display = 'flex';
+    el.innerHTML = valid.map(link => {
+      const meta = SOCIAL_PLATFORMS.find(p => p.value === link.type);
+      const label = meta ? meta.label : '🔗 Lien';
+      const href = /^https?:\/\//i.test(link.url) ? link.url : `https://${link.url}`;
+      return `<a class="profile-social-link" href="${href.replace(/"/g, '&quot;')}" target="_blank" rel="noopener noreferrer">${label}</a>`;
+    }).join('');
+  }
+
   // ── INIT ──
   async function init() {
     const { data: { session } } = await sb.auth.getSession();
@@ -1246,6 +1279,7 @@
         document.getElementById('inputUsername').value = username;
         if (profile?.bio) document.getElementById('inputBio').value = profile.bio;
         renderSocialLinksEditor(profile?.social_links);
+        renderProfileSocials(profile?.social_links);
         // Show avatar preview in edit form
         if (profile?.avatar_url) {
           const preview = document.getElementById('avatarPreview');
@@ -1838,6 +1872,7 @@
       }
 
       userProfile = { ...userProfile, ...updateData, avatar_url: avatar_url };
+      renderProfileSocials(updateData.social_links);
       showToast('✅ Profil mis à jour !', 'success');
     } catch (err) {
       showToast('Erreur: ' + (err.message || 'inconnue'), 'error');
