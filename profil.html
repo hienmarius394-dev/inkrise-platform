@@ -864,17 +864,17 @@
         </div>
         <div class="profile-socials" id="profileSocials" style="display:none;"></div>
         <div class="profile-stats">
-          <div class="stat-item">
+          <div class="stat-item clickable" title="Voir mes mangas" onclick="goToTab('mangas')">
             <div class="stat-num" id="statMangas">0</div>
-            <div class="stat-label">Mangas</div>
+            <div class="stat-label">Mangas ›</div>
           </div>
-          <div class="stat-item">
+          <div class="stat-item clickable" title="Voir mes statistiques" onclick="goToTab('stats')">
             <div class="stat-num" id="statVues">0</div>
-            <div class="stat-label">Vues</div>
+            <div class="stat-label">Vues ›</div>
           </div>
-                    <div class="stat-item">
-                      <div class="stat-num" id="statChapitres">0</div>
-                      <div class="stat-label">Chapitres</div>
+          <div class="stat-item clickable" title="Gérer mes chapitres" onclick="goToChapitres()">
+            <div class="stat-num" id="statChapitres">0</div>
+            <div class="stat-label">Chapitres ›</div>
           </div>
           <div class="stat-item clickable" id="statAbonnesWrap" title="Voir mes abonnés" onclick="goToAbonnes()">
             <div class="stat-num" id="statAbonnes">0</div>
@@ -1140,6 +1140,7 @@
   let userProfile = null;
   let userSuivis        = [];
   let userNotifications = [];
+  let userMangasList    = [];
 
   function escHtml(s) {
     return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -1403,6 +1404,7 @@
 
     document.getElementById('mangaLoading').style.display = 'none';
 
+    userMangasList = mangas || [];
     const totalMangas = mangas?.length || 0;
     let   totalVues   = 0;
     let   totalChaps  = 0;
@@ -1966,14 +1968,32 @@
     });
   }
 
-  // ── MES ABONNÉS (visible uniquement par le propriétaire du profil) ──
-  // Le chiffre "Abonnés" du hero ouvre directement la liste
-  function goToAbonnes() {
+  // ── RACCOURCIS DU HERO : chaque stat mène quelque part ──
+  function goToTab(tab) {
     document.querySelectorAll('.ptab').forEach(b => b.classList.remove('active'));
     document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-    const tabBtn = document.querySelector('.ptab[data-tab="suivis"]');
+    const tabBtn = document.querySelector(`.ptab[data-tab="${tab}"]`);
     if (tabBtn) tabBtn.classList.add('active');
-    document.getElementById('tab-suivis').classList.add('active');
+    const panel = document.getElementById('tab-' + tab);
+    if (panel) {
+      panel.classList.add('active');
+      panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
+  window.goToTab = goToTab;
+
+  // Chapitres : un seul manga → gestion directe de ses chapitres ; sinon la liste
+  function goToChapitres() {
+    if (userMangasList.length === 1) {
+      window.location.href = `gestion-chapitres.html?manga_id=${userMangasList[0].id}`;
+      return;
+    }
+    goToTab('mangas');
+  }
+  window.goToChapitres = goToChapitres;
+
+  function goToAbonnes() {
+    goToTab('suivis');
     const target = document.getElementById('abonnesSection');
     if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
