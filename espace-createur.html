@@ -874,6 +874,10 @@
     document.getElementById('section-formations').style.display = '';
 
     await loadPacks();
+
+    // Lien direct "Modifier ce pack" (depuis pack.html) : ouvre le formulaire d'édition
+    const editParam = new URLSearchParams(location.search).get('edit');
+    if (editParam) openEditModal(parseInt(editParam, 10));
   }
 
   // Activation gratuite de l'espace créateur (aucun paiement, aucun prix affiché)

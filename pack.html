@@ -148,6 +148,14 @@
       color: var(--text);
     }
     .hero-meta { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+    .hero-edit-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(124,92,252,0.12); border: 1px solid rgba(124,92,252,0.35);
+      color: var(--purple); font-size: .82rem; font-weight: 700;
+      padding: 7px 15px; border-radius: 100px; text-decoration: none;
+      transition: all .2s;
+    }
+    .hero-edit-btn:hover { background: rgba(124,92,252,0.22); }
     .hero-author { font-size: .88rem; color: var(--text-2); }
     .hero-author a { color: var(--purple2); text-decoration: none; font-weight: 600; }
     .hero-author a:hover { text-decoration: underline; }
@@ -435,6 +443,7 @@
       <div class="hero-meta">
         <span class="hero-author">par <a href="#" id="heroAuthorLink">—</a></span>
         <span class="hero-price" id="heroPrice">—</span>
+        <a class="hero-edit-btn" id="heroEditBtn" href="#" style="display:none;">✏️ Modifier ce pack</a>
       </div>
     </div>
   </div>
@@ -603,6 +612,12 @@ async function loadPack(packId) {
       .maybeSingle();
     const isCreator = currentUser.id === data.auteur_id;
     currentPack.accesAutorise = !!(achat || isCreator);
+    // L'auteur du pack voit un accès direct à l'édition (Espace Créateur)
+    if (isCreator) {
+      const editBtn = document.getElementById('heroEditBtn');
+      editBtn.href = `espace-createur.html?edit=${data.id}`;
+      editBtn.style.display = 'inline-flex';
+    }
     if (currentPack.accesAutorise) {
       const buyLabel = data.contenu_url ? '📥 Télécharger le pack' : 'Bientôt disponible';
       ['buyBtnMobile', 'buyBtnDesktop'].forEach(id => {
