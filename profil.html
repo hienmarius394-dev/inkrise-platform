@@ -424,6 +424,30 @@
     }
     .chart-row-val { flex: 0 0 auto; font-size: 0.78rem; font-weight: 800; color: var(--muted); min-width: 42px; text-align: right; }
 
+    /* Graphique d'activité (aire + ligne) */
+    .chart-card-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 4px; flex-wrap: wrap; }
+    .chart-card-head h3 { margin-bottom: 0; }
+    .chart-subtitle { font-size: 0.75rem; color: var(--muted); font-weight: 700; }
+    .line-chart-wrap { position: relative; margin-top: 10px; }
+    .line-chart-wrap svg { display: block; width: 100%; height: auto; overflow: visible; }
+    .lc-grid { stroke: var(--border); stroke-width: 1; }
+    .lc-area { fill: var(--purple); opacity: 0.1; }
+    .lc-line { fill: none; stroke: var(--purple); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+    .lc-enddot { fill: var(--purple); stroke: var(--bg); stroke-width: 2; }
+    .lc-hoverdot { fill: var(--purple); stroke: var(--bg); stroke-width: 2; opacity: 0; }
+    .lc-crosshair { stroke: var(--border); stroke-width: 1; opacity: 0; }
+    .lc-hit { fill: transparent; cursor: crosshair; }
+    .lc-axis-label { font-family: 'Nunito', sans-serif; font-size: 9px; fill: var(--muted); font-weight: 700; }
+    .lc-end-label { font-family: 'Nunito', sans-serif; font-size: 11px; fill: var(--text); font-weight: 800; }
+    .chart-tooltip {
+      position: absolute; pointer-events: none; opacity: 0;
+      background: var(--text); color: #fff; font-size: 0.72rem; font-weight: 800;
+      padding: 5px 10px; border-radius: 7px; white-space: nowrap;
+      transform: translate(-50%, -130%); transition: opacity .12s;
+      font-family: 'Nunito', sans-serif; z-index: 5;
+    }
+    .chart-tooltip.show { opacity: 1; }
+
     /* Infos panel */
     .info-card {
       background: rgba(255,255,255,0.6);
@@ -902,7 +926,18 @@
       </div>
     </div>
     <div class="info-card">
-      <h3>📈 Vues par manga</h3>
+      <div class="chart-card-head">
+        <h3>Activité</h3>
+        <span class="chart-subtitle">Vues — 14 derniers jours</span>
+      </div>
+      <div class="line-chart-wrap" id="activityChartWrap">
+        <div style="color:var(--muted); font-size:0.88rem; padding:20px 0; text-align:center;">
+          Publie un manga pour voir ton activité ici.
+        </div>
+      </div>
+    </div>
+    <div class="info-card">
+      <h3>Vues par manga</h3>
       <div id="statsChartWrap">
         <div style="color:var(--muted); font-size:0.88rem; padding:20px 0; text-align:center;">
           Publie un manga pour voir son activité ici.
@@ -1337,6 +1372,7 @@
       });
 
       renderStatsChart(mangaVuesList);
+      loadActivityChart(mangas.map(m => m.id));
     } else {
       document.getElementById('mangaGrid').style.display = 'none';
       document.getElementById('mangaEmpty').style.display = 'block';
@@ -1363,6 +1399,115 @@
         <div class="chart-row-val">${m.vues}</div>
       </div>
     `).join('');
+  }
+
+  // ── GRAPHIQUE D'ACTIVITÉ (vues des 14 derniers jours) ──
+  async function loadActivityChart(mangaIds) {
+    const wrap = document.getElementById('activityChartWrap');
+    if (!mangaIds.length) return;
+
+    const since = new Date();
+    since.setDate(since.getDate() - 13);
+    since.setHours(0, 0, 0, 0);
+
+    const { data: rows } = await sb
+      .from('vues')
+      .select('created_at')
+      .in('manga_id', mangaIds)
+      .gte('created_at', since.toISOString());
+
+    const days = [];
+    for (let i = 13; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      d.setHours(0, 0, 0, 0);
+      days.push({ date: d, count: 0 });
+    }
+    (rows || []).forEach(r => {
+      const rd = new Date(r.created_at);
+      rd.setHours(0, 0, 0, 0);
+      const day = days.find(x => x.date.getTime() === rd.getTime());
+      if (day) day.count++;
+    });
+
+    renderActivityLineChart(days);
+  }
+
+  function renderActivityLineChart(days) {
+    const wrap = document.getElementById('activityChartWrap');
+    const W = 600, H = 200, left = 6, right = 6, top = 14, bottom = 26;
+    const plotW = W - left - right, plotH = H - top - bottom;
+    const rawMax = Math.max(...days.map(d => d.count));
+    const yMax = Math.max(4, Math.ceil(rawMax * 1.25));
+
+    const xAt = i => left + (i / (days.length - 1)) * plotW;
+    const yAt = v => top + plotH - (v / yMax) * plotH;
+    const baseline = top + plotH;
+
+    const points = days.map((d, i) => [xAt(i), yAt(d.count)]);
+    const linePath = points.map((p, i) => `${i === 0 ? 'M' : 'L'}${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' ');
+    const areaPath = `${linePath} L${points[points.length - 1][0].toFixed(1)},${baseline} L${points[0][0].toFixed(1)},${baseline} Z`;
+
+    const fmtDay = d => d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+    const last = points[points.length - 1];
+
+    wrap.innerHTML = `
+      <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
+        <line class="lc-grid" x1="${left}" y1="${yAt(yMax)}" x2="${W - right}" y2="${yAt(yMax)}" />
+        <line class="lc-grid" x1="${left}" y1="${yAt(yMax / 2)}" x2="${W - right}" y2="${yAt(yMax / 2)}" />
+        <line class="lc-grid" x1="${left}" y1="${baseline}" x2="${W - right}" y2="${baseline}" />
+        <path class="lc-area" d="${areaPath}" />
+        <path class="lc-line" d="${linePath}" />
+        <circle class="lc-enddot" cx="${last[0]}" cy="${last[1]}" r="4" />
+        <text class="lc-end-label" x="${Math.min(last[0] + 8, W - 18)}" y="${Math.max(last[1] - 8, 12)}" text-anchor="${last[0] > W - 60 ? 'end' : 'start'}">${days[days.length - 1].count}</text>
+        <text class="lc-axis-label" x="${xAt(0)}" y="${H - 6}" text-anchor="start">${fmtDay(days[0].date)}</text>
+        <text class="lc-axis-label" x="${xAt(days.length - 1)}" y="${H - 6}" text-anchor="end">${fmtDay(days[days.length - 1].date)}</text>
+        <line class="lc-crosshair" id="lcCrosshair" x1="0" y1="${top}" x2="0" y2="${baseline}" />
+        <circle class="lc-hoverdot" id="lcHoverDot" r="5" />
+        <rect class="lc-hit" x="${left}" y="0" width="${plotW}" height="${H}" />
+      </svg>
+      <div class="chart-tooltip" id="lcTooltip"></div>
+    `;
+
+    const svg = wrap.querySelector('svg');
+    const hit = wrap.querySelector('.lc-hit');
+    const crosshair = document.getElementById('lcCrosshair');
+    const hoverDot = document.getElementById('lcHoverDot');
+    const tooltip = document.getElementById('lcTooltip');
+
+    function showAt(i) {
+      const [x, y] = points[i];
+      crosshair.setAttribute('x1', x);
+      crosshair.setAttribute('x2', x);
+      crosshair.style.opacity = 1;
+      hoverDot.setAttribute('cx', x);
+      hoverDot.setAttribute('cy', y);
+      hoverDot.style.opacity = 1;
+      tooltip.textContent = `${fmtDay(days[i].date)} — ${days[i].count} vue${days[i].count > 1 ? 's' : ''}`;
+      tooltip.style.left = `${(x / W) * 100}%`;
+      tooltip.style.top = `${(y / H) * 100}%`;
+      tooltip.classList.add('show');
+    }
+    function hide() {
+      crosshair.style.opacity = 0;
+      hoverDot.style.opacity = 0;
+      tooltip.classList.remove('show');
+    }
+
+    hit.addEventListener('mousemove', e => {
+      const rect = svg.getBoundingClientRect();
+      const relX = ((e.clientX - rect.left) / rect.width) * W;
+      const idx = Math.round(((relX - left) / plotW) * (days.length - 1));
+      showAt(Math.max(0, Math.min(days.length - 1, idx)));
+    });
+    hit.addEventListener('mouseleave', hide);
+    hit.addEventListener('touchstart', e => {
+      const touch = e.touches[0];
+      const rect = svg.getBoundingClientRect();
+      const relX = ((touch.clientX - rect.left) / rect.width) * W;
+      const idx = Math.round(((relX - left) / plotW) * (days.length - 1));
+      showAt(Math.max(0, Math.min(days.length - 1, idx)));
+    }, { passive: true });
   }
 
   // ── MES FORMATIONS (achetées + créées) ──
