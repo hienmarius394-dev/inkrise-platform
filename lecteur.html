@@ -904,8 +904,10 @@ let scrollPageObserver = null;
 function renderScrollMode() {
   const viewer = document.getElementById('scrollViewer');
   viewer.classList.remove('hidden');
+  // min-height provisoire : donne une hauteur approximative aux pages pas
+  // encore chargées pour que le saut de reprise soit instantané (effacée au load)
   viewer.innerHTML = pages.map((url, i) =>
-    `<img class="scroll-page" src="${url}" alt="Page ${i+1}" data-i="${i}" loading="lazy" />`
+    `<img class="scroll-page" src="${url}" alt="Page ${i+1}" data-i="${i}" loading="lazy" style="min-height:70vh" onload="this.style.minHeight=''" onerror="this.style.minHeight=''" />`
   ).join('');
 
   document.getElementById('pageNum').textContent = currentPage + 1;
@@ -927,24 +929,29 @@ function renderScrollMode() {
   if (currentPage > 0) scrollToScrollPage(currentPage);
 }
 
-// Reprise en mode scroll : on attend que les pages au-dessus de la cible soient
-// chargées (leurs hauteurs poussent le contenu), puis on scrolle jusqu'à la cible.
+// Reprise en mode scroll : saut immédiat sur la page cible, puis recalage à
+// chaque image du dessus qui finit de charger (leurs hauteurs décalent le
+// contenu). On arrête de recaler dès que le lecteur touche/scrolle lui-même.
 function scrollToScrollPage(idx) {
   const imgs = Array.from(document.querySelectorAll('.scroll-page'));
   const target = imgs[idx];
   if (!target) return;
-  const go = () => target.scrollIntoView({ block: 'start' });
-  const toLoad = imgs.slice(0, idx + 1).filter(im => !im.complete);
-  if (toLoad.length === 0) { go(); return; }
-  let pending = toLoad.length;
-  const done = () => { if (--pending <= 0) setTimeout(go, 60); };
-  toLoad.forEach(im => {
-    im.addEventListener('load', done, { once: true });
-    im.addEventListener('error', done, { once: true });
+  const pin = () => target.scrollIntoView({ block: 'start' });
+  pin();
+
+  const above = imgs.slice(0, idx).filter(im => !im.complete);
+  if (!above.length) return;
+
+  let userMoved = false;
+  ['wheel', 'touchstart', 'keydown'].forEach(ev =>
+    window.addEventListener(ev, () => { userMoved = true; }, { once: true, passive: true })
+  );
+  above.forEach(im => {
+    const repin = () => { if (!userMoved) pin(); };
+    im.addEventListener('load', repin, { once: true });
+    im.addEventListener('error', repin, { once: true });
     im.loading = 'eager';
   });
-  // Filet de sécurité si une image met trop de temps
-  setTimeout(go, 3000);
 }
 
 let scrollWidthPct = 100;
