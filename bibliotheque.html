@@ -174,12 +174,8 @@ body { background: var(--ink); color: var(--text); font-family: 'DM Sans', sans-
 <div id="toast"></div>
 
 <!-- BOTTOM NAV -->
-<div class="univ-bnav">
-  <a href="index.html" class="univ-bnav-item"><span class="univ-bnav-icon">🏠</span><span class="univ-bnav-label">Accueil</span></a>
-  <a href="bibliotheque.html" class="univ-bnav-item active"><span class="univ-bnav-icon">📚</span><span class="univ-bnav-label">Bibliothèque</span></a>
-  <button class="univ-bnav-search" onclick="focusSearch()">🔍</button>
-  <a href="profil.html" class="univ-bnav-item"><span class="univ-bnav-icon">👤</span><span class="univ-bnav-label">Profil</span></a>
-</div>
+<div id="inkriseBottomNav" data-active=""></div>
+<script src="assets/inkrise-nav.js"></script>
 
 <script>
 const SUPABASE_URL = 'https://bsdcpwtimsgxcnaamwip.supabase.co';

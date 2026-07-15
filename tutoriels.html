@@ -110,7 +110,7 @@
     .hero {
       background:
         linear-gradient(160deg, rgba(15,12,30,0.88) 0%, rgba(26,18,48,0.82) 50%, rgba(11,11,16,0.9) 100%),
-        url('assets/manga-panels-bw.jpg');
+        url('assets/manga-panels-bw.webp');
       background-size: cover;
       background-position: center 20%;
       padding: 52px 20px 44px;
@@ -356,13 +356,8 @@
 <div class="toast" id="toast"></div>
 
 <!-- BOTTOM NAV -->
-<div class="univ-bnav">
-  <a href="index.html" class="univ-bnav-item"><span class="univ-bnav-icon">🏠</span><span class="univ-bnav-label">Accueil</span></a>
-  <a href="tutoriels.html" class="univ-bnav-item active"><span class="univ-bnav-icon">🎓</span><span class="univ-bnav-label">Tutoriels</span></a>
-  <button class="univ-bnav-search" onclick="if(typeof doSearch==='function'){focusSearch()}else{window.location.href='recherche.html'}">🔍</button>
-  <a href="communaute.html" class="univ-bnav-item"><span class="univ-bnav-icon">👥</span><span class="univ-bnav-label">Communauté</span></a>
-  <a href="profil.html" class="univ-bnav-item"><span class="univ-bnav-icon">👤</span><span class="univ-bnav-label">Profil</span></a>
-</div>
+<div id="inkriseBottomNav" data-active="tutoriels"></div>
+<script src="assets/inkrise-nav.js"></script>
 
 <script>
 const SUPABASE_URL = 'https://bsdcpwtimsgxcnaamwip.supabase.co';
