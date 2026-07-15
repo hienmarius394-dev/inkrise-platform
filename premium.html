@@ -1025,7 +1025,7 @@
     setCoverPreview(null);
     document.getElementById('f-image').value = '';
     document.getElementById('f-image-status').textContent = '';
-    document.getElementById('f-prix').value = '2.00';
+    document.getElementById('f-prix').value = '500';
     packImages = []; renderPackImages();
     document.getElementById('modal-overlay').classList.add('open');
   }
@@ -1174,7 +1174,7 @@
     document.getElementById('edit-pack-id').value = packId;
     document.getElementById('f-titre').value = pack.titre || '';
     document.getElementById('f-desc').value = pack.description || '';
-    document.getElementById('f-prix').value = pack.prix != null ? pack.prix : '2.00';
+    document.getElementById('f-prix').value = pack.prix != null ? pack.prix : '500';
     document.getElementById('f-image').value = pack.image_url || '';
     if (pack.image_url) {
       setCoverPreview(pack.image_url);
