@@ -192,6 +192,7 @@ ALTER TABLE bibliotheque ADD COLUMN IF NOT EXISTS manga_id BIGINT REFERENCES man
 ALTER TABLE bibliotheque ADD COLUMN IF NOT EXISTS page INT DEFAULT 1;
 ALTER TABLE bibliotheque ADD COLUMN IF NOT EXISTS chapitre INT DEFAULT 1;
 ALTER TABLE bibliotheque ADD COLUMN IF NOT EXISTS total_chapitres INT DEFAULT 1;
+ALTER TABLE bibliotheque ADD COLUMN IF NOT EXISTS total_pages INT DEFAULT 0;
 ALTER TABLE bibliotheque ADD COLUMN IF NOT EXISTS added_at TIMESTAMPTZ DEFAULT now();
 
 -- ─────────────────────────────────────────────
