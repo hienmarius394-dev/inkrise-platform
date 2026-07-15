@@ -543,6 +543,7 @@ function timeAgo(dateStr) {
 function colorClass(i) { return COLORS[i % COLORS.length] }
 function emptyState(msg) { return `<div class="empty-state">${msg}</div>` }
 function escapeHtml(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])) }
+function safeUrl(u) { return String(u ?? '').replace(/['"()<>]/g, c => encodeURIComponent(c)) }
 
 // PLANS CRÉATEUR
 async function choosePlan(plan) {
@@ -602,7 +603,7 @@ async function loadFeatured() {
   row.innerHTML = mangas.map((m, i) => {
     const badge = badges[i % 3]
     const views = m.vues > 999 ? (m.vues/1000).toFixed(1)+'k' : m.vues || 0
-    const bg = m.couverture_url ? `background:url('${m.couverture_url}') center/cover no-repeat;` : ''
+    const bg = m.couverture_url ? `background:url('${safeUrl(m.couverture_url)}') center/cover no-repeat;` : ''
     const colorBg = !m.couverture_url ? colorClass(i) : ''
     return `<a href="manga.html?id=${m.id}" class="featured-card-h">
       <div class="featured-cover-h ${colorBg}" style="${bg}">
@@ -610,7 +611,7 @@ async function loadFeatured() {
         <div class="cover-deco-icon">📖</div>
       </div>
       <div class="featured-body-h">
-        <div class="featured-title-h">${m.titre || 'Sans titre'}</div>
+        <div class="featured-title-h">${escapeHtml(m.titre) || 'Sans titre'}</div>
         <div class="featured-meta-h"><span>${TYPE_LABELS[m.type]||'Manga'}</span><span style="color:var(--orange);">👁 ${views}</span></div>
       </div>
     </a>`
@@ -626,7 +627,7 @@ async function loadPopulaires() {
   const grid = document.getElementById('populairesGrid')
   if (!mangas || mangas.length === 0) { grid.innerHTML = emptyState('Aucun manga populaire pour l\'instant.'); return }
   grid.innerHTML = mangas.map((m, i) => {
-      const bg = m.couverture_url ? `background:url('${m.couverture_url}') center/cover no-repeat;` : ''
+      const bg = m.couverture_url ? `background:url('${safeUrl(m.couverture_url)}') center/cover no-repeat;` : ''
       const colorBg = !m.couverture_url ? colorClass(i) : ''
       const flag = LANG_FLAGS[(m.langue||'fr').toLowerCase()] || '🌐'
       return `<a href="manga.html?id=${m.id}" class="manga-card-2">
@@ -637,7 +638,7 @@ async function loadPopulaires() {
           ${m.adulte ? '<span class="manga-adult-badge">18+</span>' : ''}
         </div>
         <div class="manga-card-body">
-          <div class="manga-card-title">${m.titre || 'Sans titre'}</div>
+          <div class="manga-card-title">${escapeHtml(m.titre) || 'Sans titre'}</div>
           <div class="manga-card-synopsis">${escapeHtml(m.synopsis || 'Aucune description.')}</div>
           <div class="manga-card-footer">
             <span class="manga-card-genre">${TYPE_LABELS[m.type]||'Manga'}</span>
@@ -657,7 +658,7 @@ async function loadDerniers() {
   const grid = document.getElementById('derniersGrid')
   if (!mangas || mangas.length === 0) { grid.innerHTML = emptyState('Aucune mise à jour récente.'); return }
   grid.innerHTML = mangas.map((m, i) => {
-    const bg = m.couverture_url ? `background:url('${m.couverture_url}') center/cover no-repeat;` : ''
+    const bg = m.couverture_url ? `background:url('${safeUrl(m.couverture_url)}') center/cover no-repeat;` : ''
     const colorBg = !m.couverture_url ? colorClass(i+2) : ''
     const flag = LANG_FLAGS[(m.langue||'fr').toLowerCase()] || '🌐'
     return `<a href="manga.html?id=${m.id}" class="manga-card-2">
@@ -668,7 +669,7 @@ async function loadDerniers() {
         ${m.adulte ? '<span class="manga-adult-badge">18+</span>' : ''}
       </div>
       <div class="manga-card-body">
-        <div class="manga-card-title">${m.titre || 'Sans titre'}</div>
+        <div class="manga-card-title">${escapeHtml(m.titre) || 'Sans titre'}</div>
         <div class="manga-card-synopsis">${escapeHtml(m.synopsis || 'Aucune description.')}</div>
         <div class="manga-card-footer">
           <span class="manga-card-genre">${TYPE_LABELS[m.type]||'Manga'}</span>

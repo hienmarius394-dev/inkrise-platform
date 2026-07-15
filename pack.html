@@ -528,18 +528,6 @@
   </div>
 </div>
 
-<!-- MODAL PAIEMENT -->
-<div class="modal-overlay" id="stripeModal" onclick="if(event.target===this)closeModal()">
-  <div class="modal">
-    <button class="modal-x" onclick="closeModal()">✕</button>
-    <div class="modal-icon">💳</div>
-    <div class="modal-title">Paiement bientôt disponible</div>
-    <div class="modal-badge">🚀 Phase 3.3 — Stripe</div>
-    <div class="modal-sub">Le système de paiement sécurisé via Stripe sera disponible très prochainement. En attendant, contacte le créateur directement pour obtenir le pack.</div>
-    <button class="modal-close-btn" onclick="closeModal()">Fermer</button>
-  </div>
-</div>
-
 <div class="toast" id="toast"></div>
 
 <!-- BOTTOM NAV -->
@@ -574,7 +562,7 @@ async function init() {
     avatarEl.textContent = (currentUser.user_metadata?.username?.[0] || currentUser.email?.[0] || '?').toUpperCase();
     avatarEl.classList.add('show');
     sb.from('profiles').select('avatar_url').eq('id', currentUser.id).single().then(({ data: prof }) => {
-      if (prof?.avatar_url) avatarEl.innerHTML = '<img src="' + prof.avatar_url + '" style="width:32px;height:32px;border-radius:50%;object-fit:cover;" alt="" />';
+      if (prof?.avatar_url) avatarEl.innerHTML = '<img src="' + escapeHtml(prof.avatar_url) + '" style="width:32px;height:32px;border-radius:50%;object-fit:cover;" alt="" />';
     });
     document.getElementById('navNotifLink').classList.add('show');
     document.getElementById('drawerProfil').style.display = 'flex';
@@ -850,7 +838,7 @@ async function loadCreatorProfile(auteurId) {
 
   const creatorAvatar = document.getElementById('creatorAvatar');
   if (data.avatar_url) {
-    creatorAvatar.innerHTML = `<img src="${data.avatar_url}" alt="${data.username || ''}" />`;
+    creatorAvatar.innerHTML = `<img src="${escapeHtml(data.avatar_url)}" alt="${escapeHtml(data.username)}" />`;
   } else {
     creatorAvatar.textContent = (data.username?.[0] || '?').toUpperCase();
   }
@@ -947,9 +935,6 @@ function handleDownload() {
   }
 }
 
-function closeModal() {
-  document.getElementById('stripeModal').classList.remove('open');
-}
 function closeSignupModal() {
   document.getElementById('signupModal').classList.remove('open');
 }
@@ -966,10 +951,7 @@ function showToast(msg, type = 'success') {
   setTimeout(() => t.classList.remove('show'), 3000);
 }
 function escapeHtml(str) {
-  if (str === null || str === undefined) return '';
-  const d = document.createElement('div');
-  d.textContent = String(str);
-  return d.innerHTML;
+  return String(str ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
 // ── NAV ──
@@ -979,7 +961,7 @@ function doSearch()    { const q = document.getElementById('navSearchInput').val
 function focusSearch() { const i = document.getElementById('navSearchInput'); if (i) { i.focus(); window.scrollTo({ top: 0, behavior: 'smooth' }); } }
 function doLogout()    { sb.auth.signOut().then(() => window.location.href = 'index.html'); }
 
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(), closeDrawer(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeSignupModal(); closeDrawer(); } });
 
 init();
 </script>

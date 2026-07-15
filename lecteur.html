@@ -1006,7 +1006,7 @@ function buildSidebar() {
        class="sidebar-chap-item ${c.id === chapitre.id ? 'current' : ''}"
        id="sidebarItem-${c.id}">
       <span class="sidebar-chap-num">Ch. ${c.numero}</span>
-      ${c.titre || 'Chapitre ' + c.numero}
+      ${escapeHTML(c.titre) || 'Chapitre ' + c.numero}
     </a>
   `).join('');
 }
@@ -1361,8 +1361,7 @@ function formatDateRelative(isoDate) {
 }
 
 function escapeHTML(str) {
-  if (!str) return '';
-  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  return String(str ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
 init();

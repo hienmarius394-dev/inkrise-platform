@@ -475,7 +475,7 @@ async function init() {
     const navAvatar = document.getElementById('navAvatar');
     navAvatar.textContent = name[0].toUpperCase();
     if (myProfile?.avatar_url) {
-      navAvatar.innerHTML = `<img src="${myProfile.avatar_url}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;" alt="" />`;
+      navAvatar.innerHTML = `<img src="${escHtml(myProfile.avatar_url)}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;" alt="" />`;
     }
 
     const { count: unreadCount } = await sb.from('notifications')
@@ -602,26 +602,30 @@ function renderMangas(mangas) {
   mangas.forEach(manga => grid.appendChild(createMangaCard(manga)));
 }
 
+function escHtml(s) {
+  return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
 function createMangaCard(manga) {
   const card = document.createElement('a');
   card.className = 'manga-card';
   card.href = `manga.html?id=${manga.id}`;
 
   const coverHtml = manga.couverture_url
-    ? `<img class="manga-cover" src="${manga.couverture_url}" alt="${manga.titre || ''}" loading="lazy" />`
+    ? `<img class="manga-cover" src="${escHtml(manga.couverture_url)}" alt="${escHtml(manga.titre)}" loading="lazy" />`
     : `<div class="manga-cover-placeholder">📖</div>`;
 
   const statutHtml = manga.statut
-    ? `<span class="manga-statut manga-statut-${manga.statut}">${STATUT_LABELS[manga.statut] || manga.statut}</span>`
+    ? `<span class="manga-statut manga-statut-${escHtml(manga.statut)}">${escHtml(STATUT_LABELS[manga.statut] || manga.statut)}</span>`
     : '';
 
   const genresHtml = (manga.genres || []).slice(0, 2)
-    .map(g => `<span class="manga-genre">${g}</span>`).join('');
+    .map(g => `<span class="manga-genre">${escHtml(g)}</span>`).join('');
 
   card.innerHTML = `
     ${coverHtml}
     <div class="manga-card-info">
-      <div class="manga-card-title">${manga.titre || 'Sans titre'}</div>
+      <div class="manga-card-title">${escHtml(manga.titre) || 'Sans titre'}</div>
       <div class="manga-card-meta">${statutHtml}${genresHtml}</div>
     </div>
   `;
@@ -644,7 +648,7 @@ function createPackCard(pack) {
   card.href = `pack.html?id=${pack.id}`;
 
   const coverHtml = pack.image_url
-    ? `<img class="manga-cover" src="${pack.image_url}" alt="${pack.titre || ''}" loading="lazy" />`
+    ? `<img class="manga-cover" src="${escHtml(pack.image_url)}" alt="${escHtml(pack.titre)}" loading="lazy" />`
     : `<div class="manga-cover-placeholder">🎓</div>`;
 
   const prix = Number(pack.prix);
@@ -653,7 +657,7 @@ function createPackCard(pack) {
   card.innerHTML = `
     ${coverHtml}
     <div class="manga-card-info">
-      <div class="manga-card-title">${pack.titre || 'Sans titre'}</div>
+      <div class="manga-card-title">${escHtml(pack.titre) || 'Sans titre'}</div>
       <div class="manga-card-meta"><span class="manga-genre">${prixLabel}</span></div>
     </div>
   `;

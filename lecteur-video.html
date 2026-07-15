@@ -238,7 +238,7 @@ async function init() {
     av.textContent = (currentUser.user_metadata?.username?.[0] || currentUser.email?.[0] || '?').toUpperCase();
     av.classList.add('show');
     sb.from('profiles').select('avatar_url').eq('id', currentUser.id).single().then(({ data: prof }) => {
-      if (prof?.avatar_url) av.innerHTML = '<img src="' + prof.avatar_url + '" style="width:32px;height:32px;border-radius:50%;object-fit:cover;" alt="" />';
+      if (prof?.avatar_url) av.innerHTML = '<img src="' + escHtml(prof.avatar_url) + '" style="width:32px;height:32px;border-radius:50%;object-fit:cover;" alt="" />';
     });
   }
 
@@ -335,8 +335,7 @@ function renderPlayer(pack) {
 }
 
 function escHtml(str) {
-  if (!str) return '';
-  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  return String(str ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
 init();

@@ -746,6 +746,10 @@
   const { createClient } = supabase;
   const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 
+  function escHtml(s) {
+    return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
   function scrollToSection(id) {
     const el = document.getElementById(id);
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -794,7 +798,7 @@
     const cards = mangas.map(m => {
       const chapCount = chapitresCount[m.id] || 0;
       const coverHtml = m.couverture_url
-        ? `<img src="${m.couverture_url}" alt="${m.titre}" loading="lazy" onerror="this.parentElement.innerHTML='📖'">`
+        ? `<img src="${escHtml(m.couverture_url)}" alt="${escHtml(m.titre)}" loading="lazy" onerror="this.parentElement.innerHTML='📖'">`
         : '📖';
       const STATUT_LABELS = { en_cours: 'En cours', termine: 'Terminé', pause: 'En pause', hiatus: 'Hiatus', brouillon: 'Brouillon' };
       const statutClass = (m.statut && m.statut !== 'brouillon') ? 'statut-publié' : 'statut-en-cours';
@@ -804,9 +808,9 @@
         <div class="manga-card">
           <div class="manga-cover">${coverHtml}</div>
           <div class="manga-info">
-            <div class="manga-title">${m.titre || 'Sans titre'}</div>
+            <div class="manga-title">${escHtml(m.titre) || 'Sans titre'}</div>
             <div class="manga-meta">
-              <span class="manga-tag">${m.type || 'Manga'}</span>
+              <span class="manga-tag">${escHtml(m.type) || 'Manga'}</span>
               <span class="manga-tag ${statutClass}">${statutLabel}</span>
             </div>
             <div class="manga-numbers">
@@ -834,7 +838,7 @@
     const items = notifs.map(n => `
       <div class="notif-item">
         <span class="notif-type-icon">${notifTypeIcon(n.type)}</span>
-        <span class="notif-message">${n.message || 'Nouvelle notification'}</span>
+        <span class="notif-message">${escHtml(n.message) || 'Nouvelle notification'}</span>
         <span class="notif-time">${timeAgo(n.created_at)}</span>
       </div>`);
 
@@ -855,7 +859,7 @@
       navAvatar.classList.add('show');
       navAvatar.textContent = displayName[0].toUpperCase();
       db.from('profiles').select('avatar_url').eq('id', session.user.id).single().then(({ data: prof }) => {
-        if (prof?.avatar_url) navAvatar.innerHTML = '<img src="' + prof.avatar_url + '" style="width:32px;height:32px;border-radius:50%;object-fit:cover;" alt="" />';
+        if (prof?.avatar_url) navAvatar.innerHTML = '<img src="' + escHtml(prof.avatar_url) + '" style="width:32px;height:32px;border-radius:50%;object-fit:cover;" alt="" />';
       });
     }
     if (drawerProfil) drawerProfil.style.display = 'flex';
