@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+Disallow: /profil.html
+Disallow: /bibliotheque.html
+Disallow: /mon-espace.html
+Disallow: /upload-manga.html
+Disallow: /gestion-chapitres.html
+Disallow: /lecteur.html
+Disallow: /lecteur-video.html
+
+Sitemap: https://inkrise-platform.vercel.app/sitemap.xml
