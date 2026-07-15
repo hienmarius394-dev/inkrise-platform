@@ -374,9 +374,11 @@
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
       gap: 16px;
-      margin-bottom: 32px;
+      margin-bottom: 24px;
     }
     .stat-card {
+      position: relative;
+      overflow: hidden;
       background: rgba(255,255,255,0.6);
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
@@ -385,17 +387,48 @@
       border-radius: 14px;
       padding: 20px 22px;
       display: flex; flex-direction: column; gap: 6px;
+      transition: transform .22s, box-shadow .22s;
+    }
+    .stat-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      background: var(--stat-accent, linear-gradient(90deg, var(--purple), var(--pink)));
+    }
+    .stat-card:hover { transform: translateY(-3px); box-shadow: 0 10px 28px rgba(124,92,252,0.14); }
+    .stat-card-top { display: flex; align-items: center; justify-content: space-between; }
+    .stat-card-icon {
+      width: 36px; height: 36px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem; background: var(--stat-accent-soft, rgba(124,92,252,0.12));
     }
     .stat-card-label { font-size: 0.75rem; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; }
     .stat-card-num {
       font-family: 'Bebas Neue', cursive;
-      font-size: 2.2rem;
+      font-size: 2.4rem;
       line-height: 1;
     }
     .stat-card-num.orange { color: var(--accent); }
     .stat-card-num.purple { color: var(--purple); }
     .stat-card-num.gold { color: var(--gold); }
     .stat-card-num.green { color: #4ade80; }
+    .stat-card.c-orange { --stat-accent: linear-gradient(90deg, var(--accent), #ff8a5c); --stat-accent-soft: rgba(255,107,53,0.12); }
+    .stat-card.c-gold   { --stat-accent: linear-gradient(90deg, var(--gold), #f5a623); --stat-accent-soft: rgba(245,200,66,0.15); }
+    .stat-card.c-green  { --stat-accent: linear-gradient(90deg, #4ade80, #22c55e); --stat-accent-soft: rgba(74,222,128,0.15); }
+
+    /* Activité : top mangas par vues */
+    .chart-row { display: flex; align-items: center; gap: 12px; padding: 9px 0; }
+    .chart-row-label {
+      flex: 0 0 120px; font-size: 0.8rem; font-weight: 700; color: var(--text);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .chart-row-track {
+      flex: 1; height: 10px; border-radius: 6px; background: var(--surface2, rgba(0,0,0,0.06)); overflow: hidden;
+    }
+    .chart-row-bar {
+      height: 100%; border-radius: 6px;
+      background: linear-gradient(90deg, var(--purple), var(--pink));
+      transition: width .5s ease;
+    }
+    .chart-row-val { flex: 0 0 auto; font-size: 0.78rem; font-weight: 800; color: var(--muted); min-width: 42px; text-align: right; }
 
     /* Infos panel */
     .info-card {
@@ -435,6 +468,40 @@
       transition: all .25s;
     }
     .btn-save:hover { transform: translateY(-1px); box-shadow: 0 4px 16px rgba(155,89,245,0.4); }
+
+    /* Liens sociaux */
+    .social-links-list { display: flex; flex-direction: column; gap: 10px; margin-top: 4px; }
+    .social-link-row { display: flex; align-items: center; gap: 8px; }
+    .social-link-row select {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 8px; padding: 8px 10px; color: var(--text);
+      font-size: 0.85rem; font-family: 'Nunito', sans-serif;
+      outline: none; flex-shrink: 0; width: 130px; cursor: pointer;
+    }
+    .social-link-row select:focus { border-color: var(--purple); }
+    .social-link-row input[type="url"] {
+      flex: 1; background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 8px; padding: 8px 12px; color: var(--text);
+      font-size: 0.85rem; font-family: 'Nunito', sans-serif;
+      outline: none; transition: border-color .2s; min-width: 0;
+    }
+    .social-link-row input[type="url"]:focus { border-color: var(--purple); }
+    .social-link-remove {
+      background: rgba(255,61,113,0.1); color: var(--danger, #ff3d71);
+      border: none; border-radius: 8px; width: 32px; height: 32px;
+      flex-shrink: 0; cursor: pointer; font-size: 0.95rem;
+      display: flex; align-items: center; justify-content: center;
+      transition: background .2s;
+    }
+    .social-link-remove:hover { background: rgba(255,61,113,0.2); }
+    .btn-add-link {
+      background: var(--surface2); color: var(--text);
+      border: 1px dashed var(--border); border-radius: 9px;
+      padding: 9px 16px; font-weight: 700; font-size: 0.82rem;
+      cursor: pointer; margin-top: 4px; font-family: 'Nunito', sans-serif;
+      transition: all .2s; align-self: flex-start;
+    }
+    .btn-add-link:hover { border-color: var(--purple); color: var(--purple); }
 
     /* ── MODAL PLANS ── */
     .modal-overlay {
@@ -827,23 +894,34 @@
       <div class="section-title">Mes Statistiques</div>
     </div>
     <div class="stats-grid">
-      <div class="stat-card">
-        <div class="stat-card-label">Vues totales</div>
+      <div class="stat-card c-orange">
+        <div class="stat-card-top">
+          <div class="stat-card-label">Vues totales</div>
+          <div class="stat-card-icon">👁</div>
+        </div>
         <div class="stat-card-num orange" id="statsVues">0</div>
       </div>
-      <div class="stat-card">
-              <div class="stat-card-label">Mangas publiés</div>
+      <div class="stat-card c-gold">
+        <div class="stat-card-top">
+          <div class="stat-card-label">Mangas publiés</div>
+          <div class="stat-card-icon">📚</div>
+        </div>
         <div class="stat-card-num gold" id="statsMangas">0</div>
       </div>
-      <div class="stat-card">
-        <div class="stat-card-label">Chapitres publiés</div>
+      <div class="stat-card c-green">
+        <div class="stat-card-top">
+          <div class="stat-card-label">Chapitres publiés</div>
+          <div class="stat-card-icon">📄</div>
+        </div>
         <div class="stat-card-num green" id="statsChapitres">0</div>
       </div>
     </div>
     <div class="info-card">
-      <h3>📈 Activité</h3>
-      <div style="color:var(--muted); font-size:0.88rem; padding:20px 0; text-align:center;">
-        Les graphiques d'activité détaillés arrivent bientôt.
+      <h3>📈 Vues par manga</h3>
+      <div id="statsChartWrap">
+        <div style="color:var(--muted); font-size:0.88rem; padding:20px 0; text-align:center;">
+          Publie un manga pour voir son activité ici.
+        </div>
       </div>
     </div>
   </div>
@@ -883,6 +961,13 @@
       <div class="info-row">
         <label>Plan actuel</label>
         <span id="displayPlan" style="color:var(--purple); font-weight:800;">Membre</span>
+      </div>
+      <div class="info-row" style="align-items:flex-start;">
+        <label style="padding-top:8px;">Réseaux sociaux</label>
+        <div style="flex:1;display:flex;flex-direction:column;gap:10px;">
+          <div class="social-links-list" id="socialLinksList"></div>
+          <button type="button" class="btn-add-link" id="btnAddSocialLink">+ Ajouter un lien</button>
+        </div>
       </div>
       <button class="btn-save" id="btnSave">💾 Sauvegarder</button>
     </div>
@@ -978,6 +1063,46 @@
   let userProfile = null;
   let userSuivis        = [];
   let userNotifications = [];
+
+  const SOCIAL_PLATFORMS = [
+    { value: 'instagram', label: '📷 Instagram' },
+    { value: 'tiktok',    label: '🎵 TikTok' },
+    { value: 'youtube',   label: '▶️ YouTube' },
+    { value: 'twitter',   label: '🐦 Twitter / X' },
+    { value: 'discord',   label: '💬 Discord' },
+    { value: 'facebook',  label: '👍 Facebook' },
+    { value: 'site',      label: '🌐 Site web' },
+  ];
+
+  function addSocialLinkRow(type = 'instagram', url = '') {
+    const list = document.getElementById('socialLinksList');
+    const row = document.createElement('div');
+    row.className = 'social-link-row';
+    row.innerHTML = `
+      <select class="social-link-type">
+        ${SOCIAL_PLATFORMS.map(p => `<option value="${p.value}"${p.value === type ? ' selected' : ''}>${p.label}</option>`).join('')}
+      </select>
+      <input type="url" class="social-link-url" placeholder="https://..." value="${url ? url.replace(/"/g, '&quot;') : ''}" />
+      <button type="button" class="social-link-remove" title="Retirer">✕</button>
+    `;
+    row.querySelector('.social-link-remove').addEventListener('click', () => row.remove());
+    list.appendChild(row);
+  }
+
+  function renderSocialLinksEditor(links) {
+    const list = document.getElementById('socialLinksList');
+    list.innerHTML = '';
+    (links || []).forEach(link => addSocialLinkRow(link.type, link.url));
+  }
+
+  function collectSocialLinks() {
+    return Array.from(document.querySelectorAll('#socialLinksList .social-link-row')).map(row => ({
+      type: row.querySelector('.social-link-type').value,
+      url: row.querySelector('.social-link-url').value.trim(),
+    })).filter(link => link.url);
+  }
+
+  document.getElementById('btnAddSocialLink').addEventListener('click', () => addSocialLinkRow());
 
   // ── INIT ──
   async function init() {
@@ -1100,6 +1225,7 @@
     // Compte
         document.getElementById('inputUsername').value = username;
         if (profile?.bio) document.getElementById('inputBio').value = profile.bio;
+        renderSocialLinksEditor(profile?.social_links);
         // Show avatar preview in edit form
         if (profile?.avatar_url) {
           const preview = document.getElementById('avatarPreview');
@@ -1193,12 +1319,14 @@
 
       const grid = document.getElementById('mangaGrid');
       grid.innerHTML = '';
+      const mangaVuesList = [];
 
       mangas.forEach(m => {
         const chaps = m.chapitres?.[0]?.count || 0;
         const vues  = Array.isArray(m.vues) ? (m.vues[0]?.count || 0) : (typeof m.vues === 'number' ? m.vues : 0);
         totalChaps += chaps;
         totalVues  += vues;
+        mangaVuesList.push({ titre: m.titre || 'Sans titre', vues });
 
         const card = document.createElement('div');
         card.className = 'manga-card';
@@ -1222,6 +1350,8 @@
         card.onclick = () => window.location.href = `gestion-chapitres.html?manga_id=${m.id}`;
         grid.appendChild(card);
       });
+
+      renderStatsChart(mangaVuesList);
     } else {
       document.getElementById('mangaGrid').style.display = 'none';
       document.getElementById('mangaEmpty').style.display = 'block';
@@ -1235,6 +1365,19 @@
     document.getElementById('statsVues').textContent     = totalVues;
         document.getElementById('statsMangas').textContent   = totalMangas;
     document.getElementById('statsChapitres').textContent = totalChaps;
+  }
+
+  function renderStatsChart(mangaVuesList) {
+    const wrap = document.getElementById('statsChartWrap');
+    const sorted = [...mangaVuesList].sort((a, b) => b.vues - a.vues).slice(0, 6);
+    const max = Math.max(1, ...sorted.map(m => m.vues));
+    wrap.innerHTML = sorted.map(m => `
+      <div class="chart-row">
+        <div class="chart-row-label" title="${(m.titre || '').replace(/"/g, '&quot;')}">${m.titre}</div>
+        <div class="chart-row-track"><div class="chart-row-bar" style="width:${Math.max(3, (m.vues / max) * 100)}%"></div></div>
+        <div class="chart-row-val">${m.vues}</div>
+      </div>
+    `).join('');
   }
 
   // ── MES FORMATIONS (achetées + créées) ──
@@ -1525,7 +1668,8 @@
       const updateData = {
         id: currentUser.id,
         username: newName,
-        bio: bio
+        bio: bio,
+        social_links: collectSocialLinks()
       };
       if (avatar_url) updateData.avatar_url = avatar_url;
 

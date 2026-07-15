@@ -303,7 +303,7 @@
       <div class="hero-stat-label">Packs dispo</div>
     </div>
     <div class="hero-stat">
-      <div class="hero-stat-num">500 F</div>
+      <div class="hero-stat-num" id="statMinPrice">—</div>
       <div class="hero-stat-label">À partir de</div>
     </div>
     <div class="hero-stat">
@@ -431,6 +431,16 @@ async function loadPacks() {
 
   allPacks = data || [];
   document.getElementById('statTotal').textContent = allPacks.length;
+
+  const prixPayants = allPacks.map(p => Number(p.prix)).filter(p => !isNaN(p) && p > 0);
+  const minPriceEl = document.getElementById('statMinPrice');
+  if (prixPayants.length) {
+    const min = Math.min(...prixPayants);
+    minPriceEl.textContent = `${min % 1 === 0 ? min : min.toFixed(2)}€`;
+  } else {
+    minPriceEl.textContent = 'Gratuit';
+  }
+
   updateFilterCounts();
   renderPacks();
 }
