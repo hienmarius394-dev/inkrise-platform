@@ -560,12 +560,21 @@ async function checkAuth() {
 // REPRENDRE LA LECTURE
 async function loadContinueReading(uid) {
   try {
-    const { data: items } = await supabaseClient.from('bibliotheque')
-      .select('manga_id, chapitre, total_chapitres, added_at, mangas(titre, couverture_url)')
+    let { data: items, error } = await supabaseClient.from('bibliotheque')
+      .select('manga_id, chapitre, page, total_pages, total_chapitres, added_at, mangas(titre, couverture_url)')
       .eq('user_id', uid)
       .gt('chapitre', 0)
       .order('added_at', { ascending: false })
       .limit(10)
+    // Fallback si la colonne total_pages n'existe pas encore dans la base
+    if (error && /total_pages|column/i.test(error.message || '')) {
+      ({ data: items } = await supabaseClient.from('bibliotheque')
+        .select('manga_id, chapitre, page, total_chapitres, added_at, mangas(titre, couverture_url)')
+        .eq('user_id', uid)
+        .gt('chapitre', 0)
+        .order('added_at', { ascending: false })
+        .limit(10))
+    }
     if (!items || items.length === 0) return
 
     // Numéro du chapitre en cours (bibliotheque.chapitre stocke l'id du chapitre)
@@ -585,7 +594,13 @@ async function loadContinueReading(uid) {
       const numero = numeroById[it.chapitre]
       const total = it.total_chapitres || null
       const label = `Ch. ${numero != null ? numero : '?'}${total ? ' / ' + total : ''}`
-      const pct = (numero != null && total) ? Math.min(100, Math.round((numero / total) * 100)) : 30
+      // Progression fine : chapitres terminés + avancée dans le chapitre en cours
+      let pct = 30
+      if (numero != null && total) {
+        const dansChap = (it.total_pages > 0 && it.page > 0) ? Math.min(1, it.page / it.total_pages) : 1
+        pct = Math.min(100, Math.round(((numero - 1 + dansChap) / total) * 100))
+        pct = Math.max(pct, 3) // toujours un petit trait visible
+      }
       return `<a href="lecteur.html?manga_id=${it.manga_id}&chapitre=${it.chapitre}" class="featured-card-h">
         <div class="featured-cover-h ${colorBg}" style="${bg}">
           ${m.couverture_url ? '' : '<div class="cover-deco-icon">📖</div>'}
