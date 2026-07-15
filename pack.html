@@ -210,6 +210,12 @@
     }
     .buy-price-display.free { color: var(--green); }
     .buy-price-sub { font-size: .78rem; color: var(--muted); margin-bottom: 20px; }
+    .buy-stock {
+      font-size: .8rem; font-weight: 700; margin: -10px 0 16px;
+      color: var(--orange);
+    }
+    .buy-stock.sold-out { color: var(--danger); }
+    .btn-buy.sold-out { opacity: .55; cursor: not-allowed; filter: grayscale(.4); }
     .btn-buy {
       display: block; width: 100%;
       background: linear-gradient(135deg, var(--orange), #e04a1a);
@@ -460,6 +466,7 @@
         <div class="buy-card" id="buyCardMobile" style="display:none;">
           <div class="buy-price-display" id="buyPriceMobile">2€</div>
           <div class="buy-price-sub">Accès à vie · Téléchargement inclus</div>
+          <div class="buy-stock" id="buyStockMobile" style="display:none;"></div>
           <button class="btn-buy" id="buyBtnMobile" onclick="handleBuy()">Acheter</button>
           <a href="#" class="btn-watch" id="watchBtnMobile" style="display:none;">▶ Regarder la vidéo</a>
           <div class="buy-guarantee">🔒 Paiement sécurisé</div>
@@ -494,6 +501,7 @@
         <div class="buy-card" id="buyCardDesktop">
           <div class="buy-price-display" id="buyPriceDesktop">2€</div>
           <div class="buy-price-sub">Accès à vie · Téléchargement inclus</div>
+          <div class="buy-stock" id="buyStockDesktop" style="display:none;"></div>
           <button class="btn-buy" id="buyBtnDesktop" onclick="handleBuy()">Acheter</button>
           <a href="#" class="btn-watch" id="watchBtnDesktop" style="display:none;">▶ Regarder la vidéo</a>
           <div class="buy-guarantee">🔒 Paiement sécurisé</div>
@@ -624,6 +632,8 @@ async function loadPack(packId) {
         const btn = document.getElementById(id);
         btn.textContent = buyLabel;
         btn.classList.add('free-dl');
+        btn.classList.remove('sold-out');
+        btn.disabled = false;
         btn.onclick = handleDownload;
       });
       if (data.contenu_url && isVideoUrl(data.contenu_url)) {
@@ -821,6 +831,35 @@ function renderPack(pack) {
     if (isFree) btn.classList.add('free-dl');
   });
 
+  // Ventes réelles / édition limitée
+  const ventes = Number(pack.ventes) || 0;
+  const limite = Number(pack.limite_ventes) || 0;
+  currentPack.soldOut = !!(limite && ventes >= limite);
+  const stockEls = ['buyStockMobile', 'buyStockDesktop'].map(id => document.getElementById(id));
+  if (limite) {
+    const restantes = Math.max(0, limite - ventes);
+    stockEls.forEach(el => {
+      el.style.display = 'block';
+      if (currentPack.soldOut) {
+        el.classList.add('sold-out');
+        el.textContent = `Épuisé — édition limitée à ${limite} exemplaires`;
+      } else {
+        el.textContent = `🔥 Édition limitée : plus que ${restantes} place${restantes > 1 ? 's' : ''} sur ${limite}`;
+      }
+    });
+  } else if (ventes >= 3) {
+    // Preuve sociale honnête : affichée seulement à partir de vraies ventes
+    stockEls.forEach(el => { el.style.display = 'block'; el.textContent = `🔥 Déjà ${ventes} acheteurs`; });
+  }
+  if (currentPack.soldOut) {
+    ['buyBtnMobile', 'buyBtnDesktop'].forEach(id => {
+      const btn = document.getElementById(id);
+      btn.classList.add('sold-out');
+      btn.textContent = 'Épuisé 😔';
+      btn.disabled = true;
+    });
+  }
+
   // Mobile buy card show
   document.getElementById('buyCardMobile').style.display = 'block';
 
@@ -871,6 +910,10 @@ function handleBuy() {
   }
   if (currentPack && currentPack.accesAutorise) {
     handleDownload();
+    return;
+  }
+  if (currentPack && currentPack.soldOut) {
+    showToast('Ce pack est épuisé (édition limitée)', 'info');
     return;
   }
   if (currentPack && (Number(currentPack.prix) === 0 || currentPack.prix === null)) {

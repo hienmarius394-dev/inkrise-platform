@@ -681,6 +681,11 @@
         <div class="form-hint">Mets 0 pour un pack gratuit. Le paiement (carte bancaire ou mobile) est proposé automatiquement selon le pays de l'acheteur. Inkrise prend 10% par vente — tu gardes 90%.</div>
       </div>
       <div class="form-group">
+        <label class="form-label" for="f-limite">Limite de ventes (optionnel)</label>
+        <input class="form-input" type="number" id="f-limite" min="1" step="1" placeholder="Ex: 20" />
+        <div class="form-hint">Édition limitée : le pack devient "Épuisé" une fois ce nombre de ventes atteint. Laisse vide pour des ventes illimitées.</div>
+      </div>
+      <div class="form-group">
         <label class="form-label">Image de couverture</label>
         <div class="pack-cover-picker" id="packCoverPicker" onclick="document.getElementById('f-image-file').click()">
           <img id="f-image-preview" src="" alt="" style="display:none;" />
@@ -964,7 +969,7 @@
           <div class="pack-title">${escHtml(pack.titre)}</div>
           ${pack.description ? `<div class="pack-desc">${escHtml(pack.description)}</div>` : ''}
           <div class="pack-meta">
-            <div class="pack-buyers">👥 ${buyers} acheteur${buyers !== 1 ? 's' : ''}</div>
+            <div class="pack-buyers">👥 ${buyers} acheteur${buyers !== 1 ? 's' : ''}${pack.limite_ventes ? ` · 🎯 limité à ${pack.limite_ventes}` : ''}</div>
           </div>
         </div>
         <div class="pack-actions">
@@ -1193,6 +1198,7 @@
     document.getElementById('f-video').value = pack.contenu_url || '';
     document.getElementById('f-objectifs').value = Array.isArray(pack.objectifs) ? pack.objectifs.join('\n') : '';
     document.getElementById('f-niveau').value = pack.niveau || 'Tous niveaux';
+    document.getElementById('f-limite').value = pack.limite_ventes || '';
     packImages = Array.isArray(pack.images) ? pack.images.filter(Boolean) : [];
     renderPackImages();
     document.getElementById('modal-overlay').classList.add('open');
@@ -1219,12 +1225,14 @@
     const contenu_url = document.getElementById('f-video').value.trim() || null;
     const objectifs = document.getElementById('f-objectifs').value.split('\n').map(s => s.trim()).filter(Boolean);
     const niveau = document.getElementById('f-niveau').value || 'Tous niveaux';
+    const limiteRaw = parseInt(document.getElementById('f-limite').value, 10);
+    const limite_ventes = Number.isFinite(limiteRaw) && limiteRaw > 0 ? limiteRaw : null;
     const editId = document.getElementById('edit-pack-id').value;
 
     try {
       let packIdFinal = editId;
       if (editId) {
-        const row = { titre, description, prix, image_url, contenu_url, objectifs, niveau, images: getPackImages() };
+        const row = { titre, description, prix, image_url, contenu_url, objectifs, niveau, limite_ventes, images: getPackImages() };
         let { error } = await sb.from('packs_tutoriels').update(row).eq('id', editId).eq('auteur_id', currentUser.id);
         if (error && /column|schema cache/i.test(error.message || '')) {
           ({ error } = await sb.from('packs_tutoriels')
@@ -1234,7 +1242,7 @@
         if (error) throw error;
         showToast('Pack mis à jour !', 'success');
       } else {
-        const row = { titre, description, prix, image_url, contenu_url, objectifs, niveau, images: getPackImages(), auteur_id: currentUser.id, auteur_nom: userProfile.username };
+        const row = { titre, description, prix, image_url, contenu_url, objectifs, niveau, limite_ventes, images: getPackImages(), auteur_id: currentUser.id, auteur_nom: userProfile.username };
         let { data: inserted, error } = await sb.from('packs_tutoriels').insert(row).select('id').single();
         if (error && /column|schema cache/i.test(error.message || '')) {
           ({ data: inserted, error } = await sb.from('packs_tutoriels')
