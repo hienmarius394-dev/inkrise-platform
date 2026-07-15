@@ -294,13 +294,13 @@
     /* ── MODAL RECADRAGE ── */
     .crop-overlay {
       display: none; position: fixed; inset: 0; background: rgba(20,15,45,0.6);
-      backdrop-filter: blur(6px); z-index: 400;
+      backdrop-filter: blur(6px); z-index: 600;
       align-items: center; justify-content: center; padding: 20px;
     }
     .crop-overlay.open { display: flex; }
     .crop-box {
       background: #fff; border-radius: 20px; padding: 24px;
-      width: 100%; max-width: 460px;
+      width: 100%; max-width: 620px;
       box-shadow: 0 30px 80px rgba(20,15,45,0.4);
     }
     .crop-box-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.05rem; margin-bottom: 14px; text-align: center; }
@@ -1025,7 +1025,7 @@
     setCoverPreview(null);
     document.getElementById('f-image').value = '';
     document.getElementById('f-image-status').textContent = '';
-    document.getElementById('f-prix').value = '500';
+    document.getElementById('f-prix').value = '2.00';
     packImages = []; renderPackImages();
     document.getElementById('modal-overlay').classList.add('open');
   }
@@ -1128,11 +1128,11 @@
     const img = document.getElementById('cropImg');
     const scale = img.offsetWidth / cropState.naturalW;
     const canvas = document.createElement('canvas');
-    canvas.width = 1200; canvas.height = 675;
+    canvas.width = 1600; canvas.height = 900;
     canvas.getContext('2d').drawImage(img,
       -cropState.x / scale, -cropState.y / scale,
       frame.clientWidth / scale, frame.clientHeight / scale,
-      0, 0, 1200, 675);
+      0, 0, 1600, 900);
     canvas.toBlob(blob => {
       document.getElementById('cropOverlay').classList.remove('open');
       if (cropState.resolve) cropState.resolve(blob ? new File([blob], 'cover.jpg', { type: 'image/jpeg' }) : null);
@@ -1174,7 +1174,7 @@
     document.getElementById('edit-pack-id').value = packId;
     document.getElementById('f-titre').value = pack.titre || '';
     document.getElementById('f-desc').value = pack.description || '';
-    document.getElementById('f-prix').value = pack.prix != null ? pack.prix : '500';
+    document.getElementById('f-prix').value = pack.prix != null ? pack.prix : '2.00';
     document.getElementById('f-image').value = pack.image_url || '';
     if (pack.image_url) {
       setCoverPreview(pack.image_url);
