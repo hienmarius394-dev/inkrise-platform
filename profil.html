@@ -863,6 +863,10 @@
                       <div class="stat-num" id="statChapitres">0</div>
                       <div class="stat-label">Chapitres</div>
           </div>
+          <div class="stat-item" id="statAbonnesWrap" style="cursor:pointer;" title="Voir mes abonnés" onclick="goToAbonnes()">
+            <div class="stat-num" id="statAbonnes">0</div>
+            <div class="stat-label">Abonnés</div>
+          </div>
         </div>
         <button class="btn-save" id="btnEditProfile" style="margin-top:12px;padding:8px 18px;font-size:0.8rem;">✏️ Modifier le profil</button>
       </div>
@@ -1044,7 +1048,7 @@
       <p>Visite la page d'un manga et clique sur "Suivre" pour suivre un créateur.</p>
     </div>
 
-    <div class="section-header" style="margin-top:36px;">
+    <div class="section-header" id="abonnesSection" style="margin-top:36px;">
       <div class="section-title">Mes abonnés <span id="abonnesCount" style="font-size:0.9rem;color:var(--muted);font-family:'Nunito',sans-serif;font-weight:700;letter-spacing:0;"></span></div>
     </div>
     <div id="abonnesLoading" class="loading-dots"><span></span><span></span><span></span></div>
@@ -1950,6 +1954,18 @@
   }
 
   // ── MES ABONNÉS (visible uniquement par le propriétaire du profil) ──
+  // Le chiffre "Abonnés" du hero ouvre directement la liste
+  function goToAbonnes() {
+    document.querySelectorAll('.ptab').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    const tabBtn = document.querySelector('.ptab[data-tab="suivis"]');
+    if (tabBtn) tabBtn.classList.add('active');
+    document.getElementById('tab-suivis').classList.add('active');
+    const target = document.getElementById('abonnesSection');
+    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+  window.goToAbonnes = goToAbonnes;
+
   async function loadAbonnes() {
     const loading = document.getElementById('abonnesLoading');
     const list    = document.getElementById('abonnesList');
@@ -1959,12 +1975,14 @@
       .select('user_id, created_at').eq('followed_id', currentUser.id)
       .order('created_at', { ascending: false });
     loading.style.display = 'none';
-    if (!followers || followers.length === 0) {
+    const nb = (followers || []).length;
+    document.getElementById('statAbonnes').textContent = nb;
+    if (nb === 0) {
       empty.style.display = 'block';
       document.getElementById('abonnesCount').textContent = '';
       return;
     }
-    document.getElementById('abonnesCount').textContent = `(${followers.length})`;
+    document.getElementById('abonnesCount').textContent = `(${nb})`;
     const ids = followers.map(f => f.user_id);
     const { data: profiles } = await sb.from('profiles').select('id, username, avatar_url').in('id', ids);
     const pMap = {};
