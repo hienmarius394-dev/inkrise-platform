@@ -205,6 +205,19 @@
       font-size: 1.5rem; color: var(--text); line-height: 1;
     }
     .stat-label { font-size: 0.72rem; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+    /* Stat cliquable (Abonnés) : même langage visuel que les badges/puces du profil */
+    .stat-item.clickable {
+      cursor: pointer;
+      background: rgba(124,92,252,0.10);
+      border: 1px solid rgba(124,92,252,0.3);
+      border-radius: 12px;
+      padding: 5px 13px;
+      transition: background .2s, transform .15s;
+    }
+    .stat-item.clickable:hover { background: rgba(124,92,252,0.2); }
+    .stat-item.clickable:active { transform: scale(0.96); }
+    .stat-item.clickable .stat-num { color: var(--purple); }
+    .stat-item.clickable .stat-label { color: var(--purple); }
 
     /* ── TABS PROFIL ── */
     .profile-tabs {
@@ -863,9 +876,9 @@
                       <div class="stat-num" id="statChapitres">0</div>
                       <div class="stat-label">Chapitres</div>
           </div>
-          <div class="stat-item" id="statAbonnesWrap" style="cursor:pointer;" title="Voir mes abonnés" onclick="goToAbonnes()">
+          <div class="stat-item clickable" id="statAbonnesWrap" title="Voir mes abonnés" onclick="goToAbonnes()">
             <div class="stat-num" id="statAbonnes">0</div>
-            <div class="stat-label">Abonnés</div>
+            <div class="stat-label">Abonnés ›</div>
           </div>
         </div>
         <button class="btn-save" id="btnEditProfile" style="margin-top:12px;padding:8px 18px;font-size:0.8rem;">✏️ Modifier le profil</button>
