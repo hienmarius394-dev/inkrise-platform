@@ -491,13 +491,17 @@ function renderPacks() {
   packs.forEach(pack => grid.appendChild(createPackCard(pack)));
 }
 
+function escHtml(s) {
+  return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
 function createPackCard(pack) {
   const card = document.createElement('a');
   card.className = 'pack-card';
   card.href = `pack.html?id=${pack.id}`;
 
   const coverHtml = pack.image_url
-    ? `<img class="pack-cover" src="${pack.image_url}" alt="${pack.titre || ''}" loading="lazy" />`
+    ? `<img class="pack-cover" src="${escHtml(pack.image_url)}" alt="${escHtml(pack.titre)}" loading="lazy" />`
     : `<div class="pack-cover-placeholder">🎓</div>`;
 
   const prix = Number(pack.prix);
@@ -509,14 +513,14 @@ function createPackCard(pack) {
   const desc = raw.length > 100 ? raw.slice(0, 100) + '…' : raw;
 
   const authorHtml = pack.auteur_nom
-    ? `par <a href="auteur.html?id=${pack.auteur_id}" onclick="event.stopPropagation()">${pack.auteur_nom}</a>`
+    ? `par <a href="auteur.html?id=${encodeURIComponent(pack.auteur_id)}" onclick="event.stopPropagation()">${escHtml(pack.auteur_nom)}</a>`
     : '';
 
   card.innerHTML = `
     ${coverHtml}
     <div class="pack-body">
-      <div class="pack-title">${pack.titre || 'Sans titre'}</div>
-      ${desc ? `<div class="pack-desc">${desc}</div>` : ''}
+      <div class="pack-title">${escHtml(pack.titre) || 'Sans titre'}</div>
+      ${desc ? `<div class="pack-desc">${escHtml(desc)}</div>` : ''}
       ${authorHtml ? `<div class="pack-author">${authorHtml}</div>` : ''}
       <div class="pack-footer">
         ${priceHtml}

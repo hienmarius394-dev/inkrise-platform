@@ -708,6 +708,10 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const { createClient } = supabase;
 const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 
+function escHtml(s) {
+  return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
 let currentUser = null;
 let manga       = null;
 let chapitres   = [];
@@ -831,13 +835,13 @@ async function checkSubscribeState() {
 function renderManga() {
   // Hero background flou
   if (manga.couverture_url) {
-    document.getElementById('heroBg').style.backgroundImage = `url('${manga.couverture_url}')`;
+    document.getElementById('heroBg').style.backgroundImage = `url('${String(manga.couverture_url).replace(/['"()<>]/g, c => encodeURIComponent(c))}')`;
   }
 
   // Cover
   const coverEl = document.getElementById('coverEl');
   if (manga.couverture_url) {
-    coverEl.outerHTML = `<img id="coverEl" class="cover-img" src="${manga.couverture_url}" alt="${manga.titre}" />`;
+    coverEl.outerHTML = `<img id="coverEl" class="cover-img" src="${escHtml(manga.couverture_url)}" alt="${escHtml(manga.titre)}" />`;
   }
 
   // Type badge sur cover
@@ -869,7 +873,7 @@ function renderManga() {
   document.getElementById('authorName').textContent     = authorName;
   const authorAvatarEl = document.getElementById('authorAvatar');
   if (manga.profiles?.avatar_url) {
-    authorAvatarEl.innerHTML = '<img src="' + manga.profiles.avatar_url + '" style="width:100%;height:100%;border-radius:50%;object-fit:cover;" alt="" />';
+    authorAvatarEl.innerHTML = '<img src="' + escHtml(manga.profiles.avatar_url) + '" style="width:100%;height:100%;border-radius:50%;object-fit:cover;" alt="" />';
   } else {
     authorAvatarEl.textContent = authorName[0].toUpperCase();
   }
@@ -956,7 +960,7 @@ function renderChapitres() {
     a.innerHTML = `
       <div class="chap-num-badge">Ch. ${chap.numero}</div>
       <div class="chap-info">
-        <div class="chap-name">${chap.titre || `Chapitre ${chap.numero}`}</div>
+        <div class="chap-name">${escHtml(chap.titre) || `Chapitre ${chap.numero}`}</div>
         <div class="chap-date-small">${date}${isNew ? ' · <span style="color:var(--purple2);font-weight:700;">Nouveau</span>' : ''}</div>
       </div>
       <div class="chap-read-btn">Lire →</div>

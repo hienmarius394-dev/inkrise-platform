@@ -1104,6 +1104,10 @@
   let userSuivis        = [];
   let userNotifications = [];
 
+  function escHtml(s) {
+    return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
   const SOCIAL_PLATFORMS = [
     { value: 'instagram', label: '📷 Instagram' },
     { value: 'tiktok',    label: '🎵 TikTok' },
@@ -1190,7 +1194,7 @@
         navAv.style.display = 'flex';
         const name = session.user?.user_metadata?.username || session.user?.email?.split('@')[0] || '?';
         if (userProfile?.avatar_url) {
-          navAv.innerHTML = '<img src="' + userProfile.avatar_url + '" style="width:32px;height:32px;border-radius:50%;object-fit:cover;" alt="" />';
+          navAv.innerHTML = '<img src="' + escHtml(userProfile.avatar_url) + '" style="width:32px;height:32px;border-radius:50%;object-fit:cover;" alt="" />';
         } else {
           navAv.textContent = name[0].toUpperCase();
         }
@@ -1242,7 +1246,7 @@
     if (avatarBtnEl) {
       avatarBtnEl.style.display = 'flex';
       if (profile?.avatar_url) {
-        avatarBtnEl.innerHTML = '<img src="' + profile.avatar_url + '" style="width:32px;height:32px;border-radius:50%;object-fit:cover;" alt="" />';
+        avatarBtnEl.innerHTML = '<img src="' + escHtml(profile.avatar_url) + '" style="width:32px;height:32px;border-radius:50%;object-fit:cover;" alt="" />';
       } else {
         avatarBtnEl.textContent = initial;
       }
@@ -1251,7 +1255,7 @@
     // Hero avatar
     const avatarMain = document.getElementById('avatarMain');
     if (profile?.avatar_url) {
-      avatarMain.innerHTML = '<img src="' + profile.avatar_url + '" style="width:100%;height:100%;border-radius:50%;object-fit:cover;" alt="" />';
+      avatarMain.innerHTML = '<img src="' + escHtml(profile.avatar_url) + '" style="width:100%;height:100%;border-radius:50%;object-fit:cover;" alt="" />';
       avatarMain.style.fontSize = '0';
       avatarMain.style.background = 'none';
     } else {
@@ -1385,12 +1389,12 @@
         const card = document.createElement('div');
         card.className = 'manga-card';
         const coverHtml = m.couverture_url
-          ? `<img class="manga-cover" src="${m.couverture_url}" alt="${m.titre || ''}" loading="lazy" />`
+          ? `<img class="manga-cover" src="${escHtml(m.couverture_url)}" alt="${escHtml(m.titre)}" loading="lazy" />`
           : `<div class="manga-cover-placeholder">📖</div>`;
         card.innerHTML = `
           ${coverHtml}
           <div class="manga-info">
-            <div class="manga-title">${m.titre || 'Sans titre'}</div>
+            <div class="manga-title">${escHtml(m.titre) || 'Sans titre'}</div>
             <div class="manga-meta">
               <span>👁 ${vues}</span>
                             <span>📄 ${chaps}</span>
@@ -1428,7 +1432,7 @@
     const max = Math.max(1, ...sorted.map(m => m.vues));
     wrap.innerHTML = sorted.map(m => `
       <div class="chart-row">
-        <div class="chart-row-label" title="${(m.titre || '').replace(/"/g, '&quot;')}">${m.titre}</div>
+        <div class="chart-row-label" title="${escHtml(m.titre)}">${escHtml(m.titre)}</div>
         <div class="chart-row-track"><div class="chart-row-bar" style="width:${Math.max(3, (m.vues / max) * 100)}%"></div></div>
         <div class="chart-row-val">${m.vues}</div>
       </div>
@@ -1845,7 +1849,7 @@
       document.getElementById('profileUsername').textContent = newName;
       const avatarMain = document.getElementById('avatarMain');
       if (avatar_url) {
-        avatarMain.innerHTML = '<img src="' + avatar_url + '" style="width:100%;height:100%;border-radius:50%;object-fit:cover;" alt="" />';
+        avatarMain.innerHTML = '<img src="' + escHtml(avatar_url) + '" style="width:100%;height:100%;border-radius:50%;object-fit:cover;" alt="" />';
         avatarMain.style.fontSize = '0';
         avatarMain.style.background = 'none';
       } else {
@@ -1864,7 +1868,7 @@
       const navAvatar = document.getElementById('navAvatar');
       if (navAvatar) {
         if (avatar_url) {
-          navAvatar.innerHTML = '<img src="' + avatar_url + '" style="width:32px;height:32px;border-radius:50%;object-fit:cover;" alt="" />';
+          navAvatar.innerHTML = '<img src="' + escHtml(avatar_url) + '" style="width:32px;height:32px;border-radius:50%;object-fit:cover;" alt="" />';
         } else {
           navAvatar.textContent = newName[0].toUpperCase();
           navAvatar.style.background = '';
