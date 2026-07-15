@@ -1031,7 +1031,7 @@
   </div>
 
 
-  <!-- TAB : Créateurs suivis -->
+  <!-- TAB : Créateurs suivis + Mes abonnés -->
   <div class="tab-panel" id="tab-suivis">
     <div class="section-header">
       <div class="section-title">Créateurs suivis</div>
@@ -1042,6 +1042,17 @@
       <div class="empty-icon">👥</div>
       <h3>Tu ne suis aucun créateur</h3>
       <p>Visite la page d'un manga et clique sur "Suivre" pour suivre un créateur.</p>
+    </div>
+
+    <div class="section-header" style="margin-top:36px;">
+      <div class="section-title">Mes abonnés <span id="abonnesCount" style="font-size:0.9rem;color:var(--muted);font-family:'Nunito',sans-serif;font-weight:700;letter-spacing:0;"></span></div>
+    </div>
+    <div id="abonnesLoading" class="loading-dots"><span></span><span></span><span></span></div>
+    <div id="abonnesList" style="display:none; flex-direction:column;"></div>
+    <div id="abonnesEmpty" class="empty-state" style="display:none;">
+      <div class="empty-icon">🌱</div>
+      <h3>Pas encore d'abonnés</h3>
+      <p>Publie des mangas et partage ta communauté — tes futurs fans arrivent !</p>
     </div>
   </div>
 
@@ -1184,6 +1195,7 @@
     await loadMangas();
     loadFormations();
     await loadSuivis();
+    loadAbonnes();
     await loadNotifications();
     if (window.location.hash === '#notifications') activateNotifTab();
   }
@@ -1933,6 +1945,50 @@
         <button class="btn-unfollow">Ne plus suivre</button>
       `;
       div.querySelector('.btn-unfollow').addEventListener('click', () => unfollow(f.followed_id, div));
+      list.appendChild(div);
+    });
+  }
+
+  // ── MES ABONNÉS (visible uniquement par le propriétaire du profil) ──
+  async function loadAbonnes() {
+    const loading = document.getElementById('abonnesLoading');
+    const list    = document.getElementById('abonnesList');
+    const empty   = document.getElementById('abonnesEmpty');
+    loading.style.display = 'flex';
+    const { data: followers } = await sb.from('follows')
+      .select('user_id, created_at').eq('followed_id', currentUser.id)
+      .order('created_at', { ascending: false });
+    loading.style.display = 'none';
+    if (!followers || followers.length === 0) {
+      empty.style.display = 'block';
+      document.getElementById('abonnesCount').textContent = '';
+      return;
+    }
+    document.getElementById('abonnesCount').textContent = `(${followers.length})`;
+    const ids = followers.map(f => f.user_id);
+    const { data: profiles } = await sb.from('profiles').select('id, username, avatar_url').in('id', ids);
+    const pMap = {};
+    if (profiles) profiles.forEach(p => pMap[p.id] = p);
+
+    list.style.display = 'flex';
+    list.innerHTML = '';
+    followers.forEach(f => {
+      const p = pMap[f.user_id] || {};
+      const username = p.username || 'Utilisateur';
+      const since = new Date(f.created_at).toLocaleDateString('fr-FR', { day:'numeric', month:'long', year:'numeric' });
+      const avatarHtml = p.avatar_url
+        ? `<img src="${escHtml(p.avatar_url)}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;" alt="" />`
+        : escHtml((username[0] || '?').toUpperCase());
+      const div = document.createElement('div');
+      div.className = 'creator-item';
+      div.innerHTML = `
+        <div class="creator-avatar-sm">${avatarHtml}</div>
+        <div class="creator-info">
+          <div class="creator-info-name">${escHtml(username)}</div>
+          <div class="creator-info-since">Abonné depuis le ${since}</div>
+        </div>
+        <a class="btn-unfollow" style="text-decoration:none;" href="auteur.html?id=${encodeURIComponent(f.user_id)}">Voir le profil</a>
+      `;
       list.appendChild(div);
     });
   }
