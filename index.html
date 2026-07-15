@@ -213,6 +213,23 @@ h1,h2,h3,.logo { font-family: 'Syne', sans-serif; }
 }
 .featured-meta-h { font-size: 10px; color: var(--text-3); display: flex; justify-content: space-between; }
 
+/* ── REPRENDRE LA LECTURE ── */
+.continue-progress-track {
+  height: 4px; border-radius: 3px; background: rgba(20,18,40,0.08);
+  overflow: hidden; margin: 6px 0 8px;
+}
+.continue-progress-bar {
+  height: 100%; border-radius: 3px;
+  background: linear-gradient(90deg, var(--purple), var(--pink));
+}
+.continue-resume-pill {
+  display: inline-block; font-size: 10px; font-weight: 800;
+  font-family: 'Nunito', sans-serif; color: #fff;
+  background: linear-gradient(135deg, var(--purple), var(--pink));
+  padding: 5px 12px; border-radius: 100px;
+  box-shadow: 0 4px 14px -4px rgba(124,92,252,0.5);
+}
+
 /* ── GRILLE 2 COL (cartes verre) ── */
 .manga-grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; padding: 0 12px; max-width: 640px; margin: 0 auto; }
 @media (min-width: 720px) { .manga-grid-2 { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); max-width: 1100px; } }
@@ -365,12 +382,21 @@ h1,h2,h3,.logo { font-family: 'Syne', sans-serif; }
 </div>
 
 <!-- BANNIERE -->
-<div class="hero-banner" style="--hero-image:url('assets/hero-manga.jpg');">
+<div class="hero-banner" style="--hero-image:url('assets/hero-manga.webp');">
   <div>
     <div class="hero-banner-tag">✨ NOUVELLE PLATEFORME</div>
     <div class="hero-banner-title">Bienvenue sur<br>Inkrise 🎨</div>
     <div class="hero-banner-sub">Publie, partage et monétise ta passion manga — gratuitement.</div>
   </div>
+</div>
+
+<!-- REPRENDRE LA LECTURE -->
+<div id="continueSection" style="display:none;">
+  <div class="sec-header">
+    <div class="sec-title">📖 Reprendre <span>la lecture</span></div>
+    <a href="bibliotheque.html" class="sec-link">Ma bibliothèque →</a>
+  </div>
+  <div class="featured-scroll" id="continueRow"></div>
 </div>
 
 <!-- CRÉATEURS -->
@@ -420,13 +446,8 @@ h1,h2,h3,.logo { font-family: 'Syne', sans-serif; }
 </div>
 
 <!-- BOTTOM NAV -->
-<div class="univ-bnav">
-  <a href="index.html" class="univ-bnav-item active"><span class="univ-bnav-icon">🏠</span><span class="univ-bnav-label">Accueil</span></a>
-  <a href="tutoriels.html" class="univ-bnav-item"><span class="univ-bnav-icon">🎓</span><span class="univ-bnav-label">Tutoriels</span></a>
-  <button class="univ-bnav-search" onclick="if(typeof doSearch==='function'){focusSearch()}else{window.location.href='recherche.html'}">🔍</button>
-  <a href="communaute.html" class="univ-bnav-item"><span class="univ-bnav-icon">👥</span><span class="univ-bnav-label">Communauté</span></a>
-  <a href="profil.html" class="univ-bnav-item"><span class="univ-bnav-icon">👤</span><span class="univ-bnav-label">Profil</span></a>
-</div>
+<div id="inkriseBottomNav" data-active="accueil"></div>
+<script src="assets/inkrise-nav.js"></script>
 
 <!-- MODAL CRÉATEUR -->
 <div class="modal-overlay" id="modalOverlay" onclick="closeModalOutside(event)">
@@ -512,7 +533,7 @@ async function checkAuth() {
     const navAvatarEl = document.getElementById('navAvatar')
     navAvatarEl.textContent = displayName[0].toUpperCase()
     supabaseClient.from('profiles').select('avatar_url').eq('id', uid).single().then(({ data: prof }) => {
-      if (prof?.avatar_url) navAvatarEl.innerHTML = '<img src="' + prof.avatar_url + '" style="width:32px;height:32px;border-radius:50%;object-fit:cover;" alt="" />'
+      if (prof?.avatar_url) navAvatarEl.innerHTML = '<img src="' + escapeHtml(prof.avatar_url) + '" style="width:32px;height:32px;border-radius:50%;object-fit:cover;" alt="" />'
     })
     document.getElementById('navNotifLink').classList.add('show')
     document.getElementById('drawerProfil').style.display = 'flex'
@@ -531,7 +552,54 @@ async function checkAuth() {
     } catch (e) {}
     // Publier un manga est gratuit : accessible à tout utilisateur connecté
     document.getElementById('drawerPublier').style.display = 'flex'
+
+    loadContinueReading(uid)
   }
+}
+
+// REPRENDRE LA LECTURE
+async function loadContinueReading(uid) {
+  try {
+    const { data: items } = await supabaseClient.from('bibliotheque')
+      .select('manga_id, chapitre, total_chapitres, added_at, mangas(titre, couverture_url)')
+      .eq('user_id', uid)
+      .gt('chapitre', 0)
+      .order('added_at', { ascending: false })
+      .limit(10)
+    if (!items || items.length === 0) return
+
+    // Numéro du chapitre en cours (bibliotheque.chapitre stocke l'id du chapitre)
+    const chapIds = items.map(it => it.chapitre)
+    const numeroById = {}
+    try {
+      const { data: chaps } = await supabaseClient.from('chapitres')
+        .select('id, numero').in('id', chapIds)
+      if (chaps) chaps.forEach(c => numeroById[c.id] = c.numero)
+    } catch (e) {}
+
+    const row = document.getElementById('continueRow')
+    row.innerHTML = items.map((it, i) => {
+      const m = it.mangas || {}
+      const bg = m.couverture_url ? `background:url('${safeUrl(m.couverture_url)}') center/cover no-repeat;` : ''
+      const colorBg = !m.couverture_url ? colorClass(i) : ''
+      const numero = numeroById[it.chapitre]
+      const total = it.total_chapitres || null
+      const label = `Ch. ${numero != null ? numero : '?'}${total ? ' / ' + total : ''}`
+      const pct = (numero != null && total) ? Math.min(100, Math.round((numero / total) * 100)) : 30
+      return `<a href="lecteur.html?manga_id=${it.manga_id}&chapitre=${it.chapitre}" class="featured-card-h">
+        <div class="featured-cover-h ${colorBg}" style="${bg}">
+          ${m.couverture_url ? '' : '<div class="cover-deco-icon">📖</div>'}
+        </div>
+        <div class="featured-body-h">
+          <div class="featured-title-h">${escapeHtml(m.titre) || 'Sans titre'}</div>
+          <div class="featured-meta-h"><span>${label}</span></div>
+          <div class="continue-progress-track"><div class="continue-progress-bar" style="width:${pct}%"></div></div>
+          <span class="continue-resume-pill">▶ Reprendre</span>
+        </div>
+      </a>`
+    }).join('')
+    document.getElementById('continueSection').style.display = 'block'
+  } catch (e) {}
 }
 async function doLogout() {
   await supabaseClient.auth.signOut()
