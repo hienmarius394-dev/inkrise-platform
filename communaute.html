@@ -160,18 +160,46 @@ img { max-width: 100%; display: block; }
 }
 
 /* Tabs */
-.tabs {
-  display: flex; gap: 4px; background: var(--surface);
+/* Règles — accordéon discret */
+.rules-details {
+  background: var(--surface);
   border: 1px solid var(--border); border-radius: var(--radius);
-  padding: 4px; margin-bottom: 20px;
+  padding: 0; margin-bottom: 20px; overflow: hidden;
 }
-.tab-btn {
-  flex: 1; padding: 10px 16px; border: none; border-radius: var(--radius-sm);
-  background: transparent; color: var(--text-muted); font-size: 0.9rem;
-  font-weight: 600; cursor: pointer; transition: all 0.2s;
+.rules-details summary {
+  cursor: pointer; padding: 11px 16px; font-size: 0.85rem;
+  font-weight: 700; color: var(--text-muted); list-style: none;
+  transition: color 0.2s; user-select: none;
 }
-.tab-btn:hover { color: var(--text); background: var(--surface2); }
-.tab-btn.active { background: var(--purple); color: #fff; }
+.rules-details summary::-webkit-details-marker { display: none; }
+.rules-details summary::after { content: ' ▾'; opacity: 0.6; }
+.rules-details[open] summary::after { content: ' ▴'; }
+.rules-details summary:hover { color: var(--text); }
+.rules-details ul {
+  margin: 0; padding: 0 16px 14px 32px; font-size: 0.85rem;
+  color: var(--text-muted); line-height: 1.7;
+}
+
+/* Choix du type de publication */
+.post-type-chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+.post-type-chip {
+  border: 1px solid var(--border); background: var(--surface);
+  color: var(--text-muted); font-size: 0.8rem; font-weight: 700;
+  padding: 7px 13px; border-radius: 100px; cursor: pointer;
+  transition: all 0.2s; font-family: inherit;
+}
+.post-type-chip:hover { color: var(--text); border-color: var(--purple); }
+.post-type-chip.active { background: var(--purple); border-color: var(--purple); color: #fff; }
+
+/* Annonce */
+.post-card.annonce {
+  border: 1px solid rgba(245,166,35,0.45);
+  background: linear-gradient(135deg, rgba(245,166,35,0.07), rgba(255,95,168,0.05));
+}
+.post-card-badge.badge-annonce {
+  background: rgba(245,166,35,0.18); color: #b97900;
+  border: 1px solid rgba(245,166,35,0.35);
+}
 
 /* Create Post */
 .create-post {
@@ -415,19 +443,6 @@ img { max-width: 100%; display: block; }
 .sondage-vote-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .sondage-total { color: var(--text-muted); font-size: 0.75rem; text-align: center; margin-top: 6px; }
 
-/* About tab */
-.about-content {
-  background: rgba(255,255,255,0.65);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border: 1px solid rgba(124,92,252,0.1);
-  box-shadow: 0 4px 20px rgba(124,92,252,0.06);
-  border-radius: var(--radius); padding: 24px;
-}
-.about-content h3 { font-size: 1rem; margin-bottom: 12px; }
-.about-content p { color: var(--text-muted); font-size: 0.85rem; margin-bottom: 8px; line-height: 1.7; }
-.about-content ul { color: var(--text-muted); font-size: 0.85rem; padding-left: 20px; line-height: 1.9; }
-
 /* Loading & States */
 .loading-spinner {
   display: flex; flex-direction: column; align-items: center;
@@ -471,8 +486,6 @@ img { max-width: 100%; display: block; }
   .creator-avatar, .creator-avatar-fallback { width: 48px; height: 48px; }
   .post-card { padding: 12px; }
   .create-post { padding: 12px; }
-  .tabs { padding: 3px; }
-  .tab-btn { padding: 8px 10px; font-size: 0.8rem; }
 }
 </style>
 </head>
@@ -600,7 +613,6 @@ let state = {
   comments: {},
   sondageVotes: {},
   selectedOption: {},
-  activeTab: 'posts',
   loading: true
 };
 
@@ -878,40 +890,32 @@ function render() {
   }
   html += '</div></div>';
 
-  /* Tabs */
-  html += '<div class="tabs">';
-  html += '<button class="tab-btn' + (state.activeTab === 'posts' ? ' active' : '') + '" data-tab="posts">Posts</button>';
-  html += '<button class="tab-btn' + (state.activeTab === 'sondages' ? ' active' : '') + '" data-tab="sondages">Sondages</button>';
-  html += '<button class="tab-btn' + (state.activeTab === 'about' ? ' active' : '') + '" data-tab="about">À propos</button>';
-  html += '</div>';
-
-  if (state.activeTab === 'about') {
-    html += '<div class="about-content">';
-    html += '<h3>📜 Règles de la communauté</h3>';
-    html += '<p>Bienvenue dans l\'espace communauté de <strong>' + escHtml(state.creator.username) + '</strong> !</p>';
-    html += '<ul>';
-    html += '<li>Respectez les autres membres — pas de harcèlement ni d\'insultes.</li>';
-    html += '<li>Pas de spam ou de contenu promotionnel non sollicité.</li>';
-    html += '<li>Restez dans le thème manga et création artistique.</li>';
-    html += '<li>Les spoilers doivent être signalés clairement.</li>';
-    html += '<li>Le créateur se réserve le droit de supprimer tout contenu inapproprié.</li>';
-    html += '</ul>';
-    html += '<p style="margin-top:12px">Merci de faire de cet espace un lieu agréable pour tous ! 🎨</p>';
-    html += '</div>';
-    app.innerHTML = html;
-    bindTabs();
-    return;
-  }
+  /* Règles — accordéon discret (plus d'onglets : un seul flux pour tout le monde) */
+  html += '<details class="rules-details">';
+  html += '<summary>📜 Règles de la communauté</summary>';
+  html += '<ul>';
+  html += '<li>Respectez les autres membres — pas de harcèlement ni d\'insultes.</li>';
+  html += '<li>Pas de spam ou de contenu promotionnel non sollicité.</li>';
+  html += '<li>Restez dans le thème manga et création artistique.</li>';
+  html += '<li>Les spoilers doivent être signalés clairement.</li>';
+  html += '<li>Le créateur se réserve le droit de supprimer tout contenu inapproprié.</li>';
+  html += '</ul>';
+  html += '</details>';
 
   /* Create post zone — réservée au créateur du mur (communauté privée : lui seul publie, les visiteurs commentent/réagissent) */
   if (state.isCreator) {
     html += '<div class="create-post" id="create-post-zone">';
+    html += '<div class="post-type-chips" id="post-type-chips">';
+    html += '<button type="button" class="post-type-chip active" data-type="post">✍️ Texte</button>';
+    html += '<button type="button" class="post-type-chip" data-type="image">🖼️ Image</button>';
+    html += '<button type="button" class="post-type-chip" data-type="sondage">📊 Sondage</button>';
+    html += '<button type="button" class="post-type-chip" data-type="annonce">📣 Annonce</button>';
+    html += '</div>';
     html += '<textarea id="create-post-text" placeholder="Partagez quelque chose avec votre communauté..." maxlength="2000"></textarea>';
     html += '<div class="create-post-actions">';
     html += '<button class="create-post-btn" id="create-post-submit">Publier</button>';
-    html += '<label class="create-post-file-label" id="create-post-file-label">📷 Image</label>';
+    html += '<label class="create-post-file-label" id="create-post-file-label" style="display:none">📷 Choisir une image</label>';
     html += '<input type="file" accept="image/*" id="create-post-file">';
-    html += '<button class="create-post-btn-sm" id="create-sondage-btn">+ Sondage</button>';
     html += '</div>';
     html += '<div id="create-post-preview" class="create-post-preview" style="display:none"></div>';
     html += '<div id="sondage-options-area" class="sondage-options" style="display:none">';
@@ -923,16 +927,11 @@ function render() {
     html += '</div>';
   }
 
-  /* Post filter */
-  let filteredPosts = state.posts;
-  if (state.activeTab === 'sondages') {
-    filteredPosts = state.posts.filter(p => p.type === 'sondage');
-  }
+  const filteredPosts = state.posts;
 
   if (!filteredPosts.length) {
     html += '<div class="empty-state"><div class="empty-state-icon">📝</div><div class="empty-state-text">Aucun post pour le moment</div></div>';
     app.innerHTML = html;
-    bindTabs();
     if (state.visitor) bindCreatePost();
     return;
   }
@@ -943,7 +942,6 @@ function render() {
   });
 
   app.innerHTML = html;
-  bindTabs();
   if (state.visitor) bindCreatePost();
   bindReactions();
   bindComments();
@@ -964,7 +962,7 @@ function renderPost(post) {
   const topComments = postComments.filter(c => !c.parent_id);
   const replyComments = postComments.filter(c => c.parent_id);
 
-  let html = '<div class="post-card' + (isPinned ? ' pinned' : '') + '" data-post-id="' + post.id + '">';
+  let html = '<div class="post-card' + (isPinned ? ' pinned' : '') + (post.type === 'annonce' ? ' annonce' : '') + '" data-post-id="' + post.id + '">';
 
   /* Header — auteur réel du post (fallback : créateur du mur si l'embed a échoué) */
   const author = post.auteur || (post.auteur_id === state.creator.id ? state.creator : null) || state.creator;
@@ -976,6 +974,7 @@ function renderPost(post) {
   }
   html += '<span class="post-card-author">' + escHtml(author.username) + '</span>';
   if (post.auteur_id === state.creator.id) html += '<span class="post-card-badge">Créateur</span>';
+  if (post.type === 'annonce') html += '<span class="post-card-badge badge-annonce">📣 Annonce</span>';
   if (isPinned) html += '<span class="post-card-badge">📌 Épinglé</span>';
   html += '<span class="post-card-date">' + timeAgo(post.created_at) + '</span>';
   html += '</div>';
@@ -1128,15 +1127,6 @@ function renderSondage(post) {
 }
 
 /* ===== BINDINGS ===== */
-function bindTabs() {
-  document.querySelectorAll('.tab-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-      state.activeTab = this.getAttribute('data-tab');
-      render();
-    });
-  });
-}
-
 function bindCreatePost() {
   const textarea = document.getElementById('create-post-text');
   const submitBtn = document.getElementById('create-post-submit');
@@ -1144,20 +1134,38 @@ function bindCreatePost() {
   const fileLabel = document.getElementById('create-post-file-label');
   const preview = document.getElementById('create-post-preview');
   const sondageArea = document.getElementById('sondage-options-area');
-  const sondageBtn = document.getElementById('create-sondage-btn');
   const addOptBtn = document.getElementById('add-option-btn');
-  let isSondage = false;
+  let postType = 'post';
   let selectedFile = null;
   let blobUrl = null;
 
-  /* Onglet Sondages : ouvrir directement le mode sondage */
-  if (state.activeTab === 'sondages' && sondageArea && sondageBtn) {
-    isSondage = true;
-    sondageArea.style.display = 'flex';
-    sondageArea.style.flexDirection = 'column';
-    sondageBtn.textContent = '− Retirer sondage';
-    if (textarea) textarea.placeholder = 'Question du sondage (optionnel)...';
+  /* Choix du type de publication (Texte / Image / Sondage / Annonce) */
+  const chipPlaceholders = {
+    post:    'Partagez quelque chose avec votre communauté...',
+    image:   'Un mot sur cette image ? (optionnel)',
+    sondage: 'Question du sondage...',
+    annonce: '📣 Votre annonce à la communauté...'
+  };
+  function clearSelectedImage() {
+    selectedFile = null;
+    if (blobUrl) { URL.revokeObjectURL(blobUrl); blobUrl = null; }
+    if (preview) { preview.style.display = 'none'; preview.innerHTML = ''; }
+    if (fileInput) fileInput.value = '';
+    if (fileLabel) fileLabel.classList.remove('has-file');
   }
+  const chips = document.querySelectorAll('#post-type-chips .post-type-chip');
+  chips.forEach(chip => chip.addEventListener('click', function() {
+    chips.forEach(c => c.classList.remove('active'));
+    this.classList.add('active');
+    postType = this.getAttribute('data-type');
+    if (textarea) textarea.placeholder = chipPlaceholders[postType] || chipPlaceholders.post;
+    if (fileLabel) fileLabel.style.display = (postType === 'image') ? '' : 'none';
+    if (sondageArea) {
+      sondageArea.style.display = (postType === 'sondage') ? 'flex' : 'none';
+      sondageArea.style.flexDirection = 'column';
+    }
+    if (postType !== 'image') clearSelectedImage();
+  }));
 
   if (fileLabel && fileInput) {
     fileLabel.addEventListener('click', function(e) {
@@ -1185,27 +1193,6 @@ function bindCreatePost() {
         fileLabel.classList.remove('has-file');
       });
     }
-  }
-
-  if (sondageBtn) {
-    sondageBtn.addEventListener('click', function() {
-      isSondage = !isSondage;
-      sondageArea.style.display = isSondage ? 'flex' : 'none';
-      sondageArea.style.flexDirection = 'column';
-      sondageBtn.textContent = isSondage ? '− Retirer sondage' : '+ Sondage';
-      if (!isSondage) {
-        /* Reset options */
-        const rows = sondageArea.querySelectorAll('.sondage-option-row');
-        if (rows.length >= 2) {
-          rows[0].querySelector('input').value = '';
-          rows[1].querySelector('input').value = '';
-        }
-        while (sondageArea.querySelectorAll('.sondage-option-row').length > 2) {
-          const rows2 = sondageArea.querySelectorAll('.sondage-option-row');
-          rows2[rows2.length - 1].remove();
-        }
-      }
-    });
   }
 
   if (addOptBtn) {
@@ -1243,6 +1230,7 @@ function bindCreatePost() {
   if (submitBtn && textarea) {
     submitBtn.addEventListener('click', async function() {
       const content = textarea.value.trim();
+      const isSondage = postType === 'sondage';
       if (!content && !selectedFile && !isSondage) { showToast('Écrivez quelque chose ou ajoutez une image', 'error'); return; }
       if (isSondage) {
         const inputs = sondageArea.querySelectorAll('.sondage-opt-input');
@@ -1299,32 +1287,27 @@ function bindCreatePost() {
           const { error: optErr } = await sb.from('sondage_options').insert(options);
           if (optErr) throw optErr;
         } else {
-          const { error: postErr } = await sb.from('posts_communaute').insert({
+          const row = {
             creator_id: state.creatorId,
             auteur_id: state.visitor.id,
             contenu: content || null,
             image_url: imageUrl,
-            type: 'post',
+            type: postType === 'annonce' ? 'annonce' : 'post',
             est_epingle: false
-          });
+          };
+          let { error: postErr } = await sb.from('posts_communaute').insert(row);
+          /* Repli : si la contrainte SQL n'accepte pas encore 'annonce', publier en post */
+          if (postErr && row.type === 'annonce' && /check|constraint/i.test(postErr.message || '')) {
+            ({ error: postErr } = await sb.from('posts_communaute').insert({ ...row, type: 'post' }));
+          }
           if (postErr) throw postErr;
         }
 
         await notifyCreator('@' + (state.visitor.username || 'Quelqu\'un') + ' a publié sur ta communauté');
-        showToast('Post publié !', 'success');
+        showToast(postType === 'annonce' ? 'Annonce publiée !' : (isSondage ? 'Sondage publié !' : 'Post publié !'), 'success');
         textarea.value = '';
-        selectedFile = null;
-        if (blobUrl) { URL.revokeObjectURL(blobUrl); blobUrl = null; }
-        preview.style.display = 'none';
-        preview.innerHTML = '';
-        fileInput.value = '';
-        fileLabel.classList.remove('has-file');
-        if (isSondage) {
-          sondageArea.style.display = 'none';
-          sondageBtn.textContent = '+ Sondage';
-          isSondage = false;
-          sondageArea.querySelectorAll('.sondage-opt-input').forEach(inp => inp.value = '');
-        }
+        clearSelectedImage();
+        /* render() reconstruit le composeur (retour au type Texte par défaut) */
         await loadPosts();
         await loadSondageVotes();
         render();
