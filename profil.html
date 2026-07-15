@@ -795,7 +795,7 @@
     <a href="index.html" class="univ-nav-lk">Accueil</a>
     <a href="recherche.html" class="univ-nav-lk">Mangas</a>
     <a href="tutoriels.html" class="univ-nav-lk">Tutoriels</a>
-    <a href="premium.html" class="univ-nav-lk">Espace Créateur</a>
+    <a href="espace-createur.html" class="univ-nav-lk">Espace Créateur</a>
   </div>
   <div class="univ-nav-search">
     <input type="text" id="navSearchInput" class="univ-nav-si" placeholder="Rechercher…" onkeydown="if(event.key==='Enter')doSearch()" />
@@ -820,7 +820,7 @@
   <a href="index.html" class="univ-d-item"><div class="univ-d-icon">🏠</div>Accueil</a>
   <a href="recherche.html" class="univ-d-item"><div class="univ-d-icon">📖</div>Manga & BD</a>
   <a href="tutoriels.html" class="univ-d-item"><div class="univ-d-icon">🎓</div>Tutoriels <span class="univ-d-badge teal">GRATUIT</span></a>
-  <a href="premium.html" class="univ-d-item"><div class="univ-d-icon">🎨</div>Espace Créateur <span class="univ-d-badge teal">GRATUIT</span></a>
+  <a href="espace-createur.html" class="univ-d-item"><div class="univ-d-icon">🎨</div>Espace Créateur <span class="univ-d-badge teal">GRATUIT</span></a>
   <a href="communaute.html" class="univ-d-item"><div class="univ-d-icon">👥</div>Communauté</a>
   <div class="univ-d-divider"></div>
   <div class="univ-d-sec">Mon compte</div>
@@ -1025,7 +1025,7 @@
           <h3>🎨 Espace Créateur</h3>
           <div style="display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;">
             <div style="font-size:0.88rem; color:var(--muted);" id="planUpsellText">Crée et vends tes packs de dessin, ebooks et tutoriels — gratuitement.</div>
-            <a class="btn-creator" id="btnOpenPlans2" href="premium.html" style="text-decoration:none;">Ouvrir mon espace 🎨</a>
+            <a class="btn-creator" id="btnOpenPlans2" href="espace-createur.html" style="text-decoration:none;">Ouvrir mon espace 🎨</a>
           </div>
         </div>
   </div>
@@ -1349,7 +1349,7 @@
 
   document.querySelector('.btn-plan.free')?.addEventListener('click', () => {
     if (!userProfile?.is_creator) choosePlan('gratuit');
-    else window.location.href = 'premium.html';
+    else window.location.href = 'espace-createur.html';
   });
 
   // ── CHARGER MANGAS ──
