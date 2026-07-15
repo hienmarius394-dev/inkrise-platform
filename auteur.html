@@ -179,6 +179,17 @@
     .author-join-date {
       font-size: 0.78rem; color: var(--muted); margin-bottom: 18px;
     }
+    .author-socials { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 18px; }
+    .author-social-link {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(124,111,239,0.08); border: 1px solid var(--border2);
+      color: var(--text); padding: 6px 13px; border-radius: 20px;
+      font-family: 'DM Sans', sans-serif; font-size: 0.8rem; font-weight: 700;
+      text-decoration: none; transition: all .2s;
+    }
+    .author-social-link:hover { background: rgba(124,111,239,0.18); border-color: var(--purple); color: var(--purple2); }
+    .author-hero.has-cover .author-social-link { background: rgba(255,255,255,0.12); color: #fff; border-color: rgba(255,255,255,0.3); }
+    .author-hero.has-cover .author-social-link:hover { background: rgba(255,255,255,0.22); }
     .author-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
     .btn-follow-author {
       display: none; align-items: center; gap: 7px;
@@ -360,6 +371,7 @@
         </div>
         <h1 class="author-username" id="authorUsername">—</h1>
         <p class="author-bio" id="authorBio"></p>
+        <div class="author-socials" id="authorSocials"></div>
         <div class="author-stats">
           <div class="astat">
             <span class="astat-num" id="statFollowers">0</span>
@@ -421,6 +433,28 @@ let currentUsername = null;
 let auteurId      = null;
 let isFollowing   = false;
 let followerCount = 0;
+
+const SOCIAL_META = {
+  instagram: { icon: '📷', label: 'Instagram' },
+  tiktok:    { icon: '🎵', label: 'TikTok' },
+  youtube:   { icon: '▶️', label: 'YouTube' },
+  twitter:   { icon: '🐦', label: 'Twitter / X' },
+  discord:   { icon: '💬', label: 'Discord' },
+  facebook:  { icon: '👍', label: 'Facebook' },
+  site:      { icon: '🌐', label: 'Site web' },
+};
+
+function renderAuthorSocials(links) {
+  const el = document.getElementById('authorSocials');
+  const valid = (links || []).filter(l => l && l.url);
+  if (!valid.length) { el.style.display = 'none'; return; }
+  el.style.display = 'flex';
+  el.innerHTML = valid.map(link => {
+    const meta = SOCIAL_META[link.type] || { icon: '🔗', label: 'Lien' };
+    const href = /^https?:\/\//i.test(link.url) ? link.url : `https://${link.url}`;
+    return `<a class="author-social-link" href="${href.replace(/"/g, '&quot;')}" target="_blank" rel="noopener noreferrer">${meta.icon} ${meta.label}</a>`;
+  }).join('');
+}
 
 // ── INIT ──
 async function init() {
@@ -528,6 +562,8 @@ function renderProfile(profile, mangaCount) {
   if (profile.is_creator) {
     document.getElementById('creatorBadge').classList.add('show');
   }
+
+  renderAuthorSocials(profile.social_links);
 
   document.getElementById('statFollowers').textContent = followerCount;
   document.getElementById('statMangas').textContent    = mangaCount;
