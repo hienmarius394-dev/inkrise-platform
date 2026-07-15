@@ -378,10 +378,13 @@ CREATE TABLE IF NOT EXISTS posts_communaute (
   auteur_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
   contenu TEXT NOT NULL,
   image_url TEXT,
-  type TEXT NOT NULL DEFAULT 'post' CHECK (type IN ('post', 'sondage')),
+  type TEXT NOT NULL DEFAULT 'post' CHECK (type IN ('post', 'sondage', 'annonce')),
   est_epingle BOOLEAN NOT NULL DEFAULT false,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+-- Migration : autoriser le type 'annonce' sur les bases existantes
+ALTER TABLE posts_communaute DROP CONSTRAINT IF EXISTS posts_communaute_type_check;
+ALTER TABLE posts_communaute ADD CONSTRAINT posts_communaute_type_check CHECK (type IN ('post', 'sondage', 'annonce'));
 ALTER TABLE posts_communaute ADD COLUMN IF NOT EXISTS creator_id UUID REFERENCES profiles(id) ON DELETE CASCADE;
 ALTER TABLE posts_communaute ADD COLUMN IF NOT EXISTS auteur_id UUID REFERENCES profiles(id) ON DELETE CASCADE;
 ALTER TABLE posts_communaute ADD COLUMN IF NOT EXISTS contenu TEXT;
