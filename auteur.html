@@ -107,8 +107,7 @@
 
     /* ── AUTHOR HERO ── */
     .author-hero {
-      background: var(--cover-image, none), linear-gradient(180deg, rgba(124,111,239,.12) 0%, var(--bg) 100%);
-      background-size: cover; background-position: center;
+      background: linear-gradient(180deg, rgba(124,111,239,.12) 0%, var(--bg) 100%);
       padding: 48px 0 40px;
       position: relative;
       overflow: hidden;
@@ -119,20 +118,27 @@
       background: radial-gradient(ellipse 70% 60% at 50% 0%, rgba(124,111,239,0.14) 0%, transparent 70%);
       pointer-events: none;
     }
-    /* Quand une photo de couverture est définie, on assombrit et on passe le texte en clair pour la lisibilité */
-    .author-hero.has-cover::before {
-      background: linear-gradient(180deg, rgba(10,8,20,0.35) 0%, rgba(10,8,20,0.72) 100%);
+    /* Bannière de couverture à hauteur fixe (même cadrage que sur son propre profil) */
+    .author-cover-banner {
+      display: none;
+      height: 150px;
+      background: var(--cover-image, none) center/cover no-repeat;
+      position: relative;
     }
-    .author-hero.has-cover .author-username,
-    .author-hero.has-cover .astat-num { color: #fff; }
-    .author-hero.has-cover .author-bio,
-    .author-hero.has-cover .astat-label,
-    .author-hero.has-cover .author-join-date { color: rgba(255,255,255,0.75); }
+    .author-cover-banner::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(180deg, rgba(0,0,0,0.1) 0%, var(--bg) 100%);
+    }
+    @media (min-width: 601px) { .author-cover-banner { height: 210px; } }
+    .author-hero.has-cover .author-cover-banner { display: block; }
+    .author-hero.has-cover { padding-top: 0; }
     .author-hero-inner {
       max-width: 900px; margin: 0 auto; padding: 0 24px;
       display: flex; align-items: center; gap: 36px;
       position: relative; z-index: 1;
     }
+    .author-hero.has-cover .author-hero-inner { margin-top: -50px; }
     @media (max-width: 600px) {
       .author-hero-inner { flex-direction: column; align-items: flex-start; gap: 20px; }
       .author-hero { padding: 32px 0 28px; }
@@ -310,7 +316,7 @@
     <a href="index.html" class="univ-nav-lk">Accueil</a>
     <a href="recherche.html" class="univ-nav-lk">Mangas</a>
     <a href="tutoriels.html" class="univ-nav-lk">Tutoriels</a>
-    <a href="premium.html" class="univ-nav-lk">Espace Créateur</a>
+    <a href="espace-createur.html" class="univ-nav-lk">Espace Créateur</a>
   </div>
   <div class="univ-nav-search">
     <input type="text" id="navSearchInput" class="univ-nav-si" placeholder="Rechercher…" onkeydown="if(event.key==='Enter')doSearch()" />
@@ -335,7 +341,7 @@
   <a href="index.html" class="univ-d-item"><div class="univ-d-icon">🏠</div>Accueil</a>
   <a href="recherche.html" class="univ-d-item"><div class="univ-d-icon">📖</div>Manga & BD</a>
   <a href="tutoriels.html" class="univ-d-item"><div class="univ-d-icon">🎓</div>Tutoriels <span class="univ-d-badge teal">GRATUIT</span></a>
-  <a href="premium.html" class="univ-d-item"><div class="univ-d-icon">🎨</div>Espace Créateur <span class="univ-d-badge teal">GRATUIT</span></a>
+  <a href="espace-createur.html" class="univ-d-item"><div class="univ-d-icon">🎨</div>Espace Créateur <span class="univ-d-badge teal">GRATUIT</span></a>
   <a href="communaute.html" class="univ-d-item"><div class="univ-d-icon">👥</div>Communauté</a>
   <div class="univ-d-divider"></div>
   <div class="univ-d-sec">Mon compte</div>
@@ -369,6 +375,7 @@
 
   <!-- Author Hero -->
   <div class="author-hero">
+    <div class="author-cover-banner"></div>
     <div class="author-hero-inner">
       <div class="author-avatar-wrap">
         <div class="author-avatar-el" id="authorAvatarEl">?</div>
