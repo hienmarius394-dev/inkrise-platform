@@ -509,7 +509,7 @@ function renderPacks(packs) {
     const prix = Number(p.prix);
     const priceLabel = (prix === 0 || isNaN(prix))
       ? 'GRATUIT'
-      : `${Math.round(prix).toLocaleString('fr-FR')} FCFA`;
+      : `${prix % 1 === 0 ? prix : prix.toFixed(2)}€`;
     const priceCls = (prix === 0 || isNaN(prix)) ? 'manga-statut-en_cours' : 'manga-statut-termine';
     const auteur = p.auteur_nom ? `<span class="manga-genre">${escapeHtml(p.auteur_nom)}</span>` : '';
     return `<a href="pack.html?id=${p.id}" class="manga-card">

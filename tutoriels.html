@@ -493,7 +493,7 @@ function createPackCard(pack) {
   const prix = Number(pack.prix);
   const priceHtml = prix === 0 || isNaN(prix)
     ? `<span class="pack-price free">GRATUIT</span>`
-    : `<span class="pack-price">${Math.round(prix).toLocaleString('fr-FR')} FCFA</span>`;
+    : `<span class="pack-price">${prix % 1 === 0 ? prix : prix.toFixed(2)}€</span>`;
 
   const raw = pack.description || '';
   const desc = raw.length > 100 ? raw.slice(0, 100) + '…' : raw;
