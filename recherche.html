@@ -196,58 +196,52 @@
     .manga-statut-hiatus   { background: rgba(245,166,35,0.15); color: var(--amber); }
     .manga-genre { font-size: 0.68rem; font-weight: 600; padding: 2px 7px; border-radius: 6px; background: var(--surface2); color: var(--muted); }
 
-    /* ── MANGA FEED (nouvelles cartes mangas, façon fiche) ── */
-    .manga-feed { display: flex; flex-direction: column; gap: 18px; }
-    @media (min-width: 640px) { .manga-feed { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); } }
+    /* ── MANGA FEED (grille compacte, plusieurs résultats visibles d'un coup) ── */
+    .manga-feed { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+    @media (min-width: 480px) { .manga-feed { grid-template-columns: repeat(3, 1fr); } }
+    @media (min-width: 720px) { .manga-feed { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); } }
     .manga-feed-card {
       background: rgba(255,255,255,0.6);
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
       border: 1px solid rgba(124,92,252,0.1);
       box-shadow: 0 4px 20px rgba(124,92,252,0.06);
-      border-radius: 18px;
+      border-radius: 14px;
       overflow: hidden; text-decoration: none; color: var(--text); display: block;
       transition: transform .2s, box-shadow .2s, border-color .2s;
     }
     .manga-feed-card:hover { transform: translateY(-3px); box-shadow: 0 14px 36px rgba(124,92,252,0.16); border-color: rgba(124,92,252,0.3); }
     .manga-feed-cover-wrap { position: relative; width: 100%; aspect-ratio: 2/3; overflow: hidden; background: linear-gradient(135deg, #e9e2fb, #ffe1ee); }
     .manga-feed-cover { width: 100%; height: 100%; object-fit: cover; display: block; }
-    .manga-feed-cover-ph { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 2.6rem; }
+    .manga-feed-cover-ph { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 2rem; }
     .manga-feed-badge-time {
-      position: absolute; top: 10px; left: 10px;
-      background: rgba(0,0,0,0.55); color: #fff; font-size: 0.68rem; font-weight: 700;
-      padding: 4px 11px; border-radius: 20px; backdrop-filter: blur(4px);
+      position: absolute; top: 6px; left: 6px;
+      background: rgba(0,0,0,0.55); color: #fff; font-size: 0.6rem; font-weight: 700;
+      padding: 3px 8px; border-radius: 20px; backdrop-filter: blur(4px);
     }
-    .manga-feed-badges-bottom { position: absolute; bottom: 10px; left: 10px; display: flex; gap: 6px; align-items: center; }
+    .manga-feed-badges-bottom { position: absolute; bottom: 6px; left: 6px; display: flex; gap: 4px; align-items: center; }
     .manga-feed-flag {
-      width: 26px; height: 26px; border-radius: 50%;
+      width: 20px; height: 20px; border-radius: 50%;
       display: flex; align-items: center; justify-content: center;
-      background: #fff; font-size: 0.95rem; box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+      background: #fff; font-size: 0.72rem; box-shadow: 0 2px 8px rgba(0,0,0,0.25);
     }
     .manga-feed-adult {
-      background: var(--orange); color: #fff; font-size: 0.68rem; font-weight: 800;
-      padding: 4px 10px; border-radius: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+      background: var(--orange); color: #fff; font-size: 0.6rem; font-weight: 800;
+      padding: 3px 7px; border-radius: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.25);
     }
-    .manga-feed-body { padding: 14px 16px 16px; }
-    .manga-feed-title-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
-    .manga-feed-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1rem; line-height: 1.25; }
-    .manga-feed-likes { font-size: 0.78rem; color: var(--muted); display: flex; align-items: center; gap: 4px; flex-shrink: 0; white-space: nowrap; margin-top: 2px; }
+    .manga-feed-body { padding: 9px 10px 11px; }
+    .manga-feed-title-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 6px; margin-bottom: 4px; }
+    .manga-feed-title {
+      font-family: 'Syne', sans-serif; font-weight: 800; font-size: 0.85rem; line-height: 1.25;
+      display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .manga-feed-likes { font-size: 0.68rem; color: var(--muted); display: flex; align-items: center; gap: 3px; flex-shrink: 0; white-space: nowrap; margin-top: 2px; }
     .manga-feed-synopsis {
-      font-size: 0.82rem; color: var(--text-2); line-height: 1.55; margin-bottom: 12px;
+      font-size: 0.72rem; color: var(--text-2); line-height: 1.4; margin-bottom: 8px;
       display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
     }
-    .manga-feed-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
-    .manga-feed-tag { font-size: 0.7rem; font-weight: 600; padding: 4px 11px; border-radius: 20px; background: var(--surface2); color: var(--muted); }
-    .manga-feed-actions { display: flex; gap: 8px; align-items: center; }
-    .manga-feed-read {
-      flex-shrink: 0; width: 38px; height: 38px; border-radius: 50%;
-      background: linear-gradient(135deg, var(--purple), var(--pink)); color: #fff;
-      display: flex; align-items: center; justify-content: center; font-size: 0.85rem;
-    }
-    .manga-feed-lib {
-      flex: 1; border: 1px solid var(--border2); border-radius: 20px; text-align: center;
-      font-size: 0.82rem; font-weight: 700; color: var(--purple2); padding: 9px 0;
-    }
+    .manga-feed-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+    .manga-feed-tag { font-size: 0.62rem; font-weight: 600; padding: 3px 9px; border-radius: 20px; background: var(--surface2); color: var(--muted); }
 
     /* ── CREATORS LIST ── */
     .creators-list { display: flex; flex-direction: column; gap: 12px; }
@@ -474,10 +468,6 @@ function renderMangas(mangas) {
         <div class="manga-feed-tags">
           <span class="manga-feed-tag">${escapeHtml(statutLabel(m.statut))}</span>
           ${genres}
-        </div>
-        <div class="manga-feed-actions">
-          <span class="manga-feed-read">▶</span>
-          <span class="manga-feed-lib">Voir le manga</span>
         </div>
       </div>
     </a>`;
