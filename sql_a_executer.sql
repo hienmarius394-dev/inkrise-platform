@@ -288,6 +288,8 @@ ALTER TABLE packs_tutoriels ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFA
 ALTER TABLE packs_tutoriels ADD COLUMN IF NOT EXISTS objectifs TEXT[] DEFAULT '{}';
 ALTER TABLE packs_tutoriels ADD COLUMN IF NOT EXISTS niveau TEXT DEFAULT 'Tous niveaux';
 ALTER TABLE packs_tutoriels ADD COLUMN IF NOT EXISTS images TEXT[] DEFAULT '{}';   -- contenu du pack (croquis, planches, pages d'ebook…)
+ALTER TABLE packs_tutoriels ADD COLUMN IF NOT EXISTS ventes INT NOT NULL DEFAULT 0;      -- compteur public entretenu par trigger (achats_packs)
+ALTER TABLE packs_tutoriels ADD COLUMN IF NOT EXISTS limite_ventes INT;                  -- NULL = ventes illimitées
 
 CREATE TABLE IF NOT EXISTS achats_packs (
   id BIGSERIAL PRIMARY KEY,
@@ -301,6 +303,20 @@ ALTER TABLE achats_packs ADD COLUMN IF NOT EXISTS user_id UUID REFERENCES profil
 ALTER TABLE achats_packs ADD COLUMN IF NOT EXISTS pack_id BIGINT REFERENCES packs_tutoriels(id) ON DELETE CASCADE;
 ALTER TABLE achats_packs ADD COLUMN IF NOT EXISTS prix_paye NUMERIC DEFAULT 0;
 ALTER TABLE achats_packs ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT now();
+
+-- Compteur public de ventes : entretenu par trigger (la RLS d'achats_packs
+-- interdit aux visiteurs de compter les achats directement)
+CREATE OR REPLACE FUNCTION public.bump_pack_ventes()
+RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+BEGIN
+  UPDATE packs_tutoriels SET ventes = ventes + 1 WHERE id = NEW.pack_id;
+  RETURN NEW;
+END; $$;
+DROP TRIGGER IF EXISTS trg_bump_pack_ventes ON achats_packs;
+CREATE TRIGGER trg_bump_pack_ventes
+  AFTER INSERT ON achats_packs FOR EACH ROW EXECUTE FUNCTION public.bump_pack_ventes();
+-- Initialise le compteur avec les achats déjà en base
+UPDATE packs_tutoriels p SET ventes = (SELECT COUNT(*) FROM achats_packs a WHERE a.pack_id = p.id);
 
 CREATE TABLE IF NOT EXISTS avis_packs (
   id BIGSERIAL PRIMARY KEY,
