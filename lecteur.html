@@ -759,7 +759,9 @@ async function init() {
 
   buildChapSelect();
     buildSidebar();
-    loadChapter();
+    // Attendre le chargement pour que currentPage reflète la page de reprise,
+    // sinon saveProgress() écrase la position sauvegardée avec la page 1
+    await loadChapter();
 
     // Sauvegarder la progression dans la bibliothèque
     saveProgress();
@@ -906,7 +908,7 @@ function renderScrollMode() {
     `<img class="scroll-page" src="${url}" alt="Page ${i+1}" data-i="${i}" loading="lazy" />`
   ).join('');
 
-  document.getElementById('pageNum').textContent = 1;
+  document.getElementById('pageNum').textContent = currentPage + 1;
   document.getElementById('pageTotalLabel').textContent = `sur ${pages.length}`;
 
   if (scrollPageObserver) scrollPageObserver.disconnect();
@@ -921,6 +923,28 @@ function renderScrollMode() {
     });
   }, { threshold: 0.5 });
   document.querySelectorAll('.scroll-page').forEach(img => scrollPageObserver.observe(img));
+
+  if (currentPage > 0) scrollToScrollPage(currentPage);
+}
+
+// Reprise en mode scroll : on attend que les pages au-dessus de la cible soient
+// chargées (leurs hauteurs poussent le contenu), puis on scrolle jusqu'à la cible.
+function scrollToScrollPage(idx) {
+  const imgs = Array.from(document.querySelectorAll('.scroll-page'));
+  const target = imgs[idx];
+  if (!target) return;
+  const go = () => target.scrollIntoView({ block: 'start' });
+  const toLoad = imgs.slice(0, idx + 1).filter(im => !im.complete);
+  if (toLoad.length === 0) { go(); return; }
+  let pending = toLoad.length;
+  const done = () => { if (--pending <= 0) setTimeout(go, 60); };
+  toLoad.forEach(im => {
+    im.addEventListener('load', done, { once: true });
+    im.addEventListener('error', done, { once: true });
+    im.loading = 'eager';
+  });
+  // Filet de sécurité si une image met trop de temps
+  setTimeout(go, 3000);
 }
 
 let scrollWidthPct = 100;
@@ -1034,6 +1058,13 @@ function updateChapNav() {
 
 // ── EVENTS ──
 function bindEvents() {
+  // Sauvegarde immédiate de la position quand on quitte la page (le debounce
+  // de 700 ms peut sinon perdre la dernière page lue)
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') { clearTimeout(saveProgressTimer); saveProgress(); }
+  });
+  window.addEventListener('pagehide', () => { clearTimeout(saveProgressTimer); saveProgress(); });
+
   // Chapitre select
   document.getElementById('chapSelect').addEventListener('change', function() {
     window.location.href = `lecteur.html?manga_id=${mangaId}&chapitre=${this.value}`;
