@@ -672,6 +672,7 @@ let chapitre   = null;
 let allChaps   = [];
 let pages      = [];      // URLs des pages
 let currentPage = 0;
+let currentUsername = null;
 let readMode   = 'pages'; // 'pages' | 'scroll'
 let uiVisible  = true;
 let hideTimer  = null;
@@ -724,7 +725,7 @@ async function init() {
   setupNav();
 
   // Charger le manga
-  const { data: m } = await sb.from('mangas').select('id, titre, type, sens_lecture, commentaires_actifs').eq('id', mangaId).single();
+  const { data: m } = await sb.from('mangas').select('id, titre, type, sens_lecture, commentaires_actifs, auteur_id').eq('id', mangaId).single();
   manga = m;
   applyReadingDirection();
 
@@ -1166,7 +1167,8 @@ async function setupNav() {
     av.classList.add('show');
     const name = user.user_metadata?.username || user.email || '?';
     av.textContent = name[0].toUpperCase();
-    sb.from('profiles').select('avatar_url').eq('id', user.id).single().then(({ data: prof }) => {
+    sb.from('profiles').select('username, avatar_url').eq('id', user.id).single().then(({ data: prof }) => {
+      currentUsername = prof?.username || null;
       if (prof?.avatar_url) av.innerHTML = '<img src="' + prof.avatar_url + '" style="width:32px;height:32px;border-radius:50%;object-fit:cover;" alt="" />';
     });
   }
@@ -1343,6 +1345,21 @@ function toggleReplyForm(commentId) {
   }
 }
 
+// Notifie l'auteur du manga qu'un commentaire/réponse vient d'être posté
+// (best-effort : jamais pour soi-même, jamais bloquant si ça échoue)
+async function notifyMangaAuthorOfComment() {
+  try {
+    if (!manga?.auteur_id || manga.auteur_id === currentUser.id) return;
+    await sb.from('notifications').insert({
+      user_id: manga.auteur_id,
+      type: 'comment',
+      message: '@' + (currentUsername || 'Quelqu\'un') + ' a commenté "' + (manga.titre || 'ton manga') + '"',
+      manga_id: manga.id,
+      lu: false
+    });
+  } catch (e) { /* ignoré (best-effort) */ }
+}
+
 async function submitComment() {
   if (!currentUser) return;
   const textarea = document.getElementById('newCommentText');
@@ -1358,7 +1375,7 @@ async function submitComment() {
     parent_id: null
   });
   if (error) { showToast('Erreur : ' + error.message); }
-  else { textarea.value = ''; await loadComments(mangaId, chapitre.id); }
+  else { textarea.value = ''; await loadComments(mangaId, chapitre.id); notifyMangaAuthorOfComment(); }
   btn.disabled = false; btn.textContent = 'Publier';
 }
 
@@ -1375,7 +1392,7 @@ async function submitReply(parentId) {
     parent_id: parentId
   });
   if (error) { showToast('Erreur : ' + error.message); }
-  else { await loadComments(mangaId, chapitre.id); }
+  else { await loadComments(mangaId, chapitre.id); notifyMangaAuthorOfComment(); }
 }
 
 async function toggleLike(commentId) {
