@@ -1395,6 +1395,21 @@ async function submitReply(parentId) {
   else { await loadComments(mangaId, chapitre.id); notifyMangaAuthorOfComment(); }
 }
 
+// Notifie l'auteur du commentaire aimé (best-effort, jamais pour soi-même)
+async function notifyCommentLike(commentId) {
+  try {
+    const { data: c } = await sb.from('commentaires').select('user_id').eq('id', commentId).single();
+    if (!c || c.user_id === currentUser.id) return;
+    await sb.from('notifications').insert({
+      user_id: c.user_id,
+      type: 'like',
+      message: '❤️ @' + (currentUsername || 'Quelqu\'un') + ' a aimé ton commentaire sur "' + (manga?.titre || 'un manga') + '"',
+      manga_id: manga?.id || null,
+      lu: false
+    });
+  } catch (e) { /* ignoré (best-effort) */ }
+}
+
 async function toggleLike(commentId) {
   if (!currentUser) { showToast('Connecte-toi pour liker'); return; }
   const btn = document.getElementById(`like-${commentId}`);
@@ -1404,6 +1419,7 @@ async function toggleLike(commentId) {
       .eq('commentaire_id', commentId).eq('user_id', currentUser.id);
   } else {
     await sb.from('commentaire_likes').insert({ commentaire_id: commentId, user_id: currentUser.id });
+    notifyCommentLike(commentId);
   }
   if (btn) {
     const prev = parseInt(btn.textContent.replace('❤️', '').trim()) || 0;

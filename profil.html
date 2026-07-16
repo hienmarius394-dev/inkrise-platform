@@ -2093,7 +2093,7 @@
       const div = document.createElement('div');
       div.className = `notif-item${!n.lu ? ' unread' : ''}`;
       div.innerHTML = `
-        <div class="notif-icon">${({ new_chapter: '📖', comment: '💬', follow: '👤' })[n.type] || '🔔'}</div>
+        <div class="notif-icon">${({ new_chapter: '📖', comment: '💬', follow: '👤', like: '❤️', avis: '⭐' })[n.type] || '🔔'}</div>
         <div class="notif-content">
           <div class="notif-msg">${escFormation(n.message || 'Nouvelle notification')}</div>
           <div class="notif-date">${date}</div>

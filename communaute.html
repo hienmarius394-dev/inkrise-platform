@@ -1392,6 +1392,8 @@ function bindReactions() {
             post_id: postId, user_id: state.visitor.id, type: type
           });
           if (error) throw error;
+          /* Notification uniquement à la première réaction (pas au changement d'emoji) */
+          if (!existing) notifyCreator('@' + (state.visitor.username || 'Quelqu\'un') + ' a réagi à un post de ta communauté');
           /* Optimistic update */
           state.reactions[postId] = (state.reactions[postId] || []).filter(r => r.user_id !== state.visitor.id);
           state.reactions[postId].push({ post_id: postId, user_id: state.visitor.id, type: type });
