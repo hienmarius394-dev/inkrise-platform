@@ -772,6 +772,17 @@ function renderAvisForm(packId, avis) {
     );
     if (error) { showToast('Erreur : ' + error.message, 'info'); this.disabled = false; return; }
     showToast('Avis publié 🎉');
+    // Notifie l'auteur du pack (best-effort, jamais pour soi-même)
+    if (currentPack?.auteur_id && currentPack.auteur_id !== currentUser.id) {
+      try {
+        await sb.from('notifications').insert({
+          user_id: currentPack.auteur_id,
+          type: 'avis',
+          message: '⭐ Nouvel avis (' + selected + '/5) sur "' + (currentPack.titre || 'ton pack') + '"',
+          lu: false
+        });
+      } catch (e) { /* ignoré (best-effort) */ }
+    }
     await loadAvis(packId);
   });
 }
