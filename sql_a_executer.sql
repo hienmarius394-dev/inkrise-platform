@@ -213,6 +213,11 @@ ALTER TABLE notifications ADD COLUMN IF NOT EXISTS message TEXT;
 ALTER TABLE notifications ADD COLUMN IF NOT EXISTS manga_id BIGINT REFERENCES mangas(id) ON DELETE CASCADE;
 ALTER TABLE notifications ADD COLUMN IF NOT EXISTS lu BOOLEAN DEFAULT false;
 ALTER TABLE notifications ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT now();
+-- Certaines installations ont une colonne "titre" NOT NULL héritée d'un
+-- schéma antérieur : on lui donne un défaut pour ne jamais faire échouer
+-- un insert qui ne la renseigne pas.
+ALTER TABLE notifications ADD COLUMN IF NOT EXISTS titre TEXT NOT NULL DEFAULT '';
+ALTER TABLE notifications ALTER COLUMN titre SET DEFAULT '';
 CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id, lu, created_at DESC);
 
 -- ─────────────────────────────────────────────
@@ -597,8 +602,8 @@ DECLARE uname TEXT;
 BEGIN
   IF NEW.user_id = NEW.followed_id THEN RETURN NEW; END IF;
   SELECT username INTO uname FROM profiles WHERE id = NEW.user_id;
-  INSERT INTO notifications (user_id, type, message, lu)
-  VALUES (NEW.followed_id, 'follow', '@' || COALESCE(uname, 'Quelqu''un') || ' te suit désormais !', false);
+  INSERT INTO notifications (user_id, type, titre, message, lu)
+  VALUES (NEW.followed_id, 'follow', 'Nouvel abonné', '@' || COALESCE(uname, 'Quelqu''un') || ' te suit désormais !', false);
   RETURN NEW;
 END; $$;
 DROP TRIGGER IF EXISTS trg_notify_follow ON follows;
@@ -613,8 +618,8 @@ BEGIN
   SELECT auteur_id, titre INTO aid, mtitre FROM mangas WHERE id = NEW.manga_id;
   IF aid IS NULL OR aid = NEW.user_id THEN RETURN NEW; END IF;
   SELECT username INTO uname FROM profiles WHERE id = NEW.user_id;
-  INSERT INTO notifications (user_id, type, message, manga_id, lu)
-  VALUES (aid, 'comment', '@' || COALESCE(uname, 'Quelqu''un') || ' a commenté "' || COALESCE(mtitre, 'ton manga') || '"', NEW.manga_id, false);
+  INSERT INTO notifications (user_id, type, titre, message, manga_id, lu)
+  VALUES (aid, 'comment', 'Nouveau commentaire', '@' || COALESCE(uname, 'Quelqu''un') || ' a commenté "' || COALESCE(mtitre, 'ton manga') || '"', NEW.manga_id, false);
   RETURN NEW;
 END; $$;
 DROP TRIGGER IF EXISTS trg_notify_comment ON commentaires;
@@ -629,8 +634,8 @@ BEGIN
   SELECT user_id INTO cauthor FROM commentaires WHERE id = NEW.commentaire_id;
   IF cauthor IS NULL OR cauthor = NEW.user_id THEN RETURN NEW; END IF;
   SELECT username INTO uname FROM profiles WHERE id = NEW.user_id;
-  INSERT INTO notifications (user_id, type, message, lu)
-  VALUES (cauthor, 'like', '❤️ @' || COALESCE(uname, 'Quelqu''un') || ' a aimé ton commentaire', false);
+  INSERT INTO notifications (user_id, type, titre, message, lu)
+  VALUES (cauthor, 'like', 'J''aime reçu', '❤️ @' || COALESCE(uname, 'Quelqu''un') || ' a aimé ton commentaire', false);
   RETURN NEW;
 END; $$;
 DROP TRIGGER IF EXISTS trg_notify_comment_like ON commentaire_likes;
@@ -644,8 +649,8 @@ DECLARE aid UUID; ptitre TEXT;
 BEGIN
   SELECT auteur_id, titre INTO aid, ptitre FROM packs_tutoriels WHERE id = NEW.pack_id;
   IF aid IS NULL OR aid = NEW.user_id THEN RETURN NEW; END IF;
-  INSERT INTO notifications (user_id, type, message, lu)
-  VALUES (aid, 'avis', '⭐ Nouvel avis (' || NEW.note || '/5) sur "' || COALESCE(ptitre, 'ton pack') || '"', false);
+  INSERT INTO notifications (user_id, type, titre, message, lu)
+  VALUES (aid, 'avis', 'Nouvel avis', '⭐ Nouvel avis (' || NEW.note || '/5) sur "' || COALESCE(ptitre, 'ton pack') || '"', false);
   RETURN NEW;
 END; $$;
 DROP TRIGGER IF EXISTS trg_notify_avis ON avis_packs;
