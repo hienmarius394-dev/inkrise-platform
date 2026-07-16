@@ -27,9 +27,6 @@ BEGIN
   VALUES (NEW.followed_id, 'follow', 'Nouvel abonné', '@' || COALESCE(uname, 'Quelqu''un') || ' te suit désormais !', 'auteur.html?id=' || NEW.user_id, false);
   RETURN NEW;
 END; $$;
-DROP TRIGGER IF EXISTS trg_notify_follow ON follows;
-CREATE TRIGGER trg_notify_follow AFTER INSERT ON follows
-  FOR EACH ROW EXECUTE FUNCTION public.notify_follow();
 
 -- 2. Commentaire sur un manga → notifie l'auteur du manga
 CREATE OR REPLACE FUNCTION public.notify_comment()
@@ -48,9 +45,6 @@ BEGIN
   VALUES (aid, 'comment', 'Nouveau commentaire', '@' || COALESCE(uname, 'Quelqu''un') || ' a commenté "' || COALESCE(mtitre, 'ton manga') || '"', NEW.manga_id, clien, false);
   RETURN NEW;
 END; $$;
-DROP TRIGGER IF EXISTS trg_notify_comment ON commentaires;
-CREATE TRIGGER trg_notify_comment AFTER INSERT ON commentaires
-  FOR EACH ROW EXECUTE FUNCTION public.notify_comment();
 
 -- 3. Like d'un commentaire → notifie l'auteur du commentaire
 CREATE OR REPLACE FUNCTION public.notify_comment_like()
@@ -69,9 +63,6 @@ BEGIN
   VALUES (cauthor, 'like', 'J''aime reçu', '❤️ @' || COALESCE(uname, 'Quelqu''un') || ' a aimé ton commentaire', cmanga, clien, false);
   RETURN NEW;
 END; $$;
-DROP TRIGGER IF EXISTS trg_notify_comment_like ON commentaire_likes;
-CREATE TRIGGER trg_notify_comment_like AFTER INSERT ON commentaire_likes
-  FOR EACH ROW EXECUTE FUNCTION public.notify_comment_like();
 
 -- 4. Avis sur un pack → notifie l'auteur du pack
 CREATE OR REPLACE FUNCTION public.notify_avis()
@@ -84,6 +75,32 @@ BEGIN
   VALUES (aid, 'avis', 'Nouvel avis', '⭐ Nouvel avis (' || NEW.note || '/5) sur "' || COALESCE(ptitre, 'ton pack') || '"', 'pack.html?id=' || NEW.pack_id, false);
   RETURN NEW;
 END; $$;
-DROP TRIGGER IF EXISTS trg_notify_avis ON avis_packs;
-CREATE TRIGGER trg_notify_avis AFTER INSERT ON avis_packs
-  FOR EACH ROW EXECUTE FUNCTION public.notify_avis();
+
+-- ─────────────────────────────────────────────
+-- Pose des triggers : uniquement sur les tables réellement présentes,
+-- pour ne jamais échouer si une table (avis_packs, commentaire_likes…)
+-- n'existe pas encore sur cette installation.
+-- ─────────────────────────────────────────────
+DO $$
+BEGIN
+  IF to_regclass('public.follows') IS NOT NULL THEN
+    DROP TRIGGER IF EXISTS trg_notify_follow ON follows;
+    CREATE TRIGGER trg_notify_follow AFTER INSERT ON follows
+      FOR EACH ROW EXECUTE FUNCTION public.notify_follow();
+  END IF;
+  IF to_regclass('public.commentaires') IS NOT NULL THEN
+    DROP TRIGGER IF EXISTS trg_notify_comment ON commentaires;
+    CREATE TRIGGER trg_notify_comment AFTER INSERT ON commentaires
+      FOR EACH ROW EXECUTE FUNCTION public.notify_comment();
+  END IF;
+  IF to_regclass('public.commentaire_likes') IS NOT NULL THEN
+    DROP TRIGGER IF EXISTS trg_notify_comment_like ON commentaire_likes;
+    CREATE TRIGGER trg_notify_comment_like AFTER INSERT ON commentaire_likes
+      FOR EACH ROW EXECUTE FUNCTION public.notify_comment_like();
+  END IF;
+  IF to_regclass('public.avis_packs') IS NOT NULL THEN
+    DROP TRIGGER IF EXISTS trg_notify_avis ON avis_packs;
+    CREATE TRIGGER trg_notify_avis AFTER INSERT ON avis_packs
+      FOR EACH ROW EXECUTE FUNCTION public.notify_avis();
+  END IF;
+END $$;
