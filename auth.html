@@ -470,7 +470,10 @@ body::after {
       </div>
       <div class="field">
         <label>Email</label>
-        <input type="email" id="signupEmail" placeholder="ton@email.com" />
+        <input type="email" id="signupEmail" placeholder="ton@email.com" oninput="checkEmailTypo()" />
+        <div id="emailTypoHint" style="display:none;font-size:12px;margin-top:6px;color:var(--purple, #7c5cfc);cursor:pointer;">
+          Tu voulais dire <strong id="emailTypoSuggest"></strong> ? <span style="text-decoration:underline;">Corriger</span>
+        </div>
       </div>
       <div class="field">
         <label>Mot de passe</label>
@@ -571,6 +574,62 @@ async function handleLogin() {
 
   showMsg('loginMsg', '✓ Connecté ! Redirection...', 'success')
   setTimeout(() => { window.location.href = 'index.html' }, 1000)
+}
+
+// =============================================
+// DÉTECTION FAUTES DE FRAPPE EMAIL
+// =============================================
+// Domaines populaires : si le domaine tapé est très proche (1 lettre) de
+// l'un d'eux sans être identique, on propose la correction.
+const COMMON_DOMAINS = [
+  'gmail.com', 'hotmail.com', 'outlook.com', 'yahoo.com', 'yahoo.fr',
+  'icloud.com', 'live.com', 'orange.fr', 'free.fr', 'protonmail.com', 'gmail.fr'
+];
+
+// Distance de Damerau-Levenshtein : compte l'inversion de deux lettres
+// adjacentes (gmail→gamil) comme UNE seule faute, comme un humain.
+function damerau(a, b) {
+  const m = a.length, n = b.length;
+  const d = Array.from({ length: m + 1 }, (_, i) => [i, ...Array(n).fill(0)]);
+  for (let j = 0; j <= n; j++) d[0][j] = j;
+  for (let i = 1; i <= m; i++)
+    for (let j = 1; j <= n; j++) {
+      const cost = a[i-1] === b[j-1] ? 0 : 1;
+      d[i][j] = Math.min(d[i-1][j] + 1, d[i][j-1] + 1, d[i-1][j-1] + cost);
+      if (i > 1 && j > 1 && a[i-1] === b[j-2] && a[i-2] === b[j-1]) {
+        d[i][j] = Math.min(d[i][j], d[i-2][j-2] + 1); // transposition
+      }
+    }
+  return d[m][n];
+}
+
+function suggestEmailDomain(email) {
+  const at = email.lastIndexOf('@');
+  if (at < 1) return null;
+  const domain = email.slice(at + 1).toLowerCase();
+  if (!domain || domain.length < 3) return null;
+  if (COMMON_DOMAINS.includes(domain)) return null; // déjà correct
+  for (const good of COMMON_DOMAINS) {
+    // 1 faute (lettre oubliée/ajoutée/inversée) → très probable coquille
+    if (Math.abs(domain.length - good.length) <= 1 && damerau(domain, good) === 1) {
+      return email.slice(0, at + 1) + good;
+    }
+  }
+  return null;
+}
+
+function checkEmailTypo() {
+  const input = document.getElementById('signupEmail');
+  const hint = document.getElementById('emailTypoHint');
+  const suggestEl = document.getElementById('emailTypoSuggest');
+  const suggestion = suggestEmailDomain(input.value.trim());
+  if (suggestion) {
+    suggestEl.textContent = suggestion;
+    hint.style.display = 'block';
+    hint.onclick = () => { input.value = suggestion; hint.style.display = 'none'; };
+  } else {
+    hint.style.display = 'none';
+  }
 }
 
 // =============================================
