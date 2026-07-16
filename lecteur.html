@@ -1345,20 +1345,8 @@ function toggleReplyForm(commentId) {
   }
 }
 
-// Notifie l'auteur du manga qu'un commentaire/réponse vient d'être posté
-// (best-effort : jamais pour soi-même, jamais bloquant si ça échoue)
-async function notifyMangaAuthorOfComment() {
-  try {
-    if (!manga?.auteur_id || manga.auteur_id === currentUser.id) return;
-    await sb.from('notifications').insert({
-      user_id: manga.auteur_id,
-      type: 'comment',
-      message: '@' + (currentUsername || 'Quelqu\'un') + ' a commenté "' + (manga.titre || 'ton manga') + '"',
-      manga_id: manga.id,
-      lu: false
-    });
-  } catch (e) { /* ignoré (best-effort) */ }
-}
+// Les notifications de commentaire sont créées automatiquement par le
+// trigger SQL trg_notify_comment (server-side, fiable)
 
 async function submitComment() {
   if (!currentUser) return;
@@ -1375,7 +1363,7 @@ async function submitComment() {
     parent_id: null
   });
   if (error) { showToast('Erreur : ' + error.message); }
-  else { textarea.value = ''; await loadComments(mangaId, chapitre.id); notifyMangaAuthorOfComment(); }
+  else { textarea.value = ''; await loadComments(mangaId, chapitre.id); }
   btn.disabled = false; btn.textContent = 'Publier';
 }
 
@@ -1392,23 +1380,11 @@ async function submitReply(parentId) {
     parent_id: parentId
   });
   if (error) { showToast('Erreur : ' + error.message); }
-  else { await loadComments(mangaId, chapitre.id); notifyMangaAuthorOfComment(); }
+  else { await loadComments(mangaId, chapitre.id); }
 }
 
-// Notifie l'auteur du commentaire aimé (best-effort, jamais pour soi-même)
-async function notifyCommentLike(commentId) {
-  try {
-    const { data: c } = await sb.from('commentaires').select('user_id').eq('id', commentId).single();
-    if (!c || c.user_id === currentUser.id) return;
-    await sb.from('notifications').insert({
-      user_id: c.user_id,
-      type: 'like',
-      message: '❤️ @' + (currentUsername || 'Quelqu\'un') + ' a aimé ton commentaire sur "' + (manga?.titre || 'un manga') + '"',
-      manga_id: manga?.id || null,
-      lu: false
-    });
-  } catch (e) { /* ignoré (best-effort) */ }
-}
+// Les notifications de like sont créées automatiquement par le
+// trigger SQL trg_notify_comment_like (server-side, fiable)
 
 async function toggleLike(commentId) {
   if (!currentUser) { showToast('Connecte-toi pour liker'); return; }
@@ -1419,7 +1395,6 @@ async function toggleLike(commentId) {
       .eq('commentaire_id', commentId).eq('user_id', currentUser.id);
   } else {
     await sb.from('commentaire_likes').insert({ commentaire_id: commentId, user_id: currentUser.id });
-    notifyCommentLike(commentId);
   }
   if (btn) {
     const prev = parseInt(btn.textContent.replace('❤️', '').trim()) || 0;

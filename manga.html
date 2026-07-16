@@ -1051,17 +1051,8 @@ document.getElementById('btnFollow').addEventListener('click', async () => {
       btn.textContent = '✅ Suivi';
       showToast(`✅ Tu suis maintenant ${authorN} !`, 'success');
       askNotifPermission(authorN);
-      // Notification de follow (best-effort, jamais pour soi-même)
-      if (manga.auteur_id !== currentUser.id) {
-        try {
-          await sb.from('notifications').insert({
-            user_id: manga.auteur_id,
-            type: 'follow',
-            message: '@' + (currentUsername || 'Quelqu\'un') + ' te suit désormais !',
-            lu: false
-          });
-        } catch (e) { /* ignoré (best-effort) */ }
-      }
+      // La notification au créateur est créée automatiquement par le
+      // trigger SQL trg_notify_follow (server-side, fiable)
     } else showToast('Erreur: ' + error.message, 'error');
   }
 });

@@ -697,15 +697,8 @@ document.getElementById('btnFollowAuthor').addEventListener('click', async () =>
       document.getElementById('statFollowers').textContent = followerCount;
       showToast('✅ Tu suis maintenant ce créateur !', 'success');
       askNotifPermission(document.getElementById('authorUsername')?.textContent || 'ce créateur');
-      // Notification de follow (best-effort, jamais pour soi-même)
-      if (auteurId !== currentUser.id) {
-        await sb.from('notifications').insert({
-          user_id: auteurId,
-          type: 'follow',
-          message: '@' + (currentUsername || 'quelqu\'un') + ' te suit désormais !',
-          lu: false
-        });
-      }
+      // La notification au créateur est créée automatiquement par le
+      // trigger SQL trg_notify_follow (server-side, fiable)
     } else {
       showToast('Erreur : ' + error.message, 'error');
     }
