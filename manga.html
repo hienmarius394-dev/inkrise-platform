@@ -697,6 +697,7 @@ function escHtml(s) {
 }
 
 let currentUser = null;
+let currentUsername = null;
 let manga       = null;
 let chapitres   = [];
 let currentPage = 0;
@@ -723,6 +724,7 @@ async function init() {
     if(dP)dP.style.display='flex';if(dC)dC.style.display='none';if(dL)dL.style.display='flex';if(dPub)dPub.style.display='flex';
     const { data: profile } = await sb.from('profiles').select('username, is_creator, avatar_url').eq('id', currentUser.id).single();
     const name = profile?.username || currentUser.email.split('@')[0];
+    currentUsername = profile?.username || null;
     if (profile?.avatar_url) {
       av.innerHTML = '<img src="' + profile.avatar_url + '" style="width:32px;height:32px;border-radius:50%;object-fit:cover;" alt="" />';
     } else {
@@ -1049,6 +1051,17 @@ document.getElementById('btnFollow').addEventListener('click', async () => {
       btn.textContent = '✅ Suivi';
       showToast(`✅ Tu suis maintenant ${authorN} !`, 'success');
       askNotifPermission(authorN);
+      // Notification de follow (best-effort, jamais pour soi-même)
+      if (manga.auteur_id !== currentUser.id) {
+        try {
+          await sb.from('notifications').insert({
+            user_id: manga.auteur_id,
+            type: 'follow',
+            message: '@' + (currentUsername || 'Quelqu\'un') + ' te suit désormais !',
+            lu: false
+          });
+        } catch (e) { /* ignoré (best-effort) */ }
+      }
     } else showToast('Erreur: ' + error.message, 'error');
   }
 });
