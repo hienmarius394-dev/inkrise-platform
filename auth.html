@@ -425,6 +425,7 @@ body::after {
       <span id="loginBtnText">Se connecter</span>
     </button>
     <div class="msg" id="loginMsg"></div>
+    <button class="btn-submit" id="resendConfirm" onclick="handleResendConfirm()" style="display:none;margin-top:10px;background:var(--surface2);color:var(--text);">📧 Renvoyer l'email de confirmation</button>
     <div style="text-align:center;margin-top:14px;">
       <a href="#" onclick="toggleForgot();return false;" style="font-size:12px;color:var(--text-3);text-decoration:none;">Mot de passe oublié ?</a>
     </div>
@@ -553,7 +554,17 @@ async function handleLogin() {
   const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password })
 
   if (error) {
-    showMsg('loginMsg', 'Email ou mot de passe incorrect.', 'error')
+    const raw = (error.message || '').toLowerCase()
+    if (error.code === 'email_not_confirmed' || raw.includes('not confirmed') || raw.includes('confirm')) {
+      // Le compte existe mais l'email n'a pas encore été confirmé
+      showMsg('loginMsg',
+        "⚠️ Ton email n'est pas encore confirmé. Vérifie ta boîte mail (et les spams), ou renvoie le lien ci-dessous.",
+        'error')
+      const resendBtn = document.getElementById('resendConfirm')
+      if (resendBtn) { resendBtn.style.display = 'block'; resendBtn.dataset.email = email }
+    } else {
+      showMsg('loginMsg', 'Email ou mot de passe incorrect.', 'error')
+    }
     setLoading('loginBtn', 'loginSpinner', 'loginBtnText', false, 'Se connecter')
     return
   }
@@ -640,6 +651,22 @@ function toggleForgot() {
     document.getElementById('forgotEmail').focus()
   }
 }
+async function handleResendConfirm() {
+  const btn = document.getElementById('resendConfirm')
+  const email = btn.dataset.email
+  if (!email) return
+  btn.disabled = true
+  const { error } = await supabaseClient.auth.resend({
+    type: 'signup',
+    email,
+    options: { emailRedirectTo: window.location.origin + '/auth.html' }
+  })
+  btn.disabled = false
+  if (error) { showMsg('loginMsg', 'Erreur : ' + error.message, 'error'); return }
+  showMsg('loginMsg', "✓ Email de confirmation renvoyé ! Vérifie ta boîte mail (et les spams).", 'success')
+  btn.style.display = 'none'
+}
+
 async function handleForgot() {
   const email = document.getElementById('forgotEmail').value.trim()
   hideMsg('forgotMsg')
