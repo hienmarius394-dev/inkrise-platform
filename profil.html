@@ -2103,9 +2103,10 @@
       if (!n.lu) {
         div.querySelector('.btn-read').addEventListener('click', (e) => { e.stopPropagation(); markNotifRead(n, div); });
       }
-      if (n.manga_id) {
+      const dest = n.lien || (n.manga_id ? `manga.html?id=${n.manga_id}` : null);
+      if (dest) {
         div.style.cursor = 'pointer';
-        div.addEventListener('click', () => window.location.href = `manga.html?id=${n.manga_id}`);
+        div.addEventListener('click', () => { if (!n.lu) markNotifRead(n, div); window.location.href = dest; });
       }
       list.appendChild(div);
     });

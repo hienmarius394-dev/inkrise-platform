@@ -839,12 +839,15 @@
       return;
     }
 
-    const items = notifs.map(n => `
-      <div class="notif-item">
+    const items = notifs.map(n => {
+      const dest = n.lien || (n.manga_id ? `manga.html?id=${n.manga_id}` : null);
+      return `
+      <div class="notif-item"${dest ? ` style="cursor:pointer" onclick="window.location.href='${dest}'"` : ''}>
         <span class="notif-type-icon">${notifTypeIcon(n.type)}</span>
         <span class="notif-message">${escHtml(n.message) || 'Nouvelle notification'}</span>
         <span class="notif-time">${timeAgo(n.created_at)}</span>
-      </div>`);
+      </div>`;
+    });
 
     container.innerHTML = `<div class="notif-list">${items.join('')}</div>`;
   }
@@ -959,7 +962,7 @@
     const [followsRes, formationsRes, notifsRes] = await Promise.all([
       db.from('follows').select('id', { count: 'exact', head: true }).eq('followed_id', userId),
       db.from('packs_tutoriels').select('id', { count: 'exact', head: true }).eq('auteur_id', userId),
-      db.from('notifications').select('id, type, message, created_at').eq('user_id', userId).eq('lu', false).order('created_at', { ascending: false }).limit(5)
+      db.from('notifications').select('id, type, message, manga_id, lien, created_at').eq('user_id', userId).eq('lu', false).order('created_at', { ascending: false }).limit(5)
     ]);
 
     const totalVues = mangas ? mangas.reduce((acc, m) => acc + (m.vues || 0), 0) : 0;

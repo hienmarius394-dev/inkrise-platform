@@ -1259,6 +1259,7 @@ async function sendNewChapterNotifications(newChap) {
       titre:     'Nouveau chapitre',
       message:   `${authorName} a publié "${newChap.titre}" dans ${manga.titre}`,
       manga_id:  mangaId,
+      lien:      `lecteur.html?manga_id=${mangaId}&chapitre=${newChap.id}`,
       lu:        false
     }));
     await sb.from('notifications').insert(notifications);
