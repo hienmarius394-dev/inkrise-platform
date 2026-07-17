@@ -817,6 +817,18 @@ CREATE POLICY "signalement update admin" ON signalements FOR UPDATE TO authentic
 -- ⚠️ À personnaliser : donne-toi les droits de modération (remplace le pseudo)
 -- UPDATE profiles SET is_admin = true WHERE username = 'TON_PSEUDO';
 
+-- L'utilisateur supprime son propre compte auth.users ; le profil et tout
+-- son contenu (mangas, packs, commentaires, follows, notifications…)
+-- partent en cascade via les ON DELETE CASCADE existants.
+CREATE OR REPLACE FUNCTION public.delete_my_account()
+RETURNS void LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+BEGIN
+  IF auth.uid() IS NULL THEN RAISE EXCEPTION 'Non authentifié'; END IF;
+  DELETE FROM auth.users WHERE id = auth.uid();
+END; $$;
+REVOKE ALL ON FUNCTION public.delete_my_account() FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.delete_my_account() TO authenticated;
+
 GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO service_role;
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO service_role;
 GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO anon, authenticated;

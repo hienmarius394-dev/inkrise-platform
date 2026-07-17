@@ -659,9 +659,20 @@ const CREATOR_GRADIENTS = [
 ]
 async function loadCreators() {
   const section = document.getElementById('creatorsSection')
+  // Seuls les créateurs ayant publié au moins une œuvre (manga public ou pack)
+  // apparaissent dans la vitrine — pas les profils créateur encore vides.
+  const [mangasRes, packsRes] = await Promise.all([
+    supabaseClient.from('mangas').select('auteur_id').neq('statut', 'brouillon'),
+    supabaseClient.from('packs_tutoriels').select('auteur_id'),
+  ])
+  const authorIds = [...new Set(
+    [...(mangasRes.data || []), ...(packsRes.data || [])].map(r => r.auteur_id).filter(Boolean)
+  )]
+  if (authorIds.length === 0) { section.style.display = 'none'; return }
   const { data: creators } = await supabaseClient.from('profiles')
     .select('id, username, avatar_url')
     .eq('is_creator', true)
+    .in('id', authorIds)
     .order('created_at', { ascending: false })
     .limit(12)
   if (!creators || creators.length === 0) { section.style.display = 'none'; return }
