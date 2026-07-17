@@ -632,7 +632,7 @@ async function uploadPagesToChapitre(chapId, files, startNum) {
   let ok = 0, failed = 0, firstErrorMsg = null;
   for (let p = 0; p < list.length; p++) {
     showToast(`⏳ Upload page ${p + 1}/${list.length}…`, 'info');
-    const page = list[p];
+    const page = await inkriseCompressImage(list[p], { maxDim: 1600 });
     const ext = page.name.split('.').pop();
     const pagePath = `chapitres/${chapId}/page_${String(startNum + p).padStart(4, '0')}.${ext}`;
     const { error } = await sb.storage.from('pages').upload(pagePath, page, { upsert: true });
@@ -1206,8 +1206,9 @@ async function saveMangaEdits() {
 
   if (editCoverTouched) {
     showToast('⏳ Envoi de la couverture recadrée…', 'info');
-    const finalCoverFile = await bakeEditCoverCrop();
+    let finalCoverFile = await bakeEditCoverCrop();
     if (finalCoverFile) {
+      finalCoverFile = await inkriseCompressImage(finalCoverFile, { maxDim: 1000 });
       const ext  = finalCoverFile.name.split('.').pop() || 'jpg';
       const path = `covers/${currentUser.id}/${Date.now()}.${ext}`;
       const { error: upErr } = await sb.storage.from('covers').upload(path, finalCoverFile, { upsert: true });
@@ -1299,6 +1300,7 @@ function doLogout(){ sb.auth.signOut().then(function(){ window.location.href='in
 </script>
 <!-- BOTTOM NAV -->
 <div id="inkriseBottomNav" data-active=""></div>
+<script src="assets/inkrise-img.js"></script>
 <script src="assets/inkrise-nav.js"></script>
 </body>
 </html>
