@@ -1224,6 +1224,17 @@
     loadAbonnes();
     await loadNotifications();
     if (window.location.hash === '#notifications') activateNotifTab();
+
+    /* La cloche pointe vers profil.html#notifications : quand on est déjà
+       sur cette page, le navigateur change juste le hash sans recharger,
+       donc on ouvre l'onglet nous-mêmes au clic. */
+    const bell = document.getElementById('navNotifLink');
+    if (bell) bell.addEventListener('click', (e) => {
+      e.preventDefault();
+      activateNotifTab();
+      const anchor = document.getElementById('notifications');
+      if (anchor) anchor.scrollIntoView({ behavior: 'smooth' });
+    });
   }
 
   /* ── NAV UPDATE ── */
