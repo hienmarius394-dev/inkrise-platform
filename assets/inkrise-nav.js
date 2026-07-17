@@ -44,6 +44,52 @@
     });
   }
 
+  /* Signalement de contenu : window.inkriseSignaler(sb, 'manga'|'commentaire'|'post'|'pack'|'profil', id)
+     Ouvre une petite modale de choix de raison puis insère dans `signalements`. */
+  window.inkriseSignaler = function (sb, typeContenu, contenuId) {
+    if (document.getElementById('inkSignalOverlay')) return;
+    const RAISONS = ['Contenu volé / plagiat', 'Contenu inapproprié', 'Spam ou arnaque', 'Harcèlement', 'Autre'];
+    const ov = document.createElement('div');
+    ov.id = 'inkSignalOverlay';
+    ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:400;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(3px);';
+    const box = document.createElement('div');
+    box.style.cssText = 'background:#fff;border-radius:16px;padding:22px;max-width:340px;width:100%;font-family:\'DM Sans\',sans-serif;box-shadow:0 24px 60px rgba(0,0,0,.25);';
+    box.innerHTML = '<div style="font-weight:800;font-size:1rem;margin-bottom:4px;">🚩 Signaler ce contenu</div>' +
+      '<div id="inkSignalMsg" style="font-size:.8rem;color:#8e8e93;margin-bottom:14px;">Pourquoi veux-tu le signaler ?</div>';
+    RAISONS.forEach(function (raison) {
+      const b = document.createElement('button');
+      b.textContent = raison;
+      b.style.cssText = 'display:block;width:100%;text-align:left;padding:11px 14px;margin-bottom:8px;border-radius:10px;border:1px solid rgba(0,0,0,.1);background:#f7f7fa;cursor:pointer;font-size:.86rem;font-weight:600;color:#1c1c1e;';
+      b.onclick = async function () {
+        const msg = document.getElementById('inkSignalMsg');
+        try {
+          const { data } = await sb.auth.getSession();
+          if (!data || !data.session) { msg.textContent = 'Connecte-toi pour signaler un contenu.'; msg.style.color = '#ef4444'; return; }
+          const { error } = await sb.from('signalements').insert({
+            type_contenu: typeContenu, contenu_id: String(contenuId),
+            raison: raison, signale_par: data.session.user.id
+          });
+          if (error && String(error.code) === '23505') { msg.textContent = 'Tu as déjà signalé ce contenu — merci !'; }
+          else if (error) { msg.textContent = 'Erreur : ' + error.message; msg.style.color = '#ef4444'; return; }
+          else { msg.textContent = '✅ Merci, ton signalement a bien été transmis.'; }
+          msg.style.color = '#0fb8a6';
+          box.querySelectorAll('button').forEach(function (x) { if (x !== close) x.disabled = true; x.style.opacity = '.55'; });
+          close.style.opacity = '1'; close.disabled = false;
+          setTimeout(function () { ov.remove(); }, 1600);
+        } catch (e) { msg.textContent = 'Erreur inattendue.'; msg.style.color = '#ef4444'; }
+      };
+      box.appendChild(b);
+    });
+    const close = document.createElement('button');
+    close.textContent = 'Annuler';
+    close.style.cssText = 'display:block;width:100%;padding:10px;margin-top:4px;border-radius:10px;border:none;background:none;cursor:pointer;font-size:.84rem;font-weight:700;color:#8e8e93;';
+    close.onclick = function () { ov.remove(); };
+    box.appendChild(close);
+    ov.appendChild(box);
+    ov.addEventListener('click', function (e) { if (e.target === ov) ov.remove(); });
+    document.body.appendChild(ov);
+  };
+
   /* PWA : enregistre le service worker (cache assets + pages, mode hors-ligne) */
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function () {

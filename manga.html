@@ -614,6 +614,7 @@
         <span class="author-mini-avatar" id="authorAvatar">?</span>
         Voir le profil
       </a>
+      <button class="btn-author-mini" id="btnSignalManga" title="Signaler ce manga" style="min-width:auto;">🚩</button>
     </div>
 
     <div class="content-grid">
@@ -747,6 +748,9 @@ async function init() {
   const params = new URLSearchParams(window.location.search);
   const mangaId = params.get('id');
   if (!mangaId) { showNotFound(); return; }
+
+  const btnSignal = document.getElementById('btnSignalManga');
+  if (btnSignal) btnSignal.addEventListener('click', () => inkriseSignaler(sb, 'manga', mangaId));
 
   await loadManga(mangaId);
 }
