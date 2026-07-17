@@ -44,6 +44,13 @@
     });
   }
 
+  /* PWA : enregistre le service worker (cache assets + pages, mode hors-ligne) */
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('sw.js').catch(function () { /* non bloquant */ });
+    });
+  }
+
   /* Carte "Notre mission" en bas du menu latéral — visible en permanence,
      sur toutes les pages, connecté ou non. */
   const drawer = document.getElementById('univDrawer');
