@@ -112,14 +112,23 @@
   if (drawer && !document.getElementById('drawerMission')) {
     const card = document.createElement('a');
     card.id = 'drawerMission';
-    card.href = 'upload-manga.html';
-    card.style.cssText = 'display:block;margin:16px 14px 20px;padding:14px 16px;border-radius:14px;' +
+    card.href = 'creators-remuneration.html';
+    card.style.cssText = 'display:block;margin:16px 14px 12px;padding:14px 16px;border-radius:14px;' +
       'text-decoration:none;background:linear-gradient(135deg,rgba(124,92,252,.12),rgba(255,95,168,.10));' +
       'border:1px solid rgba(124,92,252,.28);';
     card.innerHTML =
       '<div style="font-weight:800;font-size:.72rem;letter-spacing:.6px;color:#7c5cfc;margin-bottom:6px;">💜 NOTRE MISSION</div>' +
       '<div style="font-size:.82rem;line-height:1.5;color:#4a4560;">Tu publies tes mangas sur Inkrise ? Dès que la communauté sera assez grande, jusqu\'à <b>70% des revenus publicitaires</b> te seront reversés <b>selon les vues de tes œuvres</b>.</div>' +
-      '<div style="margin-top:8px;font-size:.8rem;font-weight:700;color:#ff5fa8;">Publier mon manga →</div>';
+      '<div style="margin-top:8px;font-size:.8rem;font-weight:700;color:#ff5fa8;">En savoir plus →</div>';
     drawer.appendChild(card);
+
+    // Liens légaux discrets sous la carte mission (présents sur toutes les pages)
+    const legal = document.createElement('div');
+    legal.style.cssText = 'padding:0 18px 22px;font-size:.72rem;line-height:1.8;color:#9a99a8;';
+    legal.innerHTML =
+      '<a href="mentions-legales.html" style="color:#9a99a8;text-decoration:none;">Mentions légales</a> · ' +
+      '<a href="cgu.html" style="color:#9a99a8;text-decoration:none;">CGU / CGV</a> · ' +
+      '<a href="confidentialite.html" style="color:#9a99a8;text-decoration:none;">Confidentialité</a>';
+    drawer.appendChild(legal);
   }
 })();
