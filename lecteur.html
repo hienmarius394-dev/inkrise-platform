@@ -1352,7 +1352,7 @@ function buildCommentHTML(c, replies, userLikes, likeCountMap) {
       <div class="comment-actions">
         <button class="btn-like${liked ? ' liked' : ''}" id="like-${c.id}" onclick="toggleLike(${c.id})">❤️ ${count}</button>
         ${currentUser ? `<button class="btn-reply-action" onclick="toggleReplyForm(${c.id})">Répondre</button>` : ''}
-        <button class="btn-reply-action" title="Signaler" onclick="inkriseSignaler(sb, 'commentaire', ${c.id})">🚩</button>
+        <button class="btn-reply-action" title="Signaler" onclick="inkriseSignaler(sb, 'commentaire', ${c.id})">🚩 Signaler</button>
       </div>
       ${replyFormHTML}
       ${repliesHTML}
@@ -1374,7 +1374,7 @@ function buildReplyHTML(r, userLikes, likeCountMap) {
       <div class="comment-content">${escapeHTML(r.contenu)}</div>
       <div class="comment-actions">
         <button class="btn-like${liked ? ' liked' : ''}" id="like-${r.id}" onclick="toggleLike(${r.id})">❤️ ${count}</button>
-        <button class="btn-reply-action" title="Signaler" onclick="inkriseSignaler(sb, 'commentaire', ${r.id})">🚩</button>
+        <button class="btn-reply-action" title="Signaler" onclick="inkriseSignaler(sb, 'commentaire', ${r.id})">🚩 Signaler</button>
       </div>
     </div>
   </div>`;
