@@ -675,6 +675,7 @@ let manga      = null;
 let chapitre   = null;
 let allChaps   = [];
 let pages      = [];      // URLs des pages
+let offlineMode = false;  // lecture depuis les chapitres téléchargés
 let currentPage = 0;
 let currentUsername = null;
 let readMode   = 'pages'; // 'pages' | 'scroll'
@@ -731,11 +732,26 @@ async function init() {
   // Charger le manga
   const { data: m } = await sb.from('mangas').select('id, titre, type, sens_lecture, commentaires_actifs, auteur_id').eq('id', mangaId).single();
   manga = m;
-  applyReadingDirection();
 
   // Charger tous les chapitres
   const { data: chaps } = await sb.from('chapitres').select('*').eq('manga_id', mangaId).order('numero', { ascending: true });
   allChaps = chaps || [];
+
+  // HORS-LIGNE : si la base est injoignable, on reconstruit le minimum
+  // depuis les chapitres téléchargés (assets/inkrise-offline.js)
+  if ((!manga || allChaps.length === 0) && window.inkriseOffline) {
+    const offMeta = inkriseOffline.get(chapitreId);
+    if (offMeta) {
+      offlineMode = true;
+      manga = manga || { id: offMeta.mangaId, titre: offMeta.mangaTitre, type: offMeta.mangaType, sens_lecture: offMeta.sensLecture, commentaires_actifs: false };
+      allChaps = Object.values(inkriseOffline.all())
+        .filter(o => String(o.mangaId) === String(mangaId))
+        .sort((a, b) => a.numero - b.numero)
+        .map(o => ({ id: o.chapId, numero: o.numero, titre: o.chapTitre, manga_id: o.mangaId }));
+      showToast('📥 Mode hors-ligne — chapitres téléchargés uniquement');
+    }
+  }
+  applyReadingDirection();
 
   // Chapitre actuel (IDs BIGINT numériques vs param string → comparer en String)
   chapitre = allChaps.find(c => String(c.id) === String(chapitreId)) || allChaps[0];
@@ -812,6 +828,12 @@ async function loadChapter() {
                   .getPublicUrl(`chapitres/${chapitre.id}/${f.name}`);
         return publicUrl;
       });
+  }
+
+  // HORS-LIGNE : le listing Storage est injoignable → planches téléchargées
+  if (pages.length === 0 && window.inkriseOffline) {
+    const offMeta = inkriseOffline.get(chapitre.id);
+    if (offMeta && offMeta.pages && offMeta.pages.length) pages = offMeta.pages;
   }
 
   currentPage = 0;
@@ -1458,6 +1480,7 @@ function closeDrawer(){
 
 <!-- BOTTOM NAV -->
 <div id="inkriseBottomNav" data-active=""></div>
+<script src="assets/inkrise-offline.js"></script>
 <script src="assets/inkrise-nav.js"></script>
 </body>
 </html>
