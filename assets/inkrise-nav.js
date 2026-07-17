@@ -124,7 +124,7 @@
 
     // Liens légaux discrets sous la carte mission (présents sur toutes les pages)
     const legal = document.createElement('div');
-    legal.style.cssText = 'padding:0 18px 22px;font-size:.72rem;line-height:1.8;color:#9a99a8;';
+    legal.style.cssText = 'padding:0 18px 40px;font-size:.72rem;line-height:1.8;color:#9a99a8;';
     legal.innerHTML =
       '<a href="mentions-legales.html" style="color:#9a99a8;text-decoration:none;">Mentions légales</a> · ' +
       '<a href="cgu.html" style="color:#9a99a8;text-decoration:none;">CGU / CGV</a> · ' +

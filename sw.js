@@ -1,12 +1,15 @@
 /* Service worker Inkrise — volontairement minimal et sûr.
-   - assets statiques (assets/*) : cache d'abord, réseau en secours
+   - assets statiques (assets/*) : stale-while-revalidate — on sert le cache
+     tout de suite (rapide + hors-ligne) MAIS on récupère la version réseau
+     en arrière-plan et on met le cache à jour, pour que les mises à jour de
+     JS/CSS arrivent au chargement suivant sans forcer le rechargement
    - navigations (pages HTML) : réseau d'abord, cache en secours, indexées
      par chemin (sans query string) pour que lecteur.html?manga_id=…
      fonctionne hors-ligne quelle que soit l'URL exacte
    - planches téléchargées (cache "inkrise-pages", rempli par
      assets/inkrise-offline.js) : cache d'abord — lecture hors-ligne
    - tout le reste (API Supabase, autres origines) : jamais intercepté */
-const CACHE = 'inkrise-v2';
+const CACHE = 'inkrise-v3';
 const PAGES_CACHE = 'inkrise-pages';
 
 self.addEventListener('install', (e) => {
@@ -40,16 +43,20 @@ self.addEventListener('fetch', (e) => {
 
   if (url.origin !== self.location.origin) return;
 
-  // Assets statiques : cache-first
+  // Assets statiques : stale-while-revalidate (sert le cache, met à jour en fond)
   if (url.pathname.includes('/assets/') || url.pathname.endsWith('.webmanifest')) {
     e.respondWith(
-      caches.match(req).then(hit => hit || fetch(req).then(res => {
-        if (res.ok) {
-          const copy = res.clone();
-          caches.open(CACHE).then(c => c.put(req, copy));
-        }
-        return res;
-      }))
+      caches.open(CACHE).then(cache =>
+        cache.match(req).then(hit => {
+          // cache: 'no-cache' → revalidation réseau, contourne le cache HTTP
+          // du navigateur pour toujours détecter une nouvelle version.
+          const network = fetch(req, { cache: 'no-cache' }).then(res => {
+            if (res.ok) cache.put(req, res.clone());
+            return res;
+          }).catch(() => hit);
+          return hit || network;
+        })
+      )
     );
     return;
   }
