@@ -244,6 +244,22 @@
     .ptab:hover { color: var(--text); }
     .ptab.active { color: var(--accent); border-bottom-color: var(--accent); }
 
+    /* Sous-onglets Suivis / Abonnés : une seule liste affichée à la fois */
+    .follow-subtabs { display: flex; gap: 10px; margin-bottom: 20px; }
+    .follow-subtab {
+      padding: 9px 18px; border-radius: 999px;
+      font-weight: 700; font-size: 0.85rem;
+      font-family: 'Nunito', sans-serif; letter-spacing: 0.3px;
+      color: var(--muted); background: none; cursor: pointer;
+      border: 1.5px solid rgba(124, 92, 252, 0.25);
+      transition: all .2s;
+    }
+    .follow-subtab:hover { color: var(--text); }
+    .follow-subtab.active {
+      color: #fff; border-color: transparent;
+      background: linear-gradient(135deg, var(--purple), var(--pink));
+    }
+
     /* ── CONTENT ── */
     .profile-content {
       max-width: 900px;
@@ -1055,28 +1071,31 @@
   </div>
 
 
-  <!-- TAB : Créateurs suivis + Mes abonnés -->
+  <!-- TAB : Créateurs suivis / Mes abonnés (sous-onglets, une liste à la fois) -->
   <div class="tab-panel" id="tab-suivis">
-    <div class="section-header">
-      <div class="section-title">Créateurs suivis</div>
-    </div>
-    <div id="suivisLoading" class="loading-dots"><span></span><span></span><span></span></div>
-    <div id="suivisList" style="display:none; flex-direction:column;"></div>
-    <div id="suivisEmpty" class="empty-state" style="display:none;">
-      <div class="empty-icon">👥</div>
-      <h3>Tu ne suis aucun créateur</h3>
-      <p>Visite la page d'un manga et clique sur "Suivre" pour suivre un créateur.</p>
+    <div class="follow-subtabs" id="abonnesSection">
+      <button class="follow-subtab active" id="subtabSuivis" onclick="showFollowView('suivis')">👥 Suivis <span id="suivisCount"></span></button>
+      <button class="follow-subtab" id="subtabAbonnes" onclick="showFollowView('abonnes')">🌟 Abonnés <span id="abonnesCount"></span></button>
     </div>
 
-    <div class="section-header" id="abonnesSection" style="margin-top:36px;">
-      <div class="section-title">Mes abonnés <span id="abonnesCount" style="font-size:0.9rem;color:var(--muted);font-family:'Nunito',sans-serif;font-weight:700;letter-spacing:0;"></span></div>
+    <div id="viewSuivis">
+      <div id="suivisLoading" class="loading-dots"><span></span><span></span><span></span></div>
+      <div id="suivisList" style="display:none; flex-direction:column;"></div>
+      <div id="suivisEmpty" class="empty-state" style="display:none;">
+        <div class="empty-icon">👥</div>
+        <h3>Tu ne suis aucun créateur</h3>
+        <p>Visite la page d'un manga et clique sur "Suivre" pour suivre un créateur.</p>
+      </div>
     </div>
-    <div id="abonnesLoading" class="loading-dots"><span></span><span></span><span></span></div>
-    <div id="abonnesList" style="display:none; flex-direction:column;"></div>
-    <div id="abonnesEmpty" class="empty-state" style="display:none;">
-      <div class="empty-icon">🌱</div>
-      <h3>Pas encore d'abonnés</h3>
-      <p>Publie des mangas et partage ta communauté — tes futurs fans arrivent !</p>
+
+    <div id="viewAbonnes" style="display:none;">
+      <div id="abonnesLoading" class="loading-dots"><span></span><span></span><span></span></div>
+      <div id="abonnesList" style="display:none; flex-direction:column;"></div>
+      <div id="abonnesEmpty" class="empty-state" style="display:none;">
+        <div class="empty-icon">🌱</div>
+        <h3>Pas encore d'abonnés</h3>
+        <p>Publie des mangas et partage ta communauté — tes futurs fans arrivent !</p>
+      </div>
     </div>
   </div>
 
@@ -1953,13 +1972,19 @@
       .order('created_at', { ascending: false });
     document.getElementById('suivisLoading').style.display = 'none';
     if (!follows || follows.length === 0) {
-      document.getElementById('suivisEmpty').style.display = 'block'; return;
+      document.getElementById('suivisEmpty').style.display = 'block';
+      document.getElementById('suivisCount').textContent = '';
+      return;
     }
+    document.getElementById('suivisCount').textContent = `(${follows.length})`;
     const followedIds = follows.map(f => f.followed_id);
-    const { data: profiles } = await sb.from('profiles').select('id, username').in('id', followedIds);
+    const { data: profiles } = await sb.from('profiles').select('id, username, avatar_url').in('id', followedIds);
     const profileMap = {};
-    if (profiles) profiles.forEach(p => profileMap[p.id] = p.username);
-    userSuivis = follows.map(f => ({ ...f, username: profileMap[f.followed_id] || 'Utilisateur' }));
+    if (profiles) profiles.forEach(p => profileMap[p.id] = p);
+    userSuivis = follows.map(f => {
+      const p = profileMap[f.followed_id] || {};
+      return { ...f, username: p.username || 'Utilisateur', avatar_url: p.avatar_url || null };
+    });
     renderSuivis();
   }
 
@@ -1974,8 +1999,11 @@
       const since = new Date(f.created_at).toLocaleDateString('fr-FR', { day:'numeric', month:'long', year:'numeric' });
       const div = document.createElement('div');
       div.className = 'creator-item';
+      const avatarHtml = f.avatar_url
+        ? `<img src="${escHtml(f.avatar_url)}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;" alt="" />`
+        : escFormation((f.username||'?')[0].toUpperCase());
       div.innerHTML = `
-        <div class="creator-avatar-sm">${escFormation((f.username||'?')[0].toUpperCase())}</div>
+        <div class="creator-avatar-sm">${avatarHtml}</div>
         <div class="creator-info">
           <div class="creator-info-name">${escFormation(f.username)}</div>
           <div class="creator-info-since">Suivi depuis le ${since}</div>
@@ -2011,10 +2039,18 @@
   }
   window.goToChapitres = goToChapitres;
 
+  /* Bascule Suivis / Abonnés : une seule liste affichée à la fois */
+  function showFollowView(which) {
+    document.getElementById('viewSuivis').style.display  = which === 'suivis'  ? 'block' : 'none';
+    document.getElementById('viewAbonnes').style.display = which === 'abonnes' ? 'block' : 'none';
+    document.getElementById('subtabSuivis').classList.toggle('active', which === 'suivis');
+    document.getElementById('subtabAbonnes').classList.toggle('active', which === 'abonnes');
+  }
+  window.showFollowView = showFollowView;
+
   function goToAbonnes() {
     goToTab('suivis');
-    const target = document.getElementById('abonnesSection');
-    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    showFollowView('abonnes');
   }
   window.goToAbonnes = goToAbonnes;
 
@@ -2069,6 +2105,7 @@
     if (!error) {
       userSuivis = userSuivis.filter(f => f.followed_id !== followedId);
       itemEl.remove();
+      document.getElementById('suivisCount').textContent = userSuivis.length ? `(${userSuivis.length})` : '';
       if (!userSuivis.length) {
         document.getElementById('suivisList').style.display = 'none';
         document.getElementById('suivisEmpty').style.display = 'block';
