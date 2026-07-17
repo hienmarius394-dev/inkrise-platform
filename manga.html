@@ -410,6 +410,24 @@
     .chap-item:hover .chap-read-btn {
       background: rgba(124,111,239,0.25); border-color: var(--purple);
     }
+    .chap-dl-btn {
+      font-size: 0.74rem; font-weight: 700; color: var(--text-2);
+      background: var(--bg); border: 1px solid var(--border);
+      padding: 5px 10px; border-radius: 7px; white-space: nowrap;
+      cursor: pointer; flex-shrink: 0; font-family: 'DM Sans', sans-serif;
+      transition: all .2s;
+    }
+    .chap-dl-btn:hover { border-color: var(--purple2); color: var(--purple); }
+    .chap-dl-btn.downloaded {
+      color: var(--green); border-color: rgba(61,220,132,0.4);
+      background: rgba(61,220,132,0.1);
+    }
+    .chap-dl-btn:disabled { opacity: .7; cursor: default; }
+    /* Sur petit écran, les boutons passent sous le titre au lieu de déborder */
+    @media (max-width: 460px) {
+      .chap-item { flex-wrap: wrap; }
+      .chap-info { flex: 1 1 100%; order: -1; }
+    }
 
     /* Pagination chapitres */
     .chap-pagination {
@@ -607,14 +625,14 @@
     <div class="action-bar">
       <a href="#" class="btn-read-first" id="btnReadFirst">▶ Lire le chapitre 1</a>
       <button class="btn-subscribe" id="btnSubscribe">🔔 S'abonner</button>
-            <button class="btn-library" id="btnLibrary">📚 Bibliothèque</button>
+            <button class="btn-library" id="btnLibrary">📚 Ajouter à la bibliothèque</button>
             <button class="btn-follow" id="btnFollow">👤 Suivre</button>
                   <a href="#" class="btn-manage" id="btnManage">⚙️ Gérer</a>
       <a href="#" class="btn-author-mini" id="authorProfileLink">
         <span class="author-mini-avatar" id="authorAvatar">?</span>
         Voir le profil
       </a>
-      <button class="btn-author-mini" id="btnSignalManga" title="Signaler ce manga" style="min-width:auto;">🚩</button>
+      <button class="btn-author-mini" id="btnSignalManga" title="Signaler ce manga">🚩 Signaler</button>
     </div>
 
     <div class="content-grid">
@@ -956,25 +974,26 @@ function renderChapitres() {
         <div class="chap-name">${escHtml(chap.titre) || `Chapitre ${chap.numero}`}</div>
         <div class="chap-date-small">${date}${isNew ? ' · <span style="color:var(--purple2);font-weight:700;">Nouveau</span>' : ''}</div>
       </div>
-      <button class="chap-dl-btn" title="${isDownloaded ? 'Téléchargé — appuie pour supprimer' : 'Télécharger pour lire hors-ligne'}" style="border:none;background:none;cursor:pointer;font-size:1rem;padding:6px;flex-shrink:0;${isDownloaded ? '' : 'opacity:.55;'}">${isDownloaded ? '✅' : '📥'}</button>
+      <button class="chap-dl-btn" title="${isDownloaded ? 'Téléchargé — appuie pour supprimer' : 'Télécharger pour lire hors-ligne'}">${isDownloaded ? '✅ Hors-ligne' : '📥 Télécharger'}</button>
       <div class="chap-read-btn">Lire →</div>
     `;
     const dlBtn = a.querySelector('.chap-dl-btn');
+    if (isDownloaded) dlBtn.classList.add('downloaded');
     dlBtn.addEventListener('click', async (e) => {
       e.preventDefault(); e.stopPropagation();
       if (!window.inkriseOffline) return;
       if (inkriseOffline.get(chap.id)) {
         if (!confirm('Supprimer ce chapitre téléchargé ?')) return;
         await inkriseOffline.remove(chap.id);
-        dlBtn.textContent = '📥'; dlBtn.style.opacity = '.55';
+        dlBtn.textContent = '📥 Télécharger'; dlBtn.classList.remove('downloaded');
         showToast('Chapitre supprimé du hors-ligne', 'info');
         return;
       }
-      dlBtn.textContent = '⏳'; dlBtn.style.opacity = '1'; dlBtn.disabled = true;
-      const res = await inkriseOffline.download(sb, manga, chap, (done, tot) => { dlBtn.textContent = `${Math.round(done / tot * 100)}%`; dlBtn.style.fontSize = '.62rem'; });
-      dlBtn.disabled = false; dlBtn.style.fontSize = '1rem';
-      if (res.ok) { dlBtn.textContent = '✅'; showToast(`📥 Chapitre téléchargé (${res.count} pages) — lisible hors-ligne !`, 'success'); }
-      else { dlBtn.textContent = '📥'; dlBtn.style.opacity = '.55'; showToast('Téléchargement impossible : ' + res.reason, 'error'); }
+      dlBtn.textContent = '⏳ 0%'; dlBtn.disabled = true;
+      const res = await inkriseOffline.download(sb, manga, chap, (done, tot) => { dlBtn.textContent = `⏳ ${Math.round(done / tot * 100)}%`; });
+      dlBtn.disabled = false;
+      if (res.ok) { dlBtn.textContent = '✅ Hors-ligne'; dlBtn.classList.add('downloaded'); showToast(`📥 Chapitre téléchargé (${res.count} pages) — lisible hors-ligne !`, 'success'); }
+      else { dlBtn.textContent = '📥 Télécharger'; showToast('Téléchargement impossible : ' + res.reason, 'error'); }
     });
     list.appendChild(a);
   });
@@ -1098,7 +1117,7 @@ document.getElementById('btnLibrary').addEventListener('click', async () => {
     if (!error) {
       inLibrary = false;
       btn.classList.remove('in-library');
-      btn.textContent = '📚 Bibliothèque';
+      btn.textContent = '📚 Ajouter à la bibliothèque';
       showToast('Retiré de ta bibliothèque', 'info');
     } else showToast('Erreur: ' + error.message, 'error');
   } else {
