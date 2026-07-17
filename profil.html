@@ -1049,7 +1049,10 @@
       </div>
       <div class="info-row">
         <label>Plan actuel</label>
-        <span id="displayPlan" style="color:var(--purple); font-weight:800;">Membre</span>
+        <span>
+          <span id="displayPlan" style="color:var(--purple); font-weight:800;">Membre</span>
+          <button type="button" id="btnSwitchRole" style="display:none; margin-left:10px; background:none; border:none; cursor:pointer; font-size:0.78rem; font-weight:700; color:var(--muted); text-decoration:underline; font-family:'Nunito',sans-serif;"></button>
+        </span>
       </div>
       <div class="info-row info-row-social" style="align-items:flex-start;">
         <label style="padding-top:8px;">Réseaux sociaux</label>
@@ -1387,6 +1390,16 @@
     const displayPlanEl = document.getElementById('displayPlan');
     if (planNameEl) planNameEl.textContent = label;
     if (displayPlanEl) displayPlanEl.textContent = label;
+    // Changement de rôle dans les deux sens, à tout moment
+    const switchBtn = document.getElementById('btnSwitchRole');
+    if (switchBtn) {
+      switchBtn.style.display = 'inline';
+      switchBtn.textContent = userProfile?.is_creator ? 'Repasser en lecteur' : 'Devenir créateur';
+      switchBtn.onclick = () => {
+        if (userProfile?.is_creator) switchToReader();
+        else choosePlan('gratuit');
+      };
+    }
     // Bouton "Gratuit" de la modal : activable seulement si pas encore créateur
     const freeBtn = document.querySelector('.btn-plan.free');
     if (freeBtn) {
@@ -1400,6 +1413,18 @@
         freeBtn.style.cursor = 'pointer';
       }
     }
+  }
+
+  // ── REPASSER EN LECTEUR (réversible à tout moment) ──
+  async function switchToReader() {
+    const ok = confirm('Repasser en lecteur ?\n\nTes mangas et packs déjà publiés restent en ligne, mais les outils de création seront masqués. Tu pourras redevenir créateur à tout moment.');
+    if (!ok) return;
+    const { error } = await sb.from('profiles').update({ is_creator: false }).eq('id', currentUser.id);
+    if (error) { showToast('Erreur : ' + error.message, 'error'); return; }
+    userProfile = { ...userProfile, is_creator: false };
+    updatePlanUI();
+    showToast('Te voilà lecteur 📖 — tu peux redevenir créateur quand tu veux', 'success');
+    setTimeout(() => window.location.reload(), 1200);
   }
 
   // ── DEVENIR CRÉATEUR (gratuit, une seule fois) ──
