@@ -687,6 +687,7 @@
 
 <!-- BOTTOM NAV -->
 <div id="inkriseBottomNav" data-active=""></div>
+<script src="assets/inkrise-offline.js"></script>
 <script src="assets/inkrise-nav.js"></script>
 
 <script>
@@ -948,14 +949,33 @@ function renderChapitres() {
     const a = document.createElement('a');
     a.className = `chap-item${isNew ? ' new-chap' : ''}`;
     a.href = `lecteur.html?manga_id=${manga.id}&chapitre=${chap.id}`;
+    const isDownloaded = !!(window.inkriseOffline && inkriseOffline.get(chap.id));
     a.innerHTML = `
       <div class="chap-num-badge">Ch. ${chap.numero}</div>
       <div class="chap-info">
         <div class="chap-name">${escHtml(chap.titre) || `Chapitre ${chap.numero}`}</div>
         <div class="chap-date-small">${date}${isNew ? ' · <span style="color:var(--purple2);font-weight:700;">Nouveau</span>' : ''}</div>
       </div>
+      <button class="chap-dl-btn" title="${isDownloaded ? 'Téléchargé — appuie pour supprimer' : 'Télécharger pour lire hors-ligne'}" style="border:none;background:none;cursor:pointer;font-size:1rem;padding:6px;flex-shrink:0;${isDownloaded ? '' : 'opacity:.55;'}">${isDownloaded ? '✅' : '📥'}</button>
       <div class="chap-read-btn">Lire →</div>
     `;
+    const dlBtn = a.querySelector('.chap-dl-btn');
+    dlBtn.addEventListener('click', async (e) => {
+      e.preventDefault(); e.stopPropagation();
+      if (!window.inkriseOffline) return;
+      if (inkriseOffline.get(chap.id)) {
+        if (!confirm('Supprimer ce chapitre téléchargé ?')) return;
+        await inkriseOffline.remove(chap.id);
+        dlBtn.textContent = '📥'; dlBtn.style.opacity = '.55';
+        showToast('Chapitre supprimé du hors-ligne', 'info');
+        return;
+      }
+      dlBtn.textContent = '⏳'; dlBtn.style.opacity = '1'; dlBtn.disabled = true;
+      const res = await inkriseOffline.download(sb, manga, chap, (done, tot) => { dlBtn.textContent = `${Math.round(done / tot * 100)}%`; dlBtn.style.fontSize = '.62rem'; });
+      dlBtn.disabled = false; dlBtn.style.fontSize = '1rem';
+      if (res.ok) { dlBtn.textContent = '✅'; showToast(`📥 Chapitre téléchargé (${res.count} pages) — lisible hors-ligne !`, 'success'); }
+      else { dlBtn.textContent = '📥'; dlBtn.style.opacity = '.55'; showToast('Téléchargement impossible : ' + res.reason, 'error'); }
+    });
     list.appendChild(a);
   });
 

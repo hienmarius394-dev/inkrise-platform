@@ -169,6 +169,11 @@ body { background: var(--ink); color: var(--text); font-family: 'DM Sans', sans-
   <div class="page-sub" id="libSub">Tes mangas sauvegardés</div>
 </div>
 
+<div id="offlineSection" style="display:none; max-width:900px; margin:0 auto 8px; padding:0 16px;">
+  <div style="font-weight:800; font-size:1rem; margin-bottom:10px;">📥 Téléchargés <span style="font-size:.8rem; color:#8e8e93; font-weight:600;">— lisibles sans connexion</span></div>
+  <div id="offlineList" style="display:flex; flex-direction:column; gap:8px; margin-bottom:22px;"></div>
+</div>
+
 <div id="libraryContent">
   <div class="loading" id="libLoading">Chargement de ta bibliothèque…</div>
 </div>
@@ -177,6 +182,7 @@ body { background: var(--ink); color: var(--text); font-family: 'DM Sans', sans-
 
 <!-- BOTTOM NAV -->
 <div id="inkriseBottomNav" data-active=""></div>
+<script src="assets/inkrise-offline.js"></script>
 <script src="assets/inkrise-nav.js"></script>
 
 <script>
@@ -374,6 +380,37 @@ async function doLogout(){
   if(sb) await sb.auth.signOut();
   window.location.href = 'index.html';
 }
+
+/* ── CHAPITRES TÉLÉCHARGÉS (lisibles hors-ligne) ── */
+function renderOffline() {
+  if (!window.inkriseOffline) return;
+  const items = Object.values(inkriseOffline.all()).sort((a, b) => b.savedAt - a.savedAt);
+  const section = document.getElementById('offlineSection');
+  const list = document.getElementById('offlineList');
+  if (!items.length) { section.style.display = 'none'; return; }
+  section.style.display = 'block';
+  list.innerHTML = '';
+  items.forEach(o => {
+    const row = document.createElement('a');
+    row.href = `lecteur.html?manga_id=${o.mangaId}&chapitre=${o.chapId}`;
+    row.style.cssText = 'display:flex;align-items:center;gap:12px;padding:12px 14px;background:#fff;border:1px solid rgba(0,0,0,.08);border-radius:12px;text-decoration:none;color:inherit;';
+    row.innerHTML =
+      '<span style="font-size:1.2rem;">📖</span>' +
+      '<span style="flex:1;min-width:0;">' +
+        '<span style="display:block;font-weight:800;font-size:.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + escapeHtml(o.mangaTitre) + '</span>' +
+        '<span style="display:block;font-size:.76rem;color:#8e8e93;">' + escapeHtml(o.chapTitre) + ' · ' + (o.pages ? o.pages.length : 0) + ' pages</span>' +
+      '</span>' +
+      '<button title="Supprimer du hors-ligne" style="border:none;background:none;cursor:pointer;font-size:.95rem;padding:6px;">🗑️</button>';
+    row.querySelector('button').addEventListener('click', async (e) => {
+      e.preventDefault(); e.stopPropagation();
+      if (!confirm('Supprimer ce chapitre téléchargé ?')) return;
+      await inkriseOffline.remove(o.chapId);
+      renderOffline();
+    });
+    list.appendChild(row);
+  });
+}
+renderOffline();
 
 loadLibrary();
 </script>
