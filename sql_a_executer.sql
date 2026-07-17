@@ -220,6 +220,8 @@ ALTER TABLE notifications ADD COLUMN IF NOT EXISTS titre TEXT NOT NULL DEFAULT '
 ALTER TABLE notifications ALTER COLUMN titre SET DEFAULT '';
 -- URL exacte où l'action notifiée a eu lieu, pour un clic direct dessus.
 ALTER TABLE notifications ADD COLUMN IF NOT EXISTS lien TEXT;
+-- Qui a fait l'action (pour afficher sa photo de profil sur la notif).
+ALTER TABLE notifications ADD COLUMN IF NOT EXISTS acteur_id UUID;
 CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id, lu, created_at DESC);
 
 -- ─────────────────────────────────────────────
@@ -604,8 +606,8 @@ DECLARE uname TEXT;
 BEGIN
   IF NEW.user_id = NEW.followed_id THEN RETURN NEW; END IF;
   SELECT username INTO uname FROM profiles WHERE id = NEW.user_id;
-  INSERT INTO notifications (user_id, type, titre, message, lien, lu)
-  VALUES (NEW.followed_id, 'follow', 'Nouvel abonné', '@' || COALESCE(uname, 'Quelqu''un') || ' te suit désormais !', 'auteur.html?id=' || NEW.user_id, false);
+  INSERT INTO notifications (user_id, type, titre, message, lien, acteur_id, lu)
+  VALUES (NEW.followed_id, 'follow', 'Nouvel abonné', '@' || COALESCE(uname, 'Quelqu''un') || ' te suit désormais !', 'auteur.html?id=' || NEW.user_id, NEW.user_id, false);
   RETURN NEW;
 END; $$;
 DROP TRIGGER IF EXISTS trg_notify_follow ON follows;
@@ -621,12 +623,12 @@ BEGIN
   IF aid IS NULL OR aid = NEW.user_id THEN RETURN NEW; END IF;
   SELECT username INTO uname FROM profiles WHERE id = NEW.user_id;
   IF NEW.chapitre_id IS NOT NULL THEN
-    clien := 'lecteur.html?manga_id=' || NEW.manga_id || '&chapitre=' || NEW.chapitre_id;
+    clien := 'lecteur.html?manga_id=' || NEW.manga_id || '&chapitre=' || NEW.chapitre_id || '#comment-' || NEW.id;
   ELSE
     clien := 'manga.html?id=' || NEW.manga_id;
   END IF;
-  INSERT INTO notifications (user_id, type, titre, message, manga_id, lien, lu)
-  VALUES (aid, 'comment', 'Nouveau commentaire', '@' || COALESCE(uname, 'Quelqu''un') || ' a commenté "' || COALESCE(mtitre, 'ton manga') || '"', NEW.manga_id, clien, false);
+  INSERT INTO notifications (user_id, type, titre, message, manga_id, lien, acteur_id, lu)
+  VALUES (aid, 'comment', 'Nouveau commentaire', '@' || COALESCE(uname, 'Quelqu''un') || ' a commenté "' || COALESCE(mtitre, 'ton manga') || '"', NEW.manga_id, clien, NEW.user_id, false);
   RETURN NEW;
 END; $$;
 DROP TRIGGER IF EXISTS trg_notify_comment ON commentaires;
@@ -642,12 +644,12 @@ BEGIN
   IF cauthor IS NULL OR cauthor = NEW.user_id THEN RETURN NEW; END IF;
   SELECT username INTO uname FROM profiles WHERE id = NEW.user_id;
   IF cchapitre IS NOT NULL THEN
-    clien := 'lecteur.html?manga_id=' || cmanga || '&chapitre=' || cchapitre;
+    clien := 'lecteur.html?manga_id=' || cmanga || '&chapitre=' || cchapitre || '#comment-' || NEW.commentaire_id;
   ELSIF cmanga IS NOT NULL THEN
     clien := 'manga.html?id=' || cmanga;
   END IF;
-  INSERT INTO notifications (user_id, type, titre, message, manga_id, lien, lu)
-  VALUES (cauthor, 'like', 'J''aime reçu', '❤️ @' || COALESCE(uname, 'Quelqu''un') || ' a aimé ton commentaire', cmanga, clien, false);
+  INSERT INTO notifications (user_id, type, titre, message, manga_id, lien, acteur_id, lu)
+  VALUES (cauthor, 'like', 'J''aime reçu', '❤️ @' || COALESCE(uname, 'Quelqu''un') || ' a aimé ton commentaire', cmanga, clien, NEW.user_id, false);
   RETURN NEW;
 END; $$;
 DROP TRIGGER IF EXISTS trg_notify_comment_like ON commentaire_likes;
@@ -661,8 +663,8 @@ DECLARE aid UUID; ptitre TEXT;
 BEGIN
   SELECT auteur_id, titre INTO aid, ptitre FROM packs_tutoriels WHERE id = NEW.pack_id;
   IF aid IS NULL OR aid = NEW.user_id THEN RETURN NEW; END IF;
-  INSERT INTO notifications (user_id, type, titre, message, lien, lu)
-  VALUES (aid, 'avis', 'Nouvel avis', '⭐ Nouvel avis (' || NEW.note || '/5) sur "' || COALESCE(ptitre, 'ton pack') || '"', 'pack.html?id=' || NEW.pack_id, false);
+  INSERT INTO notifications (user_id, type, titre, message, lien, acteur_id, lu)
+  VALUES (aid, 'avis', 'Nouvel avis', '⭐ Nouvel avis (' || NEW.note || '/5) sur "' || COALESCE(ptitre, 'ton pack') || '"', 'pack.html?id=' || NEW.pack_id, NEW.user_id, false);
   RETURN NEW;
 END; $$;
 DROP TRIGGER IF EXISTS trg_notify_avis ON avis_packs;
