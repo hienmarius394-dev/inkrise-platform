@@ -16,7 +16,7 @@
 <meta property="og:image" content="https://inkrise-platform.vercel.app/assets/hero-manga.jpg" />
 <meta name="twitter:card" content="summary_large_image" />
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/supabase.js"></script>
 <style>
 :root {
   --bg: #ffffff; --bg-2:#f7f7fa; --bg-3:#ededf2;
@@ -280,7 +280,10 @@ async function loadLibrary(){
     return;
   }
 
-  const { data: { user } } = await sb.auth.getUser();
+  // getSession() lit la session en cache local (fonctionne hors-ligne),
+  // contrairement à getUser() qui exige un appel réseau.
+  const { data: { session } } = await sb.auth.getSession();
+  const user = session && session.user ? session.user : null;
 
   if(!user){
     await updateAuthUI(null);
@@ -298,10 +301,28 @@ async function loadLibrary(){
   currentUserId = user.id;
   await updateAuthUI(user);
 
+  // Hors-ligne : la bibliothèque enregistrée vient de la base (indisponible).
+  // On l'indique clairement — les chapitres téléchargés restent lisibles au-dessus.
+  if(!navigator.onLine){
+    document.getElementById('libSub').textContent = 'Tes mangas sauvegardés';
+    content.innerHTML = `
+      <div class="library-empty">
+        <div class="library-empty-icon">📡</div>
+        <div class="library-empty-title">Tu es hors-ligne</div>
+        <div class="library-empty-text">Ta bibliothèque enregistrée s'affichera dès que tu seras reconnecté. En attendant, tes chapitres téléchargés (ci-dessus) restent lisibles.</div>
+      </div>`;
+    return;
+  }
+
   const { data: library, error } = await fetchLibrary(user.id);
 
   if(error){
-    content.innerHTML = `<div class="error-state">Erreur: ${escapeHtml(error.message)}</div>`;
+    content.innerHTML = `
+      <div class="library-empty">
+        <div class="library-empty-icon">📡</div>
+        <div class="library-empty-title">Connexion instable</div>
+        <div class="library-empty-text">Impossible de charger ta bibliothèque pour le moment. Réessaie une fois reconnecté.</div>
+      </div>`;
     return;
   }
 
