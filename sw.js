@@ -12,8 +12,24 @@
 const CACHE = 'inkrise-v3';
 const PAGES_CACHE = 'inkrise-pages';
 
+// Fichiers critiques mis en cache dès l'installation (la « coquille » de l'app),
+// pour qu'ils soient garantis disponibles hors-ligne — surtout la librairie
+// Supabase, sans laquelle toutes les pages cassent hors connexion.
+const PRECACHE = [
+  'assets/supabase.js',
+  'assets/inkrise-nav.js',
+  'assets/inkrise-offline.js',
+  'assets/inkrise-img.js',
+  'assets/legal.css',
+  'index.html'
+];
+
 self.addEventListener('install', (e) => {
-  self.skipWaiting();
+  e.waitUntil(
+    caches.open(CACHE)
+      .then(cache => Promise.all(PRECACHE.map(u => cache.add(u).catch(() => {}))))
+      .then(() => self.skipWaiting())
+  );
 });
 
 self.addEventListener('activate', (e) => {
@@ -37,6 +53,25 @@ self.addEventListener('fetch', (e) => {
       caches.open(PAGES_CACHE)
         .then(c => c.match(req.url))
         .then(hit => hit || fetch(req))
+    );
+    return;
+  }
+
+  // Dépendances externes indispensables (librairie Supabase, polices Google) :
+  // cache-first pour qu'elles soient présentes hors-ligne. Sans ça,
+  // window.supabase n'existe pas et toutes les pages cassent hors connexion.
+  const EXT_HOSTS = ['cdn.jsdelivr.net', 'fonts.googleapis.com', 'fonts.gstatic.com'];
+  if (EXT_HOSTS.indexOf(url.hostname) !== -1) {
+    e.respondWith(
+      caches.open(CACHE).then(cache =>
+        cache.match(req).then(hit => {
+          const network = fetch(req).then(res => {
+            if (res && (res.ok || res.type === 'opaque')) cache.put(req, res.clone());
+            return res;
+          }).catch(() => hit);
+          return hit || network;
+        })
+      )
     );
     return;
   }

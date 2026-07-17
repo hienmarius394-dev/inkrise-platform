@@ -493,7 +493,7 @@ h1,h2,h3,.logo { font-family: 'Syne', sans-serif; }
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/supabase.js"></script>
 <script>
 const SUPABASE_URL = 'https://bsdcpwtimsgxcnaamwip.supabase.co'
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJzZGNwd3RpbXNneGNuYWFtd2lwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAzMTQ1MDIsImV4cCI6MjA5NTg5MDUwMn0.uMcfUsnlULHNqS_87xzUWRUB8tEaCCNQglrWwN2fb44'
@@ -803,10 +803,21 @@ async function loadDerniers() {
 }
 
 checkAuth()
-loadCreators()
-loadFeatured()
-loadPopulaires()
-loadDerniers()
+
+if (navigator.onLine) {
+  loadCreators()
+  loadFeatured()
+  loadPopulaires()
+  loadDerniers()
+} else {
+  // Hors-ligne : les listes viennent de la base (indisponible). On remplace
+  // les « Chargement… » par un message clair plutôt que de rester bloqué.
+  const offlineMsg = '<div class="empty-state">📡 Hors-ligne — reconnecte-toi pour voir les mangas. Tes chapitres téléchargés restent lisibles dans <a href="bibliotheque.html" style="color:var(--purple);font-weight:700;">Ma bibliothèque</a>.</div>'
+  ;['featuredRow','populairesGrid','derniersGrid'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.innerHTML = offlineMsg
+  })
+  const cs = document.getElementById('creatorsSection'); if (cs) cs.style.display = 'none'
+}
 
 // ?premium=1 → Espace Premium direct si déjà créateur, sinon modal des plans
 if (new URLSearchParams(location.search).get('premium')) {
