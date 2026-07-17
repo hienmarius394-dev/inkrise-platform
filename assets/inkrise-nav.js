@@ -3,6 +3,15 @@
            <script src="assets/inkrise-nav.js"></script>
    data-active : accueil | tutoriels | communaute | profil (ou vide) */
 (function () {
+  /* Garde-fou anti-débordement horizontal : empêche la page de "glisser"
+     de gauche à droite quand un élément dépasse la largeur de l'écran.
+     overflow-x: clip (et non hidden) pour ne pas casser les nav sticky. */
+  (function () {
+    var s = document.createElement('style');
+    s.textContent = 'html,body{overflow-x:clip;max-width:100%;}';
+    document.head.appendChild(s);
+  })();
+
   const ITEMS = [
     { id: 'accueil',    href: 'index.html',      icon: '🏠', label: 'Accueil' },
     { id: 'tutoriels',  href: 'tutoriels.html',  icon: '🎓', label: 'Tutoriels' },
