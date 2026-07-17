@@ -757,6 +757,7 @@
 }
 .notif-item.unread { border-color: rgba(124,111,239,0.35); background: rgba(124,111,239,0.06); }
 .notif-icon { font-size: 1.4rem; flex-shrink: 0; }
+.notif-icon img { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; display: block; }
 .notif-content { flex: 1; }
 .notif-msg { font-size: 0.88rem; font-weight: 600; margin-bottom: 4px; line-height: 1.4; }
 .notif-date { font-size: 0.73rem; color: var(--muted); }
@@ -1146,6 +1147,7 @@
   let userProfile = null;
   let userSuivis        = [];
   let userNotifications = [];
+  let notifActors = {};   // acteur_id -> profil (avatar) des auteurs d'actions notifiées
   let userMangasList    = [];
 
   function escHtml(s) {
@@ -2072,6 +2074,12 @@
       .order('created_at', { ascending: false }).limit(50);
     document.getElementById('notifLoading').style.display = 'none';
     userNotifications = data || [];
+    notifActors = {};
+    const actorIds = [...new Set(userNotifications.map(n => n.acteur_id).filter(Boolean))];
+    if (actorIds.length) {
+      const { data: actors } = await sb.from('profiles').select('id, username, avatar_url').in('id', actorIds);
+      (actors || []).forEach(a => { notifActors[a.id] = a; });
+    }
     renderNotifications();
     updateNotifBadge();
   }
@@ -2092,8 +2100,12 @@
       const date = new Date(n.created_at).toLocaleDateString('fr-FR', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' });
       const div = document.createElement('div');
       div.className = `notif-item${!n.lu ? ' unread' : ''}`;
+      const actor = n.acteur_id ? notifActors[n.acteur_id] : null;
+      const iconHTML = actor?.avatar_url
+        ? `<img src="${escHtml(actor.avatar_url)}" alt="" />`
+        : (({ new_chapter: '📖', comment: '💬', follow: '👤', like: '❤️', avis: '⭐' })[n.type] || '🔔');
       div.innerHTML = `
-        <div class="notif-icon">${({ new_chapter: '📖', comment: '💬', follow: '👤', like: '❤️', avis: '⭐' })[n.type] || '🔔'}</div>
+        <div class="notif-icon">${iconHTML}</div>
         <div class="notif-content">
           <div class="notif-msg">${escFormation(n.message || 'Nouvelle notification')}</div>
           <div class="notif-date">${date}</div>
@@ -2103,9 +2115,15 @@
       if (!n.lu) {
         div.querySelector('.btn-read').addEventListener('click', (e) => { e.stopPropagation(); markNotifRead(n, div); });
       }
-      if (n.manga_id) {
+      const dest = n.lien || (n.manga_id ? `manga.html?id=${n.manga_id}` : null);
+      if (dest) {
         div.style.cursor = 'pointer';
-        div.addEventListener('click', () => window.location.href = `manga.html?id=${n.manga_id}`);
+        div.addEventListener('click', async () => {
+          // On attend le "marquer comme lu" AVANT de naviguer, sinon le
+          // changement de page annule la requête et la notif reste non-lue.
+          if (!n.lu) { try { await markNotifRead(n, div); } catch (e) {} }
+          window.location.href = dest;
+        });
       }
       list.appendChild(div);
     });

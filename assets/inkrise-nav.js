@@ -12,34 +12,52 @@
   ];
 
   const mount = document.getElementById('inkriseBottomNav');
-  if (!mount) return;
-  const active = mount.dataset.active || '';
+  if (mount) {
+    const active = mount.dataset.active || '';
 
-  const nav = document.createElement('div');
-  nav.className = 'univ-bnav';
-  nav.innerHTML = ITEMS.map(it => {
-    if (it.id === 'search') {
-      return '<button class="univ-bnav-search" type="button" title="Rechercher">🔍</button>';
-    }
-    const cls = 'univ-bnav-item' + (it.id === active ? ' active' : '');
-    return '<a href="' + it.href + '" class="' + cls + '">' +
-      '<span class="univ-bnav-icon">' + it.icon + '</span>' +
-      '<span class="univ-bnav-label">' + it.label + '</span></a>';
-  }).join('');
-  mount.replaceWith(nav);
+    const nav = document.createElement('div');
+    nav.className = 'univ-bnav';
+    nav.innerHTML = ITEMS.map(it => {
+      if (it.id === 'search') {
+        return '<button class="univ-bnav-search" type="button" title="Rechercher">🔍</button>';
+      }
+      const cls = 'univ-bnav-item' + (it.id === active ? ' active' : '');
+      return '<a href="' + it.href + '" class="' + cls + '">' +
+        '<span class="univ-bnav-icon">' + it.icon + '</span>' +
+        '<span class="univ-bnav-label">' + it.label + '</span></a>';
+    }).join('');
+    mount.replaceWith(nav);
 
-  nav.querySelector('.univ-bnav-search').addEventListener('click', function () {
-    // Priorité : champ de recherche de la page (nav haut ou hero), sinon page recherche
-    if (typeof window.focusSearch === 'function' && document.getElementById('navSearchInput')) {
-      window.focusSearch();
-      return;
-    }
-    const hero = document.getElementById('heroSearchInput');
-    if (hero) {
-      hero.focus();
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      return;
-    }
-    window.location.href = 'recherche.html';
-  });
+    nav.querySelector('.univ-bnav-search').addEventListener('click', function () {
+      // Priorité : champ de recherche de la page (nav haut ou hero), sinon page recherche
+      if (typeof window.focusSearch === 'function' && document.getElementById('navSearchInput')) {
+        window.focusSearch();
+        return;
+      }
+      const hero = document.getElementById('heroSearchInput');
+      if (hero) {
+        hero.focus();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+      }
+      window.location.href = 'recherche.html';
+    });
+  }
+
+  /* Carte "Notre mission" en bas du menu latéral — visible en permanence,
+     sur toutes les pages, connecté ou non. */
+  const drawer = document.getElementById('univDrawer');
+  if (drawer && !document.getElementById('drawerMission')) {
+    const card = document.createElement('a');
+    card.id = 'drawerMission';
+    card.href = 'espace-createur.html';
+    card.style.cssText = 'display:block;margin:16px 14px 20px;padding:14px 16px;border-radius:14px;' +
+      'text-decoration:none;background:linear-gradient(135deg,rgba(124,92,252,.12),rgba(255,95,168,.10));' +
+      'border:1px solid rgba(124,92,252,.28);';
+    card.innerHTML =
+      '<div style="font-weight:800;font-size:.72rem;letter-spacing:.6px;color:#7c5cfc;margin-bottom:6px;">💜 NOTRE MISSION</div>' +
+      '<div style="font-size:.82rem;line-height:1.5;color:#4a4560;">Dès qu\'Inkrise aura une vraie communauté, jusqu\'à <b>70% des revenus publicitaires</b> seront reversés aux créateurs actifs.</div>' +
+      '<div style="margin-top:8px;font-size:.8rem;font-weight:700;color:#ff5fa8;">Devenir créateur →</div>';
+    drawer.appendChild(card);
+  }
 })();

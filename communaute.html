@@ -591,7 +591,8 @@ async function notifyCreator(message) {
   try {
     if (!state.visitor || !state.creator || state.visitor.id === state.creator.id) return;
     const { error } = await sb.from('notifications').insert({
-      user_id: state.creator.id, type: 'info', message: message, lu: false
+      user_id: state.creator.id, type: 'info', titre: 'Communauté', message: message,
+      lien: 'communaute.html?id=' + state.creator.id, lu: false
     });
     if (error) { /* ignoré (best-effort) */ }
   } catch (e) { /* ignoré */ }
