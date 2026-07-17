@@ -202,6 +202,23 @@ body::after {
 .field input::placeholder { color: var(--text-3); }
 .field input:focus { border-color: var(--purple); box-shadow: 0 0 0 3px rgba(124,92,252,0.15); }
 
+/* Choix du rôle à l'inscription */
+.role-choice { display: flex; gap: 10px; }
+.role-card {
+  flex: 1; padding: 12px 10px; border-radius: var(--radius);
+  border: 1.5px solid var(--border-2); background: rgba(255,255,255,0.7);
+  cursor: pointer; text-align: center; font-family: 'DM Sans', sans-serif;
+  transition: all .2s;
+}
+.role-card .role-emoji { font-size: 1.5rem; display: block; margin-bottom: 4px; }
+.role-card b { display: block; font-size: 0.9rem; color: var(--text-1, #1c1b29); }
+.role-card span { display: block; font-size: 0.72rem; color: var(--text-3); margin-top: 2px; line-height: 1.3; }
+.role-card.active {
+  border-color: var(--purple);
+  background: rgba(124,92,252,0.08);
+  box-shadow: 0 0 0 3px rgba(124,92,252,0.15);
+}
+
 .btn-submit {
   width: 100%;
   font-family: 'Syne', sans-serif;
@@ -465,6 +482,17 @@ body::after {
 
     <div id="signupFields">
       <div class="field">
+        <label>Je m'inscris comme…</label>
+        <div class="role-choice">
+          <button type="button" class="role-card active" id="roleLecteur" onclick="pickRole('lecteur')">
+            <span class="role-emoji">📖</span><b>Lecteur</b><span>Lire et suivre des mangas</span>
+          </button>
+          <button type="button" class="role-card" id="roleCreateur" onclick="pickRole('createur')">
+            <span class="role-emoji">🎨</span><b>Créateur</b><span>Publier mes œuvres</span>
+          </button>
+        </div>
+      </div>
+      <div class="field">
         <label>Nom d'utilisateur</label>
         <input type="text" id="signupUsername" placeholder="ton_pseudo" />
       </div>
@@ -635,6 +663,15 @@ function checkEmailTypo() {
 // =============================================
 // INSCRIPTION
 // =============================================
+// Rôle choisi à l'inscription (lecteur par défaut)
+let signupRole = 'lecteur'
+function pickRole(role) {
+  signupRole = role
+  document.getElementById('roleLecteur').classList.toggle('active', role === 'lecteur')
+  document.getElementById('roleCreateur').classList.toggle('active', role === 'createur')
+}
+window.pickRole = pickRole
+
 async function handleSignup() {
   const username = document.getElementById('signupUsername').value.trim()
   const email = document.getElementById('signupEmail').value.trim()
@@ -659,7 +696,7 @@ async function handleSignup() {
   const { data, error } = await supabaseClient.auth.signUp({
     email,
     password,
-    options: { data: { username } }
+    options: { data: { username, is_creator: signupRole === 'createur' } }
   })
 
   if (error) {
@@ -677,7 +714,8 @@ async function handleSignup() {
       await supabaseClient.from('profiles').upsert({
         id: data.user.id,
         username: username,
-        bio: ''
+        bio: '',
+        is_creator: signupRole === 'createur'
       })
     } catch (e) {
       console.warn('Profile creation warning:', e);
