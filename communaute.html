@@ -6,6 +6,8 @@
 <title>Communauté · InkRise</title>
 <meta name="description" content="Rejoins la communauté Inkrise : posts, sondages et échanges avec les créateurs de mangas." />
 <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
+<link rel="manifest" href="manifest.webmanifest" />
+<meta name="theme-color" content="#7c5cfc" />
 <meta property="og:site_name" content="Inkrise" />
 <meta property="og:type" content="website" />
 <meta property="og:title" content="Communauté · InkRise" />
@@ -1010,6 +1012,7 @@ function renderPost(post) {
   html += '<div class="post-card-footer">';
   html += '<button class="comment-toggle-btn" data-post="' + post.id + '">💬 <span>' + postComments.length + '</span></button>';
   html += '<button onclick="navigator.clipboard.writeText(window.location.origin+\'/communaute.html?id=' + state.creatorId + '\');showToast(\'Lien copié !\',\'success\')">🔗 Partager</button>';
+  html += '<button title="Signaler" onclick="inkriseSignaler(sb, \'post\', ' + post.id + ')">🚩</button>';
   if (state.isCreator) {
     html += '<button class="creator-btn pin-btn" data-post="' + post.id + '" data-pinned="' + (isPinned ? '1' : '0') + '">' + (isPinned ? '📌 Désépingler' : '📌 Épingler') + '</button>';
     html += '<button class="delete-btn delete-post-btn" data-post="' + post.id + '">🗑️ Supprimer</button>';

@@ -6,6 +6,8 @@
   <title>Manga — Inkrise</title>
   <meta name="description" content="Lis ce manga gratuitement sur Inkrise, la plateforme des créateurs de mangas et webtoons." />
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
+<link rel="manifest" href="manifest.webmanifest" />
+<meta name="theme-color" content="#7c5cfc" />
   <meta property="og:site_name" content="Inkrise" />
   <meta property="og:type" content="website" />
   <meta property="og:title" content="Manga — Inkrise" />
@@ -612,6 +614,7 @@
         <span class="author-mini-avatar" id="authorAvatar">?</span>
         Voir le profil
       </a>
+      <button class="btn-author-mini" id="btnSignalManga" title="Signaler ce manga" style="min-width:auto;">🚩</button>
     </div>
 
     <div class="content-grid">
@@ -745,6 +748,9 @@ async function init() {
   const params = new URLSearchParams(window.location.search);
   const mangaId = params.get('id');
   if (!mangaId) { showNotFound(); return; }
+
+  const btnSignal = document.getElementById('btnSignalManga');
+  if (btnSignal) btnSignal.addEventListener('click', () => inkriseSignaler(sb, 'manga', mangaId));
 
   await loadManga(mangaId);
 }

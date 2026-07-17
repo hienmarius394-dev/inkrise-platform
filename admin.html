@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Modération — Inkrise</title>
+<meta name="robots" content="noindex" />
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
+<link rel="manifest" href="manifest.webmanifest" />
+<meta name="theme-color" content="#7c5cfc" />
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root { --purple: #7c5cfc; --pink: #ff5fa8; --muted: #8e8e93; --border: rgba(0,0,0,.09); }
+  body { font-family: 'DM Sans', sans-serif; background: #faf9fd; color: #1c1c1e; padding: 24px 16px 90px; }
+  .wrap { max-width: 760px; margin: 0 auto; }
+  h1 { font-family: 'Syne', sans-serif; font-size: 1.4rem; margin-bottom: 4px; }
+  .sub { font-size: .85rem; color: var(--muted); margin-bottom: 22px; }
+  .gate { text-align: center; padding: 70px 20px; color: var(--muted); }
+  .sig { background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 16px; margin-bottom: 12px; display: flex; gap: 14px; align-items: flex-start; }
+  .sig.traite { opacity: .55; }
+  .sig-icon { font-size: 1.3rem; flex-shrink: 0; }
+  .sig-body { flex: 1; min-width: 0; }
+  .sig-raison { font-weight: 800; font-size: .92rem; }
+  .sig-meta { font-size: .78rem; color: var(--muted); margin-top: 3px; line-height: 1.5; }
+  .sig-meta a { color: var(--purple); font-weight: 700; }
+  .btn-traite { border: none; background: rgba(124,92,252,.1); color: var(--purple); font-weight: 800; font-size: .78rem; padding: 8px 14px; border-radius: 9px; cursor: pointer; white-space: nowrap; font-family: 'DM Sans', sans-serif; }
+  .badge { display: inline-block; font-size: .68rem; font-weight: 800; padding: 2px 8px; border-radius: 99px; background: rgba(255,95,168,.14); color: #d63384; margin-left: 6px; vertical-align: 1px; }
+  .empty { text-align: center; padding: 50px 20px; color: var(--muted); }
+  .back { display: inline-block; margin-bottom: 18px; color: var(--purple); font-weight: 700; text-decoration: none; font-size: .85rem; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a href="index.html" class="back">← Retour au site</a>
+  <h1>🚩 Modération</h1>
+  <div class="sub">Signalements envoyés par la communauté — les plus récents d'abord.</div>
+  <div id="content"><div class="gate">Chargement…</div></div>
+</div>
+
+<script>
+const sb = supabase.createClient(
+  'https://bsdcpwtimsgxcnaamwip.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJzZGNwd3RpbXNneGNuYWFtd2lwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAzMTQ1MDIsImV4cCI6MjA5NTg5MDUwMn0.uMcfUsnlULHNqS_87xzUWRUB8tEaCCNQglrWwN2fb44'
+);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ICONS = { manga: '📖', commentaire: '💬', post: '📣', pack: '🎓', profil: '👤' };
+
+function lienContenu(s) {
+  if (s.type_contenu === 'manga')  return 'manga.html?id=' + encodeURIComponent(s.contenu_id);
+  if (s.type_contenu === 'pack')   return 'pack.html?id=' + encodeURIComponent(s.contenu_id);
+  if (s.type_contenu === 'profil') return 'auteur.html?id=' + encodeURIComponent(s.contenu_id);
+  return null;
+}
+
+async function init() {
+  const box = document.getElementById('content');
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) { box.innerHTML = '<div class="gate">Connecte-toi pour accéder à la modération.<br><br><a href="auth.html" style="color:var(--purple);font-weight:700;">Connexion →</a></div>'; return; }
+
+  const { data: me } = await sb.from('profiles').select('is_admin').eq('id', session.user.id).single();
+  if (!me?.is_admin) { box.innerHTML = '<div class="gate">⛔ Accès réservé à la modération.</div>'; return; }
+
+  const { data: sigs, error } = await sb.from('signalements')
+    .select('*').order('created_at', { ascending: false }).limit(200);
+  if (error) { box.innerHTML = '<div class="gate">Erreur : ' + esc(error.message) + '</div>'; return; }
+  if (!sigs || !sigs.length) { box.innerHTML = '<div class="empty">✅ Aucun signalement — tout est calme.</div>'; return; }
+
+  // Pseudo des signaleurs
+  const ids = [...new Set(sigs.map(s => s.signale_par))];
+  const { data: profs } = await sb.from('profiles').select('id, username').in('id', ids);
+  const pmap = {}; (profs || []).forEach(p => pmap[p.id] = p.username);
+
+  box.innerHTML = '';
+  sigs.forEach(s => {
+    const div = document.createElement('div');
+    div.className = 'sig' + (s.statut === 'traite' ? ' traite' : '');
+    const lien = lienContenu(s);
+    const cible = lien
+      ? '<a href="' + lien + '">voir le contenu</a>'
+      : esc(s.type_contenu) + ' #' + esc(s.contenu_id);
+    div.innerHTML =
+      '<div class="sig-icon">' + (ICONS[s.type_contenu] || '🚩') + '</div>' +
+      '<div class="sig-body">' +
+        '<div class="sig-raison">' + esc(s.raison) + (s.statut === 'nouveau' ? '<span class="badge">NOUVEAU</span>' : '') + '</div>' +
+        '<div class="sig-meta">' + esc(s.type_contenu) + ' — ' + cible +
+          ' · signalé par @' + esc(pmap[s.signale_par] || '?') +
+          ' · ' + new Date(s.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) +
+        '</div>' +
+      '</div>' +
+      (s.statut === 'nouveau' ? '<button class="btn-traite">✓ Traité</button>' : '');
+    const btn = div.querySelector('.btn-traite');
+    if (btn) btn.addEventListener('click', async () => {
+      const { error: upErr } = await sb.from('signalements').update({ statut: 'traite' }).eq('id', s.id);
+      if (!upErr) { div.classList.add('traite'); btn.remove(); div.querySelector('.badge')?.remove(); }
+    });
+    box.appendChild(div);
+  });
+}
+init();
+</script>
+</body>
+</html>

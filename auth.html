@@ -6,6 +6,8 @@
 <title>Inkrise — Connexion / Inscription</title>
 <meta name="description" content="Crée ton compte Inkrise gratuitement : lecture illimitée et accès à la communauté." />
 <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
+<link rel="manifest" href="manifest.webmanifest" />
+<meta name="theme-color" content="#7c5cfc" />
 <meta property="og:site_name" content="Inkrise" />
 <meta property="og:type" content="website" />
 <meta property="og:title" content="Inkrise — Connexion / Inscription" />
@@ -604,7 +606,11 @@ async function handleLogin() {
   }
 
   showMsg('loginMsg', '✓ Connecté ! Redirection...', 'success')
-  setTimeout(() => { window.location.href = 'index.html' }, 1000)
+  // Onboarding créateur : si l'inscription s'était faite en "Créateur"
+  // (avec confirmation d'email entre-temps), on l'emmène publier direct.
+  const onboardCreator = localStorage.getItem('inkrise_onboard_createur') === '1'
+  if (onboardCreator) localStorage.removeItem('inkrise_onboard_createur')
+  setTimeout(() => { window.location.href = onboardCreator ? 'upload-manga.html' : 'index.html' }, 1000)
 }
 
 // =============================================
@@ -723,6 +729,17 @@ async function handleSignup() {
     } catch (e) {
       console.warn('Profile creation warning:', e);
     }
+  }
+
+  // Onboarding créateur : mémorise le choix pour rediriger vers la
+  // publication après la confirmation d'email + première connexion.
+  if (signupRole === 'createur') localStorage.setItem('inkrise_onboard_createur', '1')
+
+  // Session immédiate (confirmation d'email désactivée) → on enchaîne direct
+  if (data.session) {
+    localStorage.removeItem('inkrise_onboard_createur')
+    window.location.href = signupRole === 'createur' ? 'upload-manga.html' : 'index.html'
+    return
   }
 
   document.getElementById('signupFields').style.display = 'none'
