@@ -234,19 +234,24 @@ async function updateAuthUI(user){
     if(connexion) connexion.style.display = 'none';
     if(logout) logout.style.display = 'flex';
 
-    const { data: prof } = await sb.from('profiles').select('username, avatar_url').eq('id', user.id).single();
-    const uname = (prof && prof.username) || (user.email || 'U');
-    if(avatar){
-      avatar.textContent = uname[0].toUpperCase();
-      if(prof && prof.avatar_url){
-        avatar.innerHTML = `<img src="${escapeHtml(prof.avatar_url)}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;" alt="" />`;
+    if(avatar) avatar.textContent = (user.email || 'U')[0].toUpperCase();
+    // Hors-ligne, ces requêtes base peuvent rester suspendues et figer la
+    // page : on ne les fait qu'avec du réseau (l'initiale suffit en attendant).
+    if(navigator.onLine){
+      const { data: prof } = await sb.from('profiles').select('username, avatar_url').eq('id', user.id).single();
+      const uname = (prof && prof.username) || (user.email || 'U');
+      if(avatar){
+        avatar.textContent = uname[0].toUpperCase();
+        if(prof && prof.avatar_url){
+          avatar.innerHTML = `<img src="${escapeHtml(prof.avatar_url)}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;" alt="" />`;
+        }
       }
-    }
-    const { count } = await sb.from('notifications').select('id',{count:'exact',head:true}).eq('user_id', user.id).eq('lu', false);
-    if(count > 0){
-      const dot = document.getElementById('navNotifDot');
-      dot.textContent = count > 9 ? '9+' : count;
-      dot.classList.add('show');
+      const { count } = await sb.from('notifications').select('id',{count:'exact',head:true}).eq('user_id', user.id).eq('lu', false);
+      if(count > 0){
+        const dot = document.getElementById('navNotifDot');
+        dot.textContent = count > 9 ? '9+' : count;
+        dot.classList.add('show');
+      }
     }
   } else {
     if(btn) btn.style.display = '';

@@ -9,19 +9,25 @@
    - planches téléchargées (cache "inkrise-pages", rempli par
      assets/inkrise-offline.js) : cache d'abord — lecture hors-ligne
    - tout le reste (API Supabase, autres origines) : jamais intercepté */
-const CACHE = 'inkrise-v3';
+const CACHE = 'inkrise-v4';
 const PAGES_CACHE = 'inkrise-pages';
 
-// Fichiers critiques mis en cache dès l'installation (la « coquille » de l'app),
-// pour qu'ils soient garantis disponibles hors-ligne — surtout la librairie
-// Supabase, sans laquelle toutes les pages cassent hors connexion.
+// Toute la « coquille » de l'app est mise en cache dès l'installation
+// (~1,2 Mo) : chaque page du site est ainsi joignable hors-ligne, même si
+// elle n'a jamais été visitée — indispensable pour que le clic sur un
+// chapitre téléchargé ouvre le lecteur sans réseau.
 const PRECACHE = [
-  'assets/supabase.js',
-  'assets/inkrise-nav.js',
-  'assets/inkrise-offline.js',
-  'assets/inkrise-img.js',
-  'assets/legal.css',
-  'index.html'
+  'index.html', 'recherche.html', 'manga.html', 'lecteur.html',
+  'bibliotheque.html', 'profil.html', 'auteur.html', 'communaute.html',
+  'tutoriels.html', 'pack.html', 'lecteur-video.html', 'espace-createur.html',
+  'mon-espace.html', 'upload-manga.html', 'gestion-chapitres.html',
+  'auth.html', 'admin.html', '404.html',
+  'mentions-legales.html', 'cgu.html', 'confidentialite.html',
+  'creators-remuneration.html',
+  'assets/supabase.js', 'assets/inkrise-nav.js', 'assets/inkrise-offline.js',
+  'assets/inkrise-img.js', 'assets/legal.css',
+  'assets/favicon.svg', 'assets/icon-192.png', 'assets/icon-512.png',
+  'manifest.webmanifest'
 ];
 
 self.addEventListener('install', (e) => {

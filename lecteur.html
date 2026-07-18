@@ -17,6 +17,7 @@
   <meta name="twitter:card" content="summary_large_image" />
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <script src="assets/supabase.js"></script>
+  <script src="assets/inkrise-offline.js"></script>
   <style>
     :root {
     --bg:      #ffffff;
@@ -697,6 +698,7 @@ async function upsertLenient(table, row, opts, requiredKeys) {
 
 async function saveProgress() {
   if (!mangaId || !chapitre) return;
+  if (!navigator.onLine || offlineMode) return; // rien à sauvegarder hors-ligne
   const { data: { user } } = await sb.auth.getUser();
   if (!user) return;
   await upsertLenient('bibliotheque',
@@ -719,6 +721,17 @@ function scheduleSaveProgress() {
   saveProgressTimer = setTimeout(saveProgress, 700);
 }
 
+// Garde-fou : hors-ligne, une requête base peut rester suspendue à jamais
+// (le fetch ne rejette pas toujours) et figer la page sur "Chargement…".
+// On borne chaque requête critique : au timeout, on rend {data:null} et le
+// repli hors-ligne prend la main.
+function sbSafe(promise, ms) {
+  return Promise.race([
+    promise,
+    new Promise(res => setTimeout(() => res({ data: null, error: { message: 'timeout' } }), ms || 6000))
+  ]);
+}
+
 // ── INIT ──
 async function init() {
   const params = new URLSearchParams(window.location.search);
@@ -729,12 +742,16 @@ async function init() {
 
   setupNav();
 
-  // Charger le manga
-  const { data: m } = await sb.from('mangas').select('id, titre, type, sens_lecture, commentaires_actifs, auteur_id').eq('id', mangaId).single();
-  manga = m;
+  // Hors-ligne : inutile d'interroger la base, on passe direct au repli
+  const online = navigator.onLine;
 
-  // Charger tous les chapitres
-  const { data: chaps } = await sb.from('chapitres').select('*').eq('manga_id', mangaId).order('numero', { ascending: true });
+  // Charger le manga
+  let m = null, chaps = null;
+  if (online) {
+    ({ data: m } = await sbSafe(sb.from('mangas').select('id, titre, type, sens_lecture, commentaires_actifs, auteur_id').eq('id', mangaId).single()));
+    ({ data: chaps } = await sbSafe(sb.from('chapitres').select('*').eq('manga_id', mangaId).order('numero', { ascending: true })));
+  }
+  manga = m;
   allChaps = chaps || [];
 
   // HORS-LIGNE : si la base est injoignable, on reconstruit le minimum
@@ -759,12 +776,12 @@ async function init() {
 
   // Reprise de lecture : si une entrée bibliothèque pointe sur ce chapitre avec page > 1
   const { data: { session: resumeSession } } = await sb.auth.getSession();
-  if (resumeSession) {
-    const { data: bib } = await sb.from('bibliotheque')
+  if (resumeSession && online) {
+    const { data: bib } = await sbSafe(sb.from('bibliotheque')
       .select('*')
       .eq('user_id', resumeSession.user.id)
       .eq('manga_id', mangaId)
-      .maybeSingle();
+      .maybeSingle());
     if (bib && String(bib.chapitre) === String(chapitre.id) && bib.page > 1) {
       resumePage = bib.page - 1; // index 0-based
     }
@@ -805,18 +822,21 @@ async function loadChapter() {
 
   // Enregistrer vue (unique par utilisateur — compteur entretenu par trigger SQL)
   const { data: { session } } = await sb.auth.getSession();
-  if (session) {
-    await sb.from('vues').upsert(
+  if (session && navigator.onLine && !offlineMode) {
+    await sbSafe(sb.from('vues').upsert(
       { manga_id: mangaId, user_id: session.user.id },
       { onConflict: 'manga_id,user_id', ignoreDuplicates: true }
-    );
+    ));
   }
 
   // Charger les pages depuis Supabase storage (dossier chapitres/{chapitreId}/)
   // Si pas de pages → afficher placeholder élégant
-  const { data: storageFiles } = await sb.storage
-      .from('pages')
-      .list(`chapitres/${chapitre.id}`, { sortBy: { column: 'name', order: 'asc' } });
+  let storageFiles = null;
+  if (navigator.onLine && !offlineMode) {
+    ({ data: storageFiles } = await sbSafe(sb.storage
+        .from('pages')
+        .list(`chapitres/${chapitre.id}`, { sortBy: { column: 'name', order: 'asc' } })));
+  }
 
   pages = [];
   if (storageFiles && storageFiles.length > 0) {
@@ -1480,7 +1500,6 @@ function closeDrawer(){
 
 <!-- BOTTOM NAV -->
 <div id="inkriseBottomNav" data-active=""></div>
-<script src="assets/inkrise-offline.js"></script>
 <script src="assets/inkrise-nav.js"></script>
 </body>
 </html>
