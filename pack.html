@@ -470,7 +470,6 @@
           <div class="buy-price-sub">Accès à vie · Téléchargement inclus</div>
           <div class="buy-stock" id="buyStockMobile" style="display:none;"></div>
           <button class="btn-buy" id="buyBtnMobile" onclick="handleBuy()">Acheter</button>
-          <a href="#" class="btn-watch" id="watchBtnMobile" style="display:none;">▶ Regarder la vidéo</a>
           <div class="buy-guarantee">🔒 Paiement sécurisé</div>
         </div>
 
@@ -505,7 +504,6 @@
           <div class="buy-price-sub">Accès à vie · Téléchargement inclus</div>
           <div class="buy-stock" id="buyStockDesktop" style="display:none;"></div>
           <button class="btn-buy" id="buyBtnDesktop" onclick="handleBuy()">Acheter</button>
-          <a href="#" class="btn-watch" id="watchBtnDesktop" style="display:none;">▶ Regarder la vidéo</a>
           <div class="buy-guarantee">🔒 Paiement sécurisé</div>
         </div>
 
@@ -638,14 +636,6 @@ async function loadPack(packId) {
         btn.disabled = false;
         btn.onclick = handleDownload;
       });
-      if (data.contenu_url && isVideoUrl(data.contenu_url)) {
-        const videoUrl = `lecteur-video.html?id=${data.id}`;
-        ['watchBtnMobile', 'watchBtnDesktop'].forEach(id => {
-          const btn = document.getElementById(id);
-          btn.href = videoUrl;
-          btn.style.display = 'block';
-        });
-      }
       showPackGallery(data);
     }
   }
@@ -967,10 +957,6 @@ async function checkRetourPaiement(txid) {
   showToast('Paiement en cours de validation — recharge la page dans une minute.', 'info');
 }
 
-function isVideoUrl(url) {
-  return /youtube\.com|youtu\.be|vimeo\.com/i.test(url) || /\.(mp4|webm|ogg)$/i.test(url);
-}
-
 function formatFromUrl(url) {
   if (!url) return '📎 Fichier';
   if (/youtube\.com|youtu\.be|vimeo\.com|\.(mp4|webm|ogg)(\?|$)/i.test(url)) return '🎬 Vidéo';
@@ -991,10 +977,8 @@ async function recordFreeAccess() {
 
 function handleDownload() {
   recordFreeAccess();
-  if (currentPack && currentPack.contenu_url && !isVideoUrl(currentPack.contenu_url)) {
+  if (currentPack && currentPack.contenu_url) {
     window.open(currentPack.contenu_url, '_blank', 'noopener');
-  } else if (currentPack && currentPack.contenu_url && isVideoUrl(currentPack.contenu_url)) {
-    window.location.href = `lecteur-video.html?id=${currentPack.id}`;
   } else {
     showToast('Fichier bientôt disponible', 'info');
   }

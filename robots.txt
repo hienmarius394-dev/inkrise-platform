@@ -6,7 +6,6 @@ Disallow: /mon-espace.html
 Disallow: /upload-manga.html
 Disallow: /gestion-chapitres.html
 Disallow: /lecteur.html
-Disallow: /lecteur-video.html
 Disallow: /admin.html
 
 Sitemap: https://inkrise-platform.vercel.app/sitemap.xml

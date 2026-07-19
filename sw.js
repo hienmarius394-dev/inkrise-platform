@@ -9,7 +9,7 @@
    - planches téléchargées (cache "inkrise-pages", rempli par
      assets/inkrise-offline.js) : cache d'abord — lecture hors-ligne
    - tout le reste (API Supabase, autres origines) : jamais intercepté */
-const CACHE = 'inkrise-v4';
+const CACHE = 'inkrise-v5';
 const PAGES_CACHE = 'inkrise-pages';
 
 // Toute la « coquille » de l'app est mise en cache dès l'installation
@@ -19,7 +19,7 @@ const PAGES_CACHE = 'inkrise-pages';
 const PRECACHE = [
   'index.html', 'recherche.html', 'manga.html', 'lecteur.html',
   'bibliotheque.html', 'profil.html', 'auteur.html', 'communaute.html',
-  'tutoriels.html', 'pack.html', 'lecteur-video.html', 'espace-createur.html',
+  'tutoriels.html', 'pack.html', 'espace-createur.html',
   'mon-espace.html', 'upload-manga.html', 'gestion-chapitres.html',
   'auth.html', 'admin.html', '404.html',
   'mentions-legales.html', 'cgu.html', 'confidentialite.html',
