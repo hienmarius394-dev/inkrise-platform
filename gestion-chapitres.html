@@ -411,6 +411,7 @@
     .edit-cover-zoom-row { display: flex; align-items: center; gap: 8px; max-width: 220px; margin: 8px auto 0; }
     .edit-cover-zoom-row input[type="range"] { flex: 1; }
     .edit-cover-hint { text-align: center; font-size: 0.72rem; color: var(--muted); margin-top: 6px; }
+    .edit-field-hint { font-size: 0.72rem; color: var(--text-2); margin: 5px 0 2px; line-height: 1.5; }
     .btn-modal-save {
       background: linear-gradient(135deg, var(--purple), var(--pink)); color: #fff; border: none;
       padding: 10px 22px; border-radius: 10px; font-weight: 700;
@@ -563,6 +564,20 @@
         <option value="pause">En pause</option>
         <option value="brouillon">Brouillon (non visible)</option>
       </select>
+      <label for="editSensLecture">Sens de lecture</label>
+      <select id="editSensLecture">
+        <option value="rl">← Droite vers Gauche (manga)</option>
+        <option value="lr">Gauche vers Droite (BD/comics) →</option>
+      </select>
+      <p class="edit-field-hint">Les lecteurs voient un rappel du sens avant d'ouvrir les planches.</p>
+      <label for="editAge">Classification d'âge</label>
+      <select id="editAge">
+        <option value="tout_public">Tout public</option>
+        <option value="12+">12+</option>
+        <option value="16+">16+</option>
+        <option value="18+">18+</option>
+      </select>
+      <p class="edit-field-hint">Au-delà de « tout public », un avertissement s'affiche avant la lecture.</p>
       <label>Couverture</label>
       <label class="edit-cover-label" id="editCoverLabel">
         <input type="file" accept="image/*" style="display:none;" id="editCoverInput" />
@@ -1036,6 +1051,10 @@ function bindEvents() {
     document.getElementById('editSynopsis').value = manga.synopsis || '';
     const st = document.getElementById('editStatut');
     st.value = ['en_cours','termine','pause','brouillon'].includes(manga.statut) ? manga.statut : 'en_cours';
+    document.getElementById('editSensLecture').value =
+      manga.sens_lecture === 'lr' ? 'lr' : 'rl';
+    document.getElementById('editAge').value =
+      ['tout_public','12+','16+','18+'].includes(manga.age_recommande) ? manga.age_recommande : 'tout_public';
     editCoverFile = null;
     editCoverTouched = false;
     editCoverCrop = { zoom: 1, x: 0, y: 0, naturalW: 0, naturalH: 0 };
@@ -1200,10 +1219,15 @@ function bakeEditCoverCrop() {
 async function saveMangaEdits() {
   const titre = document.getElementById('editTitre').value.trim();
   if (!titre) { showToast('Le titre est obligatoire', 'error'); return; }
+  const age = document.getElementById('editAge').value;
   const updates = {
     titre,
     synopsis: document.getElementById('editSynopsis').value.trim(),
     statut:   document.getElementById('editStatut').value,
+    sens_lecture:   document.getElementById('editSensLecture').value,
+    age_recommande: age,
+    // `adulte` reste dérivé de la classification, comme à la publication
+    adulte: ['16+', '18+'].includes(age),
   };
 
   if (editCoverTouched) {
@@ -1220,7 +1244,15 @@ async function saveMangaEdits() {
     }
   }
 
-  const { error } = await sb.from('mangas').update(updates).eq('id', mangaId);
+  // `sens_lecture` / `age_recommande` / `adulte` sont des colonnes récentes :
+  // si le schéma déployé ne les a pas encore, on réenregistre sans elles
+  // plutôt que de faire échouer toute la modification.
+  let { error } = await sb.from('mangas').update(updates).eq('id', mangaId);
+  if (error && /column|schema cache/i.test(error.message || '')) {
+    ['sens_lecture', 'age_recommande', 'adulte'].forEach(k => delete updates[k]);
+    ({ error } = await sb.from('mangas').update(updates).eq('id', mangaId));
+    if (!error) showToast('Manga mis à jour — sens de lecture et âge non enregistrés (base à mettre à jour)', 'info');
+  }
   if (error) { showToast('Erreur : ' + error.message, 'error'); return; }
 
   Object.assign(manga, updates);

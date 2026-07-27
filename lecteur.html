@@ -288,22 +288,34 @@
     .page-placeholder-icon { font-size: 3rem; }
     .page-placeholder p { font-size: 0.88rem; text-align: center; line-height: 1.6; padding: 0 20px; }
 
-    /* ── MODE SCROLL (webtoon/manhwa) ── */
+    /* ── MODE VERTICAL (défilement continu) ──
+       Les planches s'enchaînent sans espace, sans coin arrondi et sans ombre
+       individuelle : sur un webtoon le dessin déborde d'une image à l'autre,
+       et le moindre trou casse la continuité — on lisait une pile de cartes
+       au lieu d'une bande dessinée. L'arrondi et l'ombre sont désormais
+       portés par la colonne entière. */
     .scroll-viewer {
-      width: var(--scroll-w, 100%);
-      max-width: 800px;
-      margin: 16px auto 110px;
+      /* Le réglage de largeur s'applique à la colonne réellement affichée
+         (plafonnée à 800px), et non à la largeur de la fenêtre : sinon sur
+         un grand écran les premiers clics sur « − » ne changeaient rien,
+         le plafond absorbant toute la réduction. */
+      width: calc(min(100%, 800px) * var(--scroll-w, 1));
+      margin: 0 auto 120px;
       transition: width .2s ease;
+      border-radius: 14px;
+      overflow: hidden;
+      /* Fond sombre : masque les coutures entre planches pendant le
+         chargement et fait ressortir le noir et blanc du trait. */
+      background: #14121c;
+      box-shadow: 0 14px 44px -10px rgba(35,20,90,0.22), 0 2px 8px rgba(35,20,90,0.07);
     }
     .scroll-viewer.hidden { display: none; }
 
     .scroll-page {
-      width: 100%; display: block;
-      border-radius: 14px;
-      box-shadow: 0 14px 44px -10px rgba(35,20,90,0.22), 0 2px 8px rgba(35,20,90,0.07);
-      animation: fadeInPage .3s ease;
+      width: 100%;
+      display: block;   /* évite l'espace de ligne de base sous chaque image */
+      margin: 0;
     }
-    .scroll-page + .scroll-page { margin-top: 22px; }
 
     /* ── EMPTY / LOADING ── */
     .reader-loading {
@@ -457,17 +469,6 @@
       .mode-label, .back-label { display: none; }
       .mode-btn { font-size: 0.95rem; padding: 5px 9px; }
     }
-    /* BOTTOM NAV UNIVERSEL */
-    .univ-bnav{position:fixed;bottom:0;left:0;right:0;z-index:100;background:rgba(255,255,255,.97);border-top:1px solid var(--border);box-shadow:0 -2px 12px rgba(0,0,0,.05);display:flex;align-items:center;justify-content:space-around;padding:8px 0 16px;backdrop-filter:blur(14px);}
-    .univ-bnav-item{display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none;color:var(--text-3);padding:0 8px;transition:color .2s;border:none;background:none;cursor:pointer;}
-    .univ-bnav-item:hover{color:var(--text);}
-    .univ-bnav-item.active{color:var(--purple);}
-    .univ-bnav-icon{font-size:20px;}
-    .univ-bnav-label{font-size:.6rem;font-weight:800;font-family:'DM Sans',sans-serif;}
-    .univ-bnav-search{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#7c5cfc,#5040c8);border:none;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;margin-top:-18px;box-shadow:0 4px 18px rgba(124,111,239,.5);transition:transform .2s;flex-shrink:0;}
-    .univ-bnav-search:hover{transform:scale(1.08);}
-    /* push content above bottom nav in scroll mode */
-    .scroll-viewer{padding-bottom:100px;}
 
     /* ── COMMENTS SECTION ── */
     .comments-section{
@@ -718,9 +719,9 @@
     <!-- Mode toggle -->
     <div class="mode-toggle" id="modeToggle" role="group" aria-label="Mode de lecture">
       <button class="mode-btn active" id="btnModeScroll" onclick="setMode('scroll')" aria-pressed="true"
-              title="Lecture verticale (défilement continu)" aria-label="Lecture verticale">📜<span class="mode-label"> Vertical</span></button>
+              title="Lecture verticale (défilement continu)" aria-label="Lecture verticale">↕<span class="mode-label"> Vertical</span></button>
       <button class="mode-btn" id="btnModePage" onclick="setMode('pages')" aria-pressed="false"
-              title="Lecture horizontale (page par page)" aria-label="Lecture horizontale">📖<span class="mode-label"> Horizontal</span></button>
+              title="Lecture horizontale (page par page)" aria-label="Lecture horizontale">↔<span class="mode-label"> Horizontal</span></button>
     </div>
     <!-- Chapitre nav -->
     <div class="chap-nav">
@@ -1253,10 +1254,20 @@ function scrollToScrollPage(idx) {
 }
 
 let scrollWidthPct = 100;
+function applyScrollWidth() {
+  // Ratio sans unité : la CSS le multiplie par la largeur de colonne affichée
+  document.documentElement.style.setProperty('--scroll-w', scrollWidthPct / 100);
+}
 function adjustScrollWidth(deltaPct) {
   scrollWidthPct = Math.max(50, Math.min(100, scrollWidthPct + deltaPct));
-  document.documentElement.style.setProperty('--scroll-w', scrollWidthPct + '%');
+  applyScrollWidth();
+  try { localStorage.setItem('inkrise_scroll_width', scrollWidthPct); } catch (e) {}
 }
+// La largeur choisie suit le lecteur d'un chapitre à l'autre, comme le mode
+try {
+  const w = parseInt(localStorage.getItem('inkrise_scroll_width'), 10);
+  if (w >= 50 && w <= 100) { scrollWidthPct = w; applyScrollWidth(); }
+} catch (e) {}
 
 // ── SENS DE LECTURE ──
 function applyReadingDirection() {
@@ -1472,6 +1483,15 @@ function bindEvents() {
 
   // Glissement tactile pour tourner les pages
   bindSwipe();
+
+  // Le sélecteur de mode vit dans la topbar, qui s'efface au défilement :
+  // on le signale une fois pour que le lecteur sache qu'il existe.
+  try {
+    if (!localStorage.getItem('inkrise_mode_hint')) {
+      localStorage.setItem('inkrise_mode_hint', '1');
+      setTimeout(() => showToast('Astuce : ↕ / ↔ en haut bascule vertical / horizontal'), 1600);
+    }
+  } catch (e) {}
 
   // Clic centre pour toggle UI
   document.getElementById('pagesViewer').addEventListener('click', e => {
@@ -1831,8 +1851,10 @@ function closeDrawer(){
 }
 </script>
 
-<!-- BOTTOM NAV -->
-<div id="inkriseBottomNav" data-active=""></div>
+<!-- Pas de nav du bas pendant la lecture : comme la nav du haut, elle est
+     mise de côté pour laisser toute la place aux planches — la topbar du
+     lecteur porte le retour vers le manga. Le script reste chargé pour
+     `inkriseSignaler`, utilisé par les commentaires ci-dessus. -->
 <script src="assets/inkrise-nav.js"></script>
 </body>
 </html>
