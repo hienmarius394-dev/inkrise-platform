@@ -450,6 +450,13 @@
       .topbar-manga { display: none; }
       .chap-select { max-width: 90px; }
     }
+    /* Sur écran étroit la topbar doit loger retour + titre + 2 modes + nav
+       chapitre : on réduit les libellés aux icônes, les noms complets restant
+       portés par title/aria-label. */
+    @media (max-width: 760px) {
+      .mode-label, .back-label { display: none; }
+      .mode-btn { font-size: 0.95rem; padding: 5px 9px; }
+    }
     /* BOTTOM NAV UNIVERSEL */
     .univ-bnav{position:fixed;bottom:0;left:0;right:0;z-index:100;background:rgba(255,255,255,.97);border-top:1px solid var(--border);box-shadow:0 -2px 12px rgba(0,0,0,.05);display:flex;align-items:center;justify-content:space-around;padding:8px 0 16px;backdrop-filter:blur(14px);}
     .univ-bnav-item{display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none;color:var(--text-3);padding:0 8px;transition:color .2s;border:none;background:none;cursor:pointer;}
@@ -508,6 +515,118 @@
     .btn-reply-submit:hover{box-shadow:0 4px 12px rgba(124,111,239,.4);}
     .comments-empty{text-align:center;padding:40px 16px;color:var(--muted);font-size:.9rem;}
     .comments-spinner{text-align:center;padding:24px;color:var(--muted);font-size:.88rem;}
+
+    /* ── ÉCRANS D'AVANT-LECTURE (avertissements + sens de lecture) ── */
+    .gate {
+      position: fixed; inset: 0; z-index: 500;
+      display: none;
+      flex-direction: column; align-items: center; justify-content: center;
+      gap: 18px; padding: 32px 24px; text-align: center;
+      background: rgba(20,14,40,0.92);
+      backdrop-filter: blur(20px) saturate(150%);
+      -webkit-backdrop-filter: blur(20px) saturate(150%);
+      color: #fff;
+      animation: gateIn .25s ease;
+    }
+    .gate.show { display: flex; }
+    @keyframes gateIn { from { opacity: 0; } to { opacity: 1; } }
+
+    .gate-icon { font-size: 2.6rem; line-height: 1; }
+    .gate-title {
+      font-family: 'Syne', sans-serif; font-size: 1.25rem; font-weight: 800;
+      color: var(--orange-light); max-width: 460px; line-height: 1.4;
+      text-wrap: balance;
+    }
+    .gate-text {
+      font-size: 0.95rem; line-height: 1.7; color: rgba(255,255,255,0.88);
+      max-width: 420px;
+    }
+    .gate-badges { display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; }
+    .age-badge {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      width: 62px; height: 62px; border-radius: 10px;
+      font-family: 'Syne', sans-serif; font-size: 1.7rem; font-weight: 900;
+      color: #fff; line-height: 1;
+      box-shadow: 0 8px 24px -6px rgba(0,0,0,0.5);
+    }
+    .age-badge small { font-size: 0.42rem; font-weight: 700; letter-spacing: .5px; margin-top: 3px; opacity: .85; }
+    .gate-actions { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin-top: 6px; }
+    .gate-btn {
+      min-height: 46px; padding: 12px 30px; border-radius: 24px;
+      font-family: 'DM Sans', sans-serif; font-size: 0.92rem; font-weight: 700;
+      cursor: pointer; text-decoration: none;
+      display: inline-flex; align-items: center; justify-content: center;
+      transition: transform .2s, box-shadow .2s, background .2s;
+      border: 1px solid transparent;
+    }
+    .gate-btn.primary { background: linear-gradient(135deg, var(--orange), #ff8a5c); color: #fff; }
+    .gate-btn.primary:hover { transform: translateY(-2px); box-shadow: 0 10px 26px -6px rgba(255,107,53,.6); }
+    .gate-btn.ghost { background: transparent; color: #fff; border-color: rgba(255,255,255,0.45); }
+    .gate-btn.ghost:hover { background: rgba(255,255,255,0.1); }
+    /* Anneau blanc plutôt que violet : les deux boutons sont posés sur un fond
+       sombre, et le violet jurait avec l'orange du bouton principal. */
+    .gate-btn:focus-visible { outline: 2px solid rgba(255,255,255,.9); outline-offset: 3px; }
+
+    /* Schéma animé du sens de lecture */
+    .dir-demo { display: flex; align-items: center; gap: 10px; margin: 2px 0 4px; }
+    .dir-demo-page {
+      width: 34px; height: 46px; border-radius: 4px;
+      background: rgba(255,255,255,0.16); border: 1px solid rgba(255,255,255,0.3);
+    }
+    .dir-demo-page.lit { background: rgba(255,255,255,0.42); }
+    .dir-demo-arrow { font-size: 1.5rem; color: var(--orange-light); animation: dirSlide 1.6s ease-in-out infinite; }
+    @keyframes dirSlide { 0%,100% { transform: translateX(-4px); opacity:.6; } 50% { transform: translateX(4px); opacity:1; } }
+    @media (prefers-reduced-motion: reduce) {
+      .dir-demo-arrow { animation: none; }
+      .gate { animation: none; }
+    }
+
+    /* ── BANDEAU DE PAGES (mode horizontal, façon sélecteur rapide) ── */
+    .page-strip {
+      position: fixed; left: 0; right: 0; bottom: 82px; z-index: 199;
+      display: none; gap: 6px; padding: 8px 12px;
+      overflow-x: auto; scrollbar-width: none;
+      background: rgba(255,255,255,0.86);
+      backdrop-filter: blur(14px) saturate(150%);
+      -webkit-backdrop-filter: blur(14px) saturate(150%);
+      border-top: 1px solid rgba(124,92,252,0.12);
+      transition: transform .3s ease, opacity .3s ease;
+    }
+    .page-strip::-webkit-scrollbar { display: none; }
+    .page-strip.show { display: flex; }
+    .page-strip.hidden { transform: translateY(140%); opacity: 0; }
+    .page-strip.rtl { flex-direction: row-reverse; }
+    .strip-item {
+      flex: 0 0 auto; min-width: 44px; height: 44px;
+      border-radius: 10px; border: 1px solid var(--border);
+      background: var(--surface2); color: var(--text-2);
+      font-family: 'Syne', sans-serif; font-size: 0.9rem; font-weight: 700;
+      cursor: pointer; transition: all .2s;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .strip-item:hover { background: var(--surface3); }
+    .strip-item.current {
+      background: linear-gradient(135deg, var(--orange), #ff8a5c);
+      border-color: var(--orange); color: #fff;
+    }
+    .strip-item:focus-visible { outline: 3px solid var(--purple); outline-offset: 2px; }
+
+    /* ── MODE HORIZONTAL : glissement tactile ── */
+    /* pan-y laisse le défilement vertical au navigateur : seul l'axe
+       horizontal est capté pour tourner les pages.
+       Le padding bas réserve la place du bandeau de pages + de la bottombar,
+       sinon la planche passerait dessous. */
+    .pages-viewer.horizontal { touch-action: pan-y; padding-bottom: 152px; }
+    .page-img-wrap.swiping .page-img { transition: none; }
+    .page-img { transition: transform .22s ease; }
+    /* Sur écran tactile, les flèches restent visibles : il n'y a pas de survol */
+    @media (hover: none) {
+      .click-zone { opacity: 1; }
+      .click-zone-icon {
+        font-size: 1.4rem; padding: 10px 12px;
+        background: rgba(0,0,0,0.32); color: #fff;
+      }
+    }
   </style>
 </head>
 <body>
@@ -555,10 +674,41 @@
   <button class="univ-d-item" id="drawerLogout" style="display:none;" onclick="doLogout()"><div class="univ-d-icon">🚪</div><span style="color:#f0522a;">Déconnexion</span></button>
 </div>
 
+<!-- ÉCRAN 1 — AVERTISSEMENTS (affiché si le manga a une classification d'âge) -->
+<div class="gate" id="gateWarning" role="dialog" aria-modal="true" aria-labelledby="gateWarningTitle">
+  <div class="gate-icon" aria-hidden="true">⚠️</div>
+  <h2 class="gate-title" id="gateWarningTitle">Avertissements</h2>
+  <p class="gate-text">Attention, ce projet contient les avertissements suivants :</p>
+  <div class="gate-badges" id="gateWarningBadges"></div>
+  <p class="gate-text" id="gateWarningDesc"></p>
+  <div class="gate-actions">
+    <a href="#" class="gate-btn ghost" id="gateWarningCancel">Annuler</a>
+    <button class="gate-btn primary" id="gateWarningOk">Continuer</button>
+  </div>
+</div>
+
+<!-- ÉCRAN 2 — SENS DE LECTURE (affiché si le manga se lit de droite à gauche) -->
+<div class="gate" id="gateDirection" role="dialog" aria-modal="true" aria-labelledby="gateDirectionTitle">
+  <div class="gate-icon" aria-hidden="true">📖</div>
+  <h2 class="gate-title" id="gateDirectionTitle">Ce projet se lit de droite à gauche (sens japonais)</h2>
+  <div class="dir-demo" aria-hidden="true">
+    <div class="dir-demo-page"></div>
+    <div class="dir-demo-arrow">→</div>
+    <div class="dir-demo-page lit"></div>
+  </div>
+  <p class="gate-text">
+    Glisse les pages de la gauche vers la droite pour aller à la suivante,
+    ou utilise les flèches du clavier.
+  </p>
+  <div class="gate-actions">
+    <button class="gate-btn primary" id="gateDirectionOk">Continuer</button>
+  </div>
+</div>
+
 <!-- TOPBAR -->
 <div class="topbar" id="topbar">
   <div class="topbar-left">
-    <a href="#" class="btn-back" id="btnBack">← Manga</a>
+    <a href="#" class="btn-back" id="btnBack">←<span class="back-label"> Manga</span></a>
     <div class="topbar-title">
       <div class="topbar-manga" id="topbarManga">Chargement…</div>
       <div class="topbar-chap"  id="topbarChap">—</div>
@@ -566,9 +716,11 @@
   </div>
   <div class="topbar-right">
     <!-- Mode toggle -->
-    <div class="mode-toggle" id="modeToggle">
-      <button class="mode-btn active" id="btnModePage" onclick="setMode('pages')">📄 Pages</button>
-      <button class="mode-btn" id="btnModeScroll" onclick="setMode('scroll')">📜 Scroll</button>
+    <div class="mode-toggle" id="modeToggle" role="group" aria-label="Mode de lecture">
+      <button class="mode-btn active" id="btnModeScroll" onclick="setMode('scroll')" aria-pressed="true"
+              title="Lecture verticale (défilement continu)" aria-label="Lecture verticale">📜<span class="mode-label"> Vertical</span></button>
+      <button class="mode-btn" id="btnModePage" onclick="setMode('pages')" aria-pressed="false"
+              title="Lecture horizontale (page par page)" aria-label="Lecture horizontale">📖<span class="mode-label"> Horizontal</span></button>
     </div>
     <!-- Chapitre nav -->
     <div class="chap-nav">
@@ -637,6 +789,9 @@
   <div class="comments-spinner" id="commentsSpinner">Chargement des commentaires…</div>
   <div class="comments-list" id="commentsList"></div>
 </div>
+
+<!-- BANDEAU DE PAGES (mode horizontal) -->
+<div class="page-strip" id="pageStrip" aria-label="Aller à une page"></div>
 
 <!-- BOTTOMBAR (mode pages) -->
 <div class="bottombar" id="bottombar">
@@ -732,6 +887,78 @@ function sbSafe(promise, ms) {
   ]);
 }
 
+// ── ÉCRANS D'AVANT-LECTURE ──
+// Deux écrans avant d'ouvrir les planches, dans cet ordre :
+//   1. les avertissements liés à la classification d'âge — refusables,
+//   2. le rappel du sens de lecture pour les projets à la japonaise.
+// Montrés une fois par manga et par session : les re-signaler à chaque
+// chapitre serait pénible pour quelqu'un qui enchaîne la lecture.
+const AGE_INFOS = {
+  '12+': { num: '12', color: '#f5a623', desc: 'Ce projet est déconseillé aux moins de 12 ans.' },
+  '16+': { num: '16', color: '#ff6b35', desc: 'Ce projet est déconseillé aux moins de 16 ans.' },
+  '18+': { num: '18', color: '#ff3d71', desc: 'Ce projet est réservé à un public averti de 18 ans et plus.' }
+};
+
+function gateSeen(kind) {
+  try { return sessionStorage.getItem(`inkrise_gate_${kind}_${mangaId}`) === '1'; }
+  catch (e) { return false; }
+}
+function markGateSeen(kind) {
+  try { sessionStorage.setItem(`inkrise_gate_${kind}_${mangaId}`, '1'); } catch (e) {}
+}
+function gateOpen() {
+  return !!document.querySelector('.gate.show');
+}
+
+function openGate(el) {
+  return new Promise(resolve => {
+    el.classList.add('show');
+    document.body.style.overflow = 'hidden';
+    // Focus sur le bouton de confirmation : la touche Entrée suffit alors
+    // à continuer, et un lecteur d'écran annonce l'écran à son ouverture.
+    const ok = el.querySelector('.gate-btn.primary');
+    setTimeout(() => ok && ok.focus(), 50);
+    el._resolve = () => {
+      el._resolve = null;
+      el.classList.remove('show');
+      document.body.style.overflow = '';
+      resolve();
+    };
+  });
+}
+
+async function showReadingGates() {
+  const info = AGE_INFOS[manga && manga.age_recommande];
+
+  // 1. Avertissements — uniquement si le créateur a posé une classification
+  if (info && !gateSeen('warn')) {
+    document.getElementById('gateWarningBadges').innerHTML =
+      `<div class="age-badge" style="background:${info.color}">${info.num}<small>ANS ET +</small></div>`;
+    document.getElementById('gateWarningDesc').textContent = info.desc;
+    document.getElementById('gateWarningCancel').href = `manga.html?id=${mangaId}`;
+    await openGate(document.getElementById('gateWarning'));
+    markGateSeen('warn');
+  }
+
+  // 2. Sens de lecture — uniquement pour les projets droite → gauche
+  if (manga && manga.sens_lecture !== 'lr' && !gateSeen('dir')) {
+    await openGate(document.getElementById('gateDirection'));
+    markGateSeen('dir');
+  }
+}
+
+function bindGates() {
+  const warn = document.getElementById('gateWarning');
+  const dir  = document.getElementById('gateDirection');
+  document.getElementById('gateWarningOk').onclick   = () => warn._resolve && warn._resolve();
+  document.getElementById('gateDirectionOk').onclick = () => dir._resolve && dir._resolve();
+  // Échap ferme le rappel du sens de lecture (purement informatif) mais pas
+  // l'écran d'avertissement, qui attend un choix explicite.
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && dir._resolve) dir._resolve();
+  });
+}
+
 // ── INIT ──
 async function init() {
   const params = new URLSearchParams(window.location.search);
@@ -748,7 +975,16 @@ async function init() {
   // Charger le manga
   let m = null, chaps = null;
   if (online) {
-    ({ data: m } = await sbSafe(sb.from('mangas').select('id, titre, type, sens_lecture, commentaires_actifs, auteur_id').eq('id', mangaId).single()));
+    // `age_recommande` est une colonne récente : si le schéma déployé ne l'a
+    // pas encore, on refait la requête sans elle plutôt que de casser la
+    // lecture — l'écran d'avertissement est alors simplement sauté.
+    const MANGA_COLS = 'id, titre, type, sens_lecture, commentaires_actifs, auteur_id';
+    let mErr = null;
+    ({ data: m, error: mErr } = await sbSafe(
+      sb.from('mangas').select(MANGA_COLS + ', age_recommande').eq('id', mangaId).single()));
+    if (mErr && /column|schema cache/i.test(mErr.message || '')) {
+      ({ data: m } = await sbSafe(sb.from('mangas').select(MANGA_COLS).eq('id', mangaId).single()));
+    }
     ({ data: chaps } = await sbSafe(sb.from('chapitres').select('*').eq('manga_id', mangaId).order('numero', { ascending: true })));
   }
   manga = m;
@@ -787,8 +1023,12 @@ async function init() {
     }
   }
 
-  // Mode scroll vertical par défaut pour tous les types (manga, webtoon, manhwa, manhua)
-  setMode('scroll', false);
+  // Mode de lecture : on respecte le choix précédent du lecteur, sinon
+  // vertical par défaut (le défilement continu convient aussi bien au
+  // webtoon qu'au manga sur mobile).
+  let savedMode = null;
+  try { savedMode = localStorage.getItem('inkrise_read_mode'); } catch (e) {}
+  setMode(savedMode === 'pages' ? 'pages' : 'scroll', false);
 
   // UI
   document.getElementById('topbarManga').textContent = manga?.titre || 'Manga';
@@ -798,9 +1038,16 @@ async function init() {
 
   buildChapSelect();
     buildSidebar();
+    bindGates();
+
+    // Les écrans d'avant-lecture s'affichent pendant que les planches se
+    // chargent derrière : le lecteur ne cumule pas les deux attentes.
+    const gates = showReadingGates();
+
     // Attendre le chargement pour que currentPage reflète la page de reprise,
     // sinon saveProgress() écrase la position sauvegardée avec la page 1
     await loadChapter();
+    await gates;
 
     // Sauvegarder la progression dans la bibliothèque
     saveProgress();
@@ -812,6 +1059,7 @@ async function loadChapter() {
   document.getElementById('readerLoading').style.display = 'flex';
   document.getElementById('pagesViewer').classList.add('hidden');
   document.getElementById('scrollViewer').classList.add('hidden');
+  document.getElementById('pageStrip').classList.remove('show');
   document.getElementById('endScreen').classList.remove('show');
   document.getElementById('noPages').style.display = 'none';
 
@@ -910,6 +1158,7 @@ function renderPages() {
 function renderPageMode() {
   document.getElementById('pagesViewer').classList.remove('hidden');
   document.getElementById('progressWrap').style.display = 'block';
+  buildPageStrip();
   showPage(currentPage);
 }
 
@@ -943,6 +1192,7 @@ function showPage(idx) {
   document.getElementById('progressFill').style.width = pct + '%';
   document.getElementById('btnPrevPage').disabled = idx === 0;
   document.getElementById('btnNextPage').disabled = idx === pages.length - 1;
+  updatePageStrip();
 
   // Sauvegarde de la progression (debounce)
   scheduleSaveProgress();
@@ -1040,6 +1290,7 @@ function nextPage() {
 function showEndScreen() {
   document.getElementById('pagesViewer').classList.add('hidden');
   document.getElementById('bottombar').classList.add('hidden');
+  document.getElementById('pageStrip').classList.remove('show');
   document.getElementById('progressWrap').style.display = 'none';
 
   const idx = allChaps.findIndex(c => c.id === chapitre.id);
@@ -1066,10 +1317,20 @@ function showEndScreen() {
 // ── MODE SWITCH ──
 function setMode(mode, reload = true) {
   readMode = mode;
-  document.getElementById('btnModePage').classList.toggle('active', mode === 'pages');
-  document.getElementById('btnModeScroll').classList.toggle('active', mode === 'scroll');
-  document.getElementById('bottombar').classList.toggle('scroll-mode', mode === 'scroll');
-  document.getElementById('progressWrap').style.display = mode === 'pages' ? 'block' : 'none';
+  const isPages  = mode === 'pages';
+  const btnPage   = document.getElementById('btnModePage');
+  const btnScroll = document.getElementById('btnModeScroll');
+  btnPage.classList.toggle('active', isPages);
+  btnScroll.classList.toggle('active', !isPages);
+  btnPage.setAttribute('aria-pressed', String(isPages));
+  btnScroll.setAttribute('aria-pressed', String(!isPages));
+  document.getElementById('bottombar').classList.toggle('scroll-mode', !isPages);
+  document.getElementById('progressWrap').style.display = isPages ? 'block' : 'none';
+  document.getElementById('pagesViewer').classList.toggle('horizontal', isPages);
+  document.getElementById('pageStrip').classList.toggle('show', isPages && pages.length > 1);
+
+  // Le mode choisi suit le lecteur d'un chapitre à l'autre
+  try { localStorage.setItem('inkrise_read_mode', mode); } catch (e) {}
 
   if (reload && pages.length > 0) {
     document.getElementById('pagesViewer').classList.add('hidden');
@@ -1077,6 +1338,71 @@ function setMode(mode, reload = true) {
     document.getElementById('scrollViewer').innerHTML = '';
     renderPages();
   }
+}
+
+// ── BANDEAU DE PAGES (mode horizontal) ──
+// En lecture japonaise le bandeau se lit lui aussi de droite à gauche, pour
+// que l'ordre affiché corresponde au sens dans lequel les pages tournent.
+function buildPageStrip() {
+  const strip = document.getElementById('pageStrip');
+  if (pages.length < 2) { strip.classList.remove('show'); strip.innerHTML = ''; return; }
+  strip.classList.toggle('rtl', manga?.sens_lecture !== 'lr');
+  strip.classList.add('show');
+  strip.innerHTML = pages.map((_, i) =>
+    `<button class="strip-item" data-i="${i}" aria-label="Aller à la page ${i + 1}">${i + 1}</button>`
+  ).join('');
+  strip.querySelectorAll('.strip-item').forEach(b =>
+    b.addEventListener('click', () => showPage(parseInt(b.dataset.i, 10)))
+  );
+  updatePageStrip();
+}
+
+function updatePageStrip() {
+  document.querySelectorAll('#pageStrip .strip-item').forEach(b => {
+    const on = parseInt(b.dataset.i, 10) === currentPage;
+    b.classList.toggle('current', on);
+    // block:'nearest' garde le défilement horizontal : recentrer la vignette
+    // ne doit pas faire bouger la page verticalement.
+    if (on) b.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
+  });
+}
+
+// ── GLISSEMENT TACTILE (mode horizontal) ──
+// Sans ça, tourner les pages au doigt était impossible : seules les zones de
+// clic latérales répondaient, et elles sont invisibles sur écran tactile.
+let swipeJustHappened = false;
+function bindSwipe() {
+  const viewer = document.getElementById('pagesViewer');
+  const img    = document.getElementById('pageImg');
+  let startX = 0, startY = 0, dx = 0, dragging = false;
+
+  viewer.addEventListener('touchstart', e => {
+    if (readMode !== 'pages' || e.touches.length !== 1) return;
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+    dx = 0; dragging = true;
+  }, { passive: true });
+
+  viewer.addEventListener('touchmove', e => {
+    if (!dragging) return;
+    dx = e.touches[0].clientX - startX;
+    const dy = e.touches[0].clientY - startY;
+    // Geste plutôt vertical : c'est un défilement, on rend la main à la page
+    if (Math.abs(dy) > Math.abs(dx)) { dragging = false; img.style.transform = ''; return; }
+    img.style.transform = `translateX(${dx * 0.4}px)`; // la page suit le doigt
+  }, { passive: true });
+
+  viewer.addEventListener('touchend', () => {
+    if (!dragging) return;
+    dragging = false;
+    img.style.transform = '';
+    if (Math.abs(dx) < 45) return; // simple tap ou micro-mouvement
+    swipeJustHappened = true;
+    setTimeout(() => { swipeJustHappened = false; }, 300);
+    // Sens japonais : glisser vers la droite avance. Sens BD : vers la gauche.
+    const forward = manga?.sens_lecture !== 'lr' ? dx > 0 : dx < 0;
+    forward ? nextPage() : prevPage();
+  });
 }
 
 // ── CHAPITRE SELECT ──
@@ -1135,17 +1461,23 @@ function bindEvents() {
     if (idx < allChaps.length - 1) window.location.href = `lecteur.html?manga_id=${mangaId}&chapitre=${allChaps[idx+1].id}`;
   });
 
-  // Clavier
+  // Clavier — inactif tant qu'un écran d'avant-lecture est ouvert
   document.addEventListener('keydown', e => {
-    if (readMode === 'pages') {
+    if (readMode === 'pages' && !gateOpen()) {
       const rl = manga?.sens_lecture !== 'lr';
       if (e.key === 'ArrowRight' || e.key === 'ArrowDown') rl ? prevPage() : nextPage();
       if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   rl ? nextPage() : prevPage();
     }
   });
 
+  // Glissement tactile pour tourner les pages
+  bindSwipe();
+
   // Clic centre pour toggle UI
   document.getElementById('pagesViewer').addEventListener('click', e => {
+    // Un glissement se termine parfois par un clic : ne pas le prendre
+    // pour un tap au centre, sinon l'interface clignote à chaque page tournée
+    if (swipeJustHappened) return;
     // Ignorer si clic sur zones latérales
     const rect = document.getElementById('pageImgWrap').getBoundingClientRect();
     const relX = (e.clientX - rect.left) / rect.width;
@@ -1175,6 +1507,7 @@ function toggleUI() {
   uiVisible = !uiVisible;
   document.getElementById('topbar').classList.toggle('hidden', !uiVisible);
   document.getElementById('bottombar').classList.toggle('hidden', !uiVisible);
+  document.getElementById('pageStrip').classList.toggle('hidden', !uiVisible);
 }
 
 let lastScrollY = 0;
