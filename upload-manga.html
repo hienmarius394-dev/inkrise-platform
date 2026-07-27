@@ -178,6 +178,49 @@
     .form-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
     @media (max-width: 600px) { .form-row { grid-template-columns: 1fr; } }
 
+    /* ── SÉLECTION VISUELLE (sens de lecture / classification d'âge) ──
+       Des cartes cliquables plutôt qu'un menu déroulant : un auteur ne sait
+       pas forcément si son récit est « 13 » ou « 14 ans », mais il sait ce
+       qu'il y a dedans. Chaque choix décrit donc le contenu, pas l'âge.
+       Ce sont de vrais boutons radio : navigables au clavier et annoncés
+       correctement par un lecteur d'écran. */
+    .choice-grid { display: grid; gap: 8px; }
+    .choice-grid.two { grid-template-columns: 1fr 1fr; }
+    @media (max-width: 560px) { .choice-grid.two { grid-template-columns: 1fr; } }
+
+    .choice {
+      display: flex; align-items: center; gap: 11px;
+      padding: 11px 13px; cursor: pointer;
+      border: 2px solid var(--border); border-radius: 12px;
+      background: var(--surface); transition: border-color .18s, background .18s;
+      min-height: 56px;
+      /* Ces cartes sont des <label> : on annule la mise en majuscules des
+         libellés de formulaire, illisible sur une phrase de description. */
+      text-transform: none; letter-spacing: normal; margin-bottom: 0;
+    }
+    .choice:hover { border-color: var(--purple2); }
+    .choice input { position: absolute; opacity: 0; width: 0; height: 0; }
+    .choice:has(input:checked) {
+      border-color: var(--purple); background: rgba(124,111,239,0.09);
+    }
+    .choice:has(input:focus-visible) { outline: 3px solid var(--purple2); outline-offset: 2px; }
+
+    .choice-badge {
+      flex-shrink: 0; width: 42px; height: 42px; border-radius: 9px;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Syne', sans-serif; font-weight: 900; font-size: 1rem;
+      color: #fff; line-height: 1;
+    }
+    .choice-badge.tp   { background: #3ddc84; font-size: .82rem; }
+    .choice-badge.a12  { background: #f5a623; }
+    .choice-badge.a16  { background: #ff6b35; }
+    .choice-badge.a18  { background: #ff3d71; }
+    .choice-badge.dir  { background: linear-gradient(135deg, var(--purple), var(--purple2)); font-size: 1.15rem; }
+
+    .choice-body { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+    .choice-title { font-size: 0.85rem; font-weight: 700; color: var(--text); }
+    .choice-desc  { font-size: 0.73rem; color: var(--text-2); line-height: 1.45; }
+
     label {
       display: block;
       font-size: 0.8rem; font-weight: 600;
@@ -712,23 +755,68 @@
       </div>
     </div>
 
-    <div class="form-row">
-      <div class="form-group" style="margin-bottom:0;">
-        <label>Sens de lecture</label>
-        <select id="inputSensLecture">
-          <option value="rl">← Droite vers Gauche (manga)</option>
-          <option value="lr">Gauche vers Droite (BD/comics) →</option>
-        </select>
+    <div class="form-group">
+      <label id="lblSens">Sens de lecture</label>
+      <div class="choice-grid two" role="radiogroup" aria-labelledby="lblSens">
+        <label class="choice">
+          <input type="radio" name="sens" value="rl" checked />
+          <span class="choice-badge dir" aria-hidden="true">←</span>
+          <span class="choice-body">
+            <span class="choice-title">Droite vers gauche</span>
+            <span class="choice-desc">Sens japonais — manga</span>
+          </span>
+        </label>
+        <label class="choice">
+          <input type="radio" name="sens" value="lr" />
+          <span class="choice-badge dir" aria-hidden="true">→</span>
+          <span class="choice-body">
+            <span class="choice-title">Gauche vers droite</span>
+            <span class="choice-desc">Sens occidental — BD, comics, webtoon</span>
+          </span>
+        </label>
       </div>
-      <div class="form-group" style="margin-bottom:0;">
-        <label>Classification d'âge</label>
-        <select id="inputAge">
-          <option value="tout_public">Tout public</option>
-          <option value="12+">12+</option>
-          <option value="16+">16+</option>
-          <option value="18+">18+</option>
-        </select>
+    </div>
+
+    <div class="form-group">
+      <label id="lblAge">Classification d'âge</label>
+      <div class="choice-grid two" role="radiogroup" aria-labelledby="lblAge">
+        <label class="choice">
+          <input type="radio" name="age" value="tout_public" checked />
+          <span class="choice-badge tp" aria-hidden="true">TP</span>
+          <span class="choice-body">
+            <span class="choice-title">Tout public</span>
+            <span class="choice-desc">Rien de choquant, convient à tous les âges</span>
+          </span>
+        </label>
+        <label class="choice">
+          <input type="radio" name="age" value="12+" />
+          <span class="choice-badge a12" aria-hidden="true">12</span>
+          <span class="choice-body">
+            <span class="choice-title">12 ans et plus</span>
+            <span class="choice-desc">Bagarres, tension, quelques passages effrayants</span>
+          </span>
+        </label>
+        <label class="choice">
+          <input type="radio" name="age" value="16+" />
+          <span class="choice-badge a16" aria-hidden="true">16</span>
+          <span class="choice-body">
+            <span class="choice-title">16 ans et plus</span>
+            <span class="choice-desc">Violence marquée, thèmes sombres, langage cru</span>
+          </span>
+        </label>
+        <label class="choice">
+          <input type="radio" name="age" value="18+" />
+          <span class="choice-badge a18" aria-hidden="true">18</span>
+          <span class="choice-body">
+            <span class="choice-title">18 ans et plus</span>
+            <span class="choice-desc">Violence explicite, sang, contenu réservé aux adultes</span>
+          </span>
+        </label>
       </div>
+      <p style="font-size:.73rem;color:var(--muted);margin-top:8px;line-height:1.5;">
+        Choisis d'après ce que contient ton récit : au-delà de « tout public »,
+        un avertissement s'affiche avant la lecture.
+      </p>
     </div>
 
     <!-- Hint format dynamique -->
@@ -1023,6 +1111,18 @@ function addChapitre() {
   });
 }
 
+// Sélections visuelles (sens de lecture / âge) : de vrais boutons radio,
+// lus et écrits par nom de groupe. Portée globale : la publication s'en sert
+// aussi, bien plus bas dans le fichier.
+function getChoice(name) {
+  const el = document.querySelector(`input[name="${name}"]:checked`);
+  return el ? el.value : null;
+}
+function setChoice(name, value) {
+  const el = document.querySelector(`input[name="${name}"][value="${value}"]`);
+  if (el) el.checked = true;
+}
+
 function updateStepIndicator() {
   const hasChaps = chapitres.length > 0;
   if (hasChaps) markStep(2);
@@ -1057,10 +1157,9 @@ function bindEvents() {
 
   const SENS_DEFAUT = { manga: 'rl', manhwa: 'lr', manhua: 'lr', webtoon: 'lr', bd: 'lr', roman: 'lr' };
   const typeSelect = document.getElementById('inputType');
-  const sensSelect = document.getElementById('inputSensLecture');
   typeSelect.addEventListener('change', () => {
     updateFormatHint(typeSelect.value);
-    sensSelect.value = SENS_DEFAUT[typeSelect.value] || 'rl';
+    setChoice('sens', SENS_DEFAUT[typeSelect.value] || 'rl');
   });
   updateFormatHint(typeSelect.value); // init
 
@@ -1298,11 +1397,11 @@ async function publishManga(draft = false) {
           genres:      selectedGenres,
           couverture_url: coverUrl,
           created_at:  new Date().toISOString(),
-          adulte:      ['16+', '18+'].includes(document.getElementById('inputAge').value),
+          adulte:      ['16+', '18+'].includes(getChoice('age')),
           commentaires_actifs: document.getElementById('toggleComments').checked,
           langue:      document.getElementById('inputLangue').value,
-          sens_lecture: document.getElementById('inputSensLecture').value,
-          age_recommande: document.getElementById('inputAge').value,
+          sens_lecture: getChoice('sens') || 'rl',
+          age_recommande: getChoice('age') || 'tout_public',
         };
 
     const { data: manga, error: mangaErr } = await insertLenient(sb, 'mangas', mangaPayload,

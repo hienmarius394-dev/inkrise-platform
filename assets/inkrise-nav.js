@@ -28,11 +28,14 @@
     nav.className = 'univ-bnav';
     nav.innerHTML = ITEMS.map(it => {
       if (it.id === 'search') {
-        return '<button class="univ-bnav-search" type="button" title="Rechercher">🔍</button>';
+        return '<button class="univ-bnav-search" type="button" title="Rechercher" ' +
+          'aria-label="Rechercher"><span aria-hidden="true">🔍</span></button>';
       }
       const cls = 'univ-bnav-item' + (it.id === active ? ' active' : '');
-      return '<a href="' + it.href + '" class="' + cls + '">' +
-        '<span class="univ-bnav-icon">' + it.icon + '</span>' +
+      // L'emoji double le libellé écrit juste dessous : on ne l'annonce pas.
+      return '<a href="' + it.href + '" class="' + cls + '"' +
+        (it.id === active ? ' aria-current="page"' : '') + '>' +
+        '<span class="univ-bnav-icon" aria-hidden="true">' + it.icon + '</span>' +
         '<span class="univ-bnav-label">' + it.label + '</span></a>';
     }).join('');
     mount.replaceWith(nav);
@@ -99,6 +102,62 @@
     document.body.appendChild(ov);
   };
 
+  /* ── Accessibilité du menu latéral, pour les quinze pages qui en ont un ──
+     Chaque page définit ses propres openDrawer/closeDrawer ; plutôt que de
+     modifier quinze fichiers, on les enveloppe ici pour ajouter ce qui
+     manquait : l'état ouvert/fermé annoncé, le focus déplacé dans le menu
+     puis rendu au bouton, et la fermeture par Échap. L'ordre des scripts
+     varie d'une page à l'autre, d'où l'attente du document complet. */
+  function initDrawerA11y() {
+    const drawerEl = document.getElementById('univDrawer');
+    const hbg = document.querySelector('.univ-nav-hbg');
+    if (!drawerEl) return;
+
+    drawerEl.setAttribute('role', 'dialog');
+    drawerEl.setAttribute('aria-modal', 'true');
+    drawerEl.setAttribute('aria-label', 'Menu de navigation');
+    if (hbg) {
+      hbg.setAttribute('type', 'button');
+      hbg.setAttribute('aria-controls', 'univDrawer');
+      hbg.setAttribute('aria-expanded', 'false');
+      hbg.setAttribute('aria-label', 'Ouvrir le menu');
+    }
+    // Les pastilles emoji du menu doublent le libellé écrit juste à côté :
+    // un lecteur d'écran les annoncerait deux fois.
+    drawerEl.querySelectorAll('.univ-d-icon').forEach(function (i) {
+      i.setAttribute('aria-hidden', 'true');
+    });
+
+    let lastFocus = null;
+    const open = window.openDrawer, close = window.closeDrawer;
+    if (typeof open === 'function') {
+      window.openDrawer = function () {
+        lastFocus = document.activeElement;
+        open.apply(this, arguments);
+        if (hbg) hbg.setAttribute('aria-expanded', 'true');
+        const first = drawerEl.querySelector('.univ-d-close, a, button');
+        if (first) setTimeout(function () { first.focus(); }, 60);
+      };
+    }
+    if (typeof close === 'function') {
+      window.closeDrawer = function () {
+        close.apply(this, arguments);
+        if (hbg) hbg.setAttribute('aria-expanded', 'false');
+        // Sans ça le focus repart en haut du document à chaque fermeture
+        if (lastFocus && lastFocus.focus) { lastFocus.focus(); lastFocus = null; }
+      };
+    }
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && drawerEl.classList.contains('open') &&
+          typeof window.closeDrawer === 'function') window.closeDrawer();
+    });
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initDrawerA11y);
+  } else {
+    initDrawerA11y();
+  }
+
   /* PWA : enregistre le service worker (cache assets + pages, mode hors-ligne) */
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function () {
@@ -123,12 +182,14 @@
     drawer.appendChild(card);
 
     // Liens légaux discrets sous la carte mission (présents sur toutes les pages)
+    // #9a99a8 ne donnait que 2,8:1 sur fond blanc, sous le minimum lisible
+    // de 4,5:1 ; #6b6a78 reste discret tout en montant à 5,3:1.
     const legal = document.createElement('div');
-    legal.style.cssText = 'padding:0 18px 40px;font-size:.72rem;line-height:1.8;color:#9a99a8;';
+    legal.style.cssText = 'padding:0 18px 40px;font-size:.72rem;line-height:1.8;color:#6b6a78;';
     legal.innerHTML =
-      '<a href="mentions-legales.html" style="color:#9a99a8;text-decoration:none;">Mentions légales</a> · ' +
-      '<a href="cgu.html" style="color:#9a99a8;text-decoration:none;">CGU / CGV</a> · ' +
-      '<a href="confidentialite.html" style="color:#9a99a8;text-decoration:none;">Confidentialité</a>';
+      '<a href="mentions-legales.html" style="color:#6b6a78;text-decoration:underline;">Mentions légales</a> · ' +
+      '<a href="cgu.html" style="color:#6b6a78;text-decoration:underline;">CGU / CGV</a> · ' +
+      '<a href="confidentialite.html" style="color:#6b6a78;text-decoration:underline;">Confidentialité</a>';
     drawer.appendChild(legal);
   }
 })();
