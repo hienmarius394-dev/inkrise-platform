@@ -252,6 +252,11 @@
       background: var(--surface2); color: var(--muted);
     }
     .chap-btn:hover { background: var(--surface3); color: var(--text); }
+    /* L'aperçu est un lien, pas un bouton : il doit s'aligner comme les autres */
+    a.chap-btn { text-decoration: none; }
+    .chap-btn.preview:hover { background: rgba(0,201,167,0.18); color: #007a66; }
+    .chap-btn:focus-visible { outline: 2px solid var(--purple); outline-offset: 2px; }
+    @media (hover: none) { .chap-btn { width: 40px; height: 40px; font-size: 1rem; } }
     .chap-btn.edit:hover   { background: rgba(124,111,239,0.2); color: var(--purple2); }
     .chap-btn.save:hover   { background: rgba(61,220,132,0.2); color: var(--green); }
     .chap-btn.cancel:hover { background: rgba(240,82,42,0.15); color: var(--accent); }
@@ -401,6 +406,10 @@
       cursor: pointer; transition: all .2s; white-space: nowrap;
     }
     .btn-edit-manga:hover { border-color: var(--purple); color: var(--purple); }
+    .header-actions { display: flex; gap: 8px; flex-shrink: 0; flex-wrap: wrap; }
+    a.btn-edit-manga { text-decoration: none; display: inline-flex; align-items: center; }
+    .btn-preview-manga:hover { border-color: #007a66; color: #007a66; }
+    .btn-edit-manga:focus-visible { outline: 2px solid var(--purple); outline-offset: 2px; }
     .edit-form { text-align: left; }
     .edit-form label {
       display: block; font-size: 0.72rem; font-weight: 700; color: var(--muted);
@@ -561,7 +570,11 @@
         <span class="meta-count" id="mangaChapCount">0 chapitre</span>
       </div>
     </div>
-    <button class="btn-edit-manga" id="btnEditManga">✏️ Modifier le manga</button>
+    <div class="header-actions">
+      <a class="btn-edit-manga btn-preview-manga" id="btnPreviewManga" href="#" target="_blank" rel="noopener"
+         title="Voir la fiche publique de ce manga">👁️ Aperçu</a>
+      <button class="btn-edit-manga" id="btnEditManga">✏️ Modifier le manga</button>
+    </div>
   </div>
 
   <!-- Toolbar -->
@@ -819,6 +832,7 @@ async function loadManga() {
   manga = data;
 
   document.getElementById('mangaTitre').textContent = data.titre || 'Sans titre';
+  document.getElementById('btnPreviewManga').href = `manga.html?id=${mangaId}`;
 
   const typeLabels = {
     manga:'Manga', manhwa:'Manhwa', manhua:'Manhua',
@@ -906,6 +920,10 @@ function renderChapitres() {
       <div class="chap-date">${date}</div>
       <div class="chap-actions">
         <div class="show-view" style="display:flex;gap:6px;">
+          <a class="chap-btn preview" title="Aperçu — voir ce chapitre comme un lecteur"
+             aria-label="Aperçu du chapitre ${chap.numero}"
+             href="lecteur.html?manga_id=${mangaId}&chapitre=${chap.id}"
+             target="_blank" rel="noopener">👁️</a>
           <button class="chap-btn addpages" title="Ajouter des pages" data-id="${chap.id}">📄</button>
           <button class="chap-btn edit" title="Modifier le titre" data-id="${chap.id}">✏️</button>
           <button class="chap-btn delete" title="Supprimer" data-id="${chap.id}" data-titre="${escapeHtml(chap.titre || 'Chapitre ' + chap.numero)}">🗑️</button>

@@ -620,13 +620,23 @@
     .pages-viewer.horizontal { touch-action: pan-y; padding-bottom: 152px; }
     .page-img-wrap.swiping .page-img { transition: none; }
     .page-img { transition: transform .22s ease; }
-    /* Sur écran tactile, les flèches restent visibles : il n'y a pas de survol */
+    /* Sur écran tactile il n'y a pas de survol pour révéler les flèches.
+       Elles apparaissent donc brièvement à l'ouverture d'un chapitre, le
+       temps de signaler qu'on peut tourner les pages par les côtés, puis
+       s'effacent : posées en permanence sur la planche, elles gênaient la
+       lecture. Les zones restent tapables même une fois les flèches parties,
+       et le glissement du doigt fonctionne partout. */
     @media (hover: none) {
-      .click-zone { opacity: 1; }
+      .click-zone { opacity: 0; transition: opacity .5s ease; }
+      .pages-viewer.zones-visible .click-zone { opacity: 1; }
       .click-zone-icon {
-        font-size: 1.4rem; padding: 10px 12px;
-        background: rgba(0,0,0,0.32); color: #fff;
+        font-size: 1.05rem; padding: 6px 9px; border-radius: 999px;
+        background: rgba(0,0,0,0.22); color: rgba(255,255,255,0.85);
+        backdrop-filter: blur(2px);
       }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .click-zone { transition: none; }
     }
   </style>
 </head>
@@ -1161,6 +1171,18 @@ function renderPageMode() {
   document.getElementById('progressWrap').style.display = 'block';
   buildPageStrip();
   showPage(currentPage);
+  flashClickZones();
+}
+
+/* Les flèches latérales ne sont qu'un indice : on les montre à l'ouverture
+   puis on les efface, pour laisser la planche entièrement visible. */
+let zoneHintTimer = null;
+function flashClickZones() {
+  const v = document.getElementById('pagesViewer');
+  if (!v) return;
+  v.classList.add('zones-visible');
+  clearTimeout(zoneHintTimer);
+  zoneHintTimer = setTimeout(() => v.classList.remove('zones-visible'), 2000);
 }
 
 function showPage(idx) {
@@ -1528,6 +1550,9 @@ function toggleUI() {
   document.getElementById('topbar').classList.toggle('hidden', !uiVisible);
   document.getElementById('bottombar').classList.toggle('hidden', !uiVisible);
   document.getElementById('pageStrip').classList.toggle('hidden', !uiVisible);
+  /* Retrouver les commandes ramène aussi les flèches, le temps de les voir */
+  if (uiVisible && readMode === 'pages') flashClickZones();
+  else { clearTimeout(zoneHintTimer); document.getElementById('pagesViewer').classList.remove('zones-visible'); }
 }
 
 let lastScrollY = 0;
