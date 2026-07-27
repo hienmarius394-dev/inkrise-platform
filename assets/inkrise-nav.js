@@ -67,7 +67,7 @@
     const box = document.createElement('div');
     box.style.cssText = 'background:#fff;border-radius:16px;padding:22px;max-width:340px;width:100%;font-family:\'DM Sans\',sans-serif;box-shadow:0 24px 60px rgba(0,0,0,.25);';
     box.innerHTML = '<div style="font-weight:800;font-size:1rem;margin-bottom:4px;">🚩 Signaler ce contenu</div>' +
-      '<div id="inkSignalMsg" style="font-size:.8rem;color:#8e8e93;margin-bottom:14px;">Pourquoi veux-tu le signaler ?</div>';
+      '<div id="inkSignalMsg" style="font-size:.8rem;color:#75757a;margin-bottom:14px;">Pourquoi veux-tu le signaler ?</div>';
     RAISONS.forEach(function (raison) {
       const b = document.createElement('button');
       b.textContent = raison;
@@ -94,7 +94,7 @@
     });
     const close = document.createElement('button');
     close.textContent = 'Annuler';
-    close.style.cssText = 'display:block;width:100%;padding:10px;margin-top:4px;border-radius:10px;border:none;background:none;cursor:pointer;font-size:.84rem;font-weight:700;color:#8e8e93;';
+    close.style.cssText = 'display:block;width:100%;padding:10px;margin-top:4px;border-radius:10px;border:none;background:none;cursor:pointer;font-size:.84rem;font-weight:700;color:#75757a;';
     close.onclick = function () { ov.remove(); };
     box.appendChild(close);
     ov.appendChild(box);

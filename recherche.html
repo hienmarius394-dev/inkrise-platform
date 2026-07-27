@@ -37,8 +37,8 @@
           --danger:  #ff3d71;
           --text:    #1c1c1e;
           --text-2:  #48484a;
-          --text-3:  #8e8e93;
-          --muted:   #8e8e93;
+          --text-3:#656569;
+          --muted:#656569;
           --border:  rgba(0,0,0,0.08);
           --border2: rgba(124,111,239,0.15);
           --radius:  12px;
@@ -57,7 +57,7 @@
     @media (max-width: 680px) { .univ-nav-links-d { display: none; } }
     .univ-nav-lk { color: rgba(0,0,0,0.6); font-size: .82rem; font-weight: 600; text-decoration: none; padding: 5px 10px; border-radius: 7px; transition: all .2s; white-space: nowrap; font-family: 'DM Sans', sans-serif; }
     .univ-nav-lk:hover { color: #1c1c1e; background: rgba(0,0,0,0.05); }
-    .univ-nav-lk.active { color: var(--purple2); background: rgba(124,111,239,0.1); }
+    .univ-nav-lk.active { color: #6649f5; background: rgba(124,111,239,0.1); }
     .univ-nav-search { display: flex; align-items: center; background: rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.08); border-radius: 18px; overflow: hidden; max-width: 200px; flex-shrink: 0; }
     @media (max-width: 480px) { .univ-nav-search { max-width: 110px; } }
     .univ-nav-si { background: none; border: none; outline: none; color: #1c1c1e; font-size: .8rem; padding: 7px 10px; width: 100%; font-family: 'DM Sans', sans-serif; }
@@ -90,8 +90,8 @@
     .univ-d-item:hover { background: rgba(0,0,0,.05); }
     .univ-d-icon { width: 34px; height: 34px; border-radius: 9px; background: rgba(0,0,0,.05); display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
     .univ-d-badge { font-size: .65rem; font-weight: 800; padding: 2px 7px; border-radius: 6px; margin-left: auto; }
-    .univ-d-badge.orange { background: rgba(255,107,53,.15); color: #ff6b35; }
-    .univ-d-badge.teal { background: rgba(0,201,167,.15); color: #00c9a7; }
+    .univ-d-badge.orange { background: rgba(255,107,53,.15); color: #b33f14; }
+    .univ-d-badge.teal { background: rgba(0,201,167,.15); color: #007a66; }
     .univ-d-divider { height: 1px; background: var(--border); margin: 8px 16px; }
 
     /* ── BOTTOM NAV ── */
@@ -149,6 +149,57 @@
 
     /* ── MAIN WRAP ── */
     .main-wrap { max-width: 1200px; margin: 0 auto; padding: 32px 24px; }
+
+    /* ── FILTRES ──
+       Le catalogue ne se parcourait qu'au mot-clé : genre, type et tri
+       existaient en base et s'affichaient sur les cartes, mais rien ne
+       permettait de s'en servir pour restreindre la liste. */
+    .filters-bar {
+      max-width: 1200px; margin: 0 auto; padding: 20px 24px 0;
+      display: flex; flex-wrap: wrap; align-items: flex-end; gap: 12px;
+    }
+    .filter-group { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+    .filter-group label {
+      font-size: .68rem; font-weight: 800; letter-spacing: .06em;
+      text-transform: uppercase; color: var(--text-3);
+    }
+    .filter-group select {
+      background: var(--surface2); border: 1px solid var(--border);
+      color: var(--text); border-radius: 9px; padding: 9px 12px;
+      font-size: .84rem; font-family: 'DM Sans', sans-serif;
+      cursor: pointer; outline: none; min-height: 40px; min-width: 132px;
+    }
+    .filter-group select:focus-visible { outline: 2px solid var(--purple); outline-offset: 1px; }
+    .btn-reset-filters {
+      background: none; border: 1px solid var(--border); color: var(--text-2);
+      border-radius: 9px; padding: 9px 14px; font-size: .82rem; font-weight: 700;
+      cursor: pointer; font-family: 'DM Sans', sans-serif; min-height: 40px;
+      transition: all .2s;
+    }
+    .btn-reset-filters:hover { border-color: var(--purple); color: var(--purple); }
+    .filters-count {
+      margin-left: auto; font-size: .82rem; color: var(--text-2); font-weight: 600;
+      align-self: center; padding-bottom: 2px;
+    }
+    @media (max-width: 640px) {
+      .filters-bar { padding: 16px 16px 0; gap: 9px; }
+      .filter-group { flex: 1 1 calc(50% - 5px); }
+      .filter-group select { min-width: 0; width: 100%; }
+      .filters-count { margin-left: 0; flex-basis: 100%; padding-top: 4px; }
+    }
+
+    /* ── VOIR PLUS ──
+       Auparavant la liste s'arrêtait à 40 titres sans le dire : au-delà,
+       une partie du catalogue devenait invisible en silence. */
+    .load-more-wrap { display: flex; justify-content: center; padding: 8px 0 40px; }
+    .btn-load-more {
+      background: var(--surface2); color: var(--text); border: 1px solid var(--border);
+      padding: 13px 30px; border-radius: 12px; font-weight: 700; font-size: .9rem;
+      cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all .2s;
+      min-height: 46px;
+    }
+    .btn-load-more:hover:not(:disabled) { background: rgba(124,111,239,.15); border-color: var(--purple); }
+    .btn-load-more:disabled { opacity: .6; cursor: default; }
 
     /* ── LOADING ── */
     .page-loading { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 40vh; gap: 16px; color: var(--muted); }
@@ -352,7 +403,7 @@
   <a href="bibliotheque.html" class="univ-d-item"><div class="univ-d-icon">📚</div>Ma bibliothèque</a>
   <a href="upload-manga.html" class="univ-d-item" id="drawerPublier" style="display:none;"><div class="univ-d-icon">📤</div>Publier un manga</a>
   <a href="auth.html" class="univ-d-item" id="drawerConnexion"><div class="univ-d-icon">🔑</div>Connexion / Inscription</a>
-  <button class="univ-d-item" id="drawerLogout" style="display:none;" onclick="doLogout()"><div class="univ-d-icon">🚪</div><span style="color:#f0522a;">Déconnexion</span></button>
+  <button class="univ-d-item" id="drawerLogout" style="display:none;" onclick="doLogout()"><div class="univ-d-icon">🚪</div><span style="color:#da380f;">Déconnexion</span></button>
 </div>
 
 <!-- HERO SEARCH -->
@@ -364,6 +415,45 @@
       <button onclick="doHeroSearch()">🔍</button>
     </div>
   </div>
+</div>
+
+<!-- FILTRES -->
+<div class="filters-bar" id="filtersBar">
+  <div class="filter-group">
+    <label for="filterGenre">Genre</label>
+    <select id="filterGenre"><option value="">Tous les genres</option></select>
+  </div>
+  <div class="filter-group">
+    <label for="filterType">Format</label>
+    <select id="filterType">
+      <option value="">Tous les formats</option>
+      <option value="manga">Manga</option>
+      <option value="manhwa">Manhwa</option>
+      <option value="manhua">Manhua</option>
+      <option value="webtoon">Webtoon</option>
+      <option value="bd">BD / Comic</option>
+      <option value="roman">Roman graphique</option>
+    </select>
+  </div>
+  <div class="filter-group">
+    <label for="filterStatut">Statut</label>
+    <select id="filterStatut">
+      <option value="">Tous</option>
+      <option value="en_cours">En cours</option>
+      <option value="termine">Terminé</option>
+      <option value="pause">En pause</option>
+    </select>
+  </div>
+  <div class="filter-group">
+    <label for="filterTri">Trier par</label>
+    <select id="filterTri">
+      <option value="recent">Plus récents</option>
+      <option value="vues">Plus vus</option>
+      <option value="titre">Ordre alphabétique</option>
+    </select>
+  </div>
+  <button class="btn-reset-filters" id="btnResetFilters" style="display:none;">✕ Réinitialiser</button>
+  <div class="filters-count" id="filtersCount" role="status" aria-live="polite"></div>
 </div>
 
 <!-- CONTENT -->
@@ -518,9 +608,107 @@ function renderPacks(packs) {
   }).join('');
 }
 
+// ── FILTRES & PAGINATION ──
+const PAGE_SIZE = 24;
+const GENRES = [
+  'Action','Aventure','Romance','Fantasy','Science-fiction',
+  'Horreur','Mystère','Comédie','Drame','Slice of life',
+  'Shonen','Shojo','Seinen','Josei','Isekai',
+  'Sport','Historique','Thriller','Supernatural','Ecchi'
+];
+const filters = {
+  genre:  params.get('genre')  || '',
+  type:   params.get('type')   || '',
+  statut: params.get('statut') || '',
+  tri:    params.get('tri')    || 'recent',
+};
+let loadedMangas = [];
+let totalMangas  = 0;
+
+// Construit la requête mangas pour une page donnée. `count: 'exact'` sert à
+// annoncer le total : sans lui, impossible de savoir s'il reste des titres.
+function fetchMangas(offset) {
+  let q = sb.from('mangas').select('*', { count: 'exact' }).neq('statut', 'brouillon');
+  if (query)          q = q.or(`titre.ilike.%${query}%,synopsis.ilike.%${query}%`);
+  if (filters.genre)  q = q.contains('genres', [filters.genre]);
+  if (filters.type)   q = q.eq('type', filters.type);
+  if (filters.statut) q = q.eq('statut', filters.statut);
+
+  if (filters.tri === 'vues')       q = q.order('vues', { ascending: false, nullsFirst: false });
+  else if (filters.tri === 'titre') q = q.order('titre', { ascending: true });
+  else                              q = q.order('created_at', { ascending: false });
+
+  return q.range(offset, offset + PAGE_SIZE - 1);
+}
+
+function filtersActive() {
+  return !!(filters.genre || filters.type || filters.statut) || filters.tri !== 'recent';
+}
+
+// Les filtres vivent dans l'URL : un résultat filtré peut être partagé ou
+// remis en favori, et le bouton Précédent du navigateur les restaure.
+function applyFilters() {
+  const p = new URLSearchParams();
+  if (query) p.set('q', query);
+  ['genre','type','statut'].forEach(k => { if (filters[k]) p.set(k, filters[k]); });
+  if (filters.tri !== 'recent') p.set('tri', filters.tri);
+  window.location.search = p.toString();
+}
+
+function initFilters() {
+  const gs = document.getElementById('filterGenre');
+  GENRES.forEach(g => {
+    const o = document.createElement('option');
+    o.value = g; o.textContent = g;
+    gs.appendChild(o);
+  });
+  gs.value = filters.genre;
+  document.getElementById('filterType').value   = filters.type;
+  document.getElementById('filterStatut').value = filters.statut;
+  document.getElementById('filterTri').value    = filters.tri;
+
+  [['filterGenre','genre'],['filterType','type'],['filterStatut','statut'],['filterTri','tri']]
+    .forEach(([id, key]) => document.getElementById(id).addEventListener('change', function () {
+      filters[key] = this.value;
+      applyFilters();
+    }));
+
+  const reset = document.getElementById('btnResetFilters');
+  reset.style.display = filtersActive() ? 'block' : 'none';
+  reset.addEventListener('click', () => {
+    window.location.search = query ? 'q=' + encodeURIComponent(query) : '';
+  });
+}
+
+// Ajoute une page de résultats à la suite, sans recharger ceux déjà affichés
+async function loadMoreMangas(btn) {
+  btn.disabled = true;
+  btn.textContent = 'Chargement…';
+  const { data, error } = await fetchMangas(loadedMangas.length);
+  if (error) {
+    btn.disabled = false;
+    btn.textContent = 'Réessayer';
+    return;
+  }
+  loadedMangas = loadedMangas.concat(data || []);
+  document.getElementById('mangaFeed').insertAdjacentHTML('beforeend', renderMangas(data || []));
+  updateCount();
+  if (loadedMangas.length >= totalMangas) btn.closest('.load-more-wrap').remove();
+  else { btn.disabled = false; btn.textContent = 'Voir plus de mangas'; }
+}
+
+function updateCount() {
+  const el = document.getElementById('filtersCount');
+  if (!el) return;
+  el.textContent = totalMangas
+    ? `${loadedMangas.length} manga${loadedMangas.length > 1 ? 's' : ''} affiché${loadedMangas.length > 1 ? 's' : ''} sur ${totalMangas}`
+    : '';
+}
+
 async function doSearchPage() {
   const wrap = document.getElementById('mainContent');
   const browseAll = !query;
+  initFilters();
 
   if (browseAll) {
     document.getElementById('heroTitle').innerHTML = `📖 Tous les mangas`;
@@ -535,10 +723,8 @@ async function doSearchPage() {
   wrap.innerHTML = `<div class="page-loading" id="loader"><div class="loading-ring"></div><span>${browseAll ? 'Chargement des mangas…' : 'Recherche en cours…'}</span></div>`;
 
   const term = query;
-  const [{ data: mangas, error: eM }, { data: profiles, error: eP }, { data: packs, error: ePk }] = await Promise.all([
-    browseAll
-      ? sb.from('mangas').select('*').neq('statut','brouillon').order('created_at', { ascending: false }).limit(40)
-      : sb.from('mangas').select('*').neq('statut','brouillon').or(`titre.ilike.%${term}%,synopsis.ilike.%${term}%`).limit(20),
+  const [{ data: mangas, error: eM, count: mangaTotal }, { data: profiles, error: eP }, { data: packs, error: ePk }] = await Promise.all([
+    fetchMangas(0),
     browseAll
       ? Promise.resolve({ data: [] })
       : sb.from('profiles').select('*').or(`username.ilike.%${term}%,bio.ilike.%${term}%`).limit(20),
@@ -547,12 +733,26 @@ async function doSearchPage() {
       : sb.from('packs_tutoriels').select('*').or(`titre.ilike.%${term}%,description.ilike.%${term}%`).limit(20),
   ]);
 
+  loadedMangas = mangas || [];
+  totalMangas  = typeof mangaTotal === 'number' ? mangaTotal : loadedMangas.length;
+
   const mangaList  = mangas  || [];
   const profilList = profiles || [];
   const packList   = packs   || [];
 
   if (!mangaList.length && !profilList.length && !packList.length) {
-    wrap.innerHTML = browseAll
+    // Une liste vide à cause des filtres n'est pas un catalogue vide : on
+    // propose de les relâcher plutôt que de laisser croire qu'il n'y a rien.
+    const resetHref = query ? 'recherche.html?q=' + encodeURIComponent(query) : 'recherche.html';
+    wrap.innerHTML = filtersActive()
+      ? `
+      <div class="no-results">
+        <div class="no-results-icon">🔎</div>
+        <h2>Aucun titre avec ces filtres</h2>
+        <p>${query ? `Rien ne correspond à <strong>« ${escapeHtml(query)} »</strong> avec les filtres choisis.` : 'Aucun manga ne correspond aux filtres choisis.'}</p>
+        <a href="${resetHref}" class="btn-retry">Réinitialiser les filtres</a>
+      </div>`
+      : browseAll
       ? `
       <div class="no-results">
         <div class="no-results-icon">📖</div>
@@ -567,6 +767,7 @@ async function doSearchPage() {
         <p>Aucun manga, créateur ni pack ne correspond à <strong>« ${escapeHtml(query)} »</strong>.</p>
         <a href="recherche.html" class="btn-retry">Voir tous les mangas</a>
       </div>`;
+    updateCount();
     return;
   }
 
@@ -577,10 +778,15 @@ async function doSearchPage() {
       <div class="section-block">
         <div class="section-header">
           <div class="section-title">📖 Mangas</div>
-          <span class="section-count">${mangaList.length} résultat${mangaList.length > 1 ? 's' : ''}</span>
+          <span class="section-count">${totalMangas} résultat${totalMangas > 1 ? 's' : ''}</span>
         </div>
-        <div class="manga-feed">${renderMangas(mangaList)}</div>
+        <div class="manga-feed" id="mangaFeed">${renderMangas(mangaList)}</div>
       </div>`;
+    if (loadedMangas.length < totalMangas) {
+      html += `<div class="load-more-wrap">
+        <button class="btn-load-more" id="btnLoadMore">Voir plus de mangas</button>
+      </div>`;
+    }
   }
 
   if (profilList.length) {
@@ -611,6 +817,9 @@ async function doSearchPage() {
     : `Résultats pour <em>« ${escapeHtml(query)} »</em> <span style="color:var(--muted);font-size:.85rem;font-weight:600;">(${total})</span>`;
 
   wrap.innerHTML = html;
+  updateCount();
+  const more = document.getElementById('btnLoadMore');
+  if (more) more.addEventListener('click', () => loadMoreMangas(more));
 }
 
 doSearchPage();

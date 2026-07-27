@@ -22,7 +22,7 @@
   --bg: #ffffff; --bg-2:#f7f7fa; --bg-3:#ededf2;
   --ink: #ffffff; --ink-2: #f2f2f7; --surface: #f2f2f7; --surface2:#e5e5ea; --surface-2: #e5e5ea;
   --border: rgba(0,0,0,0.08); --text: #1c1c1e; --text-2: rgba(0,0,0,0.6);
-  --text-3: rgba(0,0,0,0.35); --muted:#8e8e93;
+  --text-3:rgba(0,0,0,0.55); --muted:#656569;
   --purple: #7c5cfc; --purple-dark: #5040c8; --purple2:#a594f9; --pink:#ff5fa8; --accent:#7c5cfc;
   --green:#3ddc84; --amber:#f5a623; --orange:#ff6b35; --orange-light:#ff8a5c;
   --teal:#0fb8a6; --danger:#ff3d71;
@@ -38,7 +38,7 @@ body { background: var(--ink); color: var(--text); font-family: 'DM Sans', sans-
 @media (max-width: 680px) { .univ-nav-links-d { display: none; } }
 .univ-nav-lk { color: rgba(0,0,0,0.6); font-size: .82rem; font-weight: 600; text-decoration: none; padding: 5px 10px; border-radius: 7px; transition: all .2s; white-space: nowrap; font-family: 'DM Sans', sans-serif; }
 .univ-nav-lk:hover { color: #1c1c1e; background: rgba(0,0,0,0.05); }
-.univ-nav-lk.active { color: var(--purple2); background: rgba(124,111,239,0.1); }
+.univ-nav-lk.active { color: #6649f5; background: rgba(124,111,239,0.1); }
 .univ-nav-search { display: flex; align-items: center; background: rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.08); border-radius: 18px; overflow: hidden; max-width: 200px; flex-shrink: 0; }
 @media (max-width: 480px) { .univ-nav-search { max-width: 110px; } }
 .univ-nav-si { background: none; border: none; outline: none; color: #1c1c1e; font-size: .8rem; padding: 7px 10px; width: 100%; font-family: 'DM Sans', sans-serif; }
@@ -71,8 +71,8 @@ body { background: var(--ink); color: var(--text); font-family: 'DM Sans', sans-
 .univ-d-item:hover { background: rgba(0,0,0,.05); }
 .univ-d-icon { width: 34px; height: 34px; border-radius: 9px; background: rgba(0,0,0,.05); display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
 .univ-d-badge { font-size: .65rem; font-weight: 800; padding: 2px 7px; border-radius: 6px; margin-left: auto; }
-.univ-d-badge.orange { background: rgba(255,107,53,.15); color: #ff6b35; }
-.univ-d-badge.teal { background: rgba(0,201,167,.15); color: #00c9a7; }
+.univ-d-badge.orange { background: rgba(255,107,53,.15); color: #b33f14; }
+.univ-d-badge.teal { background: rgba(0,201,167,.15); color: #007a66; }
 .univ-d-divider { height: 1px; background: var(--border); margin: 8px 16px; }
 
 /* BOTTOM NAV */
@@ -160,7 +160,7 @@ body { background: var(--ink); color: var(--text); font-family: 'DM Sans', sans-
   <a href="bibliotheque.html" class="univ-d-item"><div class="univ-d-icon">📚</div>Ma bibliothèque</a>
   <a href="upload-manga.html" class="univ-d-item" id="drawerPublier" style="display:none;"><div class="univ-d-icon">📤</div>Publier un manga</a>
   <a href="auth.html" class="univ-d-item" id="drawerConnexion"><div class="univ-d-icon">🔑</div>Connexion / Inscription</a>
-  <button class="univ-d-item" id="drawerLogout" style="display:none;" onclick="doLogout()"><div class="univ-d-icon">🚪</div><span style="color:#f0522a;">Déconnexion</span></button>
+  <button class="univ-d-item" id="drawerLogout" style="display:none;" onclick="doLogout()"><div class="univ-d-icon">🚪</div><span style="color:#da380f;">Déconnexion</span></button>
 </div>
 
 <!-- CONTENU -->
@@ -170,7 +170,7 @@ body { background: var(--ink); color: var(--text); font-family: 'DM Sans', sans-
 </div>
 
 <div id="offlineSection" style="display:none; max-width:900px; margin:0 auto 8px; padding:0 16px;">
-  <div style="font-weight:800; font-size:1rem; margin-bottom:10px;">📥 Téléchargés <span style="font-size:.8rem; color:#8e8e93; font-weight:600;">— lisibles sans connexion</span></div>
+  <div style="font-weight:800; font-size:1rem; margin-bottom:10px;">📥 Téléchargés <span style="font-size:.8rem; color:#75757a; font-weight:600;">— lisibles sans connexion</span></div>
   <div id="offlineList" style="display:flex; flex-direction:column; gap:8px; margin-bottom:22px;"></div>
 </div>
 
@@ -424,7 +424,7 @@ function renderOffline() {
       '<span style="font-size:1.2rem;">📖</span>' +
       '<span style="flex:1;min-width:0;">' +
         '<span style="display:block;font-weight:800;font-size:.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + escapeHtml(o.mangaTitre) + '</span>' +
-        '<span style="display:block;font-size:.76rem;color:#8e8e93;">' + escapeHtml(o.chapTitre) + ' · ' + (o.pages ? o.pages.length : 0) + ' pages</span>' +
+        '<span style="display:block;font-size:.76rem;color:#75757a;">' + escapeHtml(o.chapTitre) + ' · ' + (o.pages ? o.pages.length : 0) + ' pages</span>' +
       '</span>' +
       '<button title="Supprimer du hors-ligne" style="border:none;background:none;cursor:pointer;font-size:.95rem;padding:6px;">🗑️</button>';
     row.querySelector('button').addEventListener('click', async (e) => {

@@ -29,12 +29,12 @@
   --purple2: #a594f9;
   --pink: #ff5fa8;
   --accent: #7c5cfc;
-  --purple-light: #9782ff;
+  --purple-light: #7256ff;
   --purple-dim: rgba(124,92,252,0.15);
   --teal: #0fb8a6;
   --text: #1c1c1e;
   --text-2: #6b6b78;
-  --text-3: #9a99a8;
+  --text-3:#656374;
   --radius: 14px;
   --radius-lg: 22px;
   --error: #ef4444;
@@ -323,8 +323,8 @@ body::after {
 .univ-d-item:hover{background:rgba(0,0,0,.05);}
 .univ-d-icon{width:34px;height:34px;border-radius:9px;background:rgba(0,0,0,.05);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
 .univ-d-badge{font-size:.65rem;font-weight:800;padding:2px 7px;border-radius:6px;margin-left:auto;}
-.univ-d-badge.orange{background:rgba(255,107,53,.15);color:#ff6b35;}
-.univ-d-badge.teal{background:rgba(0,201,167,.15);color:#00c9a7;}
+.univ-d-badge.orange{background:rgba(255,107,53,.15);color:#b33f14;}
+.univ-d-badge.teal{background:rgba(0,201,167,.15);color:#007a66;}
 .univ-d-divider{height:1px;background:var(--border);margin:8px 16px;}
 /* Bottom nav */
 .univ-bnav{position:fixed;bottom:0;left:0;right:0;z-index:100;background:rgba(255,255,255,.97);border-top:1px solid var(--border);box-shadow:0 -2px 12px rgba(0,0,0,.05);display:flex;align-items:center;justify-content:space-around;padding:8px 0 16px;backdrop-filter:blur(14px);}
@@ -413,7 +413,7 @@ body::after {
   <a href="bibliotheque.html" class="univ-d-item"><div class="univ-d-icon">📚</div>Ma bibliothèque</a>
   <a href="upload-manga.html" class="univ-d-item" id="drawerPublier" style="display:none;"><div class="univ-d-icon">📤</div>Publier un manga</a>
   <a href="auth.html" class="univ-d-item" id="drawerConnexion"><div class="univ-d-icon">🔑</div>Connexion / Inscription</a>
-  <button class="univ-d-item" id="drawerLogout" style="display:none;" onclick="doLogout()"><div class="univ-d-icon">🚪</div><span style="color:#f0522a;">Déconnexion</span></button>
+  <button class="univ-d-item" id="drawerLogout" style="display:none;" onclick="doLogout()"><div class="univ-d-icon">🚪</div><span style="color:#da380f;">Déconnexion</span></button>
 </div>
 
 <div class="aurora-blob-teal"></div>
@@ -504,7 +504,7 @@ body::after {
       <div class="field">
         <label>Email</label>
         <input type="email" id="signupEmail" placeholder="ton@email.com" oninput="checkEmailTypo()" />
-        <div id="emailTypoHint" style="display:none;font-size:12px;margin-top:6px;color:var(--purple, #7c5cfc);cursor:pointer;">
+        <div id="emailTypoHint" style="display:none;font-size:12px;margin-top:6px;color:#6649f5;cursor:pointer;">
           Tu voulais dire <strong id="emailTypoSuggest"></strong> ? <span style="text-decoration:underline;">Corriger</span>
         </div>
       </div>

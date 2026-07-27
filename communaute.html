@@ -25,7 +25,7 @@
   --purple-dim: #7c5cfc;
   --pink: #ff5fa8;
   --text: #1c1c1e;
-  --text-muted: #8e8e93;
+  --text-muted:#656569;
   --border: #e0e0e0;
   --radius: 12px;
   --radius-sm: 8px;
@@ -43,8 +43,8 @@
   --orange-light: #ff8a5c;
   --teal: #0fb8a6;
   --text-2: #48484a;
-  --text-3: #8e8e93;
-  --muted: #8e8e93;
+  --text-3:#656569;
+  --muted:#656569;
   --radius-lg: 16px;
   --radius-xl: 20px;
   --shadow: 0 2px 12px rgba(0,0,0,0.06);
@@ -69,7 +69,7 @@ img { max-width: 100%; display: block; }
 @media (max-width: 680px) { .univ-nav-links-d { display: none; } }
 .univ-nav-lk { color: rgba(0,0,0,0.6); font-size: .82rem; font-weight: 600; text-decoration: none; padding: 5px 10px; border-radius: 7px; transition: all .2s; white-space: nowrap; font-family: 'DM Sans', sans-serif; }
 .univ-nav-lk:hover { color: #1c1c1e; background: rgba(0,0,0,0.05); }
-.univ-nav-lk.active { color: var(--purple); background: rgba(124,111,239,0.1); }
+.univ-nav-lk.active { color: #6649f5; background: rgba(124,111,239,0.1); }
 .univ-nav-search { display: flex; align-items: center; background: rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.08); border-radius: 18px; overflow: hidden; max-width: 200px; flex-shrink: 0; }
 @media (max-width: 480px) { .univ-nav-search { max-width: 110px; } }
 .univ-nav-si { background: none; border: none; outline: none; color: #1c1c1e; font-size: .8rem; padding: 7px 10px; width: 100%; font-family: 'DM Sans', sans-serif; }
@@ -102,8 +102,8 @@ img { max-width: 100%; display: block; }
 .univ-d-item:hover { background: rgba(0,0,0,.05); }
 .univ-d-icon { width: 34px; height: 34px; border-radius: 9px; background: rgba(0,0,0,.05); display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
 .univ-d-badge { font-size: .65rem; font-weight: 800; padding: 2px 7px; border-radius: 6px; margin-left: auto; }
-.univ-d-badge.orange { background: rgba(255,107,53,.15); color: #ff6b35; }
-.univ-d-badge.teal { background: rgba(0,201,167,.15); color: #00c9a7; }
+.univ-d-badge.orange { background: rgba(255,107,53,.15); color: #b33f14; }
+.univ-d-badge.teal { background: rgba(0,201,167,.15); color: #007a66; }
 .univ-d-divider { height: 1px; background: var(--border); margin: 8px 16px; }
 
 /* ── BOTTOM NAV ── */
@@ -535,7 +535,7 @@ img { max-width: 100%; display: block; }
   <a href="bibliotheque.html" class="univ-d-item"><div class="univ-d-icon">📚</div>Ma bibliothèque</a>
   <a href="upload-manga.html" class="univ-d-item" id="drawerPublier" style="display:none;"><div class="univ-d-icon">📤</div>Publier un manga</a>
   <a href="auth.html" class="univ-d-item" id="drawerConnexion"><div class="univ-d-icon">🔑</div>Connexion / Inscription</a>
-  <button class="univ-d-item" id="drawerLogout" style="display:none;" onclick="doLogout()"><div class="univ-d-icon">🚪</div><span style="color:#f0522a;">Déconnexion</span></button>
+  <button class="univ-d-item" id="drawerLogout" style="display:none;" onclick="doLogout()"><div class="univ-d-icon">🚪</div><span style="color:#da380f;">Déconnexion</span></button>
 </div>
 
 <div class="comm-container" id="app">
@@ -702,7 +702,7 @@ document.addEventListener('DOMContentLoaded', function() {
             'Rends-toi sur ton profil pour le configurer, puis reviens ici.' +
           '</div>' +
           '<div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">' +
-            '<a href="profil.html" style="display:inline-flex;align-items:center;gap:8px;padding:12px 28px;background:var(--purple);color:#fff;border-radius:var(--radius-sm);font-weight:700;font-size:0.9rem;text-decoration:none;">⚙️ Mon profil</a>' +
+            '<a href="profil.html" style="display:inline-flex;align-items:center;gap:8px;padding:12px 28px;background:#7857fc;color:#fff;border-radius:var(--radius-sm);font-weight:700;font-size:0.9rem;text-decoration:none;">⚙️ Mon profil</a>' +
             '<a href="index.html" style="display:inline-flex;align-items:center;gap:8px;padding:12px 28px;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:var(--radius-sm);font-weight:600;font-size:0.9rem;text-decoration:none;">🏠 Accueil</a>' +
           '</div>' +
         '</div>';
@@ -719,7 +719,7 @@ document.addEventListener('DOMContentLoaded', function() {
           'Connecte-toi ou inscris-toi pour accéder à l\'espace de ton créateur préféré.' +
         '</div>' +
         '<div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">' +
-          '<a href="auth.html" style="display:inline-flex;align-items:center;gap:8px;padding:12px 28px;background:var(--purple);color:#fff;border-radius:var(--radius-sm);font-weight:700;font-size:0.9rem;text-decoration:none;">🔑 Connexion / Inscription</a>' +
+          '<a href="auth.html" style="display:inline-flex;align-items:center;gap:8px;padding:12px 28px;background:#7857fc;color:#fff;border-radius:var(--radius-sm);font-weight:700;font-size:0.9rem;text-decoration:none;">🔑 Connexion / Inscription</a>' +
           '<a href="index.html" style="display:inline-flex;align-items:center;gap:8px;padding:12px 28px;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:var(--radius-sm);font-weight:600;font-size:0.9rem;text-decoration:none;">🏠 Retour à l\'accueil</a>' +
         '</div>' +
       '</div>';
@@ -766,7 +766,7 @@ document.addEventListener('DOMContentLoaded', function() {
       ? 'Cet espace communauté n\'existe pas. Le créateur n\'a pas de profil public.'
       : 'Erreur lors du chargement : ' + (err.message || 'erreur inconnue');
     app.innerHTML = isOwnProfile
-      ? '<div class="empty-state" style="padding:80px 20px;"><div class="empty-state-icon" style="font-size:3.5rem;margin-bottom:16px;">👤</div><div style="font-size:1.15rem;font-weight:700;margin-bottom:10px;">Configure ton profil</div><div style="font-size:0.85rem;color:var(--text-muted);margin-bottom:20px;">Tu dois d\'abord créer ton profil public avant d\'accéder à ton espace communauté.</div><a href="profil.html" style="display:inline-flex;padding:12px 28px;background:var(--purple);color:#fff;border-radius:var(--radius-sm);font-weight:700;text-decoration:none;">⚙️ Aller sur mon profil</a></div>'
+      ? '<div class="empty-state" style="padding:80px 20px;"><div class="empty-state-icon" style="font-size:3.5rem;margin-bottom:16px;">👤</div><div style="font-size:1.15rem;font-weight:700;margin-bottom:10px;">Configure ton profil</div><div style="font-size:0.85rem;color:var(--text-muted);margin-bottom:20px;">Tu dois d\'abord créer ton profil public avant d\'accéder à ton espace communauté.</div><a href="profil.html" style="display:inline-flex;padding:12px 28px;background:#7857fc;color:#fff;border-radius:var(--radius-sm);font-weight:700;text-decoration:none;">⚙️ Aller sur mon profil</a></div>'
       : '<div class="empty-state"><div class="empty-state-icon">😕</div><div class="empty-state-text">Créateur introuvable</div><div style="margin-top:12px;font-size:0.85rem;color:var(--text-muted);">' + errorMsg + '</div><a href="index.html" style="display:inline-flex;margin-top:20px;padding:10px 24px;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:var(--radius-sm);font-weight:600;text-decoration:none;">🏠 Retour à l\'accueil</a></div>';
     return;
   }

@@ -22,7 +22,7 @@ body {
   background: linear-gradient(135deg, var(--purple), var(--pink));
   -webkit-background-clip: text; -webkit-text-fill-color: transparent;
 }
-.legal-nav .back { margin-left: auto; font-size: .85rem; font-weight: 700; color: var(--purple); text-decoration: none; }
+.legal-nav .back { margin-left: auto; font-size: .85rem; font-weight: 700; color: #6649f5; text-decoration: none; }
 .legal-wrap { max-width: 760px; margin: 0 auto; padding: 28px 18px; }
 .legal-wrap h1 {
   font-family: 'Syne', sans-serif; font-size: 1.7rem; font-weight: 800;
@@ -36,16 +36,16 @@ body {
 .legal-wrap p, .legal-wrap li { font-size: .95rem; color: #2c2a3a; margin-bottom: 12px; }
 .legal-wrap ul { padding-left: 22px; margin-bottom: 12px; }
 .legal-wrap li { margin-bottom: 6px; }
-.legal-wrap a { color: var(--purple); }
+.legal-wrap a { color: #6649f5; }
 .legal-wrap strong { color: var(--text); }
 .legal-todo {
   background: rgba(245,166,35,0.1); border: 1px solid rgba(245,166,35,0.35);
   border-radius: 10px; padding: 3px 8px; font-size: .82rem; font-weight: 700;
-  color: #a06a00; white-space: nowrap;
+  color: #9a6600; white-space: nowrap;
 }
 .legal-note {
   background: #fff; border: 1px solid var(--border); border-left: 3px solid var(--purple);
   border-radius: 10px; padding: 14px 16px; margin: 18px 0; font-size: .9rem;
 }
 .legal-foot { text-align: center; margin-top: 40px; font-size: .82rem; color: var(--muted); }
-.legal-foot a { color: var(--purple); text-decoration: none; margin: 0 8px; }
+.legal-foot a { color: #6649f5; text-decoration: none; margin: 0 8px; }
