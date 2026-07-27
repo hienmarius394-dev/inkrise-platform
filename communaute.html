@@ -614,7 +614,9 @@ let state = {
   posts: [],
   reactions: {},
   comments: {},
+  sondageOptions: {},
   sondageVotes: {},
+  myVotes: {},
   selectedOption: {},
   loading: true
 };
@@ -773,7 +775,183 @@ document.addEventListener('DOMContentLoaded', function() {
 
   state.loading = false;
   render();
+  startRealtime();
 })();
+
+/* ===== TEMPS RÉEL =====
+   Le mur se met à jour tout seul quand quelqu'un d'autre publie, commente,
+   réagit ou vote — sans quoi il fallait recharger la page à la main pour voir
+   apparaître quoi que ce soit. Deux précautions gouvernent tout ce bloc :
+     1. ne jamais effacer ce que le visiteur est en train d'écrire ;
+     2. ne pas faire sauter sa lecture quand du contenu s'insère au-dessus. */
+
+/* Ce que le visiteur a « en cours » et qu'un rendu ne doit pas emporter :
+   textes saisis, sections de commentaires dépliées, réponses ouvertes,
+   position du curseur, et le post qu'il est en train de lire. */
+function captureUi() {
+  const ui = { fields: {}, openComments: [], openReplies: {}, focus: null, anchor: null };
+
+  document.querySelectorAll('textarea, input[type="text"]').forEach(function (el, i) {
+    if (!el.value) return;
+    const key = fieldKey(el, i);
+    ui.fields[key] = { value: el.value, start: el.selectionStart, end: el.selectionEnd };
+    if (el === document.activeElement) ui.focus = key;
+  });
+
+  document.querySelectorAll('.comments-section').forEach(function (sec) {
+    if (sec.style.display !== 'none') ui.openComments.push(sec.id);
+  });
+
+  document.querySelectorAll('.reply-form-slot[data-open="1"]').forEach(function (slot) {
+    const input = slot.querySelector('.reply-input');
+    ui.openReplies[slot.id] = input ? input.value : '';
+    if (input === document.activeElement) ui.focus = 'reply:' + slot.id;
+  });
+
+  /* Ancre de lecture : premier post encore visible à l'écran, et son décalage.
+     On restaurera cette position plutôt qu'un scrollY absolu, qui décalerait
+     la lecture dès qu'un nouveau post s'insère plus haut. */
+  const cards = document.querySelectorAll('.post-card[data-post-id]');
+  for (let i = 0; i < cards.length; i++) {
+    const r = cards[i].getBoundingClientRect();
+    if (r.bottom > 0) { ui.anchor = { id: cards[i].getAttribute('data-post-id'), top: r.top }; break; }
+  }
+  return ui;
+}
+
+function fieldKey(el, i) {
+  return [el.tagName, el.id || '', el.className || '',
+          el.getAttribute('data-post') || '', el.getAttribute('data-comment') || '', i].join('|');
+}
+
+function restoreUi(ui) {
+  /* Rouvrir les sections de commentaires qui l'étaient */
+  ui.openComments.forEach(function (id) {
+    const sec = document.getElementById(id);
+    if (sec) sec.style.display = 'block';
+  });
+
+  /* Rouvrir les formulaires de réponse en rejouant le clic : le formulaire est
+     ainsi recréé par le même code que d'habitude, écouteurs compris. */
+  Object.keys(ui.openReplies).forEach(function (slotId) {
+    const commentId = slotId.replace('reply-slot-', '');
+    const btn = document.querySelector('.comment-reply-btn[data-comment="' + commentId + '"]:not(.delete-comment-btn)');
+    if (!btn) return;
+    btn.click();
+    const input = document.querySelector('#' + CSS.escape(slotId) + ' .reply-input');
+    if (input) {
+      input.value = ui.openReplies[slotId];
+      if (ui.focus === 'reply:' + slotId) { input.focus(); input.setSelectionRange(input.value.length, input.value.length); }
+    }
+  });
+
+  /* Restituer les textes saisis */
+  document.querySelectorAll('textarea, input[type="text"]').forEach(function (el, i) {
+    const saved = ui.fields[fieldKey(el, i)];
+    if (!saved) return;
+    el.value = saved.value;
+    if (ui.focus === fieldKey(el, i)) {
+      el.focus();
+      try { el.setSelectionRange(saved.start, saved.end); } catch (e) {}
+    }
+  });
+
+  /* Recaler la lecture sur le post d'origine */
+  if (ui.anchor) {
+    const card = document.querySelector('.post-card[data-post-id="' + ui.anchor.id + '"]');
+    if (card) window.scrollBy(0, card.getBoundingClientRect().top - ui.anchor.top);
+  }
+}
+
+let realtimeTimer = null;
+let lastLocalRefresh = 0;
+let refreshPending = false;
+
+/* Nos propres écritures re-rendent déjà la page ; leur écho arrive juste
+   après et n'aurait rien à recharger. */
+const ECHO_WINDOW = 900;
+function markLocalRefresh() { lastLocalRefresh = Date.now(); }
+
+function scheduleRealtimeRefresh() {
+  const sinceLocal = Date.now() - lastLocalRefresh;
+  /* Dans la foulée d'une action locale, on DIFFÈRE au lieu d'ignorer : si
+     quelqu'un d'autre publie juste après nous, son message doit arriver quand
+     même. Un rechargement de trop coûte deux requêtes ; un message perdu, lui,
+     ne revient qu'au prochain événement. */
+  const delay = sinceLocal < ECHO_WINDOW ? (ECHO_WINDOW - sinceLocal) + 150 : 400;
+  clearTimeout(realtimeTimer);
+  realtimeTimer = setTimeout(refreshFromRealtime, delay);
+}
+
+async function refreshFromRealtime() {
+  if (state.loading || !state.creator) return;
+  /* Onglet en arrière-plan : on note et on rattrape au retour */
+  if (document.hidden) { refreshPending = true; return; }
+  const ui = captureUi();
+  try {
+    await loadPosts();
+    await loadSondageVotes();
+  } catch (e) {
+    return; /* coupure passagère : on garde l'affichage courant */
+  }
+  /* Pas de markLocalRefresh() ici : ce rendu vient du serveur, pas d'une
+     action du visiteur. Le marquer étoufferait les événements suivants et
+     ferait perdre un message arrivant juste derrière. */
+  render();
+  restoreUi(ui);
+}
+
+document.addEventListener('visibilitychange', function () {
+  if (!document.hidden && refreshPending) { refreshPending = false; refreshFromRealtime(); }
+});
+
+/* Les tables enfants n'ont pas de colonne creator_id : on écarte côté client
+   ce qui ne concerne pas le mur affiché, pour ne pas recharger pour rien. */
+function concernsThisWall(row) {
+  if (!row) return false;
+  if (row.post_id !== undefined && row.post_id !== null) {
+    return state.posts.some(function (p) { return String(p.id) === String(row.post_id); });
+  }
+  if (row.option_id !== undefined && row.option_id !== null) {
+    return Object.keys(state.sondageOptions || {}).some(function (pid) {
+      return state.sondageOptions[pid].some(function (o) { return String(o.id) === String(row.option_id); });
+    });
+  }
+  return false;
+}
+
+let pollTimer = null;
+/* Filet de sécurité : si le temps réel n'est pas disponible (tables absentes
+   de la publication `supabase_realtime`), on retombe sur une vérification
+   périodique — le mur reste vivant, juste moins réactif. */
+function startPollingFallback() {
+  if (pollTimer) return;
+  pollTimer = setInterval(function () {
+    if (!document.hidden) refreshFromRealtime();
+  }, 45000);
+}
+
+function startRealtime() {
+  if (!state.creatorId || !sb.channel) { startPollingFallback(); return; }
+  const chan = sb.channel('communaute-' + state.creatorId);
+
+  chan.on('postgres_changes',
+    { event: '*', schema: 'public', table: 'posts_communaute',
+      filter: 'creator_id=eq.' + state.creatorId },
+    scheduleRealtimeRefresh);
+
+  ['commentaires_communaute', 'reactions', 'sondage_votes', 'sondage_options'].forEach(function (t) {
+    chan.on('postgres_changes', { event: '*', schema: 'public', table: t }, function (payload) {
+      if (concernsThisWall(payload.new) || concernsThisWall(payload.old)) scheduleRealtimeRefresh();
+    });
+  });
+
+  chan.subscribe(function (status) {
+    if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+      startPollingFallback();
+    }
+  });
+}
 
 async function loadPosts() {
   /* posts_communaute a deux FK vers profiles → désambiguïsation obligatoire.
@@ -1314,7 +1492,7 @@ function bindCreatePost() {
         /* render() reconstruit le composeur (retour au type Texte par défaut) */
         await loadPosts();
         await loadSondageVotes();
-        render();
+        markLocalRefresh(); render();
       } catch (err) {
         showToast('Erreur: ' + err.message, 'error');
       } finally {
@@ -1333,7 +1511,7 @@ function bindCreatePost() {
         const { error } = await sb.from('posts_communaute').update({ est_epingle: !isPinned }).eq('id', postId);
         if (error) throw error;
         await loadPosts();
-        render();
+        markLocalRefresh(); render();
         showToast(isPinned ? 'Post désépinglé' : 'Post épinglé !', 'success');
       } catch (err) {
         showToast('Erreur: ' + err.message, 'error');
@@ -1361,7 +1539,7 @@ function bindCreatePost() {
         await sb.from('posts_communaute').delete().eq('id', postId);
         showToast('Post supprimé', 'success');
         state.posts = state.posts.filter(p => p.id !== postId);
-        render();
+        markLocalRefresh(); render();
       } catch (err) {
         showToast('Erreur: ' + err.message, 'error');
       }
@@ -1385,7 +1563,7 @@ function bindReactions() {
           if (error) throw error;
           /* Optimistic update */
           state.reactions[postId] = (state.reactions[postId] || []).filter(r => r.user_id !== state.visitor.id);
-          render();
+          markLocalRefresh(); render();
         } else {
           if (existing) {
             /* Change reaction type — delete old first */
@@ -1401,7 +1579,7 @@ function bindReactions() {
           /* Optimistic update */
           state.reactions[postId] = (state.reactions[postId] || []).filter(r => r.user_id !== state.visitor.id);
           state.reactions[postId].push({ post_id: postId, user_id: state.visitor.id, type: type });
-          render();
+          markLocalRefresh(); render();
         }
       } catch (err) {
         showToast('Erreur réaction: ' + err.message, 'error');
@@ -1461,7 +1639,7 @@ function bindComments() {
         await notifyCreator('@' + (state.visitor.username || 'Quelqu\'un') + ' a commenté sur ta communauté');
         showToast('Commentaire ajouté', 'success');
         await loadPosts();
-        render();
+        markLocalRefresh(); render();
       } catch (err) {
         showToast('Erreur: ' + err.message, 'error');
         this.disabled = false;
@@ -1495,7 +1673,7 @@ function bindComments() {
         try {
           await sb.from('commentaires_communaute').delete().eq('id', commentId);
           await loadPosts();
-          render();
+          markLocalRefresh(); render();
           showToast('Commentaire supprimé', 'success');
         } catch (err) {
           showToast('Erreur: ' + err.message, 'error');
@@ -1538,7 +1716,7 @@ function bindComments() {
           await notifyCreator('@' + (state.visitor.username || 'Quelqu\'un') + ' a commenté sur ta communauté');
           showToast('Réponse ajoutée', 'success');
           await loadPosts();
-          render();
+          markLocalRefresh(); render();
         } catch (err) {
           showToast('Erreur: ' + err.message, 'error');
           sendBtn.disabled = false;
@@ -1599,7 +1777,7 @@ function bindSondageVote() {
         if (error) throw error;
         showToast('Vote enregistré !', 'success');
         await loadSondageVotes();
-        render();
+        markLocalRefresh(); render();
       } catch (err) {
         showToast('Erreur: ' + err.message, 'error');
       }

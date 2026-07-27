@@ -833,4 +833,39 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO service_r
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO service_role;
 GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO anon, authenticated;
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated;
+-- ═══════════════════════════════════════════════════════════════════
+--  TEMPS RÉEL — mur communautaire
+--  Sans ces lignes, la page communauté ne reçoit aucune notification de
+--  changement : elle retombe alors sur une vérification toutes les 45 s.
+--  Avec, les nouveaux posts, commentaires, réactions et votes s'affichent
+--  immédiatement chez tous les visiteurs présents.
+-- ═══════════════════════════════════════════════════════════════════
+
+-- REPLICA IDENTITY FULL : sans ça, un DELETE ne transmet que la clé primaire,
+-- et le client ne peut pas savoir à quel post la ligne supprimée appartenait.
+ALTER TABLE posts_communaute        REPLICA IDENTITY FULL;
+ALTER TABLE commentaires_communaute REPLICA IDENTITY FULL;
+ALTER TABLE reactions               REPLICA IDENTITY FULL;
+ALTER TABLE sondage_options         REPLICA IDENTITY FULL;
+ALTER TABLE sondage_votes           REPLICA IDENTITY FULL;
+
+-- Ajout à la publication temps réel, en ignorant les tables déjà présentes
+DO $$
+DECLARE t text;
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_publication WHERE pubname = 'supabase_realtime') THEN
+    CREATE PUBLICATION supabase_realtime;
+  END IF;
+  FOREACH t IN ARRAY ARRAY['posts_communaute','commentaires_communaute',
+                           'reactions','sondage_options','sondage_votes']
+  LOOP
+    IF NOT EXISTS (
+      SELECT 1 FROM pg_publication_tables
+      WHERE pubname = 'supabase_realtime' AND schemaname = 'public' AND tablename = t
+    ) THEN
+      EXECUTE format('ALTER PUBLICATION supabase_realtime ADD TABLE public.%I', t);
+    END IF;
+  END LOOP;
+END $$;
+
 NOTIFY pgrst, 'reload schema';
