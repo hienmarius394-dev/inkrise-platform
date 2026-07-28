@@ -724,7 +724,7 @@
     <div class="form-row">
       <div class="form-group" style="margin-bottom:0;">
         <label>Type <span style="color:var(--muted);font-size:0.72rem;text-transform:none;letter-spacing:0;">(badge affiché sur la couverture)</span></label>
-        <select id="inputType">
+        <select id="inputType" aria-label="Type de projet">
           <option value="manga">Manga</option>
           <option value="manhwa">Manhwa</option>
           <option value="manhua">Manhua</option>
@@ -735,7 +735,7 @@
       </div>
       <div class="form-group" style="margin-bottom:0;">
         <label>Statut</label>
-        <select id="inputStatut">
+        <select id="inputStatut" aria-label="Statut de publication">
           <option value="en_cours">En cours</option>
           <option value="termine">Terminé</option>
           <option value="pause">En pause</option>
@@ -744,7 +744,7 @@
       </div>
       <div class="form-group" style="margin-bottom:0;">
         <label>Langue</label>
-        <select id="inputLangue">
+        <select id="inputLangue" aria-label="Langue">
           <option value="fr">🇫🇷 Français</option>
           <option value="en">🇬🇧 Anglais</option>
           <option value="jp">🇯🇵 Japonais</option>
@@ -850,7 +850,7 @@
     </div>
     <div class="cover-zoom-row" id="coverZoomRow" style="display:none;">
       <span style="font-size:0.9rem;">🔍</span>
-      <input type="range" id="coverZoom" min="100" max="300" value="100" step="1" />
+      <input type="range" id="coverZoom" aria-label="Zoom de la couverture" min="100" max="300" value="100" step="1" />
     </div>
     <div class="cover-reposition-hint" id="coverRepositionHint" style="display:none;">
       Glisse l'image pour la recadrer comme tu veux, même si elle n'est pas au format recommandé.
@@ -985,7 +985,7 @@ const GENRES = [
 // ── INIT ──
 async function init() {
   const { data: { session } } = await sb.auth.getSession();
-  if (!session) { window.location.href = 'auth.html'; return; }
+  if (!session) { window.location.href = 'auth.html?next=' + encodeURIComponent(location.pathname.split('/').pop() + location.search) + '&raison=createur'; return; }
   currentUser = session.user;
 
   const { data: profile } = await sb.from('profiles').select('username, is_creator, avatar_url').eq('id', currentUser.id).single();

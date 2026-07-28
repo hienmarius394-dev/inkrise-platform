@@ -631,11 +631,11 @@
     <div class="modal-title">Modifier le manga</div>
     <div class="edit-form">
       <label>Titre</label>
-      <input type="text" id="editTitre" maxlength="80" />
+      <input type="text" id="editTitre" aria-label="Titre du manga" maxlength="80" />
       <label>Synopsis</label>
-      <textarea id="editSynopsis" maxlength="600"></textarea>
+      <textarea id="editSynopsis" aria-label="Synopsis" maxlength="600"></textarea>
       <label>Statut</label>
-      <select id="editStatut">
+      <select id="editStatut" aria-label="Statut de publication">
         <option value="en_cours">En cours</option>
         <option value="termine">Terminé</option>
         <option value="pause">En pause</option>
@@ -708,7 +708,7 @@
       </div>
       <div class="edit-cover-zoom-row" id="editCoverZoomRow" style="display:none;">
         <span style="font-size:0.9rem;">🔍</span>
-        <input type="range" id="editCoverZoom" min="100" max="300" value="100" step="1" />
+        <input type="range" id="editCoverZoom" aria-label="Zoom de la couverture" min="100" max="300" value="100" step="1" />
       </div>
       <div class="edit-cover-hint" id="editCoverHint" style="display:none;">Glisse l'image pour la recadrer.</div>
     </div>
@@ -797,7 +797,7 @@ async function loadPageCounts() {
 // ── INIT ──
 async function init() {
   const { data: { session } } = await sb.auth.getSession();
-  if (!session) { window.location.href = 'auth.html'; return; }
+  if (!session) { window.location.href = 'auth.html?next=' + encodeURIComponent(location.pathname.split('/').pop() + location.search) + '&raison=createur'; return; }
   currentUser = session.user;
 
   // Récupère l'id du manga depuis l'URL (?manga_id=xxx)

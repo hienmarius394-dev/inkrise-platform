@@ -534,6 +534,51 @@ const SUPABASE_URL = 'https://bsdcpwtimsgxcnaamwip.supabase.co'
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJzZGNwd3RpbXNneGNuYWFtd2lwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAzMTQ1MDIsImV4cCI6MjA5NTg5MDUwMn0.uMcfUsnlULHNqS_87xzUWRUB8tEaCCNQglrWwN2fb44'
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
 
+/* ── Retour à la destination voulue ──
+   Les pages réservées renvoient ici avec ?next=… quand personne n'est
+   connecté. Sans ça, quelqu'un qui cliquait « Publier un manga » se
+   retrouvait sur la connexion sans explication, puis atterrissait sur
+   l'accueil : son intention de départ était perdue en route. */
+const PAGES_AUTORISEES = ['index.html','profil.html','upload-manga.html','mon-espace.html',
+  'espace-createur.html','gestion-chapitres.html','bibliotheque.html','communaute.html',
+  'manga.html','pack.html','tutoriels.html','recherche.html','auteur.html','lecteur.html'];
+
+function destinationApresConnexion(defaut) {
+  const brut = new URLSearchParams(location.search).get('next');
+  if (!brut) return defaut;
+  /* On n'accepte qu'un chemin interne connu : un ?next= venu de l'extérieur
+     ne doit pas pouvoir expédier quelqu'un hors du site après connexion. */
+  const sansQuery = brut.split('?')[0].split('#')[0];
+  if (!PAGES_AUTORISEES.includes(sansQuery)) return defaut;
+  if (/^(https?:)?\/\//.test(brut) || brut.startsWith('/')) return defaut;
+  return brut;
+}
+
+/* Message d'accueil quand on arrive ici parce qu'une page était réservée.
+   Ce script s'exécute tantôt avant, tantôt après la fin de l'analyse du
+   document : s'appuyer sur le seul DOMContentLoaded laissait passer le
+   message une fois sur deux. */
+function afficherRaisonConnexion() {
+  const raison = new URLSearchParams(location.search).get('raison');
+  if (!raison) return;
+  if (document.querySelector('#loginForm [role=status]')) return;
+  const cible = document.querySelector('#loginForm .form-title');
+  if (!cible) return;
+  const note = document.createElement('div');
+  note.setAttribute('role', 'status');
+  note.style.cssText = 'background:rgba(124,92,252,.10);border:1px solid rgba(124,92,252,.28);' +
+    'border-radius:12px;padding:11px 14px;margin-bottom:14px;font-size:.84rem;line-height:1.55;color:#48484a;';
+  note.textContent = raison === 'createur'
+    ? '🎨 Connecte-toi pour accéder à tes outils de création.'
+    : '🔒 Connecte-toi pour continuer — tu reviendras là où tu étais.';
+  cible.parentNode.insertBefore(note, cible.nextSibling);
+}
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', afficherRaisonConnexion);
+} else {
+  afficherRaisonConnexion();
+}
+
 async function doLogout() {
   await supabaseClient.auth.signOut()
   window.location.href = 'index.html'
@@ -610,7 +655,7 @@ async function handleLogin() {
   // (avec confirmation d'email entre-temps), on l'emmène publier direct.
   const onboardCreator = localStorage.getItem('inkrise_onboard_createur') === '1'
   if (onboardCreator) localStorage.removeItem('inkrise_onboard_createur')
-  setTimeout(() => { window.location.href = onboardCreator ? 'upload-manga.html' : 'index.html' }, 1000)
+  setTimeout(() => { window.location.href = destinationApresConnexion(onboardCreator ? 'upload-manga.html' : 'index.html') }, 1000)
 }
 
 // =============================================
@@ -738,7 +783,7 @@ async function handleSignup() {
   // Session immédiate (confirmation d'email désactivée) → on enchaîne direct
   if (data.session) {
     localStorage.removeItem('inkrise_onboard_createur')
-    window.location.href = signupRole === 'createur' ? 'upload-manga.html' : 'index.html'
+    window.location.href = destinationApresConnexion(signupRole === 'createur' ? 'upload-manga.html' : 'index.html')
     return
   }
 
@@ -842,7 +887,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!['loginEmail','log
 
 // Vérifier si déjà connecté (sauf en mode récupération de mot de passe)
 supabaseClient.auth.getSession().then(({ data }) => {
-  if (data.session && !isRecovery) window.location.href = 'index.html'
+  if (data.session && !isRecovery) window.location.href = destinationApresConnexion('index.html')
 })
 </script>
 

@@ -1137,7 +1137,7 @@
     </div>
     <div class="crop-zoom-row">
       <span>🔍</span>
-      <input type="range" id="cropZoom" min="1" max="3" step="0.01" value="1" />
+      <input type="range" id="cropZoom" aria-label="Zoom de la photo" min="1" max="3" step="0.01" value="1" />
     </div>
     <div class="crop-hint">Glisse l'image pour la recadrer.</div>
     <div class="crop-actions">
@@ -1240,7 +1240,7 @@
   async function init() {
     const { data: { session } } = await sb.auth.getSession();
     if (!session) {
-      window.location.href = 'auth.html';
+      window.location.href = 'auth.html?next=' + encodeURIComponent(location.pathname.split('/').pop() + location.search) + '&raison=connexion';
       return;
     }
     currentUser = session.user;
@@ -1461,7 +1461,7 @@
   // ── DEVENIR CRÉATEUR (gratuit, une seule fois) ──
   async function choosePlan(plan) {
     const { data } = await sb.auth.getSession();
-    if (!data.session) { window.location.href = 'auth.html'; return; }
+    if (!data.session) { window.location.href = 'auth.html?next=' + encodeURIComponent(location.pathname.split('/').pop() + location.search) + '&raison=connexion'; return; }
     const updates = { is_creator: true };
     const { error } = await sb.from('profiles').update(updates).eq('id', data.session.user.id);
     if (error) { showToast('Erreur : ' + error.message, 'error'); return; }
