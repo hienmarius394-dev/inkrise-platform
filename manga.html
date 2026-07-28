@@ -983,7 +983,9 @@ function renderChapitres() {
       e.preventDefault(); e.stopPropagation();
       if (!window.inkriseOffline) return;
       if (inkriseOffline.get(chap.id)) {
-        if (!confirm('Supprimer ce chapitre téléchargé ?')) return;
+        if (!await inkriseConfirm({ title:'Supprimer ce chapitre téléchargé ?',
+            message:'Il ne sera plus lisible hors connexion, mais tu pourras le retélécharger.',
+            confirmLabel:'Supprimer' })) return;
         await inkriseOffline.remove(chap.id);
         dlBtn.textContent = '📥 Télécharger'; dlBtn.classList.remove('downloaded');
         showToast('Chapitre supprimé du hors-ligne', 'info');

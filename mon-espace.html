@@ -980,10 +980,31 @@
     renderNotifs(notifsRes.data);
   }
 
+  /* Un échec de chargement affichait le tableau de bord avec des compteurs à
+     zéro : le créateur croyait son espace vide alors que rien n'avait pu être
+     lu. On le dit franchement, et on propose de réessayer. */
   init().catch(err => {
     console.error('Erreur init:', err);
     document.getElementById('loading-screen').style.display = 'none';
-    document.getElementById('dashboard').style.display = 'block';
+    const dash = document.getElementById('dashboard');
+    dash.style.display = 'block';
+    const horsLigne = !navigator.onLine;
+    dash.innerHTML =
+      '<div style="max-width:460px;margin:60px auto;padding:32px 24px;text-align:center;">' +
+        '<div style="font-size:3rem;margin-bottom:14px;">' + (horsLigne ? '📡' : '⚠️') + '</div>' +
+        '<h2 style="font-family:\'Syne\',sans-serif;font-size:1.25rem;font-weight:800;margin-bottom:10px;">' +
+          (horsLigne ? 'Pas de connexion' : 'Impossible de charger ton espace') + '</h2>' +
+        '<p style="font-size:.9rem;line-height:1.65;color:var(--text-2);margin-bottom:22px;">' +
+          (horsLigne
+            ? 'Tes mangas et statistiques n\'ont pas pu être récupérés. Reconnecte-toi à Internet puis réessaie.'
+            : 'Tes données n\'ont pas pu être récupérées — ton contenu est intact, c\'est l\'affichage qui a échoué.') +
+        '</p>' +
+        '<button id="btnRetryEspace" style="min-height:46px;padding:12px 26px;border:none;border-radius:12px;' +
+          'background:#6649f5;color:#fff;font-family:inherit;font-size:.9rem;font-weight:700;cursor:pointer;">' +
+          '↻ Réessayer</button>' +
+        '<div style="margin-top:14px;"><a href="index.html" style="font-size:.84rem;color:var(--text-2);">← Retour à l\'accueil</a></div>' +
+      '</div>';
+    document.getElementById('btnRetryEspace').addEventListener('click', () => window.location.reload());
   });
 </script>
 </body>

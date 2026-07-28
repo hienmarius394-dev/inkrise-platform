@@ -56,6 +56,123 @@
     });
   }
 
+  /* Confirmation d'une action irréversible : window.inkriseConfirm({…}) → Promise<bool>
+     Les fenêtres confirm()/prompt() du navigateur cassaient l'identité du site
+     au moment précis où l'on demande à quelqu'un de réfléchir — fond blanc
+     système, typographie d'OS, aucune hiérarchie entre « annuler » et
+     « supprimer ». Cette boîte reprend l'habillage d'Inkrise, met l'action
+     destructrice en rouge, et sait exiger la saisie d'un mot pour les cas
+     vraiment définitifs (suppression de compte).
+     Options : title, message, confirmLabel, cancelLabel, danger, requireText. */
+  window.inkriseConfirm = function (opts) {
+    opts = opts || {};
+    return new Promise(function (resolve) {
+      const prev = document.activeElement;
+      const ov = document.createElement('div');
+      ov.className = 'ink-confirm-ov';
+      ov.style.cssText = 'position:fixed;inset:0;background:rgba(22,19,42,.55);z-index:600;display:flex;' +
+        'align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px);';
+      const box = document.createElement('div');
+      box.setAttribute('role', 'dialog');
+      box.setAttribute('aria-modal', 'true');
+      box.style.cssText = 'background:#fff;border-radius:18px;padding:24px 22px;max-width:380px;width:100%;' +
+        "font-family:'DM Sans',system-ui,sans-serif;box-shadow:0 24px 70px rgba(20,14,40,.3);text-align:center;";
+
+      const h = document.createElement('div');
+      h.id = 'inkConfirmTitle';
+      h.style.cssText = 'font-weight:800;font-size:1.05rem;color:#1c1c1e;margin-bottom:8px;';
+      h.textContent = opts.title || 'Confirmer';
+      box.setAttribute('aria-labelledby', 'inkConfirmTitle');
+      box.appendChild(h);
+
+      if (opts.message) {
+        const m = document.createElement('div');
+        m.style.cssText = 'font-size:.87rem;line-height:1.6;color:#48484a;margin-bottom:16px;white-space:pre-line;';
+        m.textContent = opts.message;
+        box.appendChild(m);
+      }
+
+      let input = null;
+      if (opts.requireText) {
+        const hint = document.createElement('label');
+        hint.style.cssText = 'display:block;font-size:.78rem;color:#656569;margin-bottom:6px;text-align:left;';
+        hint.textContent = 'Tape « ' + opts.requireText + ' » pour confirmer';
+        input = document.createElement('input');
+        input.type = 'text';
+        input.autocapitalize = 'off';
+        input.autocomplete = 'off';
+        input.style.cssText = 'width:100%;padding:11px 13px;border:1px solid rgba(0,0,0,.15);border-radius:10px;' +
+          'font-size:.9rem;font-family:inherit;margin-bottom:16px;outline:none;min-height:44px;';
+        hint.setAttribute('for', 'inkConfirmInput');
+        input.id = 'inkConfirmInput';
+        box.appendChild(hint); box.appendChild(input);
+      }
+
+      const row = document.createElement('div');
+      row.style.cssText = 'display:flex;gap:10px;justify-content:center;flex-wrap:wrap;';
+      const mk = function (label, primary) {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.textContent = label;
+        b.style.cssText = 'flex:1 1 130px;min-height:46px;padding:12px 18px;border-radius:12px;cursor:pointer;' +
+          'font-family:inherit;font-size:.9rem;font-weight:700;transition:transform .15s;' +
+          (primary
+            ? 'border:none;color:#fff;background:' + (opts.danger === false ? '#6649f5' : '#c62b09') + ';'
+            : 'border:1px solid rgba(0,0,0,.16);background:#fff;color:#1c1c1e;');
+        return b;
+      };
+      const cancel = mk(opts.cancelLabel || 'Annuler', false);
+      const ok = mk(opts.confirmLabel || 'Supprimer', true);
+
+      function close(v) {
+        document.removeEventListener('keydown', onKey, true);
+        ov.remove();
+        if (prev && prev.focus) prev.focus();
+        resolve(v);
+      }
+      function onKey(e) {
+        if (e.key === 'Escape') { e.preventDefault(); close(false); }
+        /* Piège à tabulation : sans lui, le clavier repart derrière la boîte */
+        if (e.key === 'Tab') {
+          const f = box.querySelectorAll('button, input');
+          if (!f.length) return;
+          const first = f[0], last = f[f.length - 1];
+          if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+          else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+        }
+      }
+      cancel.addEventListener('click', function () { close(false); });
+      ok.addEventListener('click', function () {
+        if (input && input.value.trim() !== opts.requireText) {
+          input.style.borderColor = '#c62b09';
+          input.focus();
+          return;
+        }
+        close(true);
+      });
+      if (input) {
+        /* Le bouton ne s'active qu'une fois le mot exact saisi : on ne
+           supprime pas un compte par réflexe. */
+        ok.disabled = true; ok.style.opacity = '.5'; ok.style.cursor = 'not-allowed';
+        input.addEventListener('input', function () {
+          const good = input.value.trim() === opts.requireText;
+          ok.disabled = !good;
+          ok.style.opacity = good ? '1' : '.5';
+          ok.style.cursor = good ? 'pointer' : 'not-allowed';
+          input.style.borderColor = 'rgba(0,0,0,.15)';
+        });
+        input.addEventListener('keydown', function (e) { if (e.key === 'Enter' && !ok.disabled) ok.click(); });
+      }
+      row.appendChild(cancel); row.appendChild(ok);
+      box.appendChild(row);
+      ov.appendChild(box);
+      ov.addEventListener('click', function (e) { if (e.target === ov) close(false); });
+      document.addEventListener('keydown', onKey, true);
+      document.body.appendChild(ov);
+      setTimeout(function () { (input || cancel).focus(); }, 40);
+    });
+  };
+
   /* Signalement de contenu : window.inkriseSignaler(sb, 'manga'|'commentaire'|'post'|'pack'|'profil', id)
      Ouvre une petite modale de choix de raison puis insère dans `signalements`. */
   window.inkriseSignaler = function (sb, typeContenu, contenuId) {

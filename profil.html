@@ -1425,19 +1425,30 @@
   // ── SUPPRESSION DE COMPTE (définitive) ──
   document.getElementById('btnDeleteAccount')?.addEventListener('click', async () => {
     const uname = userProfile?.username || '';
-    const typed = prompt('⚠️ SUPPRESSION DÉFINITIVE de ton compte et de tout ton contenu (mangas, packs, commentaires, abonnés…).\n\nCette action est irréversible. Pour confirmer, tape ton pseudo exact :\n\n' + uname);
-    if (typed === null) return;
-    if ((typed || '').trim() !== uname) { showToast('Pseudo incorrect — suppression annulée', 'error'); return; }
+    const ok = await inkriseConfirm({
+      title: '⚠️ Supprimer définitivement ton compte',
+      message: 'Tes mangas, packs, commentaires et abonnés seront effacés. '
+             + 'Cette action est irréversible : rien ne pourra être récupéré.',
+      requireText: uname,
+      confirmLabel: 'Supprimer mon compte'
+    });
+    if (!ok) return;
     const { error } = await sb.rpc('delete_my_account');
     if (error) { showToast('Erreur : ' + error.message, 'error'); return; }
     await sb.auth.signOut();
-    alert('Ton compte a été supprimé. À bientôt peut-être 👋');
-    window.location.href = 'index.html';
+    showToast('Ton compte a été supprimé. À bientôt peut-être 👋', 'success');
+    setTimeout(() => { window.location.href = 'index.html'; }, 1800);
   });
 
   // ── REPASSER EN LECTEUR (réversible à tout moment) ──
   async function switchToReader() {
-    const ok = confirm('Repasser en lecteur ?\n\nTes mangas et packs déjà publiés restent en ligne, mais les outils de création seront masqués. Tu pourras redevenir créateur à tout moment.');
+    const ok = await inkriseConfirm({
+      title: 'Repasser en lecteur ?',
+      message: 'Tes mangas et packs déjà publiés restent en ligne. Seuls les outils '
+             + 'de création seront masqués — tu peux redevenir créateur quand tu veux.',
+      confirmLabel: 'Repasser en lecteur',
+      danger: false
+    });
     if (!ok) return;
     const { error } = await sb.from('profiles').update({ is_creator: false }).eq('id', currentUser.id);
     if (error) { showToast('Erreur : ' + error.message, 'error'); return; }

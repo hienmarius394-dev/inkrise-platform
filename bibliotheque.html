@@ -390,7 +390,9 @@ async function loadLibrary(){
 async function removeFromLibrary(mangaId, btn, ev){
   if(ev){ ev.preventDefault(); ev.stopPropagation(); }
   if(!currentUserId) return;
-  if(!confirm('Retirer ce manga de ta bibliothèque ?')) return;
+  if (!await inkriseConfirm({ title:'Retirer de ta bibliothèque ?',
+      message:'Ta progression de lecture sera oubliée. Le manga reste disponible dans le catalogue.',
+      confirmLabel:'Retirer' })) return;
   const { error } = await sb.from('bibliotheque').delete()
     .eq('user_id', currentUserId).eq('manga_id', mangaId);
   if(error){ showToast('Erreur : ' + error.message); return; }
@@ -429,7 +431,9 @@ function renderOffline() {
       '<button title="Supprimer du hors-ligne" style="border:none;background:none;cursor:pointer;font-size:.95rem;padding:6px;">🗑️</button>';
     row.querySelector('button').addEventListener('click', async (e) => {
       e.preventDefault(); e.stopPropagation();
-      if (!confirm('Supprimer ce chapitre téléchargé ?')) return;
+      if (!await inkriseConfirm({ title:'Supprimer ce chapitre téléchargé ?',
+          message:'Il ne sera plus lisible hors connexion, mais tu pourras le retélécharger.',
+          confirmLabel:'Supprimer' })) return;
       await inkriseOffline.remove(o.chapId);
       renderOffline();
     });
