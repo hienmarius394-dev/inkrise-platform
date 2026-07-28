@@ -9,7 +9,7 @@
    - planches téléchargées (cache "inkrise-pages", rempli par
      assets/inkrise-offline.js) : cache d'abord — lecture hors-ligne
    - tout le reste (API Supabase, autres origines) : jamais intercepté */
-const CACHE = 'inkrise-v5';
+const CACHE = 'inkrise-v6';
 const PAGES_CACHE = 'inkrise-pages';
 
 // Toute la « coquille » de l'app est mise en cache dès l'installation
@@ -24,7 +24,7 @@ const PRECACHE = [
   'auth.html', 'admin.html', '404.html',
   'mentions-legales.html', 'cgu.html', 'confidentialite.html',
   'creators-remuneration.html',
-  'assets/supabase.js', 'assets/inkrise-nav.js', 'assets/inkrise-offline.js',
+  'assets/inkrise-theme.css', 'assets/supabase.js', 'assets/inkrise-nav.js', 'assets/inkrise-offline.js',
   'assets/inkrise-img.js', 'assets/legal.css',
   'assets/favicon.svg', 'assets/icon-192.png', 'assets/icon-512.png',
   'manifest.webmanifest'

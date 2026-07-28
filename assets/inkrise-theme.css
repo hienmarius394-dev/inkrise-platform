@@ -1,0 +1,58 @@
+/* ═══ Socle de thème Inkrise ═══
+   Source unique des couleurs, arrondis et ombres du site.
+
+   Auparavant chaque page redéclarait sa propre palette : la même
+   variable existait en vingt et un exemplaires, et corriger une
+   teinte imposait de la reprendre dans autant de fichiers — c'est
+   ainsi que des textes gris étaient devenus illisibles sans que
+   personne ne s'en rende compte.
+
+   Cette feuille est chargée AVANT le <style> de chaque page : une
+   page qui a besoin d'une teinte différente la redéclare chez elle
+   et l'emporte. On partage donc le socle sans figer personne.
+
+   Les valeurs de texte respectent un contraste d'au moins 4,5:1 sur
+   les fonds du site. Les modifier demande de le revérifier. */
+:root {
+  /* Fonds */
+  --bg: #ffffff;
+  --bg-2: #f7f7fa;
+  --bg-3: #ededf2;
+
+  /* Surfaces (cartes, champs, pastilles) */
+  --surface: #f2f2f7;
+  --surface-2: #e5e5ea;
+  --surface2: #e5e5ea;
+  --surface3: #d8d8dd;
+
+  /* Couleurs de marque */
+  --purple: #7c5cfc;
+  --purple2: #a594f9;
+  --pink: #ff5fa8;
+  --accent: #7c5cfc;
+
+  /* Couleurs d'état */
+  --green: #3ddc84;
+  --amber: #f5a623;
+  --orange: #ff6b35;
+  --orange-light: #ff8a5c;
+  --teal: #0fb8a6;
+  --danger: #ff3d71;
+
+  /* Texte — vérifié pour rester lisible sur les fonds ci-dessus */
+  --text: #1c1c1e;
+  --text-2: #48484a;
+  --text-3: #656569;
+  --muted: #656569;
+
+  /* Traits et arrondis */
+  --border: rgba(0,0,0,0.08);
+  --radius: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+
+  /* Ombres */
+  --shadow: 0 2px 12px rgba(0,0,0,0.06);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.1);
+
+}
