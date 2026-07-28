@@ -907,11 +907,19 @@
     if (qaComm) qaComm.href = 'communaute.html?id=' + userId;
 
     // Profile check
-    const { data: profile } = await db
+    const { data: profile, error: profErr } = await db
       .from('profiles')
       .select('username, bio, avatar_url, is_creator')
       .eq('id', userId)
       .single();
+
+    /* Une requête qui échoue renvoie `profile` à null, exactement comme un
+       profil sans statut créateur. Confondre les deux revenait à annoncer
+       « deviens créateur » à quelqu'un qui l'est déjà, simplement parce que
+       le réseau avait lâché. On distingue donc la panne du vrai cas. */
+    if (profErr || (!profile && !navigator.onLine)) {
+      throw new Error('PROFIL_INJOIGNABLE');
+    }
 
     if (!profile || !profile.is_creator) {
       loadingScreen.style.display = 'none';

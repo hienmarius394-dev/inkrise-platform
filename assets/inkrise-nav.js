@@ -8,7 +8,21 @@
      overflow-x: clip (et non hidden) pour ne pas casser les nav sticky. */
   (function () {
     var s = document.createElement('style');
-    s.textContent = 'html,body{overflow-x:clip;max-width:100%;}';
+    s.textContent = 'html,body{overflow-x:clip;max-width:100%;}' +
+      /* Cibles tactiles — ces éléments sont déclarés à l'identique dans une
+         vingtaine de fichiers ; les agrandir ici évite vingt retouches et
+         garantit qu'ils restent cohérents. La loupe de recherche mesurait
+         32×27px et la croix du menu 30×30, sous le seuil confortable au
+         doigt : on vise 44px sans changer l'allure de la barre. */
+      '.univ-nav-search{min-height:44px;}' +
+      '.univ-nav-si{min-height:44px;}' +
+      '.univ-nav-sb{min-width:44px;min-height:44px;display:flex;align-items:center;justify-content:center;}' +
+      '.univ-d-close{width:40px;height:40px;}' +
+      '.univ-nav-hbg{min-width:40px;min-height:40px;}' +
+      /* Liens légaux du menu : 12px de haut, quasi impossibles à viser */
+      '#univDrawer a[href$="mentions-legales.html"],' +
+      '#univDrawer a[href$="cgu.html"],' +
+      '#univDrawer a[href$="confidentialite.html"]{display:inline-block;padding:8px 2px;}';
     document.head.appendChild(s);
   })();
 
@@ -55,6 +69,114 @@
       window.location.href = 'recherche.html';
     });
   }
+
+  /* ── Garde-fou anti-page-figée ──
+     Quand le réseau lâche en cours de route, une requête Supabase peut rester
+     suspendue sans jamais rejeter : la page tourne alors indéfiniment sur son
+     écran de chargement. Six pages restaient ainsi bloquées pour de bon —
+     comportement d'autant plus fréquent que le public lit sur mobile.
+     Plutôt que d'emballer chaque requête page par page, on surveille ici
+     l'écran de chargement lui-même : s'il est toujours là passé le délai, on
+     dit ce qui se passe et on propose de réessayer. */
+  const LOADERS = ['#pageLoading', '#libLoading', '#loadingEl', '#loading-screen',
+                   '#loaderInitial', '.page-loading', '.loading-wrap', '.loading-state',
+                   '.loading-spinner', '.reader-loading'];
+
+  /* Zones de contenu principal, pour repérer une page restée vide */
+  const ZONES = ['#mainContent', '#app', '.main-wrap', '.page-wrap', '#dashboard', '#libGrid'];
+
+  function loaderVisible() {
+    for (const sel of LOADERS) {
+      for (const el of document.querySelectorAll(sel)) {
+        const s = getComputedStyle(el);
+        if (s.display !== 'none' && s.visibility !== 'hidden' && el.offsetHeight > 0) return el;
+      }
+    }
+    return null;
+  }
+
+  /* Deuxième symptôme, plus sournois que le spinner immobile : la page cache
+     son écran de chargement puis n'affiche rien du tout. Le lecteur se
+     retrouve devant une page blanche — ni contenu, ni erreur, ni explication. */
+  function zoneVide() {
+    for (const sel of ZONES) {
+      const el = document.querySelector(sel);
+      if (!el) continue;
+      const s = getComputedStyle(el);
+      if (s.display === 'none' || s.visibility === 'hidden') continue;
+      if ((el.innerText || '').trim().length < 40) { el.dataset.inkZone = '1'; return el; }
+    }
+    return null;
+  }
+
+  function montrerPanne(el) {
+    if (document.getElementById('inkStalled')) return;
+    const horsLigne = !navigator.onLine;
+    const box = document.createElement('div');
+    box.id = 'inkStalled';
+    box.style.cssText = 'max-width:420px;margin:40px auto;padding:32px 24px;text-align:center;' +
+      "font-family:'DM Sans',system-ui,sans-serif;";
+    box.innerHTML =
+      '<div style="font-size:2.8rem;margin-bottom:12px;">' + (horsLigne ? '📡' : '🐢') + '</div>' +
+      '<div style="font-weight:800;font-size:1.05rem;color:#1c1c1e;margin-bottom:8px;">' +
+        (horsLigne ? 'Pas de connexion' : 'Le chargement n\'aboutit pas') + '</div>' +
+      '<div style="font-size:.87rem;line-height:1.6;color:#48484a;margin-bottom:20px;">' +
+        (horsLigne
+          ? 'Vérifie ta connexion : rien n\'a pu être récupéré.'
+          : 'Le serveur met trop de temps à répondre. Ton contenu est intact.') +
+      '</div>' +
+      '<button type="button" id="inkStalledRetry" style="min-height:46px;padding:12px 26px;border:none;' +
+        'border-radius:12px;background:#6649f5;color:#fff;font-family:inherit;font-size:.9rem;' +
+        'font-weight:700;cursor:pointer;">↻ Réessayer</button>' +
+      '<div style="margin-top:14px;"><a href="index.html" style="font-size:.84rem;color:#656569;">← Retour à l\'accueil</a></div>';
+    if (el.dataset.inkZone === '1') {
+      /* Zone de contenu restée vide : on écrit dedans, sans la masquer */
+      el.appendChild(box);
+    } else {
+      /* Écran de chargement : on le remplace à sa place exacte, pour ne pas
+         laisser un spinner tourner à côté du message. */
+      el.style.display = 'none';
+      (el.parentNode || document.body).insertBefore(box, el.nextSibling);
+    }
+    document.getElementById('inkStalledRetry').addEventListener('click', function () {
+      window.location.reload();
+    });
+
+    /* Si la réponse finit malgré tout par arriver, la page se remplit : on
+       retire alors le message plutôt que de le laisser contredire l'écran. */
+    const repere = document.body.innerText.length;
+    const veille = setInterval(function () {
+      if (!document.getElementById('inkStalled')) { clearInterval(veille); return; }
+      if (document.body.innerText.length > repere + 150) {
+        box.remove();
+        clearInterval(veille);
+      }
+    }, 1500);
+    setTimeout(function () { clearInterval(veille); }, 40000);
+  }
+
+  function armerGardeFou() {
+    /* Hors ligne, inutile d'attendre : on le sait déjà. Sinon on laisse au
+       serveur le temps de répondre — au-delà de dix secondes, un écran de
+       chargement immobile est lu comme une panne, autant le dire. */
+    const delai = navigator.onLine ? 10000 : 2500;
+    setTimeout(function () {
+      const el = loaderVisible() || zoneVide();
+      if (el) montrerPanne(el);
+    }, delai);
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', armerGardeFou);
+  } else {
+    armerGardeFou();
+  }
+  /* Coupure survenue pendant le chargement : on abrège l'attente */
+  window.addEventListener('offline', function () {
+    setTimeout(function () {
+      const el = loaderVisible() || zoneVide();
+      if (el) montrerPanne(el);
+    }, 1500);
+  });
 
   /* Confirmation d'une action irréversible : window.inkriseConfirm({…}) → Promise<bool>
      Les fenêtres confirm()/prompt() du navigateur cassaient l'identité du site
