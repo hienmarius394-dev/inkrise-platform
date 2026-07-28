@@ -1,0 +1,11 @@
+{
+  "name": "inkrise-platform",
+  "private": true,
+  "description": "Plateforme manga/webtoon — pages HTML autonomes + Supabase.",
+  "scripts": {
+    "test": "node tests/run.js"
+  },
+  "devDependencies": {
+    "playwright": "^1.49.0"
+  }
+}

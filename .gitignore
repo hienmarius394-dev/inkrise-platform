@@ -1,0 +1,7 @@
+node_modules/
+package-lock.json
+
+# Artefacts produits par les tests (régénérables à chaque exécution)
+tests/shot-*.png
+tests/shots-*/
+tests/*.log
