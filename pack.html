@@ -499,6 +499,7 @@
           <div class="creator-role">✏️ Créateur</div>
           <div class="creator-bio" id="creatorBio"></div>
           <a href="#" class="btn-profile" id="creatorProfileLink">Voir le profil →</a>
+          <button class="btn-profile" id="btnPartagerPack" style="width:100%;margin-top:8px;border:none;cursor:pointer;font-family:inherit;">🔗 Partager ce pack</button>
         </div>
 
         <!-- Infos pack -->
@@ -859,6 +860,16 @@ function renderPack(pack) {
     document.getElementById('creatorProfileLink').href = `auteur.html?id=${pack.auteur_id}`;
     loadCreatorProfile(pack.auteur_id);
   }
+
+  const btnPartagerPack = document.getElementById('btnPartagerPack');
+  if (btnPartagerPack) btnPartagerPack.addEventListener('click', () => {
+    inkrisePartager({
+      titre: `${pack.titre || 'Pack tutoriel'} — Inkrise`,
+      texte: pack.auteur_nom ? `Le pack « ${pack.titre} » de ${pack.auteur_nom} sur Inkrise.`
+                             : 'Un pack de dessin manga sur Inkrise.',
+      url: window.location.origin + '/pack.html?id=' + encodeURIComponent(pack.id)
+    });
+  });
 
   // Date
   if (pack.created_at) {

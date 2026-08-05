@@ -621,6 +621,7 @@
         <span class="author-mini-avatar" id="authorAvatar">?</span>
         Voir le profil
       </a>
+      <button class="btn-author-mini" id="btnPartagerManga" title="Partager ce manga">🔗 Partager</button>
       <button class="btn-author-mini" id="btnSignalManga" title="Signaler ce manga">🚩 Signaler</button>
     </div>
 
@@ -759,6 +760,21 @@ async function init() {
 
   const btnSignal = document.getElementById('btnSignalManga');
   if (btnSignal) btnSignal.addEventListener('click', () => inkriseSignaler(sb, 'manga', mangaId));
+
+  const btnPartager = document.getElementById('btnPartagerManga');
+  if (btnPartager) btnPartager.addEventListener('click', () => {
+    /* On partage l'URL canonique, pas window.location : elle peut traîner
+       des paramètres de suivi ou un ancrage venus d'ailleurs. */
+    const url = window.location.origin + '/manga.html?id=' + encodeURIComponent(mangaId);
+    const titre = (manga && manga.titre) ? manga.titre + ' — Inkrise' : 'Un manga sur Inkrise';
+    const auteur = manga && manga.profiles && manga.profiles.username;
+    inkrisePartager({
+      titre: titre,
+      texte: auteur ? `Lis « ${manga.titre} » de ${auteur} sur Inkrise.`
+                    : 'Lis ce manga gratuitement sur Inkrise.',
+      url: url
+    });
+  });
 
   await loadManga(mangaId);
 }

@@ -387,6 +387,7 @@
         <div class="author-actions">
           <button class="btn-follow-author" id="btnFollowAuthor">👤 Suivre</button>
           <a class="btn-follow-author show" id="btnCommunaute" href="#">👥 Communauté</a>
+          <button class="btn-follow-author show" id="btnPartagerAuteur" title="Partager ce profil">🔗 Partager</button>
         </div>
       </div>
     </div>
@@ -519,6 +520,16 @@ async function loadProfile(id) {
   document.getElementById('pageLoading').style.display = 'none';
   document.getElementById('mainContent').style.display = 'block';
   document.title = `${profile.username || 'Auteur'} — Inkrise`;
+
+  const btnPartagerAuteur = document.getElementById('btnPartagerAuteur');
+  if (btnPartagerAuteur) btnPartagerAuteur.addEventListener('click', () => {
+    const pseudo = profile.username || 'ce créateur';
+    inkrisePartager({
+      titre: `${pseudo} sur Inkrise`,
+      texte: `Découvre les œuvres de ${pseudo} sur Inkrise.`,
+      url: window.location.origin + '/auteur.html?id=' + encodeURIComponent(id)
+    });
+  });
 
   renderProfile(profile, mangas.length);
   renderMangas(mangas);

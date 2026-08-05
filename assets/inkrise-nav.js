@@ -404,6 +404,60 @@
     });
   }
 
+  /* ── Partage ──────────────────────────────────────────────────────
+     window.inkrisePartager({ titre, texte, url }) → Promise<bool>
+
+     La croissance d'Inkrise passe par les créateurs qui montrent leur
+     travail. Jusqu'ici une fiche manga permettait de SIGNALER une œuvre
+     mais pas de la recommander : aucune page n'appelait navigator.share.
+
+     Sur mobile, la feuille de partage native ouvre WhatsApp, Telegram et
+     compagnie — c'est là que le partage se fait vraiment. Ailleurs, on
+     copie le lien et on le dit. */
+  window.inkrisePartager = async function (opts) {
+    opts = opts || {};
+    var url = opts.url || window.location.href;
+    var titre = opts.titre || document.title;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: titre, text: opts.texte || titre, url: url });
+        return true;
+      } catch (e) {
+        /* AbortError = la personne a fermé la feuille : ce n'est pas une
+           panne, on ne lui montre donc pas de repli comme si ça avait raté. */
+        if (e && e.name === 'AbortError') return false;
+      }
+    }
+
+    try {
+      await navigator.clipboard.writeText(url);
+      toast('🔗 Lien copié !');
+      return true;
+    } catch (e) {
+      /* clipboard refusé (http, permission) : on montre le lien à copier
+         à la main plutôt que d'échouer en silence. */
+      window.prompt('Copie ce lien pour le partager :', url);
+      return false;
+    }
+  };
+
+  function toast(message) {
+    /* Certaines pages ont déjà leur propre toast : on le réutilise pour
+       ne pas faire cohabiter deux styles de notification. */
+    if (typeof window.showToast === 'function') { window.showToast(message, 'success'); return; }
+    var t = document.createElement('div');
+    t.setAttribute('role', 'status');
+    t.style.cssText = 'position:fixed;left:50%;bottom:96px;transform:translateX(-50%);z-index:500;' +
+      'background:var(--text);color:var(--bg);padding:12px 20px;border-radius:999px;' +
+      "font-family:'DM Sans',system-ui,sans-serif;font-size:.86rem;font-weight:700;" +
+      'box-shadow:0 8px 30px rgba(0,0,0,.28);max-width:90vw;text-align:center;';
+    t.textContent = message;
+    document.body.appendChild(t);
+    setTimeout(function () { t.style.transition = 'opacity .3s'; t.style.opacity = '0'; }, 1800);
+    setTimeout(function () { t.remove(); }, 2200);
+  }
+
   /* ── Basculeur de thème, en haut du bas du menu latéral ──
      Le menu est le seul endroit présent sur les quinze pages principales :
      y placer le réglage évite d'inventer une page Paramètres pour un seul

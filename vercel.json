@@ -28,5 +28,40 @@
       "destination": "/espace-createur.html",
       "permanent": true
     }
+  ],
+  "rewrites": [
+    {
+      "source": "/manga.html",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": ".*(facebookexternalhit|Facebot|Twitterbot|WhatsApp|Discordbot|Slackbot|TelegramBot|LinkedInBot|Pinterest|redditbot|Applebot|SkypeUriPreview|vkShare|W3C_Validator|iframely|Embedly).*"
+        }
+      ],
+      "destination": "/api/og?type=manga"
+    },
+    {
+      "source": "/pack.html",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": ".*(facebookexternalhit|Facebot|Twitterbot|WhatsApp|Discordbot|Slackbot|TelegramBot|LinkedInBot|Pinterest|redditbot|Applebot|SkypeUriPreview|vkShare|W3C_Validator|iframely|Embedly).*"
+        }
+      ],
+      "destination": "/api/og?type=pack"
+    },
+    {
+      "source": "/auteur.html",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": ".*(facebookexternalhit|Facebot|Twitterbot|WhatsApp|Discordbot|Slackbot|TelegramBot|LinkedInBot|Pinterest|redditbot|Applebot|SkypeUriPreview|vkShare|W3C_Validator|iframely|Embedly).*"
+        }
+      ],
+      "destination": "/api/og?type=auteur"
+    }
   ]
 }

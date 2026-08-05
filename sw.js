@@ -84,6 +84,11 @@ self.addEventListener('fetch', (e) => {
 
   if (url.origin !== self.location.origin) return;
 
+  // Fonctions serverless (/api/…) : jamais mises en cache. Elles rendent
+  // une réponse propre à la requête ; la servir depuis le cache n'aurait
+  // aucun sens et masquerait une mise à jour.
+  if (url.pathname.startsWith('/api/')) return;
+
   // Assets statiques : stale-while-revalidate (sert le cache, met à jour en fond)
   if (url.pathname.includes('/assets/') || url.pathname.endsWith('.webmanifest')) {
     e.respondWith(

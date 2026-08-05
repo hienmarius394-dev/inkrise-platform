@@ -236,7 +236,7 @@ Il n'existe :
 3. Un lien « Espace communautaire » depuis chaque fiche manga et chaque profil
    d'auteur.
 
-### 2.3 🔴 Un lien partagé ne montre jamais l'œuvre **[vérifié]**
+### 2.3 ✅ ~~Un lien partagé ne montre jamais l'œuvre~~ — **livré**
 
 `manga.html` porte des balises Open Graph **statiques** :
 
@@ -258,13 +258,20 @@ signaler une œuvre mais pas la recommander.
 Pour une plateforme dont la croissance dépend des créateurs qui partagent leur
 travail, c'est le frein le plus direct.
 
-**À ajouter** :
-- Bouton « Partager » avec `navigator.share()` (repli : copie du lien) sur la
-  fiche manga, la fiche pack et le profil auteur.
-- Des OG dynamiques. Le site est statique, donc soit une petite fonction
-  Vercel `/og/manga/[id]` qui rend le HTML avec les bonnes balises, soit une
-  Edge Function Supabase générant l'image. C'est le chantier technique le plus
-  rentable de tout cet audit.
+**Livré** :
+- `window.inkrisePartager()` dans `inkrise-nav.js` : feuille de partage native
+  sur mobile, copie du lien ailleurs, et saisie manuelle si le presse-papier
+  est refusé. Fermer la feuille n'est pas traité comme un échec. Boutons
+  ajoutés sur la fiche manga, la fiche pack et le profil créateur.
+- `api/og.js` (fonction serverless Vercel) rend de vraies balises Open Graph —
+  titre réel, synopsis résumé sur un mot, couverture en image. Les `rewrites`
+  de `vercel.json` ne l'appellent que pour les robots d'aperçu
+  (WhatsApp, Facebook, Twitter, Discord, Telegram, LinkedIn, Slack…) : les
+  visiteurs et Googlebot reçoivent la page statique inchangée, ce qui écarte
+  la question du cloaking. Un brouillon ne produit aucun aperçu, et toute
+  panne renvoie vers la page normale — jamais un lien cassé.
+- Vérifié par `tests/partage.test.js` (30 contrôles), dont l'échappement des
+  titres, la non-divulgation des brouillons et les trois modes de repli.
 
 ### 2.4 🟠 Aucune découverte au-delà de la recherche **[vérifié]**
 
