@@ -57,7 +57,7 @@ C'est un oubli, pas un choix : le reste du site est responsive.
 **Correctif** : `@media (min-width: 681px) { .univ-bnav { display: none; } }`
 dans `assets/inkrise-theme.css`, et retirer les 21 copies locales.
 
-### 1.2 🔴 La barre du bas change de forme selon la page **[vérifié]**
+### 1.2 ✅ ~~La barre du bas change de forme selon la page~~ — fait (§3.5)
 
 Le *markup* est partagé (`assets/inkrise-nav.js`), mais le *CSS* est recopié
 dans chaque page — avec des valeurs divergentes :
@@ -499,12 +499,25 @@ Sur `recherche.html`, la nav du haut porte un champ de recherche **et** la page
 en affiche un second, plus grand, juste en dessous. Deux champs pour la même
 action, à 100 px l'un de l'autre. Masquer celui de la nav sur cette page.
 
-### 3.5 🟡 21 copies du même CSS de navigation
+### 3.5 ✅ ~~21 copies du même CSS de navigation~~ — fait
 
-`.univ-nav`, `.univ-bnav`, `.univ-d-*` sont recopiés dans chaque page — c'est
-exactement ce qui a produit §1.2 et §1.4. `assets/inkrise-theme.css` a déjà
-raison sur les couleurs ; il faut lui confier aussi la mise en page de la
-navigation. Environ 80 lignes × 21 fichiers à supprimer.
+Mesuré avant correction : **683 lignes recopiées sur 15 pages**, et *chaque*
+sélecteur avait divergé — jusqu'à **10 variantes** d'un même `.univ-nav-lk`,
+7 de `.univ-bnav-item`, 8 de `.univ-nav-hbg`. C'est cette dérive qui a produit
+§1.2 et §1.4.
+
+**Fait** : socle unique dans `assets/inkrise-theme.css` (variante majoritaire,
+réécrite avec les variables du thème), **709 lignes retirées** de 14 pages.
+`index.html` garde son bloc — la page d'accueil a une identité « verre » qui
+fait partie de la marque — mais prend désormais ses *teintes* du thème via
+`--nav-fond`, `--bnav-fond` et `--drawer-fond`, en gardant sa *géométrie*.
+
+Vérifié par comparaison pixel à pixel de **72 captures** (21 pages × clair et
+sombre × mobile et bureau) avant/après. Les seuls écarts restants sont des
+corrections : la loupe de la barre du bas retrouve son cercle violet sur
+`espace-createur.html`, et le texte d'invite des champs devient lisible.
+Effet de bord mesuré : **0 défaut de contraste dans les deux thèmes**, contre
+2 en clair auparavant.
 
 ### 3.6 ✅ ~~`.hermes/`~~ — supprimé
 

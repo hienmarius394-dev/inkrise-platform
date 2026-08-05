@@ -66,6 +66,13 @@
   --success-link: #007a66;
   --orange-link:  #b33f14;
 
+  /* Fonds translucides de la nav et de la barre du bas, et voile violet
+     de l'onglet actif — nommés pour que le thème sombre les reprenne. */
+  --drawer-fond:  #ffffff;
+  --nav-fond:     rgba(255,255,255,0.96);
+  --bnav-fond:    rgba(255,255,255,0.97);
+  --purple-voile: rgba(124,92,252,0.12);
+
   /* Couleur du texte POSÉ SUR un aplat violet. En clair l'aplat est
      foncé, donc texte blanc ; en sombre l'aplat s'éclaircit et le blanc
      tombe à 2:1 — d'où cette variable plutôt qu'un `#fff` en dur. */
@@ -147,6 +154,10 @@
 
   /* Variables propres à certaines pages (auth, profil…) : sans ces
      reprises, leurs valeurs claires resteraient posées sur fond sombre. */
+  --drawer-fond:  #1a1720;
+  --nav-fond:     rgba(18,16,22,0.88);
+  --bnav-fond:    rgba(26,23,32,0.96);
+  --purple-voile: rgba(155,131,255,0.16);
   --sur-purple:   #17131f;
   --purple-light: #b9a6ff;
   --purple-dim:   rgba(155,131,255,0.22);
@@ -161,56 +172,103 @@
   --glow-pink: 0 10px 30px -8px rgba(255,122,184,0.35);
 }
 
-/* ── Habillage partagé ──────────────────────────────────────────────
-   La nav, le menu latéral et la barre du bas sont recopiés dans chaque
-   page avec des blancs écrits en dur (`#fff`, `rgba(255,255,255,.97)`),
-   que les variables ci-dessus ne peuvent donc pas atteindre. On les
-   reprend ici une fois pour toutes : `:root[data-theme] .classe` pèse
-   (0,2,1) et l'emporte sur le `.classe` (0,0,1) de chaque page. */
-:root[data-theme="dark"] body { background-color: var(--bg); color: var(--text); }
+/* ═══════════════════════════════════════════════════════════════════
+   HABILLAGE PARTAGÉ — nav du haut, menu latéral, barre du bas
+   ═══════════════════════════════════════════════════════════════════
 
-:root[data-theme="dark"] .univ-nav {
-  background: rgba(18,16,22,0.88);
-  border-bottom-color: var(--border);
-}
+   Ces règles vivaient recopiées dans quinze pages : 683 lignes, et
+   CHAQUE sélecteur avait divergé — jusqu'à dix variantes pour un même
+   `.univ-nav-lk`. C'est cette dérive qui avait produit une barre du bas
+   changeant de forme d'une page à l'autre, et une bande blanche de 70px
+   en haut de la bibliothèque.
+
+   La version retenue ici est la variante majoritaire, réécrite avec les
+   variables du thème pour qu'elle suive le mode sombre.
+
+   `index.html` garde délibérément son propre bloc : la page d'accueil a
+   une identité « verre » (nav translucide, dock flottant) qui fait partie
+   de la marque. Cette feuille étant chargée AVANT le <style> des pages,
+   elle redéfinit ce qu'elle veut sans avoir à lutter. */
+
+/* ── Barre du haut ── */
+.univ-nav { position: sticky; top: 0; z-index: 100; background: var(--nav-fond); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-bottom: 1px solid var(--border); padding: 0 16px; height: 58px; display: flex; align-items: center; gap: 8px; }
+.univ-nav-logo { font-family: 'Syne', sans-serif; font-size: 1.2rem; font-weight: 900; text-decoration: none; background: linear-gradient(135deg, var(--purple), var(--pink)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; flex-shrink: 0; letter-spacing: 1px; }
+.univ-nav-links-d { display: flex; align-items: center; gap: 2px; flex: 1; margin: 0 8px; }
+@media (max-width: 680px) { .univ-nav-links-d { display: none; } }
+.univ-nav-lk { color: var(--text-2); font-size: .82rem; font-weight: 600; text-decoration: none; padding: 5px 10px; border-radius: 7px; transition: all .2s; white-space: nowrap; font-family: 'DM Sans', sans-serif; }
+.univ-nav-lk:hover { color: var(--text); background: var(--surface); }
+.univ-nav-lk.active { color: var(--purple-link); background: var(--purple-voile); }
+.univ-nav-search { display: flex; align-items: center; background: var(--surface); border: 1px solid var(--border); border-radius: 18px; overflow: hidden; max-width: 200px; flex-shrink: 0; }
+@media (max-width: 480px) { .univ-nav-search { max-width: 110px; } }
+.univ-nav-si { background: none; border: none; outline: none; color: var(--text); font-size: .8rem; padding: 7px 10px; width: 100%; font-family: 'DM Sans', sans-serif; }
+.univ-nav-si::placeholder { color: var(--text-3); }
+.univ-nav-sb { background: none; border: none; cursor: pointer; padding: 6px 8px; font-size: 13px; color: var(--text-3); flex-shrink: 0; }
+.univ-nav-sb:hover { color: var(--purple-link); }
+.univ-nav-hbg { width: 34px; height: 34px; border-radius: 8px; background: var(--surface); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; color: var(--text); transition: background .2s; flex-shrink: 0; }
+.univ-nav-hbg:hover { background: var(--surface-2); }
+
+.nav-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.nav-connexion-btn { color: var(--text-2); font-size: .8rem; font-weight: 600; padding: 6px 13px; border-radius: 20px; border: 1px solid var(--border); text-decoration: none; transition: all .2s; white-space: nowrap; }
+.nav-connexion-btn:hover { border-color: var(--purple); color: var(--purple-link); }
+.nav-avatar-btn { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, var(--purple), var(--pink)); display: none; align-items: center; justify-content: center; font-size: .85rem; font-weight: 700; color: #fff; text-decoration: none; text-transform: uppercase; }
+.nav-avatar-btn.show { display: flex; }
+.nav-notif-link { position: relative; display: none; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 8px; background: var(--surface); border: 1px solid var(--border); text-decoration: none; font-size: .95rem; transition: all .2s; }
+.nav-notif-link.show { display: flex; }
+.nav-notif-link:hover { background: var(--surface-2); }
+/* La pastille chevauche le bord de la cloche : son liseré reprend le fond
+   de la page pour la détacher — donc une variable, pas un blanc en dur. */
+.nav-notif-dot { position: absolute; top: -5px; right: -5px; min-width: 16px; height: 16px; border-radius: 8px; background: var(--accent); color: #fff; font-size: 9px; font-weight: 800; padding: 0 3px; display: none; align-items: center; justify-content: center; border: 2px solid var(--bg); }
+.nav-notif-dot.show { display: flex; }
+
+/* ── Menu latéral ── */
+.univ-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 150; backdrop-filter: blur(3px); }
+.univ-overlay.open { display: block; }
+.univ-drawer { position: fixed; top: 0; right: 0; width: 270px; height: 100%; background: var(--drawer-fond); z-index: 151; overflow-y: auto; transform: translateX(100%); transition: transform .28s cubic-bezier(.4,0,.2,1); box-shadow: -4px 0 32px rgba(0,0,0,.12); border-left: 1px solid var(--border); }
+.univ-drawer.open { transform: translateX(0); }
+.univ-d-hdr { display: flex; align-items: center; justify-content: space-between; padding: 16px; border-bottom: 1px solid var(--border); }
+.univ-d-logo { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 900; text-decoration: none; background: linear-gradient(135deg, var(--purple), var(--pink)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+.univ-d-close { width: 30px; height: 30px; border-radius: 50%; background: var(--surface); border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; color: var(--text-2); }
+.univ-d-sec { font-size: .65rem; font-weight: 800; color: var(--text-3); letter-spacing: 1.5px; text-transform: uppercase; padding: 14px 16px 5px; }
+.univ-d-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; margin: 2px 8px; text-decoration: none; color: var(--text); font-weight: 600; font-size: .88rem; cursor: pointer; transition: background .15s; border: none; background: none; width: calc(100% - 16px); text-align: left; border-radius: 9px; font-family: 'DM Sans', sans-serif; }
+.univ-d-item:hover { background: var(--surface); }
+.univ-d-icon { width: 34px; height: 34px; border-radius: 9px; background: var(--surface); display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+.univ-d-badge { font-size: .65rem; font-weight: 800; padding: 2px 7px; border-radius: 6px; margin-left: auto; }
+.univ-d-badge.orange { background: rgba(255,107,53,.15); color: var(--orange-link); }
+.univ-d-badge.teal { background: rgba(0,201,167,.15); color: var(--success-link); }
+.univ-d-divider { height: 1px; background: var(--border); margin: 8px 16px; }
+
+/* ── Barre du bas ── */
+.univ-bnav { position: fixed; bottom: 0; left: 0; right: 0; z-index: 100; background: var(--bnav-fond); border-top: 1px solid var(--border); box-shadow: 0 -2px 12px rgba(0,0,0,.05); display: flex; align-items: center; justify-content: space-around; padding: 8px 0 16px; backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
+/* Au-delà du mobile, la nav du haut suffit : la barre du bas recouvrirait
+   le bas du contenu sur toute la largeur de l'écran. */
+@media (min-width: 681px) { .univ-bnav { display: none; } }
+.univ-bnav-item { display: flex; flex-direction: column; align-items: center; gap: 2px; text-decoration: none; color: var(--text-3); padding: 0 8px; transition: color .2s; border: none; background: none; cursor: pointer; }
+.univ-bnav-item:hover { color: var(--text); }
+.univ-bnav-item.active { color: var(--purple-link); }
+.univ-bnav-icon { font-size: 20px; }
+.univ-bnav-label { font-size: .6rem; font-weight: 800; font-family: 'DM Sans', sans-serif; }
+.univ-bnav-search, .univ-bnav-cta { width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, var(--purple), var(--pink)); border: none; display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer; margin-top: -18px; box-shadow: 0 4px 18px rgba(124,92,252,.45); transition: transform .2s; flex-shrink: 0; text-decoration: none; }
+.univ-bnav-search:hover, .univ-bnav-cta:hover { transform: scale(1.08); }
+
+/* ── Habillage sombre restant ──
+   Le socle ci-dessus passe désormais par les variables, donc la plupart
+   des surcharges d'origine ont disparu. Ne restent que celles qu'aucune
+   variable ne peut porter. */
+:root[data-theme="dark"] body { background-color: var(--bg); color: var(--text); }
 :root[data-theme="dark"] .univ-nav-search,
 :root[data-theme="dark"] .univ-nav-hbg,
-:root[data-theme="dark"] .nav-notif-link {
-  background: rgba(255,255,255,0.06);
-  border-color: var(--border);
-}
-:root[data-theme="dark"] .univ-nav-si { color: var(--text); }
-:root[data-theme="dark"] .univ-nav-si::placeholder { color: var(--text-3); }
-:root[data-theme="dark"] .univ-nav-sb,
-:root[data-theme="dark"] .univ-nav-hbg { color: var(--text-2); }
-:root[data-theme="dark"] .univ-nav-lk { color: var(--text-2); }
-:root[data-theme="dark"] .univ-nav-lk:hover { color: var(--text); background: rgba(255,255,255,0.07); }
-:root[data-theme="dark"] .univ-nav-lk.active { color: var(--purple2); background: rgba(155,131,255,0.16); }
-:root[data-theme="dark"] .nav-connexion-btn { color: var(--text); border-color: var(--border); background: rgba(255,255,255,0.06); }
-:root[data-theme="dark"] .nav-notif-dot { border-color: var(--bg); }
-
-:root[data-theme="dark"] .univ-drawer {
-  background: var(--bg-2);
-  border-left-color: var(--border);
-}
-:root[data-theme="dark"] .univ-d-hdr,
-:root[data-theme="dark"] .univ-d-divider { border-bottom-color: var(--border); background-color: transparent; }
-:root[data-theme="dark"] .univ-d-divider { background: var(--border); }
-:root[data-theme="dark"] .univ-d-item { color: var(--text); }
-:root[data-theme="dark"] .univ-d-item:hover { background: rgba(255,255,255,0.07); }
+:root[data-theme="dark"] .nav-notif-link,
 :root[data-theme="dark"] .univ-d-icon,
-:root[data-theme="dark"] .univ-d-close { background: rgba(255,255,255,0.08); color: var(--text-2); }
-:root[data-theme="dark"] .univ-d-sec { color: var(--text-3); }
+:root[data-theme="dark"] .univ-d-close { background: rgba(255,255,255,0.06); }
+:root[data-theme="dark"] .univ-d-item:hover,
+:root[data-theme="dark"] .univ-nav-lk:hover { background: rgba(255,255,255,0.07); }
+:root[data-theme="dark"] .nav-connexion-btn { color: var(--text); background: rgba(255,255,255,0.06); }
 :root[data-theme="dark"] .univ-overlay { background: rgba(0,0,0,0.6); }
-
-:root[data-theme="dark"] .univ-bnav {
-  background: rgba(26,23,32,0.96);
-  border-top-color: var(--border);
-  border-color: var(--border);
-}
-:root[data-theme="dark"] .univ-bnav-item { color: var(--text-3); }
-:root[data-theme="dark"] .univ-bnav-item:hover,
-:root[data-theme="dark"] .univ-bnav-item.active { color: var(--purple2); }
+:root[data-theme="dark"] .univ-drawer { box-shadow: -4px 0 32px rgba(0,0,0,.5); }
+/* --glass sert de fond à quelques éléments de l'accueil (recherche,
+   burger, bouton Connexion) : en sombre il doit rester un voile clair
+   posé sur du sombre, pas l'inverse. */
+:root[data-theme="dark"] { --glass: rgba(255,255,255,0.07); --glass-strong: rgba(255,255,255,0.12); }
 
 /* ── Cartes de contenu ──────────────────────────────────────────────
    Une quinzaine de classes peignent leur fond en blanc translucide écrit
@@ -251,11 +309,6 @@
   background: rgba(18,16,22,0.9);
   border-bottom-color: var(--border);
 }
-
-/* Un aplat violet portant du texte blanc doit rester foncé : le
-   `--purple` du thème sombre est éclairci pour le TEXTE, pas pour servir
-   de fond à du blanc (il n'y donnait que 2,96:1). */
-:root[data-theme="dark"] .search-bar-large button { background-color: #6d4fe0; color: #fff; }
 
 /* Champs de saisie : sans ça on garde du texte sombre sur fond sombre. */
 :root[data-theme="dark"] input:not([type=checkbox]):not([type=radio]):not([type=range]),
