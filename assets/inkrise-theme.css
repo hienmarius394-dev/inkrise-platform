@@ -65,6 +65,11 @@
   --danger-link:  #da380f;
   --success-link: #007a66;
   --orange-link:  #b33f14;
+
+  /* Couleur du texte POSÉ SUR un aplat violet. En clair l'aplat est
+     foncé, donc texte blanc ; en sombre l'aplat s'éclaircit et le blanc
+     tombe à 2:1 — d'où cette variable plutôt qu'un `#fff` en dur. */
+  --sur-purple: #ffffff;
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -142,6 +147,7 @@
 
   /* Variables propres à certaines pages (auth, profil…) : sans ces
      reprises, leurs valeurs claires resteraient posées sur fond sombre. */
+  --sur-purple:   #17131f;
   --purple-light: #b9a6ff;
   --purple-dim:   rgba(155,131,255,0.22);
   --border-2:     rgba(255,255,255,0.11);
@@ -273,12 +279,10 @@
 }
 .ink-theme-opt:hover { border-color: var(--purple); color: var(--text); }
 /* --purple (#7c5cfc) ne donne que 4,38:1 sous du texte blanc : on prend
-   la teinte de lien, plus foncée (5,5:1). En sombre elle s'éclaircit, on
-   y pose donc du texte foncé. */
+   la teinte de lien, plus foncée (5,5:1). */
 .ink-theme-opt[aria-pressed="true"] {
-  background: var(--purple-link); border-color: var(--purple-link); color: #fff;
+  background: var(--purple-link); border-color: var(--purple-link); color: var(--sur-purple);
 }
-:root[data-theme="dark"] .ink-theme-opt[aria-pressed="true"] { color: #17131f; }
 
 /* ── Focus clavier visible (§1.8 de l'audit) ──
    Les boutons du site posent `border: none`, ce qui efface aussi le

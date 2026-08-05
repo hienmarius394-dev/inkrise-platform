@@ -656,56 +656,250 @@ document.addEventListener('DOMContentLoaded', function() {
   if (ol) ol.classList.remove('open');
 });
 
+/* ═══════════════════════════════════════════════════════════════════
+   ACCUEIL COMMUNAUTÉ (sans ?id=)
+   ═══════════════════════════════════════════════════════════════════
+   Deux onglets :
+     • Mon fil    — ce que publient les créateurs suivis
+     • Découvrir  — les espaces les plus vivants, pour en trouver d'autres
+   Les murs sont publics en lecture (RLS « posts select public »), donc la
+   découverte fonctionne aussi sans compte. */
+
+const ACCUEIL = { onglet: 'fil', suivis: [], moi: null };
+
+async function afficherAccueilCommunaute(session) {
+  ACCUEIL.moi = session && session.user ? session.user : null;
+  document.title = 'Communauté — Inkrise';
+
+  const app = document.getElementById('app');
+  app.innerHTML = '<div class="empty-state" style="padding:60px 20px;">Chargement…</div>';
+
+  if (ACCUEIL.moi) {
+    const { data } = await sb.from('follows').select('followed_id').eq('user_id', ACCUEIL.moi.id);
+    ACCUEIL.suivis = (data || []).map(f => f.followed_id).filter(Boolean);
+  }
+  /* Sans personne à suivre, un fil vide n'apprend rien : on ouvre
+     directement sur la découverte. */
+  ACCUEIL.onglet = ACCUEIL.suivis.length ? 'fil' : 'decouvrir';
+
+  app.innerHTML =
+    '<div class="creator-header" style="display:block;">' +
+      '<div style="font-family:\'Syne\',sans-serif;font-size:1.25rem;font-weight:800;color:var(--text);">👥 Communauté</div>' +
+      '<div style="font-size:.84rem;color:var(--text-muted);margin-top:4px;line-height:1.5;">' +
+        'Chaque créateur a son espace. Suis-en un pour retrouver ses publications ici.' +
+      '</div>' +
+    '</div>' +
+    '<div role="tablist" aria-label="Vue de la communauté" style="display:flex;gap:8px;margin:14px 0 16px;">' +
+      onglet('fil', '📰 Mon fil') + onglet('decouvrir', '🧭 Découvrir') +
+    '</div>' +
+    '<div id="accueilVue"></div>';
+
+  app.querySelectorAll('[data-onglet]').forEach(b => b.addEventListener('click', () => {
+    ACCUEIL.onglet = b.dataset.onglet;
+    app.querySelectorAll('[data-onglet]').forEach(x => majOnglet(x));
+    rendreVue();
+  }));
+  rendreVue();
+}
+
+function onglet(id, libelle) {
+  const actif = ACCUEIL.onglet === id;
+  return '<button type="button" role="tab" data-onglet="' + id + '" aria-selected="' + actif + '" ' +
+    'style="' + styleOnglet(actif) + '">' + libelle + '</button>';
+}
+function styleOnglet(actif) {
+  return 'flex:1;min-height:44px;padding:10px 12px;border-radius:999px;cursor:pointer;' +
+    'font-family:inherit;font-size:.86rem;font-weight:700;transition:all .2s;' +
+    (actif ? 'background:var(--purple-link);color:var(--sur-purple);border:1px solid var(--purple-link);'
+           : 'background:var(--surface);color:var(--text-2);border:1px solid var(--border);');
+}
+function majOnglet(b) {
+  const actif = b.dataset.onglet === ACCUEIL.onglet;
+  b.setAttribute('aria-selected', String(actif));
+  b.style.cssText = styleOnglet(actif);
+}
+
+function rendreVue() {
+  const vue = document.getElementById('accueilVue');
+  vue.innerHTML = '<div class="empty-state" style="padding:40px 20px;">Chargement…</div>';
+  (ACCUEIL.onglet === 'fil' ? rendreFil(vue) : rendreDecouverte(vue));
+}
+
+/* ── Mon fil ── */
+async function rendreFil(vue) {
+  if (!ACCUEIL.moi) {
+    vue.innerHTML = etatVide('🔑', 'Connecte-toi pour avoir un fil',
+      'Ton fil rassemble les publications des créateurs que tu suis.',
+      'auth.html', 'Connexion / Inscription');
+    return;
+  }
+  if (!ACCUEIL.suivis.length) {
+    vue.innerHTML = etatVide('🧭', 'Tu ne suis encore personne',
+      'Suis un créateur et ses publications apparaîtront ici.',
+      '#decouvrir', 'Découvrir des créateurs');
+    const b = vue.querySelector('a[href="#decouvrir"]');
+    if (b) b.addEventListener('click', e => {
+      e.preventDefault();
+      ACCUEIL.onglet = 'decouvrir';
+      document.querySelectorAll('[data-onglet]').forEach(x => majOnglet(x));
+      rendreVue();
+    });
+    return;
+  }
+
+  const { data: posts, error } = await sb.from('posts_communaute')
+    .select('id, creator_id, auteur_id, type, contenu, image_url, created_at')
+    .in('creator_id', ACCUEIL.suivis)
+    .order('created_at', { ascending: false })
+    .limit(40);
+
+  if (error) { vue.innerHTML = etatVide('⚠️', 'Chargement impossible', error.message); return; }
+  if (!posts || !posts.length) {
+    vue.innerHTML = etatVide('🌱', 'Rien de neuf pour l\'instant',
+      'Les créateurs que tu suis n\'ont pas encore publié. Reviens bientôt !',
+      '#decouvrir', 'Découvrir d\'autres créateurs');
+    const b = vue.querySelector('a[href="#decouvrir"]');
+    if (b) b.addEventListener('click', e => {
+      e.preventDefault(); ACCUEIL.onglet = 'decouvrir';
+      document.querySelectorAll('[data-onglet]').forEach(x => majOnglet(x)); rendreVue();
+    });
+    return;
+  }
+
+  const profils = await chargerProfils(posts.flatMap(p => [p.creator_id, p.auteur_id]));
+  vue.innerHTML = posts.map(p => carteFil(p, profils)).join('');
+}
+
+function carteFil(p, profils) {
+  const auteur = profils[p.auteur_id] || {};
+  const mur = profils[p.creator_id] || {};
+  const nom = auteur.username || 'Créateur';
+  const lien = 'communaute.html?id=' + encodeURIComponent(p.creator_id);
+  const avatar = auteur.avatar_url
+    ? '<img src="' + escHtml(auteur.avatar_url) + '" alt="" style="width:38px;height:38px;border-radius:50%;object-fit:cover;flex-shrink:0;" />'
+    : '<div style="width:38px;height:38px;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg,var(--purple),var(--pink));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:.85rem;">' + escHtml(getInitials(nom)) + '</div>';
+
+  /* Le fil mélange plusieurs murs : sans rappel, on ne sait plus chez qui
+     on lit. On ne l'affiche que si l'auteur n'est pas le maître du mur. */
+  const situe = (mur.username && p.creator_id !== p.auteur_id)
+    ? '<span style="color:var(--text-3);font-weight:500;"> · chez ' + escHtml(mur.username) + '</span>' : '';
+
+  const image = p.image_url
+    ? '<img src="' + escHtml(p.image_url) + '" alt="" loading="lazy" style="width:100%;border-radius:var(--radius-sm);margin-top:10px;display:block;" />' : '';
+
+  const badge = p.type === 'annonce'
+    ? '<span style="font-size:.66rem;font-weight:800;padding:2px 8px;border-radius:999px;background:rgba(255,107,53,.15);color:var(--orange-link);margin-left:6px;">ANNONCE</span>' : '';
+
+  const texte = String(p.contenu || '');
+  const extrait = texte.length > 280 ? escHtml(texte.slice(0, 280)) + '…' : escHtml(texte);
+
+  return '<a href="' + lien + '" class="post-card" style="display:block;text-decoration:none;color:inherit;margin-bottom:12px;">' +
+    '<div style="display:flex;align-items:center;gap:10px;">' + avatar +
+      '<div style="min-width:0;flex:1;">' +
+        '<div style="font-weight:700;font-size:.92rem;color:var(--text);">' + escHtml(nom) + badge + situe + '</div>' +
+        '<div style="font-size:.75rem;color:var(--text-3);">' + escHtml(timeAgo(p.created_at)) + '</div>' +
+      '</div>' +
+    '</div>' +
+    (extrait ? '<div style="margin-top:10px;font-size:.9rem;line-height:1.6;color:var(--text);white-space:pre-line;">' + extrait + '</div>' : '') +
+    image +
+    (p.type === 'sondage' ? '<div style="margin-top:10px;font-size:.82rem;color:var(--purple-link);font-weight:700;">📊 Sondage — voir et voter →</div>' : '') +
+    '</a>';
+}
+
+/* ── Découvrir ── */
+async function rendreDecouverte(vue) {
+  const { data: posts, error } = await sb.from('posts_communaute')
+    .select('creator_id, created_at')
+    .order('created_at', { ascending: false })
+    .limit(300);
+
+  if (error) { vue.innerHTML = etatVide('⚠️', 'Chargement impossible', error.message); return; }
+
+  /* On classe les murs par activité récente : un espace vivant a plus de
+     chances d'accrocher qu'un espace nommé en premier par hasard. */
+  const parMur = new Map();
+  (posts || []).forEach(p => {
+    if (!p.creator_id) return;
+    const e = parMur.get(p.creator_id) || { id: p.creator_id, nb: 0, dernier: p.created_at };
+    e.nb++;
+    if (p.created_at > e.dernier) e.dernier = p.created_at;
+    parMur.set(p.creator_id, e);
+  });
+
+  let murs = [...parMur.values()].sort((a, b) => (a.dernier < b.dernier ? 1 : -1)).slice(0, 30);
+  if (!murs.length) {
+    vue.innerHTML = etatVide('🌱', 'Aucun espace actif pour l\'instant',
+      'Les créateurs n\'ont pas encore publié. Deviens le premier à animer le tien !',
+      ACCUEIL.moi ? 'profil.html' : 'auth.html',
+      ACCUEIL.moi ? 'Mon espace' : 'Créer mon compte');
+    return;
+  }
+
+  const profils = await chargerProfils(murs.map(m => m.id));
+  /* Un mur dont le profil a disparu ne mène nulle part : on l'écarte. */
+  murs = murs.filter(m => profils[m.id]);
+  if (!murs.length) { vue.innerHTML = etatVide('🌱', 'Aucun espace à afficher', ''); return; }
+
+  vue.innerHTML = murs.map(m => {
+    const p = profils[m.id];
+    const nom = p.username || 'Créateur';
+    const suivi = ACCUEIL.suivis.indexOf(m.id) !== -1;
+    const avatar = p.avatar_url
+      ? '<img src="' + escHtml(p.avatar_url) + '" alt="" style="width:46px;height:46px;border-radius:50%;object-fit:cover;flex-shrink:0;" />'
+      : '<div style="width:46px;height:46px;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg,var(--purple),var(--pink));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;">' + escHtml(getInitials(nom)) + '</div>';
+    return '<a href="communaute.html?id=' + encodeURIComponent(m.id) + '" class="post-card" ' +
+      'style="display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit;margin-bottom:10px;">' +
+      avatar +
+      '<div style="min-width:0;flex:1;">' +
+        '<div style="font-weight:700;font-size:.94rem;color:var(--text);">' + escHtml(nom) +
+          (suivi ? '<span style="font-size:.64rem;font-weight:800;padding:2px 7px;border-radius:999px;background:rgba(61,220,132,.16);color:var(--success-link);margin-left:6px;">SUIVI</span>' : '') +
+        '</div>' +
+        (p.bio ? '<div style="font-size:.78rem;color:var(--text-2);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + escHtml(p.bio) + '</div>' : '') +
+        '<div style="font-size:.72rem;color:var(--text-3);margin-top:3px;">' +
+          m.nb + ' publication' + (m.nb > 1 ? 's' : '') + ' · ' + escHtml(timeAgo(m.dernier)) +
+        '</div>' +
+      '</div>' +
+      '<span aria-hidden="true" style="color:var(--purple-link);font-weight:800;">→</span>' +
+    '</a>';
+  }).join('');
+}
+
+/* ── Petits utilitaires ── */
+async function chargerProfils(ids) {
+  const uniques = [...new Set(ids.filter(Boolean))];
+  if (!uniques.length) return {};
+  const { data } = await sb.from('profiles').select('id, username, avatar_url, bio').in('id', uniques);
+  const map = {};
+  (data || []).forEach(p => { map[p.id] = p; });
+  return map;
+}
+
+function etatVide(icone, titre, texte, href, libelle) {
+  return '<div class="empty-state" style="padding:56px 20px;text-align:center;">' +
+    '<div style="font-size:3rem;margin-bottom:14px;">' + icone + '</div>' +
+    '<div style="font-size:1.05rem;font-weight:700;color:var(--text);margin-bottom:10px;">' + escHtml(titre) + '</div>' +
+    (texte ? '<div style="font-size:.88rem;color:var(--text-muted);max-width:400px;margin:0 auto 22px;line-height:1.7;">' + escHtml(texte) + '</div>' : '') +
+    (href ? '<a href="' + href + '" style="display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:12px 26px;' +
+      'background:var(--purple-link);color:var(--sur-purple);border-radius:var(--radius-sm);font-weight:700;font-size:.9rem;text-decoration:none;">' +
+      escHtml(libelle) + '</a>' : '') +
+  '</div>';
+}
+
 /* ===== MAIN INIT ===== */
 (async function init() {
   const params = new URLSearchParams(window.location.search);
   state.creatorId = params.get('id');
 
-  /* ── Welcome / empty state when no creator ID ── */
+  /* ── Sans identifiant de créateur : le fil et la découverte ──
+     Auparavant, une personne connectée était redirigée vers SON PROPRE mur.
+     L'onglet « Communauté » de la barre du bas menait donc un nouveau
+     créateur — zéro abonné, zéro publication — à se parler à lui-même, et
+     aucun chemin ne menait au mur de quelqu'un d'autre. */
   if (!state.creatorId) {
-    /* If logged in, go to their own community */
     const { data: { session } } = await sb.auth.getSession();
     updateNavAuth(session);
-    if (session && session.user) {
-      /* Verify the user has a profile before redirecting */
-      const { data: myProfile } = await sb.from('profiles').select('id').eq('id', session.user.id).maybeSingle();
-      if (myProfile) {
-        window.location.href = 'communaute.html?id=' + session.user.id;
-        return;
-      }
-      /* No profile yet — show setup prompt */
-      state.loading = false;
-      const app = document.getElementById('app');
-      app.innerHTML = '' +
-        '<div class="empty-state" style="padding:80px 20px;">' +
-          '<div class="empty-state-icon" style="font-size:4rem;margin-bottom:16px;">👤</div>' +
-          '<div style="font-size:1.2rem;font-weight:700;color:var(--text);margin-bottom:12px;">Bienvenue sur Inkrise !</div>' +
-          '<div style="font-size:0.9rem;color:var(--text-muted);max-width:420px;margin:0 auto 28px;line-height:1.7;">' +
-            'Tu es connecté mais tu n\'as pas encore de profil public. ' +
-            'Rends-toi sur ton profil pour le configurer, puis reviens ici.' +
-          '</div>' +
-          '<div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">' +
-            '<a href="profil.html" style="display:inline-flex;align-items:center;gap:8px;padding:12px 28px;background:#7857fc;color:#fff;border-radius:var(--radius-sm);font-weight:700;font-size:0.9rem;text-decoration:none;">⚙️ Mon profil</a>' +
-            '<a href="index.html" style="display:inline-flex;align-items:center;gap:8px;padding:12px 28px;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:var(--radius-sm);font-weight:600;font-size:0.9rem;text-decoration:none;">🏠 Accueil</a>' +
-          '</div>' +
-        '</div>';
-      return;
-    }
     state.loading = false;
-    const app = document.getElementById('app');
-    app.innerHTML = '' +
-      '<div class="empty-state" style="padding:80px 20px;">' +
-        '<div class="empty-state-icon" style="font-size:4rem;margin-bottom:16px;">👥</div>' +
-        '<div style="font-size:1.2rem;font-weight:700;color:var(--text);margin-bottom:12px;">Bienvenue sur la communauté Inkrise !</div>' +
-        '<div style="font-size:0.9rem;color:var(--text-muted);max-width:420px;margin:0 auto 28px;line-height:1.7;">' +
-          'Chaque créateur possède son propre espace communautaire. ' +
-          'Connecte-toi ou inscris-toi pour accéder à l\'espace de ton créateur préféré.' +
-        '</div>' +
-        '<div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">' +
-          '<a href="auth.html" style="display:inline-flex;align-items:center;gap:8px;padding:12px 28px;background:#7857fc;color:#fff;border-radius:var(--radius-sm);font-weight:700;font-size:0.9rem;text-decoration:none;">🔑 Connexion / Inscription</a>' +
-          '<a href="index.html" style="display:inline-flex;align-items:center;gap:8px;padding:12px 28px;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:var(--radius-sm);font-weight:600;font-size:0.9rem;text-decoration:none;">🏠 Retour à l\'accueil</a>' +
-        '</div>' +
-      '</div>';
+    await afficherAccueilCommunaute(session);
     return;
   }
 

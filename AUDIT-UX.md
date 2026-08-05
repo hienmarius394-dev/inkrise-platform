@@ -213,7 +213,7 @@ variables de texte (`--purple-link`, `--danger-link`, `--success-link`,
 Vérifié par `tests/theme.test.js` (14 contrôles) : **0 zone claire** sur 19
 pages et **0 défaut de contraste** sur 21 pages en sombre.
 
-### 2.2 🔴 « Communauté » est un onglet sans issue **[vérifié]**
+### 2.2 ✅ ~~« Communauté » est un onglet sans issue~~ — **livré**
 
 L'onglet occupe une des 4 places de la barre du bas. Or
 `communaute.html:661-670` : sans `?id=`, un visiteur connecté est **redirigé
@@ -228,13 +228,21 @@ Il n'existe :
 - ni annuaire des espaces communautaires,
 - ni découverte d'un mur autrement qu'en connaissant l'UUID du créateur.
 
-**À ajouter** (par ordre d'effort croissant) :
-1. Un fil « Ce que publient les créateurs que tu suis » comme écran par défaut
-   de `communaute.html` — la table `posts_communaute` et la table `follows`
-   suffisent, c'est une seule requête.
-2. Un onglet « Découvrir » listant les murs les plus actifs.
-3. Un lien « Espace communautaire » depuis chaque fiche manga et chaque profil
-   d'auteur.
+**Livré** : `communaute.html` sans `?id=` ne redirige plus. Deux onglets :
+- **Mon fil** — les publications des créateurs suivis, chacune renvoyant au
+  mur concerné, avec la mention « chez X » quand l'auteur n'est pas le maître
+  du mur (le fil mélange plusieurs espaces).
+- **Découvrir** — les espaces classés par activité récente, avec nombre de
+  publications, dernière activité et pastille « SUIVI ». **On peut enfin
+  atteindre le mur d'un créateur qu'on ne connaît pas.**
+
+Qui ne suit personne ouvre directement sur Découvrir plutôt que sur un fil
+vide ; sans compte, les espaces restent consultables (les murs sont publics
+en lecture) et le fil invite à se connecter. Vérifié par
+`tests/communaute-fil.test.js` (23 contrôles), y compris la non-régression du
+mur d'un créateur.
+
+*Reste du §2.4 : un lien « Espace communautaire » depuis chaque fiche manga.*
 
 ### 2.3 ✅ ~~Un lien partagé ne montre jamais l'œuvre~~ — **livré**
 

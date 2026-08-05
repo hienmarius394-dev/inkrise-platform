@@ -45,7 +45,7 @@ const ILOTS = () => {
 };
 
 const PAGES = ['index.html','recherche.html','manga.html?id=1','bibliotheque.html','profil.html',
-  'auteur.html?id=u1','communaute.html?id=u1','tutoriels.html','pack.html?id=1','espace-createur.html',
+  'auteur.html?id=u1','communaute.html?id=u1','communaute.html','tutoriels.html','pack.html?id=1','espace-createur.html',
   'upload-manga.html','gestion-chapitres.html?manga_id=1','auth.html','404.html','admin.html',
   'cgu.html','confidentialite.html','mentions-legales.html','creators-remuneration.html'];
 
