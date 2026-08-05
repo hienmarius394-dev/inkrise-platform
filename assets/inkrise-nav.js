@@ -118,9 +118,9 @@
       "font-family:'DM Sans',system-ui,sans-serif;";
     box.innerHTML =
       '<div style="font-size:2.8rem;margin-bottom:12px;">' + (horsLigne ? '📡' : '🐢') + '</div>' +
-      '<div style="font-weight:800;font-size:1.05rem;color:#1c1c1e;margin-bottom:8px;">' +
+      '<div style="font-weight:800;font-size:1.05rem;color:var(--text);margin-bottom:8px;">' +
         (horsLigne ? 'Pas de connexion' : 'Le chargement n\'aboutit pas') + '</div>' +
-      '<div style="font-size:.87rem;line-height:1.6;color:#48484a;margin-bottom:20px;">' +
+      '<div style="font-size:.87rem;line-height:1.6;color:var(--text-2);margin-bottom:20px;">' +
         (horsLigne
           ? 'Vérifie ta connexion : rien n\'a pu être récupéré.'
           : 'Le serveur met trop de temps à répondre. Ton contenu est intact.') +
@@ -128,7 +128,7 @@
       '<button type="button" id="inkStalledRetry" style="min-height:46px;padding:12px 26px;border:none;' +
         'border-radius:12px;background:#6649f5;color:#fff;font-family:inherit;font-size:.9rem;' +
         'font-weight:700;cursor:pointer;">↻ Réessayer</button>' +
-      '<div style="margin-top:14px;"><a href="index.html" style="font-size:.84rem;color:#656569;">← Retour à l\'accueil</a></div>';
+      '<div style="margin-top:14px;"><a href="index.html" style="font-size:.84rem;color:var(--text-3);">← Retour à l\'accueil</a></div>';
     if (el.dataset.inkZone === '1') {
       /* Zone de contenu restée vide : on écrit dedans, sans la masquer */
       el.appendChild(box);
@@ -197,19 +197,19 @@
       const box = document.createElement('div');
       box.setAttribute('role', 'dialog');
       box.setAttribute('aria-modal', 'true');
-      box.style.cssText = 'background:#fff;border-radius:18px;padding:24px 22px;max-width:380px;width:100%;' +
+      box.style.cssText = 'background:var(--bg-2);border-radius:18px;padding:24px 22px;max-width:380px;width:100%;' +
         "font-family:'DM Sans',system-ui,sans-serif;box-shadow:0 24px 70px rgba(20,14,40,.3);text-align:center;";
 
       const h = document.createElement('div');
       h.id = 'inkConfirmTitle';
-      h.style.cssText = 'font-weight:800;font-size:1.05rem;color:#1c1c1e;margin-bottom:8px;';
+      h.style.cssText = 'font-weight:800;font-size:1.05rem;color:var(--text);margin-bottom:8px;';
       h.textContent = opts.title || 'Confirmer';
       box.setAttribute('aria-labelledby', 'inkConfirmTitle');
       box.appendChild(h);
 
       if (opts.message) {
         const m = document.createElement('div');
-        m.style.cssText = 'font-size:.87rem;line-height:1.6;color:#48484a;margin-bottom:16px;white-space:pre-line;';
+        m.style.cssText = 'font-size:.87rem;line-height:1.6;color:var(--text-2);margin-bottom:16px;white-space:pre-line;';
         m.textContent = opts.message;
         box.appendChild(m);
       }
@@ -217,13 +217,13 @@
       let input = null;
       if (opts.requireText) {
         const hint = document.createElement('label');
-        hint.style.cssText = 'display:block;font-size:.78rem;color:#656569;margin-bottom:6px;text-align:left;';
+        hint.style.cssText = 'display:block;font-size:.78rem;color:var(--text-3);margin-bottom:6px;text-align:left;';
         hint.textContent = 'Tape « ' + opts.requireText + ' » pour confirmer';
         input = document.createElement('input');
         input.type = 'text';
         input.autocapitalize = 'off';
         input.autocomplete = 'off';
-        input.style.cssText = 'width:100%;padding:11px 13px;border:1px solid rgba(0,0,0,.15);border-radius:10px;' +
+        input.style.cssText = 'width:100%;padding:11px 13px;border:1px solid var(--border);border-radius:10px;' +
           'font-size:.9rem;font-family:inherit;margin-bottom:16px;outline:none;min-height:44px;';
         hint.setAttribute('for', 'inkConfirmInput');
         input.id = 'inkConfirmInput';
@@ -240,7 +240,7 @@
           'font-family:inherit;font-size:.9rem;font-weight:700;transition:transform .15s;' +
           (primary
             ? 'border:none;color:#fff;background:' + (opts.danger === false ? '#6649f5' : '#c62b09') + ';'
-            : 'border:1px solid rgba(0,0,0,.16);background:#fff;color:#1c1c1e;');
+            : 'border:1px solid var(--border);background:var(--bg-2);color:var(--text);');
         return b;
       };
       const cancel = mk(opts.cancelLabel || 'Annuler', false);
@@ -281,7 +281,7 @@
           ok.disabled = !good;
           ok.style.opacity = good ? '1' : '.5';
           ok.style.cursor = good ? 'pointer' : 'not-allowed';
-          input.style.borderColor = 'rgba(0,0,0,.15)';
+          input.style.borderColor = 'var(--border)';
         });
         input.addEventListener('keydown', function (e) { if (e.key === 'Enter' && !ok.disabled) ok.click(); });
       }
@@ -304,13 +304,13 @@
     ov.id = 'inkSignalOverlay';
     ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:400;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(3px);';
     const box = document.createElement('div');
-    box.style.cssText = 'background:#fff;border-radius:16px;padding:22px;max-width:340px;width:100%;font-family:\'DM Sans\',sans-serif;box-shadow:0 24px 60px rgba(0,0,0,.25);';
+    box.style.cssText = 'background:var(--bg-2);border-radius:16px;padding:22px;max-width:340px;width:100%;font-family:\'DM Sans\',sans-serif;box-shadow:0 24px 60px rgba(0,0,0,.25);';
     box.innerHTML = '<div style="font-weight:800;font-size:1rem;margin-bottom:4px;">🚩 Signaler ce contenu</div>' +
-      '<div id="inkSignalMsg" style="font-size:.8rem;color:#75757a;margin-bottom:14px;">Pourquoi veux-tu le signaler ?</div>';
+      '<div id="inkSignalMsg" style="font-size:.8rem;color:var(--text-3);margin-bottom:14px;">Pourquoi veux-tu le signaler ?</div>';
     RAISONS.forEach(function (raison) {
       const b = document.createElement('button');
       b.textContent = raison;
-      b.style.cssText = 'display:block;width:100%;text-align:left;padding:11px 14px;margin-bottom:8px;border-radius:10px;border:1px solid rgba(0,0,0,.1);background:#f7f7fa;cursor:pointer;font-size:.86rem;font-weight:600;color:#1c1c1e;';
+      b.style.cssText = 'display:block;width:100%;text-align:left;padding:11px 14px;margin-bottom:8px;border-radius:10px;border:1px solid var(--border);background:var(--surface);cursor:pointer;font-size:.86rem;font-weight:600;color:var(--text);';
       b.onclick = async function () {
         const msg = document.getElementById('inkSignalMsg');
         try {
@@ -333,7 +333,7 @@
     });
     const close = document.createElement('button');
     close.textContent = 'Annuler';
-    close.style.cssText = 'display:block;width:100%;padding:10px;margin-top:4px;border-radius:10px;border:none;background:none;cursor:pointer;font-size:.84rem;font-weight:700;color:#75757a;';
+    close.style.cssText = 'display:block;width:100%;padding:10px;margin-top:4px;border-radius:10px;border:none;background:none;cursor:pointer;font-size:.84rem;font-weight:700;color:var(--text-3);';
     close.onclick = function () { ov.remove(); };
     box.appendChild(close);
     ov.appendChild(box);
@@ -404,6 +404,62 @@
     });
   }
 
+  /* ── Basculeur de thème, en haut du bas du menu latéral ──
+     Le menu est le seul endroit présent sur les quinze pages principales :
+     y placer le réglage évite d'inventer une page Paramètres pour un seul
+     bouton, et le met à portée de pouce depuis n'importe où. */
+  function initBasculeurTheme() {
+    const d = document.getElementById('univDrawer');
+    if (!d || !window.inkriseTheme || document.getElementById('inkThemeRow')) return;
+
+    const OPTIONS = [
+      { valeur: 'clair',  icone: '☀️', libelle: 'Clair' },
+      { valeur: 'sombre', icone: '🌙', libelle: 'Sombre' },
+      { valeur: 'auto',   icone: '🌗', libelle: 'Auto' },
+    ];
+
+    const titre = document.createElement('div');
+    titre.className = 'univ-d-sec';
+    titre.textContent = 'Apparence';
+
+    const rangee = document.createElement('div');
+    rangee.className = 'ink-theme-row';
+    rangee.id = 'inkThemeRow';
+    rangee.setAttribute('role', 'group');
+    rangee.setAttribute('aria-label', 'Thème du site');
+
+    const boutons = OPTIONS.map(function (o) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'ink-theme-opt';
+      b.dataset.valeur = o.valeur;
+      b.innerHTML = '<span aria-hidden="true">' + o.icone + '</span><span>' + o.libelle + '</span>';
+      b.setAttribute('aria-label', 'Thème ' + o.libelle.toLowerCase());
+      b.addEventListener('click', function () {
+        window.inkriseTheme.set(o.valeur);
+        rafraichir();
+      });
+      rangee.appendChild(b);
+      return b;
+    });
+
+    function rafraichir() {
+      const actuel = window.inkriseTheme.get();
+      boutons.forEach(function (b) {
+        b.setAttribute('aria-pressed', String(b.dataset.valeur === actuel));
+      });
+    }
+    rafraichir();
+
+    d.appendChild(titre);
+    d.appendChild(rangee);
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initBasculeurTheme);
+  } else {
+    initBasculeurTheme();
+  }
+
   /* Carte "Notre mission" en bas du menu latéral — visible en permanence,
      sur toutes les pages, connecté ou non. */
   const drawer = document.getElementById('univDrawer');
@@ -415,20 +471,20 @@
       'text-decoration:none;background:linear-gradient(135deg,rgba(124,92,252,.12),rgba(255,95,168,.10));' +
       'border:1px solid rgba(124,92,252,.28);';
     card.innerHTML =
-      '<div style="font-weight:800;font-size:.72rem;letter-spacing:.6px;color:#7c5cfc;margin-bottom:6px;">💜 NOTRE MISSION</div>' +
-      '<div style="font-size:.82rem;line-height:1.5;color:#4a4560;">Tu publies tes mangas sur Inkrise ? Dès que la communauté sera assez grande, jusqu\'à <b>70% des revenus publicitaires</b> te seront reversés <b>selon les vues de tes œuvres</b>.</div>' +
-      '<div style="margin-top:8px;font-size:.8rem;font-weight:700;color:#ff5fa8;">En savoir plus →</div>';
+      '<div style="font-weight:800;font-size:.72rem;letter-spacing:.6px;color:var(--purple2);margin-bottom:6px;">💜 NOTRE MISSION</div>' +
+      '<div style="font-size:.82rem;line-height:1.5;color:var(--text-2);">Tu publies tes mangas sur Inkrise ? Dès que la communauté sera assez grande, jusqu\'à <b>70% des revenus publicitaires</b> te seront reversés <b>selon les vues de tes œuvres</b>.</div>' +
+      '<div style="margin-top:8px;font-size:.8rem;font-weight:700;color:var(--pink);">En savoir plus →</div>';
     drawer.appendChild(card);
 
     // Liens légaux discrets sous la carte mission (présents sur toutes les pages)
     // #9a99a8 ne donnait que 2,8:1 sur fond blanc, sous le minimum lisible
     // de 4,5:1 ; #6b6a78 reste discret tout en montant à 5,3:1.
     const legal = document.createElement('div');
-    legal.style.cssText = 'padding:0 18px 40px;font-size:.72rem;line-height:1.8;color:#6b6a78;';
+    legal.style.cssText = 'padding:0 18px 40px;font-size:.72rem;line-height:1.8;color:var(--text-3);';
     legal.innerHTML =
-      '<a href="mentions-legales.html" style="color:#6b6a78;text-decoration:underline;">Mentions légales</a> · ' +
-      '<a href="cgu.html" style="color:#6b6a78;text-decoration:underline;">CGU / CGV</a> · ' +
-      '<a href="confidentialite.html" style="color:#6b6a78;text-decoration:underline;">Confidentialité</a>';
+      '<a href="mentions-legales.html" style="color:var(--text-3);text-decoration:underline;">Mentions légales</a> · ' +
+      '<a href="cgu.html" style="color:var(--text-3);text-decoration:underline;">CGU / CGV</a> · ' +
+      '<a href="confidentialite.html" style="color:var(--text-3);text-decoration:underline;">Confidentialité</a>';
     drawer.appendChild(legal);
   }
 })();

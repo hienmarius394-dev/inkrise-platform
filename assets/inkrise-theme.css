@@ -55,4 +55,236 @@
   --shadow: 0 2px 12px rgba(0,0,0,0.06);
   --shadow-lg: 0 8px 32px rgba(0,0,0,0.1);
 
+  /* ── Teintes de TEXTE coloré ──
+     Distinctes des couleurs de fond de même nom : un violet qui passe très
+     bien en pastille passe mal en petit texte, et l'écart se creuse encore
+     en thème sombre. Ces quatre-là sont donc réglées pour le texte, et
+     valent exactement ce qui était écrit en dur avant leur création — le
+     thème clair est inchangé au pixel près. */
+  --purple-link:  #6649f5;
+  --danger-link:  #da380f;
+  --success-link: #007a66;
+  --orange-link:  #b33f14;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   THÈME SOMBRE
+   ═══════════════════════════════════════════════════════════════════
+
+   Pourquoi `:root[data-theme="dark"]` et pas `:root` dans un second
+   fichier : cette feuille est chargée AVANT le <style> de chaque page, et
+   seize pages redéclarent leur propre `:root`. En simple `:root` (0,1,0)
+   nous perdrions systématiquement l'arbitrage. `:root[data-theme]` pèse
+   (0,2,0) et l'emporte donc sur toutes ces redéclarations, sans avoir à
+   toucher aux seize palettes locales ni à sortir le `!important`.
+
+   L'attribut est posé par assets/inkrise-theme.js, en <head>, avant le
+   premier affichage.
+
+   Les valeurs de texte gardent au moins 4,5:1 sur les fonds sombres —
+   vérifiable avec `node tests/outil-contraste.js`. */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  /* Fonds — violet très désaturé plutôt que gris neutre : on reste dans
+     l'univers de la marque, et le noir pur fatigue à la lecture longue. */
+  --bg: #121016;
+  --bg-2: #1a1720;
+  --bg-3: #241f2e;
+  --ink: #121016;
+  --ink-2: #1a1720;
+
+  /* Surfaces */
+  --surface: #1e1a26;
+  --surface-2: #272231;
+  --surface2: #272231;
+  --surface3: #332c40;
+  --glass: rgba(255,255,255,0.05);
+  --glass-strong: rgba(255,255,255,0.09);
+  --glass-border: rgba(255,255,255,0.10);
+
+  /* Marque — remontée en clarté : le violet clair du thème clair
+     descend à 3:1 sur fond sombre et devient illisible en petit texte. */
+  --purple: #9b83ff;
+  --purple2: #b9a6ff;
+  --purple-dark: #7c5cfc;
+  --pink: #ff7ab8;
+  --accent: #9b83ff;
+  --accent2: #b9a6ff;
+
+  /* États */
+  --green: #4ade9a;
+  --amber: #f7b955;
+  --orange: #ff8b5e;
+  --orange-light: #ffa079;
+  --teal: #2fd0bd;
+  --danger: #ff6b8f;
+
+  /* Texte */
+  --text: #f2f0f7;
+  --text-1: #f2f0f7;
+  --text-2: #c3bed0;
+  --text-3: #a29cb2;
+  --muted: #a29cb2;
+  --text-muted: #a29cb2;
+
+  /* Traits */
+  --border: rgba(255,255,255,0.11);
+  --border2: rgba(155,131,255,0.24);
+
+  /* Texte coloré — nettement remonté : les teintes du thème clair sont
+     conçues pour du texte sombre sur fond blanc et tombent à 2,5-3:1 une
+     fois posées sur un fond sombre. */
+  --purple-link:  #b9a6ff;
+  --danger-link:  #ff9b7d;
+  --success-link: #4ade9a;
+  --orange-link:  #ffa079;
+
+  /* Variables propres à certaines pages (auth, profil…) : sans ces
+     reprises, leurs valeurs claires resteraient posées sur fond sombre. */
+  --purple-light: #b9a6ff;
+  --purple-dim:   rgba(155,131,255,0.22);
+  --border-2:     rgba(255,255,255,0.11);
+  --error:   #ff8095;
+  --success: #4ade9a;
+
+  /* Ombres — plus profondes, sinon rien ne se détache d'un fond sombre */
+  --shadow: 0 2px 12px rgba(0,0,0,0.45);
+  --shadow-lg: 0 12px 40px rgba(0,0,0,0.6);
+  --glow-purple: 0 10px 30px -8px rgba(155,131,255,0.4);
+  --glow-pink: 0 10px 30px -8px rgba(255,122,184,0.35);
+}
+
+/* ── Habillage partagé ──────────────────────────────────────────────
+   La nav, le menu latéral et la barre du bas sont recopiés dans chaque
+   page avec des blancs écrits en dur (`#fff`, `rgba(255,255,255,.97)`),
+   que les variables ci-dessus ne peuvent donc pas atteindre. On les
+   reprend ici une fois pour toutes : `:root[data-theme] .classe` pèse
+   (0,2,1) et l'emporte sur le `.classe` (0,0,1) de chaque page. */
+:root[data-theme="dark"] body { background-color: var(--bg); color: var(--text); }
+
+:root[data-theme="dark"] .univ-nav {
+  background: rgba(18,16,22,0.88);
+  border-bottom-color: var(--border);
+}
+:root[data-theme="dark"] .univ-nav-search,
+:root[data-theme="dark"] .univ-nav-hbg,
+:root[data-theme="dark"] .nav-notif-link {
+  background: rgba(255,255,255,0.06);
+  border-color: var(--border);
+}
+:root[data-theme="dark"] .univ-nav-si { color: var(--text); }
+:root[data-theme="dark"] .univ-nav-si::placeholder { color: var(--text-3); }
+:root[data-theme="dark"] .univ-nav-sb,
+:root[data-theme="dark"] .univ-nav-hbg { color: var(--text-2); }
+:root[data-theme="dark"] .univ-nav-lk { color: var(--text-2); }
+:root[data-theme="dark"] .univ-nav-lk:hover { color: var(--text); background: rgba(255,255,255,0.07); }
+:root[data-theme="dark"] .univ-nav-lk.active { color: var(--purple2); background: rgba(155,131,255,0.16); }
+:root[data-theme="dark"] .nav-connexion-btn { color: var(--text); border-color: var(--border); background: rgba(255,255,255,0.06); }
+:root[data-theme="dark"] .nav-notif-dot { border-color: var(--bg); }
+
+:root[data-theme="dark"] .univ-drawer {
+  background: var(--bg-2);
+  border-left-color: var(--border);
+}
+:root[data-theme="dark"] .univ-d-hdr,
+:root[data-theme="dark"] .univ-d-divider { border-bottom-color: var(--border); background-color: transparent; }
+:root[data-theme="dark"] .univ-d-divider { background: var(--border); }
+:root[data-theme="dark"] .univ-d-item { color: var(--text); }
+:root[data-theme="dark"] .univ-d-item:hover { background: rgba(255,255,255,0.07); }
+:root[data-theme="dark"] .univ-d-icon,
+:root[data-theme="dark"] .univ-d-close { background: rgba(255,255,255,0.08); color: var(--text-2); }
+:root[data-theme="dark"] .univ-d-sec { color: var(--text-3); }
+:root[data-theme="dark"] .univ-overlay { background: rgba(0,0,0,0.6); }
+
+:root[data-theme="dark"] .univ-bnav {
+  background: rgba(26,23,32,0.96);
+  border-top-color: var(--border);
+  border-color: var(--border);
+}
+:root[data-theme="dark"] .univ-bnav-item { color: var(--text-3); }
+:root[data-theme="dark"] .univ-bnav-item:hover,
+:root[data-theme="dark"] .univ-bnav-item.active { color: var(--purple2); }
+
+/* ── Cartes de contenu ──────────────────────────────────────────────
+   Une quinzaine de classes peignent leur fond en blanc translucide écrit
+   en dur (`rgba(255,255,255,.6)`) plutôt qu'avec `var(--surface)` : sur
+   fond sombre elles restaient des rectangles blancs. On les reprend ici
+   au lieu de retoucher seize fichiers — même mécanique de spécificité que
+   pour la nav. Le blanc à 5 % conserve l'effet de verre du thème clair :
+   la carte se détache du fond sans devenir un aplat. */
+:root[data-theme="dark"] .manga-card,
+:root[data-theme="dark"] .manga-feed-card,
+:root[data-theme="dark"] .pack-card,
+:root[data-theme="dark"] .lib-card,
+:root[data-theme="dark"] .section-card,
+:root[data-theme="dark"] .creator-card,
+:root[data-theme="dark"] .creator-header,
+:root[data-theme="dark"] .post-card,
+:root[data-theme="dark"] .create-post,
+:root[data-theme="dark"] .pack-infos,
+:root[data-theme="dark"] .chap-row,
+:root[data-theme="dark"] .manga-header,
+:root[data-theme="dark"] .steps-bar,
+:root[data-theme="dark"] .legal-note,
+:root[data-theme="dark"] .step,
+:root[data-theme="dark"] .stat-card,
+:root[data-theme="dark"] .quick-action,
+:root[data-theme="dark"] .role-card,
+:root[data-theme="dark"] .card {
+  background: rgba(255,255,255,0.05);
+  border-color: var(--border);
+}
+/* Fond des couvertures manquantes : un pastel clair reste un rectangle
+   lumineux au milieu d'une grille sombre. */
+:root[data-theme="dark"] .manga-feed-cover-wrap {
+  background: linear-gradient(135deg, #2a2338, #3a2434);
+}
+:root[data-theme="dark"] .legal-todo { color: var(--amber); border-color: rgba(247,185,85,0.4); }
+:root[data-theme="dark"] .legal-nav {
+  background: rgba(18,16,22,0.9);
+  border-bottom-color: var(--border);
+}
+
+/* Un aplat violet portant du texte blanc doit rester foncé : le
+   `--purple` du thème sombre est éclairci pour le TEXTE, pas pour servir
+   de fond à du blanc (il n'y donnait que 2,96:1). */
+:root[data-theme="dark"] .search-bar-large button { background-color: #6d4fe0; color: #fff; }
+
+/* Champs de saisie : sans ça on garde du texte sombre sur fond sombre. */
+:root[data-theme="dark"] input:not([type=checkbox]):not([type=radio]):not([type=range]),
+:root[data-theme="dark"] textarea,
+:root[data-theme="dark"] select {
+  background-color: var(--surface);
+  color: var(--text);
+  border-color: var(--border);
+}
+:root[data-theme="dark"] input::placeholder,
+:root[data-theme="dark"] textarea::placeholder { color: var(--text-3); }
+
+/* ── Basculeur du menu latéral (injecté par inkrise-nav.js) ── */
+.ink-theme-row { display: flex; gap: 6px; margin: 10px 14px 4px; }
+.ink-theme-opt {
+  flex: 1; min-height: 40px; padding: 8px 4px; border-radius: 10px; cursor: pointer;
+  border: 1px solid var(--border); background: var(--surface);
+  color: var(--text-2); font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: .72rem; font-weight: 700; line-height: 1.3;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+}
+.ink-theme-opt:hover { border-color: var(--purple); color: var(--text); }
+/* --purple (#7c5cfc) ne donne que 4,38:1 sous du texte blanc : on prend
+   la teinte de lien, plus foncée (5,5:1). En sombre elle s'éclaircit, on
+   y pose donc du texte foncé. */
+.ink-theme-opt[aria-pressed="true"] {
+  background: var(--purple-link); border-color: var(--purple-link); color: #fff;
+}
+:root[data-theme="dark"] .ink-theme-opt[aria-pressed="true"] { color: #17131f; }
+
+/* ── Focus clavier visible (§1.8 de l'audit) ──
+   Les boutons du site posent `border: none`, ce qui efface aussi le
+   contour de focus par défaut de certains navigateurs. */
+:focus-visible {
+  outline: 3px solid var(--purple);
+  outline-offset: 2px;
+  border-radius: 4px;
 }

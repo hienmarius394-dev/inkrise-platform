@@ -11,10 +11,11 @@
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;600;700&display=swap" rel="stylesheet">
 <script src="assets/supabase.js"></script>
 <link rel="stylesheet" href="assets/inkrise-theme.css" />
+<script src="assets/inkrise-theme.js"></script>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   :root { --border: rgba(0,0,0,.09); }
-  body { font-family: 'DM Sans', sans-serif; background: #faf9fd; color: #1c1c1e; padding: 24px 16px 90px; }
+  body { font-family: 'DM Sans', sans-serif; background: #faf9fd; color: var(--text); padding: 24px 16px 90px; }
   .wrap { max-width: 760px; margin: 0 auto; }
   h1 { font-family: 'Syne', sans-serif; font-size: 1.4rem; margin-bottom: 4px; }
   .sub { font-size: .85rem; color: var(--muted); margin-bottom: 22px; }
@@ -25,11 +26,11 @@
   .sig-body { flex: 1; min-width: 0; }
   .sig-raison { font-weight: 800; font-size: .92rem; }
   .sig-meta { font-size: .78rem; color: var(--muted); margin-top: 3px; line-height: 1.5; }
-  .sig-meta a { color: #6649f5; font-weight: 700; }
-  .btn-traite { border: none; background: rgba(124,92,252,.1); color: #6649f5; font-weight: 800; font-size: .78rem; padding: 8px 14px; border-radius: 9px; cursor: pointer; white-space: nowrap; font-family: 'DM Sans', sans-serif; }
+  .sig-meta a { color: var(--purple-link); font-weight: 700; }
+  .btn-traite { border: none; background: rgba(124,92,252,.1); color: var(--purple-link); font-weight: 800; font-size: .78rem; padding: 8px 14px; border-radius: 9px; cursor: pointer; white-space: nowrap; font-family: 'DM Sans', sans-serif; }
   .badge { display: inline-block; font-size: .68rem; font-weight: 800; padding: 2px 8px; border-radius: 99px; background: rgba(255,95,168,.14); color: #d63384; margin-left: 6px; vertical-align: 1px; }
   .empty { text-align: center; padding: 50px 20px; color: var(--muted); }
-  .back { display: inline-block; margin-bottom: 18px; color: #6649f5; font-weight: 700; text-decoration: none; font-size: .85rem; }
+  .back { display: inline-block; margin-bottom: 18px; color: var(--purple-link); font-weight: 700; text-decoration: none; font-size: .85rem; }
 </style>
 </head>
 <body>
@@ -58,7 +59,7 @@ function lienContenu(s) {
 async function init() {
   const box = document.getElementById('content');
   const { data: { session } } = await sb.auth.getSession();
-  if (!session) { box.innerHTML = '<div class="gate">Connecte-toi pour accéder à la modération.<br><br><a href="auth.html" style="color:#6649f5;font-weight:700;">Connexion →</a></div>'; return; }
+  if (!session) { box.innerHTML = '<div class="gate">Connecte-toi pour accéder à la modération.<br><br><a href="auth.html" style="color:var(--purple-link);font-weight:700;">Connexion →</a></div>'; return; }
 
   const { data: me } = await sb.from('profiles').select('is_admin').eq('id', session.user.id).single();
   if (!me?.is_admin) { box.innerHTML = '<div class="gate">⛔ Accès réservé à la modération.</div>'; return; }

@@ -63,6 +63,11 @@ const BASE = 'http://localhost:' + (Number(process.env.PORT) || 8108);
   await new Promise(r => server.listen(Number(process.env.PORT) || 8108, r));
   const browser = await chromium.launch(CHROME ? { executablePath: CHROME } : {});
   const ctx = await browser.newContext({ viewport:{width:1280,height:1000} });
+  /* INKRISE_THEME=sombre relève les contrastes du thème sombre. */
+  if (process.env.INKRISE_THEME) {
+    await ctx.addInitScript(t => { try { localStorage.setItem('inkrise_theme', t); } catch (e) {} },
+                            process.env.INKRISE_THEME);
+  }
   await ctx.route('https://fonts.googleapis.com/**', r => r.fulfill({status:200,contentType:'text/css',body:''}));
   await ctx.route('**/auth/v1/**', r => r.fulfill({status:401, body:'{}'}));
   await ctx.route('**/rest/v1/**', r => r.fulfill({status:200,contentType:'application/json',body:'[]'}));

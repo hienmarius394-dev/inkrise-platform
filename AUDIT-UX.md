@@ -193,17 +193,25 @@ renommé `marius3` sans l'avoir voulu.
 
 Classé par impact décroissant sur la croissance et la rétention.
 
-### 2.1 🔴 Pas de mode sombre — sur un site de lecture **[vérifié : 0 occurrence de `prefers-color-scheme` dans tout le dépôt]**
+### 2.1 ✅ ~~Pas de mode sombre~~ — **livré**
 
 C'est le manque n°1. Le public lit des mangas, sur mobile, souvent le soir.
 Le lecteur (`lecteur.html`) est déjà sombre — donc **chaque sortie du lecteur
 projette un mur blanc dans les yeux**. Le site était sombre à l'origine et a
 migré en clair ; le retour n'a jamais été rendu optionnel.
 
-**À ajouter** : `[data-theme]` sur `<html>`, une deuxième palette dans
-`inkrise-theme.css` (le fichier est déjà la source unique — le travail est
-donc surtout mécanique), un basculeur dans le menu latéral, respect de
-`prefers-color-scheme` par défaut, mémorisation en `localStorage`.
+**Livré** : `assets/inkrise-theme.js` pose `data-theme` sur `<html>` depuis
+le `<head>`, avant le premier affichage ; la palette sombre vit dans
+`inkrise-theme.css` en `:root[data-theme="dark"]`, dont la spécificité (0,2,0)
+l'emporte sur les seize `:root` locaux sans toucher à aucun ; un basculeur
+Clair / Sombre / Auto est injecté dans le menu latéral par `inkrise-nav.js`,
+donc présent sur toutes les pages qui en ont un. Par défaut on suit le
+réglage de l'appareil, et on le suit encore s'il change en cours de route.
+126 littéraux de couleur écrits en dur ont été remplacés par quatre nouvelles
+variables de texte (`--purple-link`, `--danger-link`, `--success-link`,
+`--orange-link`) — le thème clair est inchangé, valeur pour valeur.
+Vérifié par `tests/theme.test.js` (14 contrôles) : **0 zone claire** sur 19
+pages et **0 défaut de contraste** sur 21 pages en sombre.
 
 ### 2.2 🔴 « Communauté » est un onglet sans issue **[vérifié]**
 

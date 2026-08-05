@@ -18,6 +18,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <script src="assets/supabase.js"></script>
   <link rel="stylesheet" href="assets/inkrise-theme.css" />
+  <script src="assets/inkrise-theme.js"></script>
 <style>
     :root {
       --teal:     #00c9a7;
@@ -47,11 +48,11 @@
     .univ-nav-links-d { display: flex; align-items: center; gap: 2px; flex: 1; margin: 0 8px; }
     @media (max-width: 680px) { .univ-nav-links-d { display: none; } }
     .univ-nav-lk { color: rgba(0,0,0,0.6); font-size: .82rem; font-weight: 600; text-decoration: none; padding: 5px 10px; border-radius: 7px; transition: all .2s; white-space: nowrap; font-family: 'DM Sans', sans-serif; }
-    .univ-nav-lk:hover { color: #1c1c1e; background: rgba(0,0,0,0.05); }
-    .univ-nav-lk.active { color: #6649f5; background: rgba(124,111,239,0.1); }
+    .univ-nav-lk:hover { color: var(--text); background: rgba(0,0,0,0.05); }
+    .univ-nav-lk.active { color: var(--purple-link); background: rgba(124,111,239,0.1); }
     .univ-nav-search { display: flex; align-items: center; background: rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.08); border-radius: 18px; overflow: hidden; max-width: 200px; flex-shrink: 0; }
     @media (max-width: 480px) { .univ-nav-search { max-width: 110px; } }
-    .univ-nav-si { background: none; border: none; outline: none; color: #1c1c1e; font-size: .8rem; padding: 7px 10px; width: 100%; font-family: 'DM Sans', sans-serif; }
+    .univ-nav-si { background: none; border: none; outline: none; color: var(--text); font-size: .8rem; padding: 7px 10px; width: 100%; font-family: 'DM Sans', sans-serif; }
     .univ-nav-si::placeholder { color: rgba(0,0,0,.35); }
     .univ-nav-sb { background: none; border: none; cursor: pointer; padding: 6px 8px; font-size: 13px; color: rgba(0,0,0,.5); flex-shrink: 0; }
     .univ-nav-sb:hover { color: var(--purple); }
@@ -577,8 +578,8 @@
     .univ-d-item:hover { background: rgba(0,0,0,.05); }
     .univ-d-icon { width: 34px; height: 34px; border-radius: 9px; background: rgba(0,0,0,.05); display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
     .univ-d-badge { font-size: .65rem; font-weight: 800; padding: 2px 7px; border-radius: 6px; margin-left: auto; }
-    .univ-d-badge.orange { background: rgba(255,107,53,.15); color: #b33f14; }
-    .univ-d-badge.teal { background: rgba(0,201,167,.15); color: #007a66; }
+    .univ-d-badge.orange { background: rgba(255,107,53,.15); color: var(--orange-link); }
+    .univ-d-badge.teal { background: rgba(0,201,167,.15); color: var(--success-link); }
     .univ-d-divider { height: 1px; background: var(--border); margin: 8px 16px; }
     /* ── BOTTOM NAV UNIVERSEL ── */
 .univ-bnav{position:fixed;bottom:0;left:0;right:0;z-index:100;background:rgba(255,255,255,.97);border-top:1px solid var(--border);box-shadow:0 -2px 12px rgba(0,0,0,.05);display:flex;align-items:center;justify-content:space-around;padding:8px 0 16px;backdrop-filter:blur(14px);}
@@ -637,7 +638,7 @@
   <a href="bibliotheque.html" class="univ-d-item"><div class="univ-d-icon">📚</div>Ma bibliothèque</a>
   <a href="upload-manga.html" class="univ-d-item" id="drawerPublier" style="display:none;"><div class="univ-d-icon">📤</div>Publier un manga</a>
   <a href="auth.html" class="univ-d-item" id="drawerConnexion"><div class="univ-d-icon">🔑</div>Connexion / Inscription</a>
-  <button class="univ-d-item" id="drawerLogout" style="display:none;" onclick="doLogout()"><div class="univ-d-icon">🚪</div><span style="color:#da380f;">Déconnexion</span></button>
+  <button class="univ-d-item" id="drawerLogout" style="display:none;" onclick="doLogout()"><div class="univ-d-icon">🚪</div><span style="color:var(--danger-link);">Déconnexion</span></button>
 </div>
 
 <!-- GATE CRÉATEUR GRATUIT (affiché si l'utilisateur n'est pas encore créateur) -->
