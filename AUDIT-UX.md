@@ -7,8 +7,14 @@
 >
 > **✅ Sprint 1 livré** — les 5 correctifs de la partie 1 (§1.1, §1.3, §1.4,
 > §1.5, §1.6, §1.7) sont appliqués et vérifiés. Voir la note en fin de §1.
-> ⚠️ **`sql_a_executer.sql` est à ré-exécuter dans Supabase** pour que le
-> correctif d'inscription (§1.3) prenne effet.
+> **✅ Sprint 2 livré** — mode sombre (§2.1), partage + aperçus de lien
+> (§2.3), fil et découverte communautaires (§2.2).
+>
+> ⚠️ **Deux actions manuelles restent à faire :**
+> 1. Coller `sql_a_executer.sql` dans Supabase → SQL Editor → Run
+>    (correctif d'inscription, §1.3). Le fichier est idempotent.
+> 2. Rien à faire pour `api/og.js` : Vercel déploie tout seul le dossier
+>    `api/`. Vérifie l'aperçu en collant un lien manga dans WhatsApp.
 
 ---
 
@@ -16,7 +22,7 @@
 
 | Contrôle | Résultat |
 |---|---|
-| Suites de tests (`npm test`) | **173/173** ✅ |
+| Suites de tests (`npm test`) | **240/240** ✅ (173 à l'audit, + 67 ajoutées depuis) |
 | Chasse aux défauts (21 pages, connecté + déconnecté) | 0 page plantée, 0 page vide, 0 texte cassé (`undefined`/`NaN`), 0 débordement horizontal, 0 champ sans étiquette, 0 image sans `alt` |
 | Contraste (`outil-contraste.js`) | 2 couples à 4,38:1 sur 4,5:1 — uniquement des emojis d'icônes, négligeable |
 | Erreurs JS | aucune (hors WebSocket realtime, normal en environnement simulé) |
@@ -502,10 +508,10 @@ supprimer.
 > Supabase → SQL Editor → Run. Le fichier est idempotent. Sans cela, le
 > correctif d'inscription n'est pas actif en production.
 
-### Sprint 2 — les trois gros manques (≈ 3-4 jours)
-6. §2.1 — mode sombre
-7. §2.3 — bouton Partager + Open Graph dynamiques
-8. §2.2 — un vrai fil communautaire
+### ✅ Sprint 2 — les trois gros manques — **livré**
+6. ✅ §2.1 — mode sombre (clair / sombre / auto, sans flash)
+7. ✅ §2.3 — bouton Partager + Open Graph rendus côté serveur
+8. ✅ §2.2 — fil des créateurs suivis + onglet Découvrir
 
 ### Sprint 3 — retenir les gens (≈ 1 semaine)
 9. §2.4 — notes + commentaires sur les mangas, « à découvrir aussi »

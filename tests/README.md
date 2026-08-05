@@ -31,11 +31,16 @@ INKRISE_CHROME=/chemin/vers/chrome npm test
 | `communaute` | Temps réel : arrivée de contenu distant sans effacer la saisie en cours, lecture qui ne saute pas, écho différé et non perdu, repli périodique |
 | `confirmation` | Boîte de confirmation partagée : action destructrice, saisie exigée pour supprimer un compte, Échap, focus rendu |
 | `connexion` | Retour à la page voulue après connexion, et refus des destinations extérieures |
+| `theme` | Thème clair/sombre/auto : réglage système suivi, choix mémorisé, script de thème synchrone en `<head>` (invariant anti-flash), et aucune zone restée claire sur 20 pages en sombre |
+| `partage` | Feuille de partage native et ses replis ; `api/og.js` réellement exécuté — vrais titres, échappement, brouillon non divulgué, renvoi en cas de panne |
+| `communaute-fil` | Fil des créateurs suivis et onglet Découvrir sans `?id=` : filtrage, classement par activité, quatre états vides, non-régression du mur d'un créateur |
 
 ## Deux outils de diagnostic (hors suites)
 
 ```bash
 node tests/outil-contraste.js   # relève tout texte sous le seuil de lisibilité
+INKRISE_THEME=sombre \
+  node tests/outil-contraste.js   # le même relevé, en thème sombre
 node tests/outil-chasse.js      # parcourt les 21 pages : erreurs JS, textes
                                 # cassés, débordements, cibles tactiles trop
                                 # petites, champs sans étiquette
