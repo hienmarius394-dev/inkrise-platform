@@ -73,9 +73,10 @@ Dans **Supabase Dashboard → Edge Functions → Secrets** (ou Settings → Secr
 
 ## ✅ Tester
 
-1. Mets à jour le **prix de tes packs existants** : ils étaient en euros (ex: 2),
-   maintenant le site est en **FCFA** — édite chaque pack et mets un vrai prix
-   (ex: 500, 1000, 2000 FCFA…).
+1. ⚠️ **Laisse les prix de tes packs en euros.** Tout le site affiche des euros
+   (CGU comprises) et `cinetpay-init` convertit lui-même en FCFA au moment du
+   paiement (1 € = 655,957 XOF). Si tu ressaisissais tes prix en FCFA, un pack
+   à « 1000 » serait facturé 1000 × 655,957 ≈ **655 957 FCFA** à ton acheteur.
 2. Avec un **autre compte** que le créateur, ouvre un pack payant → **Acheter** →
    tu dois arriver sur la page CinetPay.
 3. Paie (petit montant réel, ou utilise l'environnement de test CinetPay si activé

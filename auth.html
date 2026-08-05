@@ -320,6 +320,9 @@ body::after {
 .univ-d-divider{height:1px;background:var(--border);margin:8px 16px;}
 /* Bottom nav */
 .univ-bnav{position:fixed;bottom:0;left:0;right:0;z-index:100;background:rgba(255,255,255,.97);border-top:1px solid var(--border);box-shadow:0 -2px 12px rgba(0,0,0,.05);display:flex;align-items:center;justify-content:space-around;padding:8px 0 16px;backdrop-filter:blur(14px);}
+/* Au-delà du mobile, la nav du haut suffit : la barre du bas recouvrirait
+   le bas du contenu sur toute la largeur de l'écran. */
+@media (min-width: 681px) { .univ-bnav { display: none; } }
 .univ-bnav-item{display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none;color:var(--text-3);padding:0 8px;transition:color .2s;border:none;background:none;cursor:pointer;}
 .univ-bnav-item:hover{color:var(--text);}
 .univ-bnav-item.active{color:var(--purple);}
@@ -490,8 +493,11 @@ body::after {
         </div>
       </div>
       <div class="field">
-        <label>Nom d'utilisateur</label>
-        <input type="text" id="signupUsername" placeholder="ton_pseudo" />
+        <label for="signupUsername">Nom d'utilisateur</label>
+        <input type="text" id="signupUsername" placeholder="ton_pseudo" autocomplete="username"
+               oninput="checkUsername()" aria-describedby="usernameHint" />
+        <div id="usernameHint" role="status" aria-live="polite"
+             style="display:none;font-size:12px;margin-top:6px;"></div>
       </div>
       <div class="field">
         <label>Email</label>
@@ -707,6 +713,52 @@ function checkEmailTypo() {
 }
 
 // =============================================
+// DISPONIBILITÉ DU PSEUDO
+// =============================================
+// `profiles.username` est UNIQUE. Sans cette vérification, la personne
+// découvrait la collision au moment de valider — et le message affiché
+// parlait alors de l'email, ce qui l'envoyait chercher au mauvais endroit.
+// On répond donc pendant la saisie, avant le clic.
+let usernameLibre = null   // null = pas encore vérifié
+let usernameVerif = 0
+
+function montrerHintPseudo(texte, couleur) {
+  const hint = document.getElementById('usernameHint')
+  hint.textContent = texte
+  hint.style.color = couleur
+  hint.style.display = texte ? 'block' : 'none'
+}
+
+async function checkUsername() {
+  const nom = document.getElementById('signupUsername').value.trim()
+  const verif = ++usernameVerif
+  usernameLibre = null
+
+  if (!nom) { montrerHintPseudo('', ''); return }
+  if (nom.length < 3) { montrerHintPseudo('3 caractères minimum.', '#5e5c7a'); return }
+
+  // On laisse passer la frappe avant d'interroger la base
+  await new Promise(r => setTimeout(r, 400))
+  if (verif !== usernameVerif) return
+
+  const { data, error } = await supabaseClient
+    .from('profiles').select('id').ilike('username', nom).maybeSingle()
+  if (verif !== usernameVerif) return
+
+  // En cas d'erreur réseau on ne bloque pas : le trigger SQL suffixe le
+  // pseudo plutôt que de faire échouer l'inscription.
+  if (error) { usernameLibre = null; montrerHintPseudo('', ''); return }
+
+  usernameLibre = !data
+  montrerHintPseudo(
+    data ? '✕ « ' + nom +' » est déjà pris — choisis-en un autre.'
+         : '✓ « ' + nom + ' » est disponible.',
+    data ? '#c62b09' : '#0a7f5f'
+  )
+}
+window.checkUsername = checkUsername
+
+// =============================================
 // INSCRIPTION
 // =============================================
 // Rôle choisi à l'inscription (lecteur par défaut)
@@ -736,6 +788,14 @@ async function handleSignup() {
     showMsg('signupMsg', '⚠️ Le mot de passe doit faire au moins 6 caractères.', 'error')
     return
   }
+  // Pseudo pris : on le dit ici plutôt que de laisser la base trancher.
+  // (usernameLibre === null = vérification impossible → on laisse passer,
+  //  le trigger SQL suffixera au besoin.)
+  if (usernameLibre === false) {
+    showMsg('signupMsg', '« ' + username + ' » est déjà pris. Choisis un autre pseudo.', 'error')
+    document.getElementById('signupUsername').focus()
+    return
+  }
 
   setLoading('signupBtn', 'signupSpinner', 'signupBtnText', true, 'Création...')
 
@@ -746,8 +806,20 @@ async function handleSignup() {
   })
 
   if (error) {
-    let msg = 'Une erreur est survenue.'
-    if (error.message.includes('already')) msg = 'Cet email est déjà utilisé.'
+    // Ne jamais accuser l'email par défaut : une erreur du trigger SQL
+    // contient elle aussi « already », et on envoyait alors la personne
+    // changer d'adresse pour un problème qui n'avait rien à voir.
+    const brut = String(error.message || '')
+    let msg = 'Inscription impossible pour le moment. Réessaie dans un instant.'
+    if (/already registered|already been registered|User already/i.test(brut)) {
+      msg = 'Cet email est déjà utilisé. Connecte-toi, ou utilise « Mot de passe oublié ».'
+    } else if (/username|profiles_username/i.test(brut)) {
+      msg = 'Ce pseudo est déjà pris. Choisis-en un autre.'
+    } else if (/password/i.test(brut)) {
+      msg = 'Mot de passe refusé : essaie-en un plus long.'
+    } else if (/rate|too many/i.test(brut)) {
+      msg = 'Trop de tentatives. Patiente une minute avant de réessayer.'
+    }
     showMsg('signupMsg', msg, 'error')
     setLoading('signupBtn', 'signupSpinner', 'signupBtnText', false, 'Créer mon compte')
     return

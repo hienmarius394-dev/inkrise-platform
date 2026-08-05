@@ -30,13 +30,53 @@ ALTER TABLE profiles ADD COLUMN IF NOT EXISTS social_links JSONB NOT NULL DEFAUL
 
 -- Auto-création du profil à l'inscription (fiabilise auth.html,
 -- notamment quand la confirmation email est activée)
+--
+-- ⚠️ Ce trigger s'exécute DANS la transaction qui crée auth.users. La
+-- moindre exception qu'il laisse remonter annule la création du compte
+-- tout entière, et Supabase ne renvoie qu'un « Database error saving new
+-- user » — impossible à comprendre pour la personne qui s'inscrit.
+--
+-- Or `username` est UNIQUE, et l'ancien `ON CONFLICT (id) DO NOTHING` ne
+-- couvrait QUE la clé primaire : un pseudo déjà pris levait donc une
+-- violation d'unicité et cassait l'inscription en silence. On suffixe
+-- désormais le pseudo jusqu'à en trouver un libre — le compte est toujours
+-- créé, et le pseudo reste modifiable depuis le profil.
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+DECLARE
+  souhaite TEXT;
+  candidat TEXT;
 BEGIN
+  souhaite := NULLIF(btrim(COALESCE(
+    NEW.raw_user_meta_data->>'username',
+    split_part(NEW.email, '@', 1)
+  )), '');
+  souhaite := COALESCE(souhaite, 'membre');
+  candidat := souhaite;
+
+  -- On tente d'insérer ; à chaque collision de pseudo on réessaie avec un
+  -- suffixe. Passer par l'exception plutôt que par un SELECT préalable
+  -- ferme aussi la course entre deux inscriptions simultanées.
+  FOR i IN 1..50 LOOP
+    BEGIN
+      INSERT INTO public.profiles (id, username, is_creator)
+      VALUES (
+        NEW.id,
+        candidat,
+        COALESCE((NEW.raw_user_meta_data->>'is_creator')::boolean, false)
+      )
+      ON CONFLICT (id) DO NOTHING;
+      RETURN NEW;
+    EXCEPTION WHEN unique_violation THEN
+      candidat := souhaite || i::text;
+    END;
+  END LOOP;
+
+  -- Dernier recours : un suffixe tiré de l'identifiant, unique par nature.
   INSERT INTO public.profiles (id, username, is_creator)
   VALUES (
     NEW.id,
-    COALESCE(NEW.raw_user_meta_data->>'username', split_part(NEW.email, '@', 1)),
+    souhaite || '_' || substr(replace(NEW.id::text, '-', ''), 1, 8),
     COALESCE((NEW.raw_user_meta_data->>'is_creator')::boolean, false)
   )
   ON CONFLICT (id) DO NOTHING;

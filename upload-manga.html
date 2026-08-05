@@ -582,6 +582,9 @@
     .univ-d-divider { height: 1px; background: var(--border); margin: 8px 16px; }
     /* ── BOTTOM NAV UNIVERSEL ── */
 .univ-bnav{position:fixed;bottom:0;left:0;right:0;z-index:100;background:rgba(255,255,255,.97);border-top:1px solid var(--border);box-shadow:0 -2px 12px rgba(0,0,0,.05);display:flex;align-items:center;justify-content:space-around;padding:8px 0 16px;backdrop-filter:blur(14px);}
+/* Au-delà du mobile, la nav du haut suffit : la barre du bas recouvrirait
+   le bas du contenu sur toute la largeur de l'écran. */
+@media (min-width: 681px) { .univ-bnav { display: none; } }
 .univ-bnav-item{display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none;color:var(--text-3);padding:0 8px;transition:color .2s;border:none;background:none;cursor:pointer;}
 .univ-bnav-item:hover{color:var(--text);}
 .univ-bnav-item.active{color:var(--purple);}

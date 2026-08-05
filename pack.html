@@ -70,6 +70,9 @@
 
     /* ── BOTTOM NAV ── */
     .univ-bnav { position: fixed; bottom: 0; left: 0; right: 0; z-index: 100; background: rgba(255,255,255,.97); border-top: 1px solid var(--border); box-shadow: 0 -2px 12px rgba(0,0,0,.05); display: flex; align-items: center; justify-content: space-around; padding: 8px 0 16px; backdrop-filter: blur(14px); }
+    /* Au-delà du mobile, la nav du haut suffit : la barre du bas recouvrirait
+       le bas du contenu sur toute la largeur de l'écran. */
+    @media (min-width: 681px) { .univ-bnav { display: none; } body { padding-bottom: 24px; } }
     .univ-bnav-item { display: flex; flex-direction: column; align-items: center; gap: 2px; text-decoration: none; color: var(--text-3); padding: 0 8px; transition: color .2s; border: none; background: none; cursor: pointer; }
     .univ-bnav-item:hover { color: var(--text); }
     .univ-bnav-item.active { color: var(--purple); }
@@ -451,7 +454,7 @@
           <div class="buy-price-sub">Accès à vie · Téléchargement inclus</div>
           <div class="buy-stock" id="buyStockMobile" style="display:none;"></div>
           <button class="btn-buy" id="buyBtnMobile" onclick="handleBuy()">Acheter</button>
-          <div class="buy-guarantee">🔒 Paiement sécurisé</div>
+          <div class="buy-guarantee" id="buyGuaranteeMobile">🔒 Paiement sécurisé</div>
         </div>
 
         <!-- Description -->
@@ -485,7 +488,7 @@
           <div class="buy-price-sub">Accès à vie · Téléchargement inclus</div>
           <div class="buy-stock" id="buyStockDesktop" style="display:none;"></div>
           <button class="btn-buy" id="buyBtnDesktop" onclick="handleBuy()">Acheter</button>
-          <div class="buy-guarantee">🔒 Paiement sécurisé</div>
+          <div class="buy-guarantee" id="buyGuaranteeDesktop">🔒 Paiement sécurisé</div>
         </div>
 
         <!-- Créateur -->
@@ -804,6 +807,14 @@ function renderPack(pack) {
     const btn = document.getElementById(id);
     btn.textContent = buyLabel;
     if (isFree) btn.classList.add('free-dl');
+  });
+  /* Rien n'est payé sur un pack gratuit : promettre un « paiement sécurisé »
+     sous un bouton « Télécharger gratuitement » n'a pas de sens. */
+  ['buyGuaranteeMobile', 'buyGuaranteeDesktop'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (isFree) el.style.display = 'none';
+    else el.textContent = '🔒 Paiement sécurisé — Orange Money, MTN MoMo, Wave, carte';
   });
 
   // Ventes réelles / édition limitée

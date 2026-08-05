@@ -110,6 +110,9 @@ h1,h2,h3,.logo { font-family: 'Syne', sans-serif; }
 
     /* ── BOTTOM NAV (dock flottant verre) ── */
     .univ-bnav { position: fixed; bottom: 12px; left: 12px; right: 12px; z-index: 100; background: rgba(255,255,255,0.78); border: 1px solid var(--glass-border); border-radius: 24px; box-shadow: var(--shadow-lg); display: flex; align-items: center; justify-content: space-around; padding: 9px 0 11px; backdrop-filter: blur(14px) saturate(160%); -webkit-backdrop-filter: blur(14px) saturate(160%); }
+    /* Au-delà du mobile, la nav du haut suffit : la barre du bas recouvrirait
+       le bas du contenu sur toute la largeur de l'écran. */
+    @media (min-width: 681px) { .univ-bnav { display: none; } body { padding-bottom: 24px; } }
     .univ-bnav-item { display: flex; flex-direction: column; align-items: center; gap: 2px; text-decoration: none; color: var(--text-3); padding: 0 8px; transition: color .2s; border: none; background: none; cursor: pointer; }
     .univ-bnav-item:hover { color: var(--text); }
     .univ-bnav-item.active { color: var(--purple2); }
@@ -159,8 +162,10 @@ h1,h2,h3,.logo { font-family: 'Syne', sans-serif; }
 }
 
 /* ── CRÉATEURS ── */
-.creators-section { padding: 22px 12px 0; }
-.creators-scroll { display: flex; gap: 16px; overflow-x: auto; scrollbar-width: none; }
+/* Le titre et la rangée portent chacun leurs 12px, comme .sec-header et
+   .featured-scroll — sinon les marges se cumulent et la rangée se décale. */
+.creators-section { padding: 0; }
+.creators-scroll { display: flex; gap: 16px; padding: 0 12px; overflow-x: auto; scrollbar-width: none; }
 .creators-scroll::-webkit-scrollbar { display: none; }
 .creator-item { display: flex; flex-direction: column; align-items: center; gap: 6px; flex-shrink: 0; cursor: pointer; }
 .creator-avatar {
@@ -410,6 +415,9 @@ h1,h2,h3,.logo { font-family: 'Syne', sans-serif; }
 
 <!-- CRÉATEURS -->
 <div class="creators-section" id="creatorsSection">
+  <div class="sec-header">
+    <div class="sec-title">🧑‍🎨 Les <span>créateurs</span></div>
+  </div>
   <div class="creators-scroll" id="creatorsScroll"></div>
 </div>
 

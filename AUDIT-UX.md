@@ -4,6 +4,11 @@
 > Chaque constat marqué **[vérifié]** a été reproduit dans un vrai navigateur
 > (Playwright + Chromium, Supabase simulé) ou mesuré dans le DOM. Les constats
 > marqués **[produit]** sont des jugements de conception, pas des défauts.
+>
+> **✅ Sprint 1 livré** — les 5 correctifs de la partie 1 (§1.1, §1.3, §1.4,
+> §1.5, §1.6, §1.7) sont appliqués et vérifiés. Voir la note en fin de §1.
+> ⚠️ **`sql_a_executer.sql` est à ré-exécuter dans Supabase** pour que le
+> correctif d'inscription (§1.3) prenne effet.
 
 ---
 
@@ -23,7 +28,10 @@ de la fiabilité, c'est du produit.**
 
 ---
 
-## 1. Défauts vérifiés — à corriger
+## 1. Défauts vérifiés — ✅ corrigés
+
+> Tous les points de cette partie ont été corrigés et vérifiés. Le détail des
+> preuves est en fin de section.
 
 ### 1.1 🔴 La barre de navigation du bas s'affiche sur ordinateur **[vérifié]**
 
@@ -156,6 +164,28 @@ passe : `auth.html:829`), décrit `bibliotheque.html` comme cassée (elle
 fonctionne), mentionne des plans à 8 €/15 € qui n'existent plus (`index.html`
 n'a plus qu'un plan Créateur gratuit), et parle de « 18 pages » alors qu'il y
 en a 21. Un nouveau contributeur — ou toi dans six mois — sera induit en erreur.
+
+*(Reste à faire — voir §4.)*
+
+---
+
+### ✅ Vérification des correctifs
+
+Les suites existantes restent vertes (**173/173**) et `outil-chasse.js` ne
+relève aucune régression sur les 21 pages. En plus :
+
+| Point | Preuve |
+|---|---|
+| §1.1 | `display: none` mesuré à 1280px sur les **14 pages** portant la barre ; toujours `flex` à 390px ; padding bas du `body` ramené à 24px sur ordinateur |
+| §1.3 | **Rejoué sur un vrai PostgreSQL 16.** Ancien trigger : 2 inscriptions avec le même pseudo → **1 seul compte créé**, l'autre annulé. Nouveau trigger (extrait tel quel de `sql_a_executer.sql`) : **66 comptes → 66 profils**, pseudos suffixés `marius`, `marius1`, `marius2`…, rôle créateur conservé, pseudo vide replié sur `membre`, et au-delà de 50 collisions le suffixe tiré de l'identifiant prend le relais |
+| §1.4 | `.univ-nav` mesurée à `top: 0` (contre 70px avant) |
+| §1.5 | Pack à 0 € → mention masquée ; pack à 5 € → mention affichée, moyens de paiement listés |
+| §1.6 | La rangée porte le titre « 🧑‍🎨 Les créateurs » |
+
+Le correctif §1.3 vit en deux endroits qui se complètent : le trigger SQL ne
+fait plus jamais échouer une création de compte, et `auth.html` prévient
+pendant la saisie qu'un pseudo est pris — pour que personne ne se retrouve
+renommé `marius3` sans l'avoir voulu.
 
 ---
 
@@ -438,12 +468,16 @@ supprimer.
 
 ## 4. Plan d'action proposé
 
-### Sprint 1 — corriger ce qui casse (≈ 1 jour)
-1. §1.3 — le pseudo déjà pris qui casse l'inscription *(le plus coûteux)*
-2. §1.1 — masquer la barre du bas sur ordinateur
-3. §1.4 — la bande de 70 px de la bibliothèque
-4. §1.7 — retirer l'étape FCFA erronée de la doc de paiement
-5. §1.5 / §1.6 — « paiement sécurisé » sur pack gratuit, titre de la rangée créateurs
+### ✅ Sprint 1 — corriger ce qui casse — **livré**
+1. ✅ §1.3 — le pseudo déjà pris qui casse l'inscription *(le plus coûteux)*
+2. ✅ §1.1 — masquer la barre du bas sur ordinateur
+3. ✅ §1.4 — la bande de 70 px de la bibliothèque
+4. ✅ §1.7 — retirer l'étape FCFA erronée de la doc de paiement
+5. ✅ §1.5 / §1.6 — « paiement sécurisé » sur pack gratuit, titre de la rangée créateurs
+
+> ⚠️ **Une action manuelle reste à faire** : coller `sql_a_executer.sql` dans
+> Supabase → SQL Editor → Run. Le fichier est idempotent. Sans cela, le
+> correctif d'inscription n'est pas actif en production.
 
 ### Sprint 2 — les trois gros manques (≈ 3-4 jours)
 6. §2.1 — mode sombre

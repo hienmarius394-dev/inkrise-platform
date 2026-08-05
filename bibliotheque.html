@@ -25,7 +25,10 @@
   --radius: 10px; --radius-lg: 14px;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body { background: var(--ink); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; padding: 70px 0 100px; }
+/* Pas de padding-top : la nav est `sticky`, elle occupe donc déjà sa place
+   dans le flux. Les 70px hérités de l'époque où elle était `fixed` créaient
+   une bande blanche au-dessus de l'en-tête. */
+body { background: var(--ink); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; padding: 0 0 100px; }
 /* ── NAV UNIVERSEL ── */
 .univ-nav { position: sticky; top: 0; z-index: 100; background: rgba(255,255,255,0.96); backdrop-filter: blur(14px); border-bottom: 1px solid rgba(0,0,0,0.08); padding: 0 16px; height: 58px; display: flex; align-items: center; gap: 8px; }
 .univ-nav-logo { font-family: 'Syne', sans-serif; font-size: 1.2rem; font-weight: 900; text-decoration: none; background: linear-gradient(135deg, #7c5cfc, #ff5fa8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; flex-shrink: 0; letter-spacing: 1px; }
@@ -72,6 +75,9 @@ body { background: var(--ink); color: var(--text); font-family: 'DM Sans', sans-
 
 /* BOTTOM NAV */
 .univ-bnav{position:fixed;bottom:0;left:0;right:0;z-index:100;background:rgba(255,255,255,.97);border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-around;padding:8px 0 16px;backdrop-filter:blur(14px);box-shadow:0 -2px 12px rgba(0,0,0,.05);}
+/* Au-delà du mobile, la nav du haut suffit : la barre du bas recouvrirait
+   le bas du contenu sur toute la largeur de l'écran. */
+@media (min-width: 681px) { .univ-bnav { display: none; } body { padding-bottom: 24px; } }
 .univ-bnav-item{display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none;color:var(--text-3);padding:0 8px;transition:color .2s;border:none;background:none;cursor:pointer;}
 .univ-bnav-item:hover,.univ-bnav-item.active{color:var(--text);}
 .univ-bnav-icon{font-size:20px;}
