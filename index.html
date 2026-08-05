@@ -14,6 +14,9 @@
 <meta property="og:description" content="Lis des mangas et webtoons gratuitement, publie les tiens et vends tes packs — Inkrise est une plateforme pensée pour aider les créateurs manga à vivre de leur art." />
 <meta property="og:image" content="https://inkrise-platform.vercel.app/assets/hero-manga.jpg" />
 <meta name="twitter:card" content="summary_large_image" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="preconnect" href="https://bsdcpwtimsgxcnaamwip.supabase.co" />
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600;700&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/inkrise-theme.css" />
 <script src="assets/inkrise-theme.js"></script>
@@ -669,7 +672,7 @@ async function choosePlan(plan) {
   const { error } = await supabaseClient.from('profiles').update({ is_creator: true }).eq('id', data.session.user.id)
   if (error) { showToast('Erreur : ' + error.message); return }
   showToast('Espace créateur activé 🎉')
-  setTimeout(() => window.location.href = 'mon-espace.html', 900)
+  setTimeout(() => window.location.href = 'profil.html', 900)
 }
 
 // CRÉATEURS

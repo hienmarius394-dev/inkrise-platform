@@ -1,77 +1,85 @@
 # INKRISE — Roadmap & état des lieux
 
-> Mis à jour le 2026-07-12. Ce document est reconstruit à partir d'un audit complet des 18 pages.
+> Mis à jour le 2026-08-05, après l'audit complet et ses trois sprints.
+> Le détail des constats et des preuves est dans **`AUDIT-UX.md`**.
 
 ## ⚠️ Important : SQL à exécuter
 
-Toutes les tables, colonnes, policies RLS, buckets et triggers nécessaires sont regroupés dans
-**`sql_a_executer.sql`** (idempotent, ré-exécutable sans risque).
-👉 **À coller dans Supabase Dashboard → SQL Editor avant de tester les nouvelles fonctionnalités.**
-Le site actuel continue de fonctionner sans, mais les nouveautés (abonnements manga, avis packs,
-brouillons, reprise de lecture, compteurs de vues…) ne s'activent qu'après.
+Tout le schéma (tables, colonnes, policies RLS, buckets, triggers) est
+regroupé dans **`sql_a_executer.sql`**, idempotent et ré-exécutable sans
+risque. 👉 **À coller dans Supabase → SQL Editor avant de tester une
+nouveauté.**
 
 ---
 
 ## Vision produit
 
 Inkrise = plateforme pour artistes manga/webtoon :
-1. **Lire** — catalogue, fiche manga, lecteur (pages + scroll webtoon), bibliothèque personnelle avec reprise de lecture.
-2. **Publier** — upload manga + chapitres + pages (storage), gestion des chapitres, espace créateur (mon-espace).
-3. **Communauté** — profils créateurs, follow, murs communautaires par créateur (posts, réactions, sondages, commentaires), notifications.
-4. **Monétiser** — packs tutoriels/formations (gratuits ou payants), espace premium créateur, plans (Débutant 0€ / Créateur 8€ / Pro 15€). Paiement réel (Wave, Orange Money, MTN MoMo, Stripe) = phase future ; en attendant, activation « démo » des plans.
 
-## Phases historiques (déjà livrées)
+1. **Lire** — catalogue, fiche manga, lecteur (pages + scroll webtoon),
+   bibliothèque personnelle avec reprise de lecture, lecture hors-ligne.
+2. **Publier** — upload manga + chapitres + pages, gestion des chapitres,
+   espace créateur.
+3. **Communauté** — profils créateurs, follow, fil des créateurs suivis,
+   murs communautaires (posts, réactions, sondages, commentaires),
+   notifications.
+4. **Monétiser** — packs tutoriels gratuits ou payants. Paiement réel via
+   CinetPay (Wave, Orange Money, MTN MoMo, Moov, carte) : le code est prêt,
+   voir `PAIEMENT_CINETPAY.md`. Devenir créateur est **gratuit**, sans
+   abonnement.
 
-- ✅ Phase 1-2 : pages statiques, auth Supabase, profils
-- ✅ Phase 3 : mangas, chapitres, upload, lecteur, packs tutoriels (paiement stub « Phase 3.3 Stripe »)
-- ✅ Phase 4 : follows, notifications (partiel), bibliothèque (page cassée)
-- ✅ Phase 5.1 : tables communauté (posts, réactions, commentaires, sondages)
-- ✅ Harmonisation nav (17 pages) + migration thème clair (incomplète → réparée dans cette passe)
+## Architecture
 
-## Chantier en cours (cette passe de code)
+- **Frontend** : 21 pages HTML autonomes (vanilla JS + CSS en ligne),
+  déployées sur Vercel. Socle partagé dans `assets/` :
+  `inkrise-theme.css` (couleurs, thème sombre), `inkrise-theme.js` (choix
+  du thème, en `<head>`), `inkrise-config.js` (clés publiques),
+  `inkrise-nav.js` (barre du bas, menu, garde-fous, partage),
+  `inkrise-offline.js`, `inkrise-img.js`.
+- **Backend** : Supabase — Auth, Postgres + RLS, Storage (`avatars`,
+  `covers`, `pages`, `community`).
+- **Serveur** : `api/og.js` (aperçus de lien, Vercel) et
+  `supabase/functions/` (paiement CinetPay, envoi des notifications push).
+- **Tests** : 12 suites Playwright, ~291 vérifications. Voir `tests/README.md`.
 
-### A. Réparations bloquantes
-- [x] `mon-espace.html` : client `db` inexistant → page 100 % morte
-- [x] `bibliotheque.html` : `supabaseJs` inexistant + embed PostgREST malformé → page 100 % morte
-- [x] `tutoriels.html` : mauvais IDs nav → crash utilisateur connecté
-- [x] `lecteur.html` : comparaison d'ID chapitre string/number → ouvrait toujours le chapitre 1 ; `doSearch` manquant
-- [x] `manga.html` : bouton bibliothèque appelait la lib UMD au lieu du client ; drawer jamais mis à jour (mauvais IDs)
-- [x] `openModal()` non défini sur ~9 pages → tous les liens « Premium » morts
-- [x] `doLogout()` manquant (upload-manga, lecteur) ; liens morts `upload.html`, `connexion.html`, `notifications.html`
+## Livré lors de l'audit (3 sprints)
 
-### B. Design system (thème clair terminé)
-- [x] Variables CSS manquantes (`--bg-2/3`, `--text-2/3`, `--orange-light`, `--purple2`, `--accent`…) → `:root` standard partout
-- [x] Drawer resté sombre avec texte noir illisible → passé en clair sur toutes les pages
-- [x] Bottom-nav restée sombre → passée en claire
-- [x] Bouton « Connexion » blanc-sur-blanc → lisible
-- [x] Polices `Nunito`/`Bebas Neue` utilisées mais jamais importées ; aucune police sur communaute/mon-espace → imports corrigés
+**Sprint 1 — réparations**
+- Inscription : un pseudo déjà pris n'annule plus la création du compte
+- Barre du bas masquée sur ordinateur ; bande blanche de la bibliothèque
+- « Paiement sécurisé » retiré des packs gratuits ; titre de la rangée créateurs
+- Doc CinetPay : consigne de prix erronée corrigée
 
-### C. Fonctionnalités complétées
-- [x] **Accueil** : créateurs dynamiques (fin du « mario » en dur), tabs Originals/Populaires/Nouveaux fonctionnels, tri réel par vues, badge notifications alimenté, boutons de plans branchés
-- [x] **Plans créateur** : parcours « devenir créateur » réel (`is_creator`), plans Créateur/Pro = activation démo (`espace_premium`) en attendant le paiement
-- [x] **Manga** : abonnement manga persisté (`abonnements_manga` + compteur), vues comptées (table `vues` + trigger), état bibliothèque initialisé
-- [x] **Lecteur** : reprise de lecture (chapitre + page sauvegardés/restaurés), nav auth câblée
-- [x] **Upload** : options Public/Commentaires/18+ réellement enregistrées, vrai brouillon (`statut='brouillon'`, masqué des listes), redirection vers le manga publié
-- [x] **Gestion chapitres** : upload de pages vers le storage implémenté (fonction centrale qui manquait), réordonnancement persisté sur `numero`
-- [x] **Communauté** : identité réelle des auteurs de posts/commentaires (fin du bug « tout le monde s'affiche comme moi »), votes de sondage mémorisés + anti-revote, upload image des commentaires
-- [x] **Follows** : notification au créateur suivi
-- [x] **Bibliothèque** : réécrite — liste + reprise de lecture fonctionnelles
-- [x] **Packs** : avis dynamiques (`avis_packs`), objectifs/niveau dynamiques, packs gratuits ajoutés à « mes formations » (`achats_packs`), formulaire d'avis après achat
-- [x] **Recherche** : inclut désormais les packs tutoriels
-- [x] Nettoyage : `fix_key.py` supprimé (script one-shot obsolète)
+**Sprint 2 — les gros manques**
+- Mode sombre complet (clair / sombre / auto, sans flash)
+- Bouton Partager + aperçus de lien rendus côté serveur pour les réseaux
+- Communauté : fil des créateurs suivis + onglet Découvrir
 
-## Phases futures (backlog)
+**Sprint 3 — rétention**
+- Notes et avis sur les mangas, tri « Mieux notés », « À découvrir aussi »
+- Page Paramètres : filtre 18+, mode de lecture, notifications, export RGPD
+- Notifications push (service worker + envoi serveur)
+- Crochet de mesure d'audience
 
-1. **Paiement réel** — Stripe + Wave/Orange Money/MTN MoMo : points d'intégration = `pack.html → handleBuy()`, boutons de plans (index/profil), `achats_packs.prix_paye`. Nécessite un backend (Edge Functions Supabase) : ne JAMAIS valider un paiement côté client.
-2. **Reset mot de passe + OAuth Google** — le CSS `.or-divider` d'auth.html est déjà prêt.
-3. **Packs multi-leçons** — aujourd'hui 1 pack = 1 `contenu_url` ; passer à une table `lecons_packs` + progression.
-4. **Analytics créateur** — graphiques d'activité (l'onglet Stats de profil.html affiche un placeholder).
-5. **Modération** — signalement de contenus, filtre 18+ par préférence utilisateur.
-6. **Pagination / infinite scroll** — createurs.html et les listes chargent tout d'un coup.
-7. **PWA / mobile** — manifest + service worker.
+## Backlog
 
-## Architecture (rappel)
-
-- **Frontend** : 18 pages HTML autonomes (vanilla JS + CSS inline), déployées sur Vercel.
-- **Backend** : Supabase (`bsdcpwtimsgxcnaamwip`) — Auth, Postgres + RLS, Storage (buckets `avatars`, `covers`, `pages`, `community`).
-- **Convention** : chaque page embarque son client (`sb` / `supabaseClient`), clé anon publique (protégée par RLS).
+1. **Page « tous les créateurs »** — la rangée de l'accueil est limitée à 12
+   et ne mène nulle part.
+2. **Pages par genre** — les 20 genres ne sont qu'un `<select>` : pas d'URL
+   partageable ni indexable.
+3. **Confort du lecteur** — plein écran, zoom, maintien de l'écran allumé,
+   double page sur tablette, signets.
+4. **Modération** — `admin.html` ne permet que de cocher « traité » : ni
+   masquage, ni suppression, ni lien vers un commentaire signalé.
+5. **Profil de lecteur** — chapitres lus, temps de lecture, genres favoris.
+   Aujourd'hui un profil ne parle que de création.
+6. **Prix en FCFA à l'affichage** — le public paie en Mobile Money ; la
+   conversion se fait déjà côté serveur, seul l'affichage reste en euros.
+7. **Connexion Google** — le CSS `.or-divider` d'`auth.html` est prêt.
+8. **Case « J'accepte les CGU »** à l'inscription.
+9. **Comptage des vues côté serveur** — aujourd'hui déclaratif depuis le
+   navigateur ; à consolider avant que les vues décident d'une rémunération.
+10. **Fusionner `espace-createur.html` dans `profil.html`** — deux tableaux
+    de bord pour la même personne.
+11. **Polices auto-hébergées** — supprimerait deux allers-retours réseau et
+    la dépendance RGPD à Google Fonts.

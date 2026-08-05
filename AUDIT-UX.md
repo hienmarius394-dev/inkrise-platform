@@ -153,7 +153,7 @@ Si le propriétaire suit cette consigne, un pack « 1000 » est facturé
 
 **Correctif** : supprimer cette étape de la doc. (Le code est bon.)
 
-### 1.8 🟡 Le focus clavier est invisible sur 17 pages sur 21 **[vérifié]**
+### 1.8 ✅ ~~Focus clavier invisible et pas de lien d'évitement~~ — fait
 
 `:focus-visible` n'est déclaré que dans `gestion-chapitres.html`,
 `lecteur.html`, `recherche.html` et `upload-manga.html`. Ailleurs, l'outline
@@ -166,7 +166,7 @@ contenu, **sur chaque page**.
 **Correctif** : une règle `:focus-visible` unique dans `inkrise-theme.css` +
 un skip-link partagé injecté par `inkrise-nav.js`.
 
-### 1.9 🟡 `ROADMAP.md` est périmé
+### 1.9 ✅ ~~`ROADMAP.md` est périmé~~ — réécrit
 
 Il annonce comme « à faire » des choses déjà faites (réinitialisation du mot de
 passe : `auth.html:829`), décrit `bibliotheque.html` comme cassée (elle
@@ -422,9 +422,18 @@ régie publicitaire n'est intégrée** : le revenu promis n'a pas encore de sour
 Sur la 3G d'Abidjan ou de Ouagadougou, ce sont plusieurs secondes de page
 blanche.
 
-**À ajouter** : `<link rel="preconnect">` vers `fonts.gstatic.com` et Supabase,
-`defer` sur `supabase.js` partout, et idéalement héberger les deux polices
-localement (supprime aussi la dépendance RGPD à Google).
+**Fait** : `preconnect` vers Google Fonts et Supabase sur les 21 pages, et
+`supabase.js` descendu du `<head>` vers le corps sur 16 pages.
+
+> ⚠️ **Correction de l'audit.** J'avais conseillé « `defer` sur `supabase.js`
+> partout ». C'est faux ici : un script `defer` s'exécute après l'analyse de
+> tout le document, donc **après** les scripts en ligne des pages — qui
+> trouvaient alors `supabase` indéfini. Essayé, mesuré : les 21 pages
+> tombaient en erreur. Descendre la balise en bas du corps donne le même
+> gain d'affichage sans casser l'ordre d'exécution.
+
+*Reste* : héberger les deux polices localement (supprimerait deux
+allers-retours et la dépendance RGPD à Google).
 
 ### 2.14 🟢 Manques plus légers
 
@@ -443,11 +452,16 @@ localement (supprime aussi la dépendance RGPD à Google).
 
 ## 3. Ce qu'on peut retirer
 
-### 3.1 🔴 `mon-espace.html` — 39 Ko, orphelin **[vérifié]**
+### 3.1 ✅ ~~`mon-espace.html`~~ — supprimé
 
-**Aucune page du site ne pointe vers lui.** Vérifié par recherche exhaustive
-des `href="mon-espace.html"` : zéro résultat. Il n'est pas non plus dans le
-menu latéral.
+> ⚠️ **Correction de l'audit.** J'avais écrit « aucune page du site ne pointe
+> vers lui », en m'appuyant sur une recherche des `href="mon-espace.html"`.
+> C'était faux : la page était atteinte par **trois redirections JavaScript**
+> (`index.html:672`, `profil.html:1453` et `:1732`) — c'était l'écran
+> d'arrivée après « devenir créateur ». Elle n'était pas morte, seulement
+> absente de tous les menus, donc sans retour possible.
+
+Elle n'apparaissait dans aucun menu.
 
 C'est pourtant un tableau de bord créateur complet, encore maintenu, encore
 **préchargé par le service worker** (il pèse donc sur chaque installation), et
@@ -455,9 +469,11 @@ il duplique `profil.html`. Ses chiffres divergent d'ailleurs de ceux de
 `profil.html` pour le même compte — deux requêtes différentes pour la même
 donnée.
 
-**À faire** : le supprimer, avec sa ligne dans `sw.js`. Si l'accueil « Bonjour,
-Marius 👋 » et ses raccourcis plaisent, les reprendre dans `profil.html` avant
-de supprimer.
+**Fait** : les trois redirections mènent désormais à `profil.html` (le seul
+tableau de bord présent dans le menu), la page est retirée du préchargement
+hors-ligne et de la liste des destinations autorisées après connexion, et le
+fichier est supprimé. La suite de tests qui s'exerçait dessus a été recentrée
+sur `auteur.html`, qui porte les deux symptômes surveillés par le garde-fou.
 
 ### 3.2 🟠 Trois pages pour « mon espace » **[produit]**
 
@@ -473,11 +489,11 @@ Après suppression de `mon-espace.html`, il reste deux tableaux de bord :
 « Formations ») supprime une page, un lien de nav, et la question « où je vais
 déjà pour modifier mon pack ? ».
 
-### 3.3 🟡 La barre du bas sur ordinateur
+### 3.3 ✅ ~~La barre du bas sur ordinateur~~ — fait (§1.1)
 
 Voir §1.1 — à retirer purement et simplement au-delà de 680 px.
 
-### 3.4 🟡 Le champ de recherche en double
+### 3.4 ✅ ~~Le champ de recherche en double~~ — fait
 
 Sur `recherche.html`, la nav du haut porte un champ de recherche **et** la page
 en affiche un second, plus grand, juste en dessous. Deux champs pour la même
@@ -490,7 +506,7 @@ exactement ce qui a produit §1.2 et §1.4. `assets/inkrise-theme.css` a déjà
 raison sur les couleurs ; il faut lui confier aussi la mise en page de la
 navigation. Environ 80 lignes × 21 fichiers à supprimer.
 
-### 3.6 🟢 `.hermes/`
+### 3.6 ✅ ~~`.hermes/`~~ — supprimé
 
 Trois notes de travail (`fix-bottomnav.md`, `fix-communaute.md`,
 `nav-harmonization-prompt.md`) décrivant des chantiers terminés. À archiver ou

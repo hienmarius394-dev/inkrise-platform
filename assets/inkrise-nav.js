@@ -404,6 +404,41 @@
     });
   }
 
+  /* ── « Aller au contenu » ──────────────────────────────────────────
+     Au clavier, chaque page imposait de traverser le logo, quatre liens,
+     la recherche, l'avatar, la cloche et le menu avant d'atteindre le
+     contenu — sur chaque page. Le lien reste invisible tant qu'on ne l'a
+     pas atteint au clavier, il ne change donc rien à l'apparence. */
+  function poserLienEvitement() {
+    if (document.getElementById('inkSkip')) return;
+    var cible = document.querySelector('#mainContent, #app, main, .main-wrap, .page-wrap');
+    if (!cible) return;
+    if (!cible.id) cible.id = 'inkContenu';
+    if (!cible.hasAttribute('tabindex')) cible.setAttribute('tabindex', '-1');
+
+    var a = document.createElement('a');
+    a.id = 'inkSkip';
+    a.href = '#' + cible.id;
+    a.textContent = 'Aller au contenu';
+    a.style.cssText = 'position:absolute;left:8px;top:-60px;z-index:500;padding:10px 16px;' +
+      'border-radius:0 0 10px 10px;background:var(--purple-link);color:var(--sur-purple);' +
+      "font-family:'DM Sans',system-ui,sans-serif;font-size:.86rem;font-weight:700;" +
+      'text-decoration:none;transition:top .15s;';
+    a.addEventListener('focus', function () { a.style.top = '0'; });
+    a.addEventListener('blur', function () { a.style.top = '-60px'; });
+    a.addEventListener('click', function () {
+      /* Sans ce focus explicite, le lecteur d'écran suit l'ancre mais le
+         clavier repart du haut du document au Tab suivant. */
+      setTimeout(function () { cible.focus(); }, 0);
+    });
+    document.body.insertBefore(a, document.body.firstChild);
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', poserLienEvitement);
+  } else {
+    poserLienEvitement();
+  }
+
   /* ── Lien « Paramètres » du menu ──
      Chaque page décide elle-même quoi montrer selon la session, avec sa
      propre fonction. Plutôt que de retoucher quinze `updateAuthUI`, on

@@ -14,8 +14,10 @@
 <meta property="og:description" content="Crée ton compte Inkrise gratuitement : lecture illimitée et accès à la communauté." />
 <meta property="og:image" content="https://inkrise-platform.vercel.app/assets/hero-manga.jpg" />
 <meta name="twitter:card" content="summary_large_image" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="preconnect" href="https://bsdcpwtimsgxcnaamwip.supabase.co" />
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-<script src="assets/supabase.js"></script>
 <link rel="stylesheet" href="assets/inkrise-theme.css" />
 <script src="assets/inkrise-theme.js"></script>
 <script src="assets/inkrise-config.js"></script>
@@ -527,6 +529,7 @@ body::after {
 </div>
 </div><!-- /.auth-wrap -->
 
+<script src="assets/supabase.js"></script>
 <script>
 // =============================================
 // CONFIG SUPABASE
@@ -540,7 +543,7 @@ const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
    connecté. Sans ça, quelqu'un qui cliquait « Publier un manga » se
    retrouvait sur la connexion sans explication, puis atterrissait sur
    l'accueil : son intention de départ était perdue en route. */
-const PAGES_AUTORISEES = ['index.html','profil.html','upload-manga.html','mon-espace.html',
+const PAGES_AUTORISEES = ['index.html','profil.html','upload-manga.html',
   'espace-createur.html','gestion-chapitres.html','bibliotheque.html','communaute.html',
   'manga.html','pack.html','tutoriels.html','recherche.html','auteur.html','lecteur.html'];
 

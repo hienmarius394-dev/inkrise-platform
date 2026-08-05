@@ -14,8 +14,10 @@
   <meta property="og:description" content="Explore le catalogue Inkrise : mangas, webtoons et BD publiés par la communauté." />
   <meta property="og:image" content="https://inkrise-platform.vercel.app/assets/hero-manga.jpg" />
   <meta name="twitter:card" content="summary_large_image" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://bsdcpwtimsgxcnaamwip.supabase.co" />
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-  <script src="assets/supabase.js"></script>
   <link rel="stylesheet" href="assets/inkrise-theme.css" />
   <script src="assets/inkrise-theme.js"></script>
   <script src="assets/inkrise-config.js"></script>
@@ -34,8 +36,6 @@
     .univ-nav-lk { color: rgba(0,0,0,0.6); font-size: .82rem; font-weight: 600; text-decoration: none; padding: 5px 10px; border-radius: 7px; transition: all .2s; white-space: nowrap; font-family: 'DM Sans', sans-serif; }
     .univ-nav-lk:hover { color: var(--text); background: rgba(0,0,0,0.05); }
     .univ-nav-lk.active { color: var(--purple-link); background: rgba(124,111,239,0.1); }
-    .univ-nav-search { display: flex; align-items: center; background: rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.08); border-radius: 18px; overflow: hidden; max-width: 200px; flex-shrink: 0; }
-    @media (max-width: 480px) { .univ-nav-search { max-width: 110px; } }
     .univ-nav-si { background: none; border: none; outline: none; color: var(--text); font-size: .8rem; padding: 7px 10px; width: 100%; font-family: 'DM Sans', sans-serif; }
     .univ-nav-si::placeholder { color: rgba(0,0,0,.35); }
     .univ-nav-sb { background: none; border: none; cursor: pointer; padding: 6px 8px; font-size: 13px; color: rgba(0,0,0,.5); flex-shrink: 0; }
@@ -351,10 +351,9 @@
     <a href="tutoriels.html" class="univ-nav-lk">Tutoriels</a>
     <a href="espace-createur.html" class="univ-nav-lk">Espace Créateur</a>
   </div>
-  <div class="univ-nav-search">
-    <input type="text" id="navSearchInput" class="univ-nav-si" placeholder="Rechercher…" onkeydown="if(event.key==='Enter')doSearch()" />
-    <button class="univ-nav-sb" onclick="doSearch()">🔍</button>
-  </div>
+  <!-- Pas de champ de recherche ici : la page en porte déjà un, plus grand,
+       à cent pixels en dessous. Deux champs pour la même action ne servent
+       personne. La loupe de la barre du bas vise directement le grand. -->
   <div class="nav-right">
     <a href="auth.html" class="nav-connexion-btn" id="navConnexion">Connexion</a>
     <a href="profil.html" class="nav-avatar-btn" id="navAvatar">?</a>
@@ -449,6 +448,7 @@
 <div id="inkriseBottomNav" data-active=""></div>
 <script src="assets/inkrise-nav.js"></script>
 
+<script src="assets/supabase.js"></script>
 <script>
 const SUPABASE_URL = 'https://bsdcpwtimsgxcnaamwip.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJzZGNwd3RpbXNneGNuYWFtd2lwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAzMTQ1MDIsImV4cCI6MjA5NTg5MDUwMn0.uMcfUsnlULHNqS_87xzUWRUB8tEaCCNQglrWwN2fb44';
@@ -476,7 +476,8 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 function openDrawer()  { document.getElementById('univDrawer').classList.add('open'); document.getElementById('univOverlay').classList.add('open'); document.body.style.overflow = 'hidden'; }
 function closeDrawer() { document.getElementById('univDrawer').classList.remove('open'); document.getElementById('univOverlay').classList.remove('open'); document.body.style.overflow = ''; }
-function doSearch()    { const q = document.getElementById('navSearchInput').value.trim(); if (q) window.location.href = 'recherche.html?q=' + encodeURIComponent(q); }
+function doSearch()    { const c = document.getElementById('navSearchInput'); if (!c) return doHeroSearch();
+                         const q = c.value.trim(); if (q) window.location.href = 'recherche.html?q=' + encodeURIComponent(q); }
 function doHeroSearch(){ const q = document.getElementById('heroSearchInput').value.trim(); if (q) window.location.href = 'recherche.html?q=' + encodeURIComponent(q); }
 function doLogout()    { sb.auth.signOut().then(() => window.location.href = 'index.html'); }
 function openModal()   { window.location.href = 'index.html?premium=1'; }
@@ -723,7 +724,7 @@ async function doSearchPage() {
   } else {
     document.getElementById('heroTitle').innerHTML = `Résultats pour <em>« ${escapeHtml(query)} »</em>`;
     document.getElementById('heroSearchInput').value = query;
-    document.getElementById('navSearchInput').value = query;
+
     document.title = `"${query}" — Inkrise`;
   }
 
