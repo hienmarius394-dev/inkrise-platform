@@ -404,6 +404,25 @@
     });
   }
 
+  /* ── Lien « Paramètres » du menu ──
+     Chaque page décide elle-même quoi montrer selon la session, avec sa
+     propre fonction. Plutôt que de retoucher quinze `updateAuthUI`, on
+     recopie ici l'état du lien « Mon profil » : les deux vont ensemble,
+     et le menu reste cohérent quelle que soit la page. */
+  function suivreVisibiliteParametres() {
+    const profil = document.getElementById('drawerProfil');
+    const params = document.getElementById('drawerParametres');
+    if (!profil || !params) return;
+    const copier = function () { params.style.display = profil.style.display; };
+    copier();
+    new MutationObserver(copier).observe(profil, { attributes: true, attributeFilter: ['style'] });
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', suivreVisibiliteParametres);
+  } else {
+    suivreVisibiliteParametres();
+  }
+
   /* ── Partage ──────────────────────────────────────────────────────
      window.inkrisePartager({ titre, texte, url }) → Promise<bool>
 

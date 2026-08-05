@@ -9,6 +9,9 @@
 > §1.5, §1.6, §1.7) sont appliqués et vérifiés. Voir la note en fin de §1.
 > **✅ Sprint 2 livré** — mode sombre (§2.1), partage + aperçus de lien
 > (§2.3), fil et découverte communautaires (§2.2).
+> **✅ Sprint 3 livré** — notes et avis sur les mangas + recommandations
+> (§2.4), page Paramètres avec filtre 18+ et export RGPD (§2.6),
+> notifications push (§2.7), crochet de mesure d'audience (§2.12).
 >
 > ⚠️ **Deux actions manuelles restent à faire :**
 > 1. Coller `sql_a_executer.sql` dans Supabase → SQL Editor → Run
@@ -22,7 +25,7 @@
 
 | Contrôle | Résultat |
 |---|---|
-| Suites de tests (`npm test`) | **240/240** ✅ (173 à l'audit, + 67 ajoutées depuis) |
+| Suites de tests (`npm test`) | **291/291** ✅ (173 à l'audit, + 118 ajoutées depuis) |
 | Chasse aux défauts (21 pages, connecté + déconnecté) | 0 page plantée, 0 page vide, 0 texte cassé (`undefined`/`NaN`), 0 débordement horizontal, 0 champ sans étiquette, 0 image sans `alt` |
 | Contraste (`outil-contraste.js`) | 2 couples à 4,38:1 sur 4,5:1 — uniquement des emojis d'icônes, négligeable |
 | Erreurs JS | aucune (hors WebSocket realtime, normal en environnement simulé) |
@@ -317,7 +320,7 @@ laissant un grand vide entre la bannière et les onglets. Aucun appel à l'actio
 le premier à publier sur Inkrise » avec le bouton *Publier un manga*, plus les
 tutoriels en repli (ils, eux, existent).
 
-### 2.6 🟠 Aucun réglage utilisateur **[vérifié]**
+### 2.6 ✅ ~~Aucun réglage utilisateur~~ — **livré** (`parametres.html`)
 
 Il n'y a pas de page Paramètres. Manquent :
 - préférences de notifications (aujourd'hui : tout ou rien),
@@ -331,7 +334,7 @@ Il n'y a pas de page Paramètres. Manquent :
 « Supprimer mon compte » est enterré dans `profil.html:1045`, sans page qui
 regroupe le reste.
 
-### 2.7 🟠 Les notifications ne peuvent pas ramener personne **[vérifié]**
+### 2.7 ✅ ~~Les notifications ne peuvent pas ramener personne~~ — **livré**
 
 Les déclencheurs existent (`sql_notifications_triggers.sql` : follow,
 commentaire, like, avis ; plus le nouveau chapitre depuis
@@ -386,7 +389,7 @@ précis de la décision d'achat.
 À faire côté affichage seulement — surtout **ne pas** changer les prix stockés
 (cf. §1.7).
 
-### 2.12 🟡 Aucune mesure d'audience **[vérifié : 0 occurrence de gtag / plausible / umami / posthog]**
+### 2.12 🟡 Mesure d'audience — **crochet livré, à activer**
 
 Aucun outil de mesure. Impossible de savoir quelles pages servent, où les gens
 abandonnent, si le tunnel d'inscription fonctionne. Toutes les décisions
@@ -513,11 +516,11 @@ supprimer.
 7. ✅ §2.3 — bouton Partager + Open Graph rendus côté serveur
 8. ✅ §2.2 — fil des créateurs suivis + onglet Découvrir
 
-### Sprint 3 — retenir les gens (≈ 1 semaine)
-9. §2.4 — notes + commentaires sur les mangas, « à découvrir aussi »
-10. §2.7 — notifications push
-11. §2.6 — page Paramètres
-12. §2.12 — mesure d'audience
+### ✅ Sprint 3 — retenir les gens — **livré**
+9. ✅ §2.4 — notes et avis sur les mangas, tri « Mieux notés », « À découvrir aussi »
+10. ✅ §2.7 — notifications push *(clés VAPID à générer — voir `NOTIFICATIONS_PUSH.md`)*
+11. ✅ §2.6 — page Paramètres (18+, mode de lecture, notifications, export RGPD, suppression)
+12. ✅ §2.12 — crochet de mesure d'audience *(à activer dans `assets/inkrise-config.js`)*
 
 ### Ménage — en continu
 13. §3.1 supprimer `mon-espace.html` · §3.2 fusionner `espace-createur.html`

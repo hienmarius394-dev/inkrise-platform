@@ -18,6 +18,7 @@
   <script src="assets/supabase.js"></script>
   <link rel="stylesheet" href="assets/inkrise-theme.css" />
   <script src="assets/inkrise-theme.js"></script>
+  <script src="assets/inkrise-config.js"></script>
 <style>
     :root {
           --border2: rgba(124,111,239,0.15);
@@ -381,6 +382,7 @@
   <a href="bibliotheque.html" class="univ-d-item"><div class="univ-d-icon">📚</div>Ma bibliothèque</a>
   <a href="upload-manga.html" class="univ-d-item" id="drawerPublier" style="display:none;"><div class="univ-d-icon">📤</div>Publier un manga</a>
   <a href="auth.html" class="univ-d-item" id="drawerConnexion"><div class="univ-d-icon">🔑</div>Connexion / Inscription</a>
+  <a href="parametres.html" class="univ-d-item" id="drawerParametres" style="display:none;"><div class="univ-d-icon">⚙️</div>Paramètres</a>
   <button class="univ-d-item" id="drawerLogout" style="display:none;" onclick="doLogout()"><div class="univ-d-icon">🚪</div><span style="color:var(--danger-link);">Déconnexion</span></button>
 </div>
 
@@ -427,6 +429,7 @@
     <select id="filterTri">
       <option value="recent">Plus récents</option>
       <option value="vues">Plus vus</option>
+      <option value="note">Mieux notés</option>
       <option value="titre">Ordre alphabétique</option>
     </select>
   </div>
@@ -532,7 +535,8 @@ function renderMangas(mangas) {
       <div class="manga-feed-body">
         <div class="manga-feed-title-row">
           <div class="manga-feed-title">${escapeHtml(m.titre || 'Sans titre')}</div>
-          <div class="manga-feed-likes">👁 ${m.vues || 0}</div>
+          <div class="manga-feed-likes">${m.nb_avis > 0 && m.note_moyenne
+            ? `<span style="color:var(--amber);font-weight:700;">★ ${Number(m.note_moyenne).toFixed(1)}</span> · ` : ''}👁 ${m.vues || 0}</div>
         </div>
         <div class="manga-feed-synopsis">${synopsis}</div>
         <div class="manga-feed-tags">
@@ -607,12 +611,20 @@ let totalMangas  = 0;
 // annoncer le total : sans lui, impossible de savoir s'il reste des titres.
 function fetchMangas(offset) {
   let q = sb.from('mangas').select('*', { count: 'exact' }).neq('statut', 'brouillon');
+  /* Préférence « masquer le contenu 18+ » (page Paramètres). Par défaut on
+     masque : c'est le réglage le moins surprenant pour qui n'a rien choisi,
+     et un site jeune vaut mieux prudent. */
+  if (masquerAdulte) q = q.neq('adulte', true);
   if (query)          q = q.or(`titre.ilike.%${query}%,synopsis.ilike.%${query}%`);
   if (filters.genre)  q = q.contains('genres', [filters.genre]);
   if (filters.type)   q = q.eq('type', filters.type);
   if (filters.statut) q = q.eq('statut', filters.statut);
 
   if (filters.tri === 'vues')       q = q.order('vues', { ascending: false, nullsFirst: false });
+  /* Un manga sans avis n'est pas « mal noté », il est simplement sans note :
+     nullsFirst:false le range après les œuvres notées plutôt qu'en tête. */
+  else if (filters.tri === 'note')  q = q.order('note_moyenne', { ascending: false, nullsFirst: false })
+                                         .order('nb_avis', { ascending: false, nullsFirst: false });
   else if (filters.tri === 'titre') q = q.order('titre', { ascending: true });
   else                              q = q.order('created_at', { ascending: false });
 
@@ -683,9 +695,26 @@ function updateCount() {
     : '';
 }
 
+/* Préférence 18+ — lue une fois au chargement.
+   Le champ `adulte` existait en base et le lecteur savait avertir, mais
+   rien ne se mémorisait : la préférence n'existait nulle part. */
+let masquerAdulte = true;
+async function chargerPreferenceAdulte() {
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session || !session.user) return;          // visiteur : on reste prudent
+    const { data } = await sb.from('profiles')
+      .select('pref_masquer_adulte').eq('id', session.user.id).maybeSingle();
+    /* Colonne absente (SQL pas encore passé) → `data` sans la clé : on garde
+       le masquage plutôt que d'exposer par accident. */
+    if (data && data.pref_masquer_adulte === false) masquerAdulte = false;
+  } catch (e) { /* on garde la valeur prudente */ }
+}
+
 async function doSearchPage() {
   const wrap = document.getElementById('mainContent');
   const browseAll = !query;
+  await chargerPreferenceAdulte();
   initFilters();
 
   if (browseAll) {

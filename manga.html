@@ -18,6 +18,7 @@
   <script src="assets/supabase.js"></script>
   <link rel="stylesheet" href="assets/inkrise-theme.css" />
   <script src="assets/inkrise-theme.js"></script>
+  <script src="assets/inkrise-config.js"></script>
 <style>
     :root {
       --bg:       #faf9fd;
@@ -316,6 +317,12 @@
       grid-template-columns: 1fr 300px;
       gap: 28px;
     }
+    /* Une colonne de grille vaut `min-width: auto` par défaut : elle refuse
+       donc de descendre sous la largeur minimale de son contenu. Il suffit
+       d'une rangée à défilement horizontal à l'intérieur pour élargir toute
+       la colonne — et toutes les cartes de la page se retrouvent rognées à
+       droite, y compris le synopsis et la liste des chapitres. */
+    .content-grid > * { min-width: 0; }
     @media (max-width: 700px) {
       .content-grid { grid-template-columns: 1fr; }
     }
@@ -552,6 +559,7 @@
   <a href="bibliotheque.html" class="univ-d-item"><div class="univ-d-icon">📚</div>Ma bibliothèque</a>
   <a href="upload-manga.html" class="univ-d-item" id="drawerPublier" style="display:none;"><div class="univ-d-icon">📤</div>Publier un manga</a>
   <a href="auth.html" class="univ-d-item" id="drawerConnexion"><div class="univ-d-icon">🔑</div>Connexion / Inscription</a>
+  <a href="parametres.html" class="univ-d-item" id="drawerParametres" style="display:none;"><div class="univ-d-icon">⚙️</div>Paramètres</a>
   <button class="univ-d-item" id="drawerLogout" style="display:none;" onclick="doLogout()"><div class="univ-d-icon">🚪</div><span style="color:var(--danger-link);">Déconnexion</span></button>
 </div>
 
@@ -601,6 +609,10 @@
           <div class="hstat">
             <div class="hstat-num" id="statAbonnes">0</div>
             <div class="hstat-label">Abonnés</div>
+          </div>
+          <div class="hstat" id="hstatNote" style="display:none;">
+            <div class="hstat-num" id="statNote">—</div>
+            <div class="hstat-label" id="statNoteLabel">Note</div>
           </div>
         </div>
       </div>
@@ -654,6 +666,20 @@
             <span class="page-info" id="pageInfo">Page 1</span>
             <button class="btn-page" id="btnNextPage">Suivant →</button>
           </div>
+        </div>
+
+        <!-- Avis des lecteurs -->
+        <div class="section-card" id="avisCard">
+          <div class="section-title">⭐ Avis des lecteurs</div>
+          <div id="avisResume"></div>
+          <div id="avisFormulaire"></div>
+          <div id="avisListe"></div>
+        </div>
+
+        <!-- Recommandations -->
+        <div class="section-card" id="recosCard" style="display:none;min-width:0;">
+          <div class="section-title" id="recosTitre">✨ À découvrir aussi</div>
+          <div id="recosListe"></div>
         </div>
 
       </div>
@@ -821,6 +847,8 @@ async function loadManga(mangaId) {
 
   renderManga();
   renderChapitres();
+  chargerAvis();
+  chargerRecommandations();
   if (currentUser) {
     await checkFollowState();
     await checkLibraryState();
@@ -948,6 +976,229 @@ function renderManga() {
     document.getElementById('btnReadFirst').style.opacity = '0.5';
     document.getElementById('btnReadFirst').style.pointerEvents = 'none';
   }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   AVIS DES LECTEURS
+   ═══════════════════════════════════════════════════════════════════
+   Le système d'avis n'existait que pour les packs tutoriels. Les mangas —
+   le cœur du site — n'avaient ni note ni avis : on ne pouvait trier que
+   par date et par vues, et rien n'aidait à choisir quoi lire.
+
+   La moyenne est tenue par un trigger SQL sur `mangas.note_moyenne` : la
+   recalculer ici imposerait une requête par carte sur les grilles. */
+
+let mesAvis = null;   // l'avis de la personne connectée, s'il existe
+
+function etoiles(note, taille) {
+  const n = Math.round(Number(note) || 0);
+  return '<span style="color:var(--amber);letter-spacing:2px;font-size:' + (taille || '1rem') + ';" ' +
+         'aria-label="' + n + ' sur 5">' + '★'.repeat(n) + '☆'.repeat(5 - n) + '</span>';
+}
+
+async function chargerAvis() {
+  const resume = document.getElementById('avisResume');
+  const liste = document.getElementById('avisListe');
+  if (!resume) return;
+
+  const { data: avis, error } = await sb.from('avis_mangas')
+    .select('id, user_id, note, commentaire, created_at, profiles!user_id(username, avatar_url)')
+    .eq('manga_id', manga.id)
+    .order('created_at', { ascending: false })
+    .limit(50);
+
+  if (error) { resume.innerHTML = '<div style="color:var(--muted);font-size:.85rem;">Avis indisponibles.</div>'; return; }
+
+  const tous = avis || [];
+  mesAvis = currentUser ? tous.find(a => a.user_id === currentUser.id) || null : null;
+
+  if (tous.length) {
+    const moy = tous.reduce((s, a) => s + a.note, 0) / tous.length;
+    resume.innerHTML =
+      '<div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;">' +
+        '<div style="font-family:\'Syne\',sans-serif;font-size:2.4rem;font-weight:800;color:var(--amber);line-height:1;">' +
+          moy.toFixed(1) + '</div>' +
+        '<div>' + etoiles(moy, '1.1rem') +
+          '<div style="font-size:.8rem;color:var(--muted);margin-top:3px;">' +
+            tous.length + ' avis</div>' +
+        '</div>' +
+      '</div>';
+    /* L'en-tête affiche la même note : sans ça il faut faire défiler
+       toute la page pour savoir si l'œuvre est appréciée. */
+    const hs = document.getElementById('hstatNote');
+    if (hs) {
+      hs.style.display = '';
+      /* « 4.5 » sous l'étiquette « Avis » se lit comme un nombre d'avis :
+         l'étoile dit que c'est une note, et l'étiquette porte le compte. */
+      document.getElementById('statNote').innerHTML =
+        '★ <span>' + moy.toFixed(1) + '</span>';
+      document.getElementById('statNoteLabel').textContent =
+        tous.length + ' avis';
+    }
+  } else {
+    resume.innerHTML = '';
+  }
+
+  rendreFormulaireAvis(tous.length);
+
+  liste.innerHTML = tous.filter(a => a.commentaire && a.commentaire.trim()).map(a => {
+    const nom = (a.profiles && a.profiles.username) || 'Lecteur';
+    const av = a.profiles && a.profiles.avatar_url
+      ? '<img src="' + escHtml(a.profiles.avatar_url) + '" alt="" style="width:34px;height:34px;border-radius:50%;object-fit:cover;flex-shrink:0;" />'
+      : '<div style="width:34px;height:34px;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg,var(--purple),var(--pink));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:.8rem;">' +
+        escHtml(nom.charAt(0).toUpperCase()) + '</div>';
+    return '<div style="display:flex;gap:10px;padding:14px 0;border-top:1px solid var(--border);">' + av +
+      '<div style="min-width:0;flex:1;">' +
+        '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">' +
+          '<span style="font-weight:700;font-size:.88rem;color:var(--text);">' + escHtml(nom) + '</span>' +
+          etoiles(a.note, '.8rem') +
+        '</div>' +
+        '<div style="font-size:.88rem;line-height:1.6;color:var(--text-2);margin-top:5px;white-space:pre-line;">' +
+          escHtml(a.commentaire) + '</div>' +
+      '</div></div>';
+  }).join('');
+}
+
+function rendreFormulaireAvis(nbAvis) {
+  const zone = document.getElementById('avisFormulaire');
+  if (!zone) return;
+
+  if (!currentUser) {
+    zone.innerHTML = '<div style="padding:14px;border:1px dashed var(--border);border-radius:12px;text-align:center;">' +
+      '<a href="auth.html?next=' + encodeURIComponent('manga.html?id=' + manga.id) + '" ' +
+      'style="color:var(--purple-link);font-weight:700;font-size:.88rem;text-decoration:none;">' +
+      'Connecte-toi pour donner ton avis</a></div>' +
+      (nbAvis ? '' : '<div style="font-size:.85rem;color:var(--muted);text-align:center;margin-top:10px;">Aucun avis pour l\'instant.</div>');
+    return;
+  }
+  /* On ne note pas sa propre œuvre — la politique RLS le refuse aussi,
+     mais mieux vaut ne pas proposer un bouton voué à échouer. */
+  if (manga.auteur_id === currentUser.id) {
+    zone.innerHTML = '<div style="font-size:.85rem;color:var(--muted);padding:10px 0;">' +
+      (nbAvis ? 'Voici ce que pensent tes lecteurs.' : 'Tes lecteurs pourront noter ce manga ici.') + '</div>';
+    return;
+  }
+
+  const note = mesAvis ? mesAvis.note : 0;
+  const texte = mesAvis ? (mesAvis.commentaire || '') : '';
+  zone.innerHTML =
+    '<div style="padding:14px;background:var(--surface);border-radius:12px;margin-bottom:8px;">' +
+      '<div style="font-size:.85rem;font-weight:700;color:var(--text);margin-bottom:10px;">' +
+        (mesAvis ? 'Ton avis' : 'Donne ton avis') + '</div>' +
+      '<div id="avisEtoiles" role="radiogroup" aria-label="Ta note sur 5" style="display:flex;gap:4px;margin-bottom:12px;">' +
+        [1,2,3,4,5].map(n =>
+          '<button type="button" role="radio" data-note="' + n + '" aria-checked="' + (n === note) + '" ' +
+          'aria-label="' + n + ' étoile' + (n > 1 ? 's' : '') + '" ' +
+          'style="min-width:44px;min-height:44px;border:none;background:none;cursor:pointer;font-size:1.6rem;' +
+          'color:' + (n <= note ? 'var(--amber)' : 'var(--surface3)') + ';">★</button>').join('') +
+      '</div>' +
+      '<textarea id="avisTexte" rows="3" maxlength="600" placeholder="Ce que tu en as pensé (facultatif)…" ' +
+        'style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:10px;' +
+        'font-family:inherit;font-size:.88rem;resize:vertical;background:var(--bg);color:var(--text);">' +
+        escHtml(texte) + '</textarea>' +
+      '<div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">' +
+        '<button type="button" id="avisEnvoyer" style="flex:1;min-height:44px;padding:11px 18px;border:none;' +
+          'border-radius:10px;background:var(--purple-link);color:var(--sur-purple);font-family:inherit;' +
+          'font-size:.88rem;font-weight:700;cursor:pointer;">' + (mesAvis ? 'Mettre à jour' : 'Publier mon avis') + '</button>' +
+        (mesAvis ? '<button type="button" id="avisSupprimer" style="min-height:44px;padding:11px 16px;' +
+          'border:1px solid var(--border);border-radius:10px;background:none;color:var(--danger-link);' +
+          'font-family:inherit;font-size:.85rem;font-weight:700;cursor:pointer;">Retirer</button>' : '') +
+      '</div>' +
+      '<div id="avisMsg" role="status" style="font-size:.82rem;margin-top:8px;"></div>' +
+    '</div>';
+
+  let choisie = note;
+  const boutons = zone.querySelectorAll('#avisEtoiles button');
+  boutons.forEach(b => b.addEventListener('click', () => {
+    choisie = Number(b.dataset.note);
+    boutons.forEach(x => {
+      const n = Number(x.dataset.note);
+      x.style.color = n <= choisie ? 'var(--amber)' : 'var(--surface3)';
+      x.setAttribute('aria-checked', String(n === choisie));
+    });
+  }));
+
+  document.getElementById('avisEnvoyer').addEventListener('click', async () => {
+    const msg = document.getElementById('avisMsg');
+    if (!choisie) { msg.textContent = 'Choisis une note de 1 à 5 étoiles.'; msg.style.color = 'var(--danger-link)'; return; }
+    const commentaire = document.getElementById('avisTexte').value.trim();
+    msg.textContent = 'Envoi…'; msg.style.color = 'var(--muted)';
+    const { error } = await sb.from('avis_mangas').upsert(
+      { manga_id: manga.id, user_id: currentUser.id, note: choisie, commentaire: commentaire || null,
+        updated_at: new Date().toISOString() },
+      { onConflict: 'manga_id,user_id' });
+    if (error) { msg.textContent = 'Erreur : ' + error.message; msg.style.color = 'var(--danger-link)'; return; }
+    msg.textContent = '✅ Merci pour ton avis !'; msg.style.color = 'var(--success-link)';
+    await chargerAvis();
+  });
+
+  const sup = document.getElementById('avisSupprimer');
+  if (sup) sup.addEventListener('click', async () => {
+    const ok = await inkriseConfirm({ title: 'Retirer ton avis ?',
+      message: 'Ta note et ton commentaire seront supprimés.', confirmLabel: 'Retirer' });
+    if (!ok) return;
+    await sb.from('avis_mangas').delete().eq('manga_id', manga.id).eq('user_id', currentUser.id);
+    mesAvis = null;
+    await chargerAvis();
+  });
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   À DÉCOUVRIR AUSSI
+   ═══════════════════════════════════════════════════════════════════
+   Une fiche manga ne renvoyait vers rien d'autre : arrivé au bout, on
+   quittait le site. On propose donc la suite — d'abord le même créateur,
+   puis les mêmes genres. */
+async function chargerRecommandations() {
+  const carte = document.getElementById('recosCard');
+  const liste = document.getElementById('recosListe');
+  if (!carte || !manga) return;
+
+  const trouvees = [];
+  const vus = new Set([manga.id]);
+
+  if (manga.auteur_id) {
+    const { data } = await sb.from('mangas')
+      .select('id, titre, couverture_url, type, note_moyenne, nb_avis, vues')
+      .eq('auteur_id', manga.auteur_id).neq('statut', 'brouillon').neq('id', manga.id)
+      .order('vues', { ascending: false }).limit(6);
+    (data || []).forEach(m => { if (!vus.has(m.id)) { vus.add(m.id); trouvees.push(m); } });
+  }
+
+  const genres = Array.isArray(manga.genres) ? manga.genres.filter(Boolean) : [];
+  if (trouvees.length < 6 && genres.length) {
+    const { data } = await sb.from('mangas')
+      .select('id, titre, couverture_url, type, note_moyenne, nb_avis, vues')
+      .overlaps('genres', genres).neq('statut', 'brouillon').neq('id', manga.id)
+      .order('vues', { ascending: false }).limit(12);
+    (data || []).forEach(m => { if (!vus.has(m.id) && trouvees.length < 6) { vus.add(m.id); trouvees.push(m); } });
+  }
+
+  if (!trouvees.length) return;   // rien à proposer : on n'affiche pas une section vide
+  carte.style.display = '';
+
+  /* `min-width:0` est indispensable : sans lui, la largeur minimale de la
+     rangée (la somme des couvertures) remonte jusqu'à la colonne de la
+     grille et élargit TOUTES les cartes de la page — synopsis et chapitres
+     compris — qui se retrouvent alors rognées à droite. */
+  liste.innerHTML = '<div style="display:flex;gap:12px;overflow-x:auto;padding-bottom:4px;' +
+    'scrollbar-width:none;min-width:0;">' +
+    trouvees.map(m => {
+      const couv = m.couverture_url
+        ? '<img src="' + escHtml(m.couverture_url) + '" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover;" />'
+        : '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:1.8rem;">📖</div>';
+      const note = (m.nb_avis > 0 && m.note_moyenne)
+        ? '<div style="font-size:.72rem;color:var(--amber);font-weight:700;margin-top:2px;">★ ' +
+          Number(m.note_moyenne).toFixed(1) + '</div>' : '';
+      return '<a href="manga.html?id=' + encodeURIComponent(m.id) + '" ' +
+        'style="flex:0 0 108px;text-decoration:none;color:inherit;">' +
+        '<div style="width:108px;aspect-ratio:2/3;border-radius:10px;overflow:hidden;background:var(--surface2);">' +
+          couv + '</div>' +
+        '<div style="font-size:.78rem;font-weight:700;color:var(--text);margin-top:6px;line-height:1.3;' +
+          'display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">' +
+          escHtml(m.titre || 'Sans titre') + '</div>' + note +
+        '</a>';
+    }).join('') + '</div>';
 }
 
 // ── RENDER CHAPITRES ──

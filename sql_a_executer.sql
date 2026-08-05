@@ -908,4 +908,173 @@ BEGIN
   END LOOP;
 END $$;
 
+-- ═════════════════════════════════════════════════════════════════════
+-- SPRINT 3 — avis sur les mangas, préférences, notifications push
+-- ═════════════════════════════════════════════════════════════════════
+
+-- ─────────────────────────────────────────────
+-- 20. AVIS SUR LES MANGAS
+-- ─────────────────────────────────────────────
+-- Le système d'avis n'existait que pour les packs. Les mangas — le cœur du
+-- site — n'avaient ni note ni avis : impossible de trier par qualité, et
+-- rien n'aidait à choisir quoi lire.
+CREATE TABLE IF NOT EXISTS avis_mangas (
+  id BIGSERIAL PRIMARY KEY,
+  manga_id BIGINT NOT NULL REFERENCES mangas(id) ON DELETE CASCADE,
+  user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  note INT NOT NULL CHECK (note BETWEEN 1 AND 5),
+  commentaire TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  UNIQUE(manga_id, user_id)
+);
+ALTER TABLE avis_mangas ADD COLUMN IF NOT EXISTS commentaire TEXT;
+ALTER TABLE avis_mangas ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT now();
+CREATE INDEX IF NOT EXISTS idx_avis_mangas_manga ON avis_mangas(manga_id);
+
+-- Moyenne et nombre d'avis rangés SUR le manga : sans ça, afficher une note
+-- sur une grille de 30 cartes demanderait 30 requêtes de plus.
+ALTER TABLE mangas ADD COLUMN IF NOT EXISTS note_moyenne NUMERIC(3,2);
+ALTER TABLE mangas ADD COLUMN IF NOT EXISTS nb_avis INT NOT NULL DEFAULT 0;
+
+CREATE OR REPLACE FUNCTION public.maj_note_manga()
+RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+DECLARE cible BIGINT;
+BEGIN
+  cible := COALESCE(NEW.manga_id, OLD.manga_id);
+  UPDATE mangas m SET
+    note_moyenne = (SELECT ROUND(AVG(note)::numeric, 2) FROM avis_mangas WHERE manga_id = cible),
+    nb_avis      = (SELECT COUNT(*) FROM avis_mangas WHERE manga_id = cible)
+  WHERE m.id = cible;
+  RETURN NULL;
+END; $$;
+DROP TRIGGER IF EXISTS trg_maj_note_manga ON avis_mangas;
+CREATE TRIGGER trg_maj_note_manga
+  AFTER INSERT OR UPDATE OR DELETE ON avis_mangas
+  FOR EACH ROW EXECUTE FUNCTION public.maj_note_manga();
+
+-- Reprise des mangas déjà en base (sans effet si la table est vide)
+UPDATE mangas m SET
+  note_moyenne = (SELECT ROUND(AVG(note)::numeric, 2) FROM avis_mangas WHERE manga_id = m.id),
+  nb_avis      = (SELECT COUNT(*) FROM avis_mangas WHERE manga_id = m.id);
+
+ALTER TABLE avis_mangas ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "avis mangas select public" ON avis_mangas;
+CREATE POLICY "avis mangas select public" ON avis_mangas
+  FOR SELECT TO anon, authenticated USING (true);
+-- On ne note pas sa propre œuvre : c'est la seule règle qui protège
+-- vraiment la moyenne affichée.
+DROP POLICY IF EXISTS "avis mangas insert own" ON avis_mangas;
+CREATE POLICY "avis mangas insert own" ON avis_mangas
+  FOR INSERT TO authenticated WITH CHECK (
+    user_id = auth.uid()
+    AND NOT EXISTS (SELECT 1 FROM mangas m WHERE m.id = avis_mangas.manga_id AND m.auteur_id = auth.uid())
+  );
+DROP POLICY IF EXISTS "avis mangas update own" ON avis_mangas;
+CREATE POLICY "avis mangas update own" ON avis_mangas
+  FOR UPDATE TO authenticated USING (user_id = auth.uid()) WITH CHECK (user_id = auth.uid());
+DROP POLICY IF EXISTS "avis mangas delete own" ON avis_mangas;
+CREATE POLICY "avis mangas delete own" ON avis_mangas
+  FOR DELETE TO authenticated USING (user_id = auth.uid());
+
+-- ─────────────────────────────────────────────
+-- 21. PRÉFÉRENCES (page Paramètres)
+-- ─────────────────────────────────────────────
+-- Le champ `adulte` existait sur les mangas et le lecteur savait avertir,
+-- mais rien ne se mémorisait : la préférence n'existait nulle part.
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS pref_masquer_adulte BOOLEAN NOT NULL DEFAULT true;
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS pref_mode_lecture TEXT;
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS pref_notif_chapitres BOOLEAN NOT NULL DEFAULT true;
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS pref_notif_social BOOLEAN NOT NULL DEFAULT true;
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS pref_notif_push BOOLEAN NOT NULL DEFAULT false;
+
+-- ─────────────────────────────────────────────
+-- 22. LES PRÉFÉRENCES SONT RESPECTÉES
+-- ─────────────────────────────────────────────
+-- Une préférence qui n'a aucun effet est pire que pas de préférence du
+-- tout. Les triggers de notification consultent donc le réglage avant
+-- d'écrire. On les redéfinit ici plutôt que dans
+-- sql_notifications_triggers.sql pour que ce fichier reste autosuffisant.
+CREATE OR REPLACE FUNCTION public.veut_notif(cible UUID, categorie TEXT)
+RETURNS BOOLEAN LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path = public AS $$
+DECLARE chapitres BOOLEAN; social BOOLEAN;
+BEGIN
+  SELECT pref_notif_chapitres, pref_notif_social INTO chapitres, social
+  FROM profiles WHERE id = cible;
+  -- Profil absent ou colonne jamais renseignée : on notifie, comme avant.
+  IF NOT FOUND THEN RETURN true; END IF;
+  IF categorie = 'chapitres' THEN RETURN COALESCE(chapitres, true); END IF;
+  RETURN COALESCE(social, true);
+END; $$;
+
+CREATE OR REPLACE FUNCTION public.notify_follow()
+RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+DECLARE uname TEXT;
+BEGIN
+  IF NEW.followed_id = NEW.user_id THEN RETURN NEW; END IF;
+  IF NOT public.veut_notif(NEW.followed_id, 'social') THEN RETURN NEW; END IF;
+  SELECT username INTO uname FROM profiles WHERE id = NEW.user_id;
+  INSERT INTO notifications (user_id, type, titre, message, lien, acteur_id, lu)
+  VALUES (NEW.followed_id, 'follow', 'Nouvel abonné',
+          '👤 ' || COALESCE(uname, 'Quelqu''un') || ' te suit désormais',
+          'auteur.html?id=' || NEW.user_id, NEW.user_id, false);
+  RETURN NEW;
+END; $$;
+
+CREATE OR REPLACE FUNCTION public.notify_avis_manga()
+RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+DECLARE aid UUID; mtitre TEXT; uname TEXT;
+BEGIN
+  SELECT auteur_id, titre INTO aid, mtitre FROM mangas WHERE id = NEW.manga_id;
+  IF aid IS NULL OR aid = NEW.user_id THEN RETURN NEW; END IF;
+  IF NOT public.veut_notif(aid, 'social') THEN RETURN NEW; END IF;
+  SELECT username INTO uname FROM profiles WHERE id = NEW.user_id;
+  INSERT INTO notifications (user_id, type, titre, message, lien, acteur_id, lu)
+  VALUES (aid, 'avis', 'Nouvel avis',
+          '⭐ ' || COALESCE(uname, 'Quelqu''un') || ' a noté "' ||
+          COALESCE(mtitre, 'ton manga') || '" ' || NEW.note || '/5',
+          'manga.html?id=' || NEW.manga_id, NEW.user_id, false);
+  RETURN NEW;
+END; $$;
+DROP TRIGGER IF EXISTS trg_notify_avis_manga ON avis_mangas;
+CREATE TRIGGER trg_notify_avis_manga AFTER INSERT ON avis_mangas
+  FOR EACH ROW EXECUTE FUNCTION public.notify_avis_manga();
+
+-- ─────────────────────────────────────────────
+-- 23. ABONNEMENTS AUX NOTIFICATIONS PUSH
+-- ─────────────────────────────────────────────
+-- Une notification n'était visible que si la personne revenait d'elle-même.
+-- Pour un site de publication en série, c'était le canal de rappel manquant.
+CREATE TABLE IF NOT EXISTS push_subscriptions (
+  id BIGSERIAL PRIMARY KEY,
+  user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
+  endpoint TEXT NOT NULL UNIQUE,
+  p256dh TEXT NOT NULL,
+  auth TEXT NOT NULL,
+  user_agent TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_push_user ON push_subscriptions(user_id);
+
+ALTER TABLE push_subscriptions ENABLE ROW LEVEL SECURITY;
+-- Un abonnement push est une adresse d'envoi : personne d'autre que son
+-- propriétaire n'a de raison de le lire.
+DROP POLICY IF EXISTS "push select own" ON push_subscriptions;
+CREATE POLICY "push select own" ON push_subscriptions
+  FOR SELECT TO authenticated USING (user_id = auth.uid());
+DROP POLICY IF EXISTS "push insert own" ON push_subscriptions;
+CREATE POLICY "push insert own" ON push_subscriptions
+  FOR INSERT TO authenticated WITH CHECK (user_id = auth.uid());
+DROP POLICY IF EXISTS "push delete own" ON push_subscriptions;
+CREATE POLICY "push delete own" ON push_subscriptions
+  FOR DELETE TO authenticated USING (user_id = auth.uid());
+
+-- Marque une notification comme déjà poussée sur les appareils, pour ne
+-- pas la renvoyer à chaque passage de la fonction d'envoi.
+ALTER TABLE notifications ADD COLUMN IF NOT EXISTS pousse_le TIMESTAMPTZ;
+CREATE INDEX IF NOT EXISTS idx_notif_a_pousser ON notifications(pousse_le) WHERE pousse_le IS NULL;
+
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO anon, authenticated;
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated;
+
 NOTIFY pgrst, 'reload schema';
