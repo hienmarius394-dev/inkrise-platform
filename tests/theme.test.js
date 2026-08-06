@@ -62,15 +62,32 @@ await new Promise(r=>server.listen(PORT,r));
 const b=await chromium.launch(CHROME ? { executablePath: CHROME } : {});
 const errors=[];
 
-// ── 1. Le réglage système est suivi par défaut ──
-console.log('\n▶ Réglage par défaut : celui de l\'appareil');
-for (const [scheme, attendu] of [['dark','dark'], ['light','light']]) {
+// ── 1. Le clair est le défaut, quel que soit l'appareil ──
+/* Le clair est l'apparence de référence d'Inkrise : quelqu'un dont le
+   téléphone est en sombre doit quand même découvrir le site en clair.
+   Le mode « Auto » reste disponible, mais il se choisit. */
+console.log('\n▶ Le clair par défaut, même sur un appareil en sombre');
+for (const scheme of ['dark','light']) {
   const ctx=await b.newContext({viewport:{width:390,height:844},colorScheme:scheme});
   await prepare(ctx);
   const p=await ctx.newPage();
   p.on('pageerror',e=>errors.push(e.message));
   await p.goto(BASE+'/index.html'); await p.waitForTimeout(500);
-  check(`appareil en ${scheme} → thème ${attendu}`,
+  check(`appareil en ${scheme} → le site reste clair`,
+    await p.evaluate(()=>document.documentElement.getAttribute('data-theme'))==='light');
+  await ctx.close();
+}
+
+// ── 1bis. « Auto » suit bien l'appareil, une fois choisi ──
+console.log('\n▶ « Auto », une fois choisi, suit l\'appareil');
+for (const [scheme, attendu] of [['dark','dark'], ['light','light']]) {
+  const ctx=await b.newContext({viewport:{width:390,height:844},colorScheme:scheme});
+  await ctx.addInitScript(()=>{ try{localStorage.setItem('inkrise_theme','auto');}catch(e){} });
+  await prepare(ctx);
+  const p=await ctx.newPage();
+  p.on('pageerror',e=>errors.push(e.message));
+  await p.goto(BASE+'/index.html'); await p.waitForTimeout(500);
+  check(`auto + appareil en ${scheme} → thème ${attendu}`,
     await p.evaluate(()=>document.documentElement.getAttribute('data-theme'))===attendu);
   await ctx.close();
 }
@@ -94,12 +111,14 @@ console.log('\n▶ Aucun flash clair au chargement');
   check(`le script de thème est synchrone en <head> sur les ${fichiers.length} pages`,
         fautifs.length === 0, fautifs.join(' ; '));
 
+  // Le sombre se choisit désormais : un appareil en sombre ne suffit plus.
   const ctx=await b.newContext({viewport:{width:390,height:844},colorScheme:'dark'});
+  await ctx.addInitScript(()=>{ try{localStorage.setItem('inkrise_theme','sombre');}catch(e){} });
   await prepare(ctx);
   const p=await ctx.newPage();
   await p.goto(BASE+'/index.html'); await p.waitForTimeout(400);
   const fond = await p.evaluate(()=>getComputedStyle(document.body).backgroundColor);
-  check('le fond de la page est bien sombre', !/255, 255, 255/.test(fond), fond);
+  check('sombre choisi → le fond est bien sombre', !/255, 255, 255/.test(fond), fond);
   await ctx.close();
 }
 
@@ -115,8 +134,8 @@ console.log('\n▶ Basculeur du menu latéral');
     await p.evaluate(()=>document.documentElement.getAttribute('data-theme'))==='light');
   check('le basculeur est dans le menu', await p.locator('#inkThemeRow').count()===1);
   check('trois choix proposés', await p.locator('.ink-theme-opt').count()===3);
-  check('« Auto » est actif par défaut',
-    await p.locator('.ink-theme-opt[data-valeur=auto]').getAttribute('aria-pressed')==='true');
+  check('« Clair » est actif par défaut',
+    await p.locator('.ink-theme-opt[data-valeur=clair]').getAttribute('aria-pressed')==='true');
 
   await p.evaluate(()=>document.querySelector('.ink-theme-opt[data-valeur=sombre]').click());
   await p.waitForTimeout(200);

@@ -566,9 +566,8 @@ let totalMangas  = 0;
 // annoncer le total : sans lui, impossible de savoir s'il reste des titres.
 function fetchMangas(offset) {
   let q = sb.from('mangas').select('*', { count: 'exact' }).neq('statut', 'brouillon');
-  /* Préférence « masquer le contenu 18+ » (page Paramètres). Par défaut on
-     masque : c'est le réglage le moins surprenant pour qui n'a rien choisi,
-     et un site jeune vaut mieux prudent. */
+  /* Préférence « masquer le contenu 18+ » (page Paramètres), désactivée
+     par défaut : on ne masque que si la personne l'a explicitement demandé. */
   if (masquerAdulte) q = q.neq('adulte', true);
   if (query)          q = q.or(`titre.ilike.%${query}%,synopsis.ilike.%${query}%`);
   if (filters.genre)  q = q.contains('genres', [filters.genre]);
@@ -651,19 +650,18 @@ function updateCount() {
 }
 
 /* Préférence 18+ — lue une fois au chargement.
-   Le champ `adulte` existait en base et le lecteur savait avertir, mais
-   rien ne se mémorisait : la préférence n'existait nulle part. */
-let masquerAdulte = true;
+   Personne ne l'a demandée tant qu'elle n'a pas été cochée dans Paramètres :
+   le catalogue est donc complet par défaut. La lecture elle-même reste
+   protégée par l'écran d'avertissement d'âge du lecteur. */
+let masquerAdulte = false;
 async function chargerPreferenceAdulte() {
   try {
     const { data: { session } } = await sb.auth.getSession();
-    if (!session || !session.user) return;          // visiteur : on reste prudent
+    if (!session || !session.user) return;
     const { data } = await sb.from('profiles')
       .select('pref_masquer_adulte').eq('id', session.user.id).maybeSingle();
-    /* Colonne absente (SQL pas encore passé) → `data` sans la clé : on garde
-       le masquage plutôt que d'exposer par accident. */
-    if (data && data.pref_masquer_adulte === false) masquerAdulte = false;
-  } catch (e) { /* on garde la valeur prudente */ }
+    if (data && data.pref_masquer_adulte === true) masquerAdulte = true;
+  } catch (e) { /* réglage indisponible : on n'invente pas de filtre */ }
 }
 
 async function doSearchPage() {

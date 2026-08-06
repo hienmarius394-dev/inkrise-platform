@@ -60,7 +60,9 @@ async function ouvrir(b, { user, avis, profilPrefs, capterEcritures }) {
       if (/adulte=neq\.true/.test(u)) ecritures.push({ methode:'FILTRE18', url:u });
     }
     else if (u.includes('/profiles')) rows = [{ id:(user&&user.id)||'x', username:'Lecteur',
-        pref_masquer_adulte: profilPrefs ? profilPrefs.pref_masquer_adulte : true,
+        // false = ce que porte un profil neuf depuis que le filtre n'est
+        // plus coché d'office.
+        pref_masquer_adulte: profilPrefs ? profilPrefs.pref_masquer_adulte : false,
         pref_mode_lecture: profilPrefs ? profilPrefs.pref_mode_lecture : null,
         pref_notif_chapitres:true, pref_notif_social:true, pref_notif_push:false }];
     else if (u.includes('/chapitres')) rows=[{id:101,numero:1,titre:'Ch 1',manga_id:1,created_at:'2026-06-05T10:00:00Z'}];
@@ -189,15 +191,23 @@ console.log('\n▶ Page Paramètres');
   const t = await p.evaluate(()=>document.body.innerText);
   check('les quatre sections sont là',
     /Apparence/.test(t) && /Lecture/.test(t) && /Notifications/.test(t) && /Mes données/.test(t));
-  check('le filtre 18+ est activé par défaut',
-    await p.locator('#prefAdulte').getAttribute('aria-checked')==='true');
+  /* « JSON » ne veut rien dire pour la plupart des gens : on dit ce que le
+     fichier contient et comment l'ouvrir, pas son format. */
+  check('l\'export dit ce qu\'il contient, sans jargon',
+    /ton profil/.test(t) && /bloc-notes/.test(t) && !/\(JSON\)/.test(t),
+    (t.match(/[^\n]*JSON[^\n]*/)||['pas de mention de JSON'])[0]);
+  /* Le filtre 18+ ne doit JAMAIS être coché d'office : masquer une partie
+     du catalogue sans que personne ne l'ait demandé priverait ces œuvres de
+     toute visibilité, sans que le lecteur ni le créateur comprennent pourquoi. */
+  check('le filtre 18+ est DÉSACTIVÉ par défaut',
+    await p.locator('#prefAdulte').getAttribute('aria-checked')==='false');
 
   await p.locator('#prefAdulte').click(); await p.waitForTimeout(500);
   const maj = ecritures.find(e=>e.methode==='PATCH' && e.corps && 'pref_masquer_adulte' in e.corps);
-  check('le décocher enregistre la préférence', !!maj && maj.corps.pref_masquer_adulte===false,
+  check('le cocher enregistre la préférence', !!maj && maj.corps.pref_masquer_adulte===true,
     JSON.stringify(maj && maj.corps));
   check('  et l\'interrupteur reflète le nouvel état',
-    await p.locator('#prefAdulte').getAttribute('aria-checked')==='false');
+    await p.locator('#prefAdulte').getAttribute('aria-checked')==='true');
 
   await p.locator('#prefSocial').click(); await p.waitForTimeout(500);
   const majS = ecritures.find(e=>e.methode==='PATCH' && e.corps && 'pref_notif_social' in e.corps);
@@ -226,7 +236,7 @@ console.log('\n▶ Paramètres — déconnecté et export');
   const dl = p.waitForEvent('download', { timeout: 8000 }).catch(()=>null);
   await p.locator('#btnExport').click();
   const fichier = await dl;
-  check('l\'export RGPD produit un fichier', !!fichier, fichier ? fichier.suggestedFilename() : 'aucun');
+  check('l\'export produit un fichier', !!fichier, fichier ? fichier.suggestedFilename() : 'aucun');
   if (fichier) {
     check('  nommé lisiblement', /^inkrise-mes-donnees-\d{4}-\d{2}-\d{2}\.json$/.test(fichier.suggestedFilename()),
       fichier.suggestedFilename());
@@ -240,6 +250,7 @@ console.log('\n▶ Paramètres — déconnecté et export');
 
 console.log('\n▶ Le filtre 18+ agit vraiment sur le catalogue');
 {
+  // profil sans préférence explicite → catalogue complet ; coché → filtré
   for (const [masquer, attendu] of [[true,true],[false,false]]) {
     const { ctx, p, ecritures } = await ouvrir(b, { user:U, profilPrefs:{ pref_masquer_adulte: masquer } });
     p.on('pageerror',e=>errors.push(e.message));

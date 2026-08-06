@@ -6,9 +6,14 @@
    précisément le flash blanc qu'on cherche à éviter, la nuit.
 
    Trois états possibles, mémorisés dans localStorage :
-     'auto'   → on suit le réglage du téléphone / de l'ordinateur (défaut)
-     'clair'  → forcé clair
+     'clair'  → clair — LE DÉFAUT
      'sombre' → forcé sombre
+     'auto'   → suit le réglage du téléphone / de l'ordinateur
+
+   Le défaut est 'clair', pas 'auto' : le clair est l'apparence de
+   référence d'Inkrise, et quelqu'un dont le téléphone est en sombre
+   découvrirait sinon le site en sombre sans jamais l'avoir vu autrement.
+   Le sombre reste à un geste, dans le menu ou dans Paramètres.
 
    L'attribut posé sur <html> est data-theme="dark" ou "light". Les couleurs
    vivent dans inkrise-theme.css, jamais ici. */
@@ -21,8 +26,8 @@
   }
 
   function lire() {
-    try { return localStorage.getItem(CLE) || 'auto'; }
-    catch (e) { return 'auto'; }   // navigation privée stricte
+    try { return localStorage.getItem(CLE) || 'clair'; }
+    catch (e) { return 'clair'; }  // navigation privée stricte
   }
 
   function resoudre(choix) {

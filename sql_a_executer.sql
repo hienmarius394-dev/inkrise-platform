@@ -982,7 +982,16 @@ CREATE POLICY "avis mangas delete own" ON avis_mangas
 -- ─────────────────────────────────────────────
 -- Le champ `adulte` existait sur les mangas et le lecteur savait avertir,
 -- mais rien ne se mémorisait : la préférence n'existait nulle part.
-ALTER TABLE profiles ADD COLUMN IF NOT EXISTS pref_masquer_adulte BOOLEAN NOT NULL DEFAULT true;
+--
+-- Le filtre est DÉSACTIVÉ par défaut : personne ne l'a demandé, et masquer
+-- d'office une partie du catalogue priverait ces œuvres de toute visibilité
+-- sans que ni le lecteur ni le créateur ne comprennent pourquoi. La lecture
+-- reste protégée par l'écran d'avertissement d'âge du lecteur.
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS pref_masquer_adulte BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE profiles ALTER COLUMN pref_masquer_adulte SET DEFAULT false;
+-- Les comptes créés avant ce changement portent un `true` qui vient du
+-- défaut, pas d'un choix : on le remet à false.
+UPDATE profiles SET pref_masquer_adulte = false WHERE pref_masquer_adulte IS TRUE;
 ALTER TABLE profiles ADD COLUMN IF NOT EXISTS pref_mode_lecture TEXT;
 ALTER TABLE profiles ADD COLUMN IF NOT EXISTS pref_notif_chapitres BOOLEAN NOT NULL DEFAULT true;
 ALTER TABLE profiles ADD COLUMN IF NOT EXISTS pref_notif_social BOOLEAN NOT NULL DEFAULT true;

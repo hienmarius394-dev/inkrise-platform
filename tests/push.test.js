@@ -113,9 +113,12 @@ console.log('\n▶ Paramètres sans clé VAPID configurée');
   await p.goto(BASE+'/parametres.html'); await p.waitForTimeout(1800);
   check('aucun interrupteur push tant que la clé manque',
     await p.locator('#prefPush').count()===0);
-  check('  mais on explique pourquoi plutôt que de rester muet',
-    /pas encore activées|ne gère pas/i.test(await p.locator('#zonePush').innerText()),
-    await p.locator('#zonePush').innerText());
+  /* Et rien d'autre non plus : l'ancien message « pas encore activées »
+     s'affichait sous deux interrupteurs cochés, où il se lisait comme une
+     panne. Ce n'est ni un défaut ni une action possible pour la personne. */
+  check('  et pas d\'avertissement qui ressemble à une panne',
+    (await p.locator('#zonePush').innerText()).trim()==='',
+    JSON.stringify(await p.locator('#zonePush').innerText()));
   await ctx.close();
 }
 
