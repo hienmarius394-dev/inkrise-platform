@@ -275,7 +275,7 @@ async function enregistrer(champs) {
     carte('📖 Lecture',
       ligne('prefAdulte', 'Masquer le contenu 18+',
             'Les œuvres marquées « adulte » n\'apparaîtront ni dans le catalogue ni dans la recherche.',
-            profil.pref_masquer_adulte !== false) +
+            profil.pref_masquer_adulte === true) +
       '<div style="padding:14px 0;border-top:1px solid var(--border);">' +
         '<label for="prefMode" style="display:block;font-weight:700;font-size:.92rem;color:var(--text);">Mode de lecture par défaut</label>' +
         '<div style="font-size:.8rem;color:var(--text-3);margin:3px 0 10px;line-height:1.5;">Le lecteur s\'ouvrira directement ainsi. Tu peux toujours changer en cours de lecture.</div>' +
@@ -294,11 +294,23 @@ async function enregistrer(champs) {
       '<div id="zonePush"></div>') +
 
     carte('🔐 Mes données',
-      '<div style="font-size:.8rem;color:var(--text-3);margin:6px 0 14px;line-height:1.6;">' +
-        'Le RGPD te donne un droit de portabilité : tu peux récupérer une copie de tes données quand tu veux.</div>' +
+      '<div style="font-size:.82rem;color:var(--text-2);margin:6px 0 12px;line-height:1.7;">' +
+        'Tu peux récupérer une copie de tout ce que tu as sur Inkrise, à garder ' +
+        'sur ton téléphone ou ton ordinateur. C\'est un droit que te donne la loi.</div>' +
+      '<div style="font-size:.8rem;color:var(--text-3);margin-bottom:6px;line-height:1.7;">Le fichier contient :</div>' +
+      '<ul style="font-size:.8rem;color:var(--text-3);line-height:1.8;margin:0 0 12px 18px;padding:0;">' +
+        '<li>ton profil et tes réglages</li>' +
+        '<li>tes mangas et leurs chapitres</li>' +
+        '<li>ta bibliothèque et ta progression de lecture</li>' +
+        '<li>tes avis, tes commentaires et tes abonnements</li>' +
+        '<li>tes achats et tes notifications</li>' +
+      '</ul>' +
+      '<div style="font-size:.76rem;color:var(--text-3);margin-bottom:14px;line-height:1.6;">' +
+        'C\'est un fichier texte : il s\'ouvre avec n\'importe quel bloc-notes, ' +
+        'et un autre site peut le relire pour réimporter tes données.</div>' +
       '<button type="button" id="btnExport" style="width:100%;min-height:44px;padding:12px;border:1px solid var(--border);' +
         'border-radius:10px;background:var(--surface);color:var(--text);font-family:inherit;font-size:.9rem;font-weight:700;cursor:pointer;">' +
-        '📦 Télécharger mes données (JSON)</button>' +
+        '📦 Télécharger une copie de mes données</button>' +
       '<div style="margin-top:18px;padding-top:16px;border-top:1px solid var(--border);">' +
         '<div style="font-weight:700;font-size:.9rem;color:var(--danger-link);margin-bottom:6px;">Zone sensible</div>' +
         '<div style="font-size:.8rem;color:var(--text-3);margin-bottom:12px;line-height:1.6;">' +
@@ -354,12 +366,17 @@ async function rendrePush() {
   if (!zone) return;
 
   const supporte = 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
-  if (!supporte || !CLE_VAPID) {
+
+  /* Clé VAPID absente = fonction pas encore installée de NOTRE côté. Ce
+     n'est ni une panne ni une action possible pour la personne : on ne dit
+     rien plutôt que d'afficher un avertissement sous deux interrupteurs
+     cochés, où il se lisait comme un dysfonctionnement. L'interrupteur
+     apparaîtra tout seul le jour où la clé sera renseignée. */
+  if (!CLE_VAPID) { zone.innerHTML = ''; return; }
+
+  if (!supporte) {
     zone.innerHTML = '<div style="padding:14px 0;border-top:1px solid var(--border);font-size:.8rem;color:var(--text-3);line-height:1.6;">' +
-      (supporte
-        ? 'Les notifications sur ton téléphone ne sont pas encore activées sur ce site.'
-        : 'Ton navigateur ne gère pas les notifications push.') +
-      '</div>';
+      'Ton navigateur ne gère pas les notifications sur l\'appareil.</div>';
     return;
   }
 
