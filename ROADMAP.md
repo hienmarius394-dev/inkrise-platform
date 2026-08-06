@@ -67,8 +67,9 @@ Inkrise = plateforme pour artistes manga/webtoon :
    et ne mène nulle part.
 2. **Pages par genre** — les 20 genres ne sont qu'un `<select>` : pas d'URL
    partageable ni indexable.
-3. **Confort du lecteur** — plein écran, zoom, double page sur tablette,
-   signets. *(Maintien de l'écran allumé : ✅ livré.)*
+3. **Confort du lecteur** — double page sur tablette, signets, défilement
+   automatique pour le webtoon. *(Écran maintenu allumé, plein écran et
+   zoom : ✅ livrés.)*
 4. **Modération** — `admin.html` ne permet que de cocher « traité » : ni
    masquage, ni suppression, ni lien vers un commentaire signalé.
 5. **Profil de lecteur** — chapitres lus, temps de lecture, genres favoris.

@@ -353,8 +353,8 @@ c'est le canal de rétention manquant.
 Présents : vertical/horizontal, sens de lecture, zones de clic, flèches
 clavier, préchargement de la page suivante, barre de progression, reprise,
 hors-ligne. Bon socle. Absents :
-- plein écran (`requestFullscreen` : 0 occurrence),
-- zoom / pincement,
+- ~~plein écran (`requestFullscreen` : 0 occurrence)~~ **✅ livré** (§7.4),
+- ~~zoom / pincement~~ **✅ livré** (§7.4),
 - ~~`wakeLock` — l'écran s'éteint pendant une lecture longue en mode vertical~~ **✅ livré** (§7.3),
 - ajustement de la luminosité,
 - double page sur tablette et ordinateur,
@@ -766,6 +766,49 @@ Aucun SQL : le réglage vit dans `localStorage`.
 
 ---
 
+## 7.4 Confort du lecteur — plein écran et zoom
+
+Une planche entière tient dans un écran de téléphone : les dialogues y
+deviennent illisibles. Deux gestes manquaient.
+
+**Zoom** — pincement à deux doigts, double tap, `Ctrl` + molette, et les
+touches `+` / `−` / `0`. Plafonné à ×3, remis à plat en changeant de page,
+de mode ou de chapitre : rester agrandi sur une planche qu'on n'a pas
+choisie déroute.
+
+Trois arbitrages, tous imposés par la mécanique :
+
+- Zoom et balayage se disputent le même `transform` sur la même image. Ils
+  sont donc calculés ensemble par une seule fonction, jamais écrits l'un
+  par-dessus l'autre.
+- Tant qu'on est agrandi, le doigt **déplace** la planche au lieu de
+  tourner la page — sinon on ne pourrait jamais lire un coin — et les
+  bandes de clic latérales sont neutralisées.
+- Le déplacement est borné à partir de la taille de mise en page, pas de
+  `getBoundingClientRect()` : cette dernière inclut déjà le zoom **et** le
+  déplacement en cours, donc la borne aurait dépendu de la position et le
+  déplacement aurait dérivé.
+
+**Plein écran** — bouton dans la barre du haut et raccourci `f`. Il ne
+s'affiche que là où le navigateur répond : sur iPhone l'API est réservée
+aux vidéos, et un bouton sans effet vaut moins que rien. La touche Échap
+sort du plein écran sans passer par le bouton, d'où l'écoute de
+`fullscreenchange` — sans elle l'icône serait restée bloquée sur
+« quitter ».
+
+Le pincement ne se devine pas : un message unique le signale à la première
+lecture page par page.
+
+La suite `confort` (21 vérifications) a démasqué un défaut que la relecture
+n'aurait pas trouvé : **le double tap ne faisait rien**. Je testais
+`!dragging`, or `dragging` passe à vrai dès le premier contact — la
+condition n'était donc jamais remplie. Ce qui distingue un appui d'un
+glissement, c'est l'absence de **mouvement**, pas l'absence de contact.
+
+Aucun SQL.
+
+---
+
 ## Annexe — méthode
 
 ```bash
@@ -776,6 +819,7 @@ node tests/outil-rls.js        # 41/41 — PostgreSQL réel, schéma chargé
 node tests/outil-injection.js  # 0 contenu utilisateur hors de son cadre
 node tests/outil-panne.js      # 0 page muette sur 42 combinaisons
 npm test -- veille             # 16/16 — écran maintenu allumé
+npm test -- confort            # 21/21 — plein écran et zoom
 node tests/outil-chasse.js     # 21 pages × 2 états
 URLS=… MODES=… node tests/_txt.js   # texte visible de chaque page, à relire
 ```
