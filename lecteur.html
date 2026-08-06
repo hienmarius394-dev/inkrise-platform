@@ -201,6 +201,12 @@
       border-radius: 14px;
       box-shadow: 0 24px 70px -12px rgba(35,20,90,0.35), 0 2px 10px rgba(35,20,90,0.10);
       animation: fadeInPage .25s ease;
+      /* Le zoom part du centre : c'est ce que suppose le calcul des bornes
+         de déplacement (voir borner()). */
+      transform-origin: center center;
+      /* Sans ça, le navigateur intercepte le pincement pour zoomer la page
+         entière — barres comprises — au lieu de la seule planche. */
+      touch-action: none;
     }
     @keyframes fadeInPage { from { opacity:0; transform:scale(.98); } to { opacity:1; transform:scale(1); } }
 
@@ -680,6 +686,11 @@
       <button class="mode-btn" id="btnModePage" onclick="setMode('pages')" aria-pressed="false"
               title="Lecture horizontale (page par page)" aria-label="Lecture horizontale">↔<span class="mode-label"> Horizontal</span></button>
     </div>
+    <!-- Plein écran : masqué tant qu'on ne sait pas si le navigateur sait
+         le faire (iPhone ne le propose que sur les vidéos). -->
+    <button class="nav-btn" id="btnPleinEcran" style="display:none;"
+            title="Passer en plein écran" aria-label="Passer en plein écran"
+            aria-pressed="false">⛶</button>
     <!-- Chapitre nav -->
     <div class="chap-nav">
       <button class="nav-btn" id="btnPrevChap" title="Chapitre précédent">‹</button>
@@ -1125,6 +1136,14 @@ function renderPages() {
 function renderPageMode() {
   document.getElementById('pagesViewer').classList.remove('hidden');
   document.getElementById('progressWrap').style.display = 'block';
+  /* Un geste que personne ne devine n'existe pas : on le signale une fois,
+     à la première lecture page par page. */
+  try {
+    if (!localStorage.getItem('inkrise_zoom_hint')) {
+      localStorage.setItem('inkrise_zoom_hint', '1');
+      setTimeout(() => showToast('Astuce : pince ou double-tape une planche pour l\'agrandir'), 2400);
+    }
+  } catch (e) {}
   buildPageStrip();
   showPage(currentPage);
   flashClickZones();
@@ -1144,6 +1163,7 @@ function flashClickZones() {
 function showPage(idx) {
   if (idx < 0 || idx >= pages.length) return;
   currentPage = idx;
+  reinitZoom();   // rester agrandi sur une planche qu'on n'a pas choisie déroute
 
   const img = document.getElementById('pageImg');
   const placeholder = document.getElementById('pagePlaceholder');
@@ -1306,6 +1326,7 @@ function showEndScreen() {
 // ── MODE SWITCH ──
 function setMode(mode, reload = true) {
   readMode = mode;
+  reinitZoom();   // le zoom n'a de sens qu'en mode pages
   const isPages  = mode === 'pages';
   const btnPage   = document.getElementById('btnModePage');
   const btnScroll = document.getElementById('btnModeScroll');
@@ -1360,31 +1381,128 @@ function updatePageStrip() {
 // Sans ça, tourner les pages au doigt était impossible : seules les zones de
 // clic latérales répondaient, et elles sont invisibles sur écran tactile.
 let swipeJustHappened = false;
+
+/* ── ZOOM (mode pages) ──────────────────────────────────────────────
+   Une planche entière tient dans un écran de téléphone : les dialogues
+   deviennent illisibles. Pincer pour agrandir est le geste attendu, et
+   double-taper l'accélérateur.
+
+   Zoom et balayage se disputent le même `transform` sur la même image :
+   ils sont donc calculés ensemble, jamais écrits l'un par-dessus l'autre.
+   Et tant qu'on est agrandi, le doigt déplace la planche au lieu de
+   tourner la page — sinon on ne pourrait jamais lire un coin. */
+const ZOOM_MAX = 3, ZOOM_DOUBLE_TAP = 2.4;
+let zoom = 1, panX = 0, panY = 0, glisseDx = 0;
+
+function appliquerTransform(animer) {
+  const img = document.getElementById('pageImg');
+  if (!img) return;
+  img.style.transition = animer ? 'transform .18s ease-out' : '';
+  img.style.transform =
+    `translate(${panX + glisseDx * 0.4}px, ${panY}px) scale(${zoom})`;
+  /* Agrandi, les bandes latérales tourneraient la page au moindre appui
+     pendant qu'on essaie de déplacer la planche. */
+  document.querySelectorAll('.click-zone').forEach(z => {
+    z.style.pointerEvents = zoom > 1 ? 'none' : '';
+  });
+}
+
+/* Empêche de faire sortir la planche de l'écran : au-delà, on ne voit
+   plus que du vide et on ne sait plus revenir. */
+function borner() {
+  const img = document.getElementById('pageImg');
+  if (!img) return;
+  /* `getBoundingClientRect()` inclut déjà le zoom ET le déplacement en
+     cours : s'en servir ferait dépendre la borne de la position, et le
+     déplacement dériverait. On la calcule depuis la taille de mise en
+     page, qui, elle, ne bouge pas. L'origine du zoom étant le centre, le
+     débordement se répartit également des deux côtés. */
+  const debordeX = img.clientWidth  * (zoom - 1) / 2;
+  const debordeY = img.clientHeight * (zoom - 1) / 2;
+  panX = Math.max(-debordeX, Math.min(debordeX, panX));
+  panY = Math.max(-debordeY, Math.min(debordeY, panY));
+}
+
+function reglerZoom(v, animer) {
+  zoom = Math.max(1, Math.min(ZOOM_MAX, v));
+  if (zoom === 1) { panX = 0; panY = 0; }
+  else borner();
+  appliquerTransform(animer);
+}
+
+/* Changer de page, de mode ou de chapitre remet la planche à plat :
+   rester agrandi sur une image qu'on n'a pas choisie est déroutant. */
+function reinitZoom() {
+  zoom = 1; panX = 0; panY = 0; glisseDx = 0;
+  appliquerTransform(false);
+}
+
 function bindSwipe() {
   const viewer = document.getElementById('pagesViewer');
   const img    = document.getElementById('pageImg');
   let startX = 0, startY = 0, dx = 0, dragging = false;
+  let pincement = 0, zoomDepart = 1, panDepartX = 0, panDepartY = 0;
+  let dernierTap = 0, bouge = false;
+
+  const ecart = t => Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
 
   viewer.addEventListener('touchstart', e => {
-    if (readMode !== 'pages' || e.touches.length !== 1) return;
+    if (readMode !== 'pages') return;
+    if (e.touches.length === 2) {
+      dragging = false;
+      pincement = ecart(e.touches);
+      zoomDepart = zoom;
+      return;
+    }
+    if (e.touches.length !== 1) return;
     startX = e.touches[0].clientX;
     startY = e.touches[0].clientY;
-    dx = 0; dragging = true;
+    panDepartX = panX; panDepartY = panY;
+    dx = 0; dragging = true; bouge = false;
   }, { passive: true });
 
   viewer.addEventListener('touchmove', e => {
+    if (readMode !== 'pages') return;
+    if (e.touches.length === 2 && pincement) {
+      reglerZoom(zoomDepart * (ecart(e.touches) / pincement), false);
+      return;
+    }
     if (!dragging) return;
-    dx = e.touches[0].clientX - startX;
-    const dy = e.touches[0].clientY - startY;
+    const ddx = e.touches[0].clientX - startX;
+    const ddy = e.touches[0].clientY - startY;
+    if (Math.hypot(ddx, ddy) > 10) bouge = true;
+    if (zoom > 1) {
+      // Agrandi : le doigt déplace la planche, il ne tourne pas la page.
+      panX = panDepartX + ddx; panY = panDepartY + ddy;
+      borner(); appliquerTransform(false);
+      return;
+    }
+    dx = ddx;
     // Geste plutôt vertical : c'est un défilement, on rend la main à la page
-    if (Math.abs(dy) > Math.abs(dx)) { dragging = false; img.style.transform = ''; return; }
-    img.style.transform = `translateX(${dx * 0.4}px)`; // la page suit le doigt
+    if (Math.abs(ddy) > Math.abs(dx)) { dragging = false; glisseDx = 0; appliquerTransform(false); return; }
+    glisseDx = dx; appliquerTransform(false); // la page suit le doigt
   }, { passive: true });
 
-  viewer.addEventListener('touchend', () => {
+  viewer.addEventListener('touchend', e => {
+    if (e.touches.length === 0) pincement = 0;
+    /* Double tap : deux appuis rapprochés SANS déplacement. Se fier à
+       `dragging` ne marchait pas — il passe à vrai dès le premier contact,
+       donc la condition n'était jamais remplie et le double tap ne
+       faisait rien. C'est l'absence de mouvement qui distingue un appui
+       d'un glissement, pas l'absence de contact. */
+    if (!bouge && e.changedTouches && e.changedTouches.length === 1 && !pincement) {
+      const t = Date.now();
+      if (t - dernierTap < 300) {
+        dragging = false; glisseDx = 0; dernierTap = 0;
+        reglerZoom(zoom > 1 ? 1 : ZOOM_DOUBLE_TAP, true);
+        return;
+      }
+      dernierTap = t;
+    }
     if (!dragging) return;
     dragging = false;
-    img.style.transform = '';
+    if (zoom > 1) return;                 // on déplaçait la planche
+    glisseDx = 0; appliquerTransform(false);
     if (Math.abs(dx) < 45) return; // simple tap ou micro-mouvement
     swipeJustHappened = true;
     setTimeout(() => { swipeJustHappened = false; }, 300);
@@ -1392,6 +1510,58 @@ function bindSwipe() {
     const forward = manga?.sens_lecture !== 'lr' ? dx > 0 : dx < 0;
     forward ? nextPage() : prevPage();
   });
+
+  // Souris et pavé tactile : Ctrl + molette, comme partout ailleurs.
+  viewer.addEventListener('wheel', e => {
+    if (readMode !== 'pages' || !e.ctrlKey) return;
+    e.preventDefault();
+    reglerZoom(zoom * (e.deltaY < 0 ? 1.12 : 1 / 1.12), false);
+  }, { passive: false });
+}
+
+// ── PLEIN ÉCRAN ──
+/* Lire une planche sur un écran de téléphone, c'est se battre pour chaque
+   pixel : la barre du navigateur et celle du système en mangent facilement
+   un cinquième. L'API n'existe pas partout — sur iPhone elle est réservée
+   aux vidéos — donc le bouton ne s'affiche que là où elle répond. */
+function pleinEcranPossible() {
+  const e = document.documentElement;
+  return !!(e.requestFullscreen || e.webkitRequestFullscreen);
+}
+function pleinEcranActif() {
+  return !!(document.fullscreenElement || document.webkitFullscreenElement);
+}
+function basculerPleinEcran() {
+  const e = document.documentElement;
+  if (pleinEcranActif()) {
+    (document.exitFullscreen || document.webkitExitFullscreen).call(document);
+  } else {
+    const demander = e.requestFullscreen || e.webkitRequestFullscreen;
+    /* Le refus est une promesse rejetée (geste utilisateur jugé absent,
+       réglage du navigateur…). Non attrapée, elle remonte en console. */
+    const r = demander.call(e);
+    if (r && r.catch) r.catch(() => {});
+  }
+}
+function peindrePleinEcran() {
+  const b = document.getElementById('btnPleinEcran');
+  if (!b) return;
+  const actif = pleinEcranActif();
+  b.textContent = actif ? '⤡' : '⛶';
+  b.setAttribute('aria-pressed', String(actif));
+  const t = actif ? 'Quitter le plein écran' : 'Passer en plein écran';
+  b.title = t; b.setAttribute('aria-label', t);
+}
+function brancherPleinEcran() {
+  const b = document.getElementById('btnPleinEcran');
+  if (!b || !pleinEcranPossible()) return;
+  b.style.display = 'flex';
+  b.addEventListener('click', basculerPleinEcran);
+  /* La touche Échap sort du plein écran sans passer par le bouton : sans
+     ces écouteurs, l'icône resterait bloquée sur « quitter ». */
+  ['fullscreenchange', 'webkitfullscreenchange'].forEach(ev =>
+    document.addEventListener(ev, peindrePleinEcran));
+  peindrePleinEcran();
 }
 
 // ── CHAPITRE SELECT ──
@@ -1456,11 +1626,21 @@ function bindEvents() {
       const rl = manga?.sens_lecture !== 'lr';
       if (e.key === 'ArrowRight' || e.key === 'ArrowDown') rl ? prevPage() : nextPage();
       if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   rl ? nextPage() : prevPage();
+      /* Le pincement n'existe pas sur un ordinateur portable sans écran
+         tactile : les mêmes raccourcis que partout ailleurs. */
+      if (e.key === '+' || e.key === '=') { e.preventDefault(); reglerZoom(zoom * 1.25, true); }
+      if (e.key === '-' || e.key === '_') { e.preventDefault(); reglerZoom(zoom / 1.25, true); }
+      if (e.key === '0') { e.preventDefault(); reglerZoom(1, true); }
+    }
+    if (e.key === 'f' && !gateOpen() && pleinEcranPossible() &&
+        !/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName || '')) {
+      basculerPleinEcran();
     }
   });
 
-  // Glissement tactile pour tourner les pages
+  // Glissement tactile pour tourner les pages, pincement pour agrandir
   bindSwipe();
+  brancherPleinEcran();
 
   // Le sélecteur de mode vit dans la topbar, qui s'efface au défilement :
   // on le signale une fois pour que le lecteur sache qu'il existe.
