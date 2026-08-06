@@ -361,14 +361,7 @@ hors-ligne. Bon socle. Absents :
 - signets sur une page précise,
 - défilement automatique pour le webtoon.
 
-### 2.9 🟡 La modération est une liste, pas un outil **[vérifié]**
-
-`admin.html` affiche les signalements et permet uniquement de cocher
-« ✓ Traité ». Le modérateur ne peut ni masquer un contenu, ni le supprimer, ni
-avertir ou bannir un compte — il doit tout faire à la main dans Supabase. Et
-pour les signalements de type `commentaire` ou `post`, `lienContenu()` renvoie
-`null` : **il n'a même pas de lien vers le contenu signalé**. Ni filtre, ni
-compteur, ni tri.
+### 2.9 ✅ ~~La modération est une liste, pas un outil~~ — **livré** (§7.5)
 
 ### 2.10 🟡 Le profil d'un lecteur ne parle que de création **[vérifié — capture base vide]**
 
@@ -809,6 +802,57 @@ Aucun SQL.
 
 ---
 
+## 7.5 Modération — de la case à cocher aux vrais outils
+
+`admin.html` ne savait faire qu'une chose : marquer un signalement
+« traité ». Le contenu incriminé, lui, restait en ligne. Et la page
+n'affichait que le motif du signalement — impossible de juger sans aller
+ouvrir le contenu dans un autre onglet, et impossible tout court une fois
+celui-ci retiré.
+
+**Ce que la page fait maintenant :**
+
+| Avant | Maintenant |
+|---|---|
+| motif seul | l'extrait du contenu, son auteur, un lien qui mène au commentaire **dans son chapitre** |
+| dix plaintes = dix lignes identiques | un contenu incriminé = une carte, avec le nombre de plaintes et les motifs distincts |
+| cocher « traité » | **masquer** (le contenu disparaît du site) · **rétablir** · **classer sans suite** |
+| une seule liste | trois vues : à traiter / traités / tous |
+
+**Le masquage passe par les politiques de lecture, pas par les pages.**
+Filtrer côté navigateur aurait voulu dire ajouter `.is('masque_le', null)`
+à chaque requête des vingt et une pages — et il aurait suffi d'en oublier
+une pour que le contenu retiré réapparaisse. La règle est posée une fois,
+côté base. L'auteur continue de voir son propre contenu, la modération
+voit tout, le reste du monde ne voit plus rien.
+
+Deux fonctions serveur, pour ne pas donner aux modérateurs le droit
+d'écrire sur `mangas`, `commentaires` et `posts_communaute` — ce qui
+ouvrirait bien plus que le masquage :
+
+- `moderer_contenu(type, id, masquer)` ne touche qu'une colonne, vérifie
+  elle-même les droits, et classe les signalements liés au passage ;
+- `apercu_signale(type, id)` rend l'extrait, l'auteur et le lien de
+  contexte — le serveur est le seul à savoir dans quel manga et quel
+  chapitre vit un commentaire signalé.
+
+**Trois erreurs, toutes attrapées par la mesure :**
+
+- `lienContenu()` lisait `type_contenu` / `contenu_id` alors que les
+  groupes portent `type` / `id` : **aucun lien ne s'affichait**. Trouvé par
+  la suite `moderation`, pas par la relecture.
+- Le cas « un contenu masqué disparaît pour le public » passait à tort :
+  ma préparation tournait en superutilisateur, où `auth.uid()` est nul —
+  la fonction refusait en silence et je mesurais un masquage qui n'avait
+  jamais eu lieu.
+- La pastille de filtre active tombait à **4,45:1** sur 4,5 requis. Et en
+  la mesurant, le relevé en thème sombre a exposé un défaut **préexistant**
+  d'`admin.html` : la page codait ses fonds en dur (`#fff`, `#faf9fd`) tout
+  en prenant ses couleurs de texte au thème — donc texte clair sur carte
+  blanche. Passée aux variables partagées.
+
+---
+
 ## Annexe — méthode
 
 ```bash
@@ -820,6 +864,7 @@ node tests/outil-injection.js  # 0 contenu utilisateur hors de son cadre
 node tests/outil-panne.js      # 0 page muette sur 42 combinaisons
 npm test -- veille             # 16/16 — écran maintenu allumé
 npm test -- confort            # 21/21 — plein écran et zoom
+npm test -- moderation         # 24/24 — masquer, rétablir, classer
 node tests/outil-chasse.js     # 21 pages × 2 états
 URLS=… MODES=… node tests/_txt.js   # texte visible de chaque page, à relire
 ```
