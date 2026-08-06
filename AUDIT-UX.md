@@ -621,12 +621,54 @@ réinjectant le défaut d'origine :
 
 ---
 
+## 6. Les politiques RLS confrontées à ce que le site fait vraiment
+
+Dernier angle, et le plus payant : monter un vrai PostgreSQL, y charger
+`sql_a_executer.sql`, puis rejouer **chaque écriture que le site tente**
+sous l'identité qui convient (`tests/outil-rls.js`). Trois politiques
+étaient plus larges que ce que l'interface offre — les trois exploitables
+depuis la console du navigateur, sans outil.
+
+| Faille | Ce qu'elle permettait | Correctif |
+|---|---|---|
+| `profiles update own` sans restriction de colonne | `PATCH {"is_admin": true}` sur sa propre ligne → lire tous les signalements et les classer | déclencheur `trg_proteger_champs_profil` |
+| `achats insert own` : `WITH CHECK (user_id = auth.uid())` | insérer une ligne d'achat → débloquer n'importe quel pack **payant** gratuitement | la politique exige désormais un pack à prix nul ; les achats réels passent par `cinetpay-webhook` (clé de service, hors RLS) |
+| `notif insert authenticated` : `WITH CHECK (true)` | déposer un message et un **lien cliquable** dans la boîte de n'importe qui (« Ton compte va être suspendu, clique ici ») | trois déclencheurs remplacent les insertions faites depuis le navigateur, puis la politique se referme sur `user_id = auth.uid()` |
+
+Les deux pages qui écrivaient chez autrui (`gestion-chapitres.html` pour
+les abonnés, `communaute.html` pour le créateur du mur) passent maintenant
+par des déclencheurs, comme les six autres notifications du site le
+faisaient déjà. L'outil vérifie les deux côtés : la faille est fermée
+**et** la notification légitime part toujours.
+
+**Deux fois où l'outil a crié au loup** — les deux corrigés dans l'outil,
+pas dans le site :
+
+- **RLS ne fait pas échouer un UPDATE interdit.** `USING` filtre les
+  lignes, la commande réussit, zéro ligne est touchée. Quatre faux
+  positifs venaient de là. On compte désormais les lignes affectées. Le
+  navigateur voit exactement la même chose : Supabase renvoie
+  `error: null`, et un code qui ne lit que ça affiche un succès pour une
+  opération qui n'a rien fait.
+- **Compter les notifications existantes ne prouve pas qu'un déclencheur a
+  tiré.** Le jeu d'essai crée un abonnement, lequel en produit une au
+  passage : trois vérifications passaient en réalité pour la mauvaise
+  raison, déclencheurs débranchés. Elles comparent maintenant avant/après.
+
+Relu dans les deux sens : correctif appliqué, 41/41 ; correctif retiré,
+six écarts ressortent. Le fichier SQL a aussi été rejoué trois fois de
+suite — un changement de nom de politique le rendait non rejouable au
+second passage.
+
+---
+
 ## Annexe — méthode
 
 ```bash
 npm test                       # 347/347 ✅  (14 suites)
 node tests/outil-contraste.js  # 0 couple sous le seuil, clair et sombre
 node tests/outil-invisible.js  # 0 défaut silencieux
+node tests/outil-rls.js        # 41/41 — PostgreSQL réel, schéma chargé
 node tests/outil-chasse.js     # 21 pages × 2 états
 URLS=… MODES=… node tests/_txt.js   # texte visible de chaque page, à relire
 ```

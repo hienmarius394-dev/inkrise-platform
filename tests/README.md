@@ -37,27 +37,49 @@ INKRISE_CHROME=/chemin/vers/chrome npm test
 | `avis-parametres` | Notes et avis sur les mangas (affichage, saisie, refus de noter sa propre œuvre), recommandations, page Paramètres, export RGPD, et effet réel du filtre 18+ sur les requêtes |
 | `push` | Le service worker face à un push complet, vide ou illisible ; et la page Paramètres selon que la clé VAPID est configurée ou non |
 
-## Trois outils de diagnostic (hors suites)
+## Cinq outils de diagnostic (hors suites)
 
 ```bash
 node tests/outil-invisible.js   # traque les défauts SILENCIEUX : liens morts,
                                 # fonctions disparues, ids en double, contenu
                                 # rogné sans erreur, colonnes absentes du
-                                # schéma, buckets inconnus, pages orphelines
+                                # schéma, jointures sans clé étrangère, menu
+                                # en désaccord avec la session, pages orphelines
+node tests/outil-rls.js         # confronte les politiques RLS aux écritures
+                                # que le site tente vraiment (PostgreSQL réel)
 node tests/outil-contraste.js   # relève tout texte sous le seuil de lisibilité
 INKRISE_THEME=sombre \
   node tests/outil-contraste.js   # le même relevé, en thème sombre
 node tests/outil-chasse.js      # parcourt les pages : erreurs JS, textes
                                 # cassés, débordements, cibles tactiles trop
                                 # petites, champs sans étiquette
+URLS=… MODES=auth,anon \
+  node tests/_txt.js            # texte visible de chaque page, à relire
+```
 
 `outil-invisible.js` mérite un mot : chacun de ses contrôles vient d'un vrai
 bug rencontré pendant l'audit — un qui ne plantait rien, n'affichait aucune
 erreur, et passait donc sous le radar de tout le reste. Une redirection vers
 une page supprimée, un `getElementById` sur un élément retiré, du contenu
 rogné que `overflow-x: clip` cachait. Il a été éprouvé en y injectant
-délibérément un défaut de chaque famille : les six sont ressortis.
-```
+délibérément un défaut de chaque famille : toutes sont ressorties.
+
+`outil-rls.js` est le seul à avoir besoin d'une vraie base : il monte un
+PostgreSQL jetable, y charge `sql_a_executer.sql`, puis rejoue chaque geste
+de l'interface sous l'identité qui convient. Deux pièges y ont déjà fait
+crier au loup, tous deux corrigés dans l'outil :
+
+- **RLS ne fait pas échouer un UPDATE interdit.** La clause `USING` filtre
+  les lignes, la commande réussit, zéro ligne est touchée — et Supabase
+  renvoie `error: null`. On compte donc les lignes affectées, pas les
+  erreurs. C'est aussi ce que voit le navigateur : un code qui ne lit que
+  `error` annonce un succès pour une opération qui n'a rien fait.
+- **Compter les lignes existantes ne prouve pas qu'un déclencheur a tiré.**
+  Les vérifications de notification comparent avant / après dans la même
+  transaction.
+
+Il se relit dans les deux sens : correctif appliqué, 41/41 ; correctif
+retiré, six écarts ressortent.
 
 ## Écrire une nouvelle suite
 

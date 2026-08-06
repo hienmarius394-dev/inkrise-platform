@@ -990,7 +990,9 @@ async function addChapitre() {
 
   chapitres.push(data);
   pageCounts[data.id] = 0;
-  sendNewChapterNotifications(data); // fire & forget
+  /* Les abonnés sont prévenus par le déclencheur trg_notify_nouveau_chapitre :
+     l'insertion depuis le navigateur obligeait à laisser la table des
+     notifications ouverte à tous en écriture. */
 
   // Upload des pages sélectionnées (même convention que upload-manga.html)
   if (newPagesFiles && newPagesFiles.length > 0) {
@@ -1387,27 +1389,6 @@ function bindNewChapFile() {
       bindNewChapFile();
     }
   });
-}
-
-// ── NOTIFICATIONS FOLLOWERS ──
-async function sendNewChapterNotifications(newChap) {
-  try {
-    const { data: follows } = await sb.from('follows')
-      .select('user_id').eq('followed_id', currentUser.id);
-    if (!follows || follows.length === 0) return;
-    const notifications = follows.map(f => ({
-      user_id:   f.user_id,
-      type:      'new_chapter',
-      titre:     'Nouveau chapitre',
-      message:   `${authorName} a publié "${newChap.titre}" dans ${manga.titre}`,
-      manga_id:  mangaId,
-      lien:      `lecteur.html?manga_id=${mangaId}&chapitre=${newChap.id}`,
-      lu:        false
-    }));
-    await sb.from('notifications').insert(notifications);
-  } catch(e) {
-    console.error('Erreur notification:', e);
-  }
 }
 
 // ── TOAST ──

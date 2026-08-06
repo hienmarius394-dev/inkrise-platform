@@ -1083,6 +1083,136 @@ CREATE POLICY "push delete own" ON push_subscriptions
 ALTER TABLE notifications ADD COLUMN IF NOT EXISTS pousse_le TIMESTAMPTZ;
 CREATE INDEX IF NOT EXISTS idx_notif_a_pousser ON notifications(pousse_le) WHERE pousse_le IS NULL;
 
+-- ═══════════════════════════════════════════════════════════════
+-- CORRECTIF SÉCURITÉ — trois politiques plus larges que l'interface
+-- ═══════════════════════════════════════════════════════════════
+-- Trouvé en confrontant les politiques RLS aux écritures que le site
+-- tente réellement (tests/outil-rls.js). Aucune de ces trois failles ne
+-- demandait autre chose que la console du navigateur.
+
+-- ─────────────────────────────────────────────────────────────
+-- 1. Personne ne se nomme modérateur tout seul
+-- ─────────────────────────────────────────────────────────────
+-- « profiles update own » autorisait la mise à jour de sa propre ligne,
+-- toutes colonnes comprises — `is_admin` incluse. Un PATCH depuis la
+-- console suffisait pour lire tous les signalements et les classer.
+-- Aucune page n'écrit `is_admin` : le bloquer côté site ne retire rien.
+-- Pas de SECURITY DEFINER ici, volontairement : dans une fonction
+-- « definer », current_user vaut le PROPRIÉTAIRE de la fonction, jamais
+-- l'appelant — le test ne voyait donc jamais « authenticated » et la
+-- protection ne se déclenchait pas. Ce déclencheur n'a besoin d'aucun
+-- droit particulier : il ne lit que NEW et OLD.
+CREATE OR REPLACE FUNCTION public.proteger_champs_profil()
+RETURNS TRIGGER LANGUAGE plpgsql SET search_path = public AS $$
+BEGIN
+  IF current_user IN ('authenticated', 'anon')
+     AND NEW.is_admin IS DISTINCT FROM OLD.is_admin THEN
+    RAISE EXCEPTION 'Le statut de modération ne se change pas depuis le site';
+  END IF;
+  RETURN NEW;
+END; $$;
+DROP TRIGGER IF EXISTS trg_proteger_champs_profil ON profiles;
+CREATE TRIGGER trg_proteger_champs_profil BEFORE UPDATE ON profiles
+  FOR EACH ROW EXECUTE FUNCTION public.proteger_champs_profil();
+
+-- ─────────────────────────────────────────────────────────────
+-- 2. On ne s'offre pas un pack payant tout seul
+-- ─────────────────────────────────────────────────────────────
+-- « achats insert own » ne vérifiait que l'identité de l'acheteur : une
+-- ligne insérée à la main débloquait n'importe quel pack payant.
+-- Le site n'insère lui-même que pour les packs GRATUITS
+-- (`recordFreeAccess` dans pack.html) ; les achats réels sont écrits par
+-- la fonction cinetpay-webhook, qui utilise la clé de service et n'est
+-- donc pas soumise à cette politique.
+DROP POLICY IF EXISTS "achats insert own" ON achats_packs;
+CREATE POLICY "achats insert own" ON achats_packs
+  FOR INSERT TO authenticated
+  WITH CHECK (
+    user_id = auth.uid()
+    AND EXISTS (
+      SELECT 1 FROM packs_tutoriels p
+      WHERE p.id = achats_packs.pack_id
+        AND (p.prix IS NULL OR p.prix = 0)
+    )
+  );
+
+-- ─────────────────────────────────────────────────────────────
+-- 3. La boîte de notifications n'est plus ouverte à tous
+-- ─────────────────────────────────────────────────────────────
+-- « notif insert authenticated » avait WITH CHECK (true) : n'importe quel
+-- inscrit pouvait déposer un message dans la boîte de n'importe qui, avec
+-- un lien cliquable arbitraire (« Ton compte va être suspendu, clique
+-- ici »). Deux pages en avaient besoin — la publication d'un chapitre et
+-- l'activité sur un mur de communauté. Elles passent désormais par des
+-- déclencheurs, comme les six autres notifications du site.
+
+-- 3a. Nouveau chapitre → prévient les abonnés du créateur
+CREATE OR REPLACE FUNCTION public.notify_nouveau_chapitre()
+RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+DECLARE aid UUID; mtitre TEXT; uname TEXT;
+BEGIN
+  SELECT auteur_id, titre INTO aid, mtitre FROM mangas WHERE id = NEW.manga_id;
+  IF aid IS NULL THEN RETURN NEW; END IF;
+  SELECT username INTO uname FROM profiles WHERE id = aid;
+  INSERT INTO notifications (user_id, type, titre, message, manga_id, lien, acteur_id, lu)
+  SELECT f.user_id, 'new_chapter', 'Nouveau chapitre',
+         COALESCE(uname, 'Un créateur') || ' a publié "'
+           || COALESCE(NEW.titre, 'Chapitre ' || NEW.numero) || '" dans '
+           || COALESCE(mtitre, 'un manga'),
+         NEW.manga_id,
+         'lecteur.html?manga_id=' || NEW.manga_id || '&chapitre=' || NEW.id,
+         aid, false
+  FROM follows f
+  WHERE f.followed_id = aid
+    AND f.user_id <> aid
+    AND public.veut_notif(f.user_id, 'chapitres');
+  RETURN NEW;
+END; $$;
+DROP TRIGGER IF EXISTS trg_notify_nouveau_chapitre ON chapitres;
+CREATE TRIGGER trg_notify_nouveau_chapitre AFTER INSERT ON chapitres
+  FOR EACH ROW EXECUTE FUNCTION public.notify_nouveau_chapitre();
+
+-- 3b. Activité sur un mur de communauté → prévient le créateur du mur
+CREATE OR REPLACE FUNCTION public.notify_communaute()
+RETURNS TRIGGER LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+DECLARE mur UUID; acteur UUID; uname TEXT; texte TEXT;
+BEGIN
+  IF TG_TABLE_NAME = 'posts_communaute' THEN
+    mur := NEW.creator_id; acteur := NEW.auteur_id; texte := 'a publié sur ta communauté';
+  ELSE
+    SELECT creator_id INTO mur FROM posts_communaute WHERE id = NEW.post_id;
+    acteur := NEW.user_id;
+    texte := CASE WHEN TG_TABLE_NAME = 'reactions'
+                  THEN 'a réagi à un post de ta communauté'
+                  ELSE 'a commenté sur ta communauté' END;
+  END IF;
+  IF mur IS NULL OR acteur IS NULL OR mur = acteur THEN RETURN NEW; END IF;
+  IF NOT public.veut_notif(mur, 'social') THEN RETURN NEW; END IF;
+  SELECT username INTO uname FROM profiles WHERE id = acteur;
+  INSERT INTO notifications (user_id, type, titre, message, lien, acteur_id, lu)
+  VALUES (mur, 'info', 'Communauté',
+          '@' || COALESCE(uname, 'Quelqu''un') || ' ' || texte,
+          'communaute.html?id=' || mur, acteur, false);
+  RETURN NEW;
+END; $$;
+DROP TRIGGER IF EXISTS trg_notify_post_communaute ON posts_communaute;
+CREATE TRIGGER trg_notify_post_communaute AFTER INSERT ON posts_communaute
+  FOR EACH ROW EXECUTE FUNCTION public.notify_communaute();
+DROP TRIGGER IF EXISTS trg_notify_comm_communaute ON commentaires_communaute;
+CREATE TRIGGER trg_notify_comm_communaute AFTER INSERT ON commentaires_communaute
+  FOR EACH ROW EXECUTE FUNCTION public.notify_communaute();
+DROP TRIGGER IF EXISTS trg_notify_reaction ON reactions;
+CREATE TRIGGER trg_notify_reaction AFTER INSERT ON reactions
+  FOR EACH ROW EXECUTE FUNCTION public.notify_communaute();
+
+-- 3c. Plus aucune page n'a besoin d'écrire chez quelqu'un d'autre
+-- (la politique change de NOM : il faut donc retirer les deux, sinon le
+--  second passage du fichier échoue sur « policy already exists »)
+DROP POLICY IF EXISTS "notif insert authenticated" ON notifications;
+DROP POLICY IF EXISTS "notif insert own" ON notifications;
+CREATE POLICY "notif insert own" ON notifications
+  FOR INSERT TO authenticated WITH CHECK (user_id = auth.uid());
+
 GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO anon, authenticated;
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated;
 
