@@ -20,6 +20,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="assets/inkrise-theme.css" />
   <script src="assets/inkrise-theme.js"></script>
+  <script src="assets/inkrise-reseau.js"></script>
   <script src="assets/inkrise-config.js"></script>
 <style>
 /* Nav, menu latéral et barre du bas : voir assets/inkrise-theme.css */
@@ -358,11 +359,14 @@ async function loadPacks() {
     .order('created_at', { ascending: false });
 
   if (error) {
+    /* Le message de PostgREST est en anglais et parfois technique ; il
+       partait aussi dans innerHTML sans échappement. */
+    console.error('Tutoriels :', error);
     document.getElementById('packsGrid').innerHTML = `
       <div class="empty-state" style="grid-column:1/-1;">
         <div class="empty-icon">⚠️</div>
-        <div class="empty-title">Erreur de chargement</div>
-        <div class="empty-sub">${error.message}</div>
+        <div class="empty-title">Chargement impossible</div>
+        <div class="empty-sub">Le serveur n'a pas répondu. Vérifie ta connexion et réessaie dans un instant.</div>
       </div>`;
     return;
   }

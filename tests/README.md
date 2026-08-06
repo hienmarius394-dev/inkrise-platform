@@ -47,6 +47,12 @@ node tests/outil-invisible.js   # traque les défauts SILENCIEUX : liens morts,
                                 # en désaccord avec la session, pages orphelines
 node tests/outil-rls.js         # confronte les politiques RLS aux écritures
                                 # que le site tente vraiment (PostgreSQL réel)
+node tests/outil-injection.js   # empoisonne chaque champ texte servi par
+                                # Supabase et regarde si le navigateur en
+                                # fait du balisage
+node tests/outil-panne.js       # rejoue trois pannes (500, session expirée,
+                                # réseau coupé) et vérifie que chaque page
+                                # le dit à l'utilisateur
 node tests/outil-contraste.js   # relève tout texte sous le seuil de lisibilité
 INKRISE_THEME=sombre \
   node tests/outil-contraste.js   # le même relevé, en thème sombre
@@ -80,6 +86,30 @@ crier au loup, tous deux corrigés dans l'outil :
 
 Il se relit dans les deux sens : correctif appliqué, 41/41 ; correctif
 retiré, six écarts ressortent.
+
+`outil-injection.js` ne relit aucun gabarit : il sert des charges utiles à
+la place des vraies données et cherche leurs traces dans le DOM rendu — une
+balise `<inkrise-injection>` devenue élément, un attribut `x-inkrise-attr`
+apparu, du code exécuté. Première version : tous les champs image à `null`,
+donc aucun contexte d'attribut (`src`, `alt`, `style`) n'était éprouvé —
+exactement là où l'échappement se rate. Les trois familles ont ensuite été
+validées en cassant délibérément un échappement de chaque sorte.
+
+`outil-panne.js` rejoue trois pannes sur chaque page. Deux réglages ont été
+nécessaires pour qu'il dise vrai :
+
+- « Chargement impossible » contient le mot « chargement » mais annonce
+  justement la fin des opérations — le compter revenait à reprocher à une
+  page d'avoir bien fait son travail.
+- `offsetParent` vaut `null` sur un élément `position: fixed`, et le
+  bandeau réseau l'est : il était donc jugé invisible alors qu'il occupait
+  45 pixels de haut.
+
+Quarante-deux combinaisons page × panne finissent par se disputer le
+processeur : une page correcte se faisait dénoncer environ une fois sur
+trois, jamais la même, alors qu'elle passait huit fois sur huit en
+isolation. Toute page mise en cause est donc revérifiée avant d'être
+signalée.
 
 ## Écrire une nouvelle suite
 

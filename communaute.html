@@ -20,6 +20,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/inkrise-theme.css" />
 <script src="assets/inkrise-theme.js"></script>
+  <script src="assets/inkrise-reseau.js"></script>
 <script src="assets/inkrise-config.js"></script>
 <style>
 /* Nav, menu latéral et barre du bas : voir assets/inkrise-theme.css */
@@ -700,7 +701,15 @@ async function rendreFil(vue) {
     .order('created_at', { ascending: false })
     .limit(40);
 
-  if (error) { vue.innerHTML = etatVide('⚠️', 'Chargement impossible', error.message); return; }
+  if (error) {
+    /* `error.message` arrive de PostgREST en anglais, souvent réduit à un
+       code (« internal server error », « JWT expired ») : illisible pour
+       qui lit la page. Le détail reste dans la console pour le diagnostic. */
+    console.error('Communauté :', error);
+    vue.innerHTML = etatVide('⚠️', 'Chargement impossible',
+      'Le serveur n\'a pas répondu. Vérifie ta connexion et réessaie dans un instant.');
+    return;
+  }
   if (!posts || !posts.length) {
     vue.innerHTML = etatVide('🌱', 'Rien de neuf pour l\'instant',
       'Les créateurs que tu suis n\'ont pas encore publié. Reviens bientôt !',
@@ -760,7 +769,15 @@ async function rendreDecouverte(vue) {
     .order('created_at', { ascending: false })
     .limit(300);
 
-  if (error) { vue.innerHTML = etatVide('⚠️', 'Chargement impossible', error.message); return; }
+  if (error) {
+    /* `error.message` arrive de PostgREST en anglais, souvent réduit à un
+       code (« internal server error », « JWT expired ») : illisible pour
+       qui lit la page. Le détail reste dans la console pour le diagnostic. */
+    console.error('Communauté :', error);
+    vue.innerHTML = etatVide('⚠️', 'Chargement impossible',
+      'Le serveur n\'a pas répondu. Vérifie ta connexion et réessaie dans un instant.');
+    return;
+  }
 
   /* On classe les murs par activité récente : un espace vivant a plus de
      chances d'accrocher qu'un espace nommé en premier par hasard. */
