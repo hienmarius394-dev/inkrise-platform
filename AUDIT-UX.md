@@ -355,7 +355,7 @@ clavier, préchargement de la page suivante, barre de progression, reprise,
 hors-ligne. Bon socle. Absents :
 - plein écran (`requestFullscreen` : 0 occurrence),
 - zoom / pincement,
-- `wakeLock` — l'écran s'éteint pendant une lecture longue en mode vertical,
+- ~~`wakeLock` — l'écran s'éteint pendant une lecture longue en mode vertical~~ **✅ livré** (§7.3),
 - ajustement de la luminosité,
 - double page sur tablette et ordinateur,
 - signets sur une page précise,
@@ -378,16 +378,23 @@ chapitres lus, temps de lecture, genres favoris, liste publique, badges. La
 grande majorité des comptes seront des lecteurs — c'est leur profil qui devrait
 être le cas par défaut.
 
-### 2.11 🟡 Prix en euros pour un public payant en Mobile Money **[produit]**
+### 2.11 ⬜ ~~Prix en FCFA à l'affichage~~ — **écarté (décision produit)**
 
-Toute l'interface affiche des euros, et la fonction convertit en XOF au
-paiement. Les moyens de paiement retenus (Wave, Orange Money, MTN MoMo, Moov
-via CinetPay) visent l'Afrique de l'Ouest, où le prix de référence est le FCFA.
-Afficher « 3 275 FCFA » plutôt que « 5 € » supprime un calcul mental au moment
-précis de la décision d'achat.
+Le constat initial reste exact : toute l'interface affiche des euros, et la
+fonction convertit en XOF au paiement ; les moyens de paiement retenus
+(Wave, Orange Money, MTN MoMo, Moov via CinetPay) visent l'Afrique de
+l'Ouest.
 
-À faire côté affichage seulement — surtout **ne pas** changer les prix stockés
-(cf. §1.7).
+Mais j'avais tiré la mauvaise conclusion : de « les moyens de paiement
+visent l'Afrique de l'Ouest », j'ai déduit « le public est ouest-africain ».
+Inkrise s'adresse à un public international — proposer le Mobile Money, c'est
+inclure ceux qui n'ont pas de carte bancaire, pas restreindre le site à une
+région.
+
+**Décision retenue : l'affichage reste en euros.** La conversion vers le XOF
+continue de se faire côté serveur au moment du paiement, pour ceux qui
+règlent en Mobile Money. Passer l'affichage en dollars serait une variante
+tout aussi défendable ; c'est un seul symbole à changer si le besoin vient.
 
 ### 2.12 🟡 Mesure d'audience — **crochet livré, à activer**
 
@@ -728,6 +735,37 @@ exactement ces deux pages sur les trois pannes, et rien d'autre.
 
 ---
 
+## 7.3 Confort du lecteur — l'écran ne s'éteint plus
+
+`assets/inkrise-veille.js` demande le verrou d'écran (API Wake Lock) dès
+qu'un chapitre a des planches à afficher. En lecture verticale on fait
+défiler sans jamais toucher l'écran : le téléphone s'éteignait en plein
+chapitre.
+
+Deux pièges de cette API, tous deux traités :
+
+- le navigateur **relâche le verrou de lui-même** dès que l'onglet passe en
+  arrière-plan ; sans ré-armement au retour, il ne protégeait que la
+  première minute de lecture ;
+- la demande est refusée quand le document n'est pas visible, et le refus
+  est une promesse rejetée — non attrapée, elle remonte en erreur console.
+
+Le réglage est rangé dans le navigateur, pas en base : c'est un choix qui
+dépend de l'appareil, comme le thème. Un même compte peut vouloir l'écran
+allumé sur sa tablette et pas sur son téléphone. L'interrupteur n'apparaît
+dans les Paramètres que là où le navigateur sait le faire — Firefox ne
+connaît pas cette API, et un interrupteur sans effet vaut moins que rien.
+
+La suite `veille` (16 vérifications) a demandé une correction de méthode :
+mon double de l'API ne relâchait pas le verrou quand la page passait en
+arrière-plan, donc le ré-armement — la partie la plus facile à oublier —
+n'était jamais mis à l'épreuve. Rendu fidèle, puis vérifié en retirant le
+ré-armement du code : deux vérifications tombent.
+
+Aucun SQL : le réglage vit dans `localStorage`.
+
+---
+
 ## Annexe — méthode
 
 ```bash
@@ -737,6 +775,7 @@ node tests/outil-invisible.js  # 0 défaut silencieux
 node tests/outil-rls.js        # 41/41 — PostgreSQL réel, schéma chargé
 node tests/outil-injection.js  # 0 contenu utilisateur hors de son cadre
 node tests/outil-panne.js      # 0 page muette sur 42 combinaisons
+npm test -- veille             # 16/16 — écran maintenu allumé
 node tests/outil-chasse.js     # 21 pages × 2 états
 URLS=… MODES=… node tests/_txt.js   # texte visible de chaque page, à relire
 ```
