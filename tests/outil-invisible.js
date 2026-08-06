@@ -61,16 +61,65 @@ for (const m of sql.matchAll(/CREATE TABLE IF NOT EXISTS (?:public\.)?(\w+)\s*\(
 for (const m of sql.matchAll(/ALTER TABLE (?:public\.)?(\w+) ADD COLUMN IF NOT EXISTS (\w+)/g)) {
   (colonnes[m[1]] = colonnes[m[1]] || new Set()).add(m[2]);
 }
+
+/* Clés étrangères déclarées : table → { colonne → table visée }.
+   PostgREST ne sait joindre deux tables que par une clé étrangère. Sans
+   elle, `profiles!auteur_id(username)` ne plante pas : il renvoie null, et
+   la page affiche « Auteur inconnu » pour tout le monde. */
+const cles = {};
+const ajouterCle = (t, c, vise) => { (cles[t] = cles[t] || {})[c] = vise; };
+for (const m of sql.matchAll(/CREATE TABLE IF NOT EXISTS (?:public\.)?(\w+)\s*\(([\s\S]*?)\n\);/g)) {
+  for (const ligne of m[2].split('\n')) {
+    const c = ligne.match(/^\s{2}(\w+)\s+[A-Z].*?REFERENCES\s+(?:public\.|auth\.)?(\w+)/);
+    if (c) ajouterCle(m[1], c[1], c[2]);
+  }
+}
+for (const m of sql.matchAll(/ALTER TABLE (?:public\.)?(\w+) ADD COLUMN IF NOT EXISTS (\w+)[^;\n]*?REFERENCES\s+(?:public\.|auth\.)?(\w+)/g)) {
+  ajouterCle(m[1], m[2], m[3]);
+}
+
+/* Découpe une liste de colonnes sur les virgules de premier niveau : celles
+   à l'intérieur d'une jointure appartiennent à la table jointe. */
+function separer(champs) {
+  const bouts = []; let prof = 0, courant = '';
+  for (const ch of champs) {
+    if (ch === '(') prof++;
+    else if (ch === ')') prof--;
+    else if (ch === ',' && prof === 0) { bouts.push(courant); courant = ''; continue; }
+    courant += ch;
+  }
+  bouts.push(courant);
+  return bouts.map(x => x.trim()).filter(Boolean);
+}
+
+function verifierSelect(f, table, champs) {
+  if (!colonnes[table]) { noter('table-inconnue', f, table); return; }
+  for (const brut of separer(champs)) {
+    const part = brut.replace(/^\w+:/, '').trim();       // alias éventuel
+    if (!part.includes('(')) {
+      if (part === '*' || part === 'count') continue;
+      if (!colonnes[table].has(part)) noter('colonne-inconnue', f, table + '.' + part);
+      continue;
+    }
+    const m = part.match(/^(\w+)(?:!(\w+))?\(([\s\S]*)\)$/);
+    if (!m) continue;                                     // forme non reconnue
+    const [, vise, indice, sous] = m;
+    if (!colonnes[vise]) { noter('table-inconnue', f, vise + ' (jointure depuis ' + table + ')'); continue; }
+    const aller = cles[table] || {}, retour = cles[vise] || {};
+    if (indice) {
+      if (aller[indice] !== vise && retour[indice] !== table)
+        noter('jointure-sans-cle', f, table + ' → ' + vise + ' par ' + indice);
+    } else if (!Object.values(aller).includes(vise) && !Object.values(retour).includes(table)) {
+      noter('jointure-sans-cle', f, table + ' → ' + vise + ' (aucune clé étrangère)');
+    }
+    verifierSelect(f, vise, sous);
+  }
+}
+
 for (const f of pages) {
   const s = fs.readFileSync(path.join(ROOT, f), 'utf8');
   for (const m of s.matchAll(/\.from\(\s*['"](\w+)['"]\s*\)\s*\n?\s*\.select\(\s*[`'"]([^`'"]*)[`'"]/g)) {
-    const [_, table, champs] = m;
-    if (!colonnes[table]) { noter('table-inconnue', f, table); continue; }
-    if (champs.trim() === '*' || champs.includes('(')) continue;   // embeds : hors de portée
-    for (const c of champs.split(',').map(x => x.trim()).filter(Boolean)) {
-      if (c === '*' || c.includes(':')) continue;
-      if (!colonnes[table].has(c)) noter('colonne-inconnue', f, table + '.' + c);
-    }
+    verifierSelect(f, m[1], m[2]);
   }
   // Colonnes utilisées en filtre
   // On découpe d'abord par requête : une fenêtre à longueur fixe traversait
@@ -189,6 +238,26 @@ const SONDE = () => {
       }
     }
   });
+
+  /* Menu latéral en désaccord avec la session. La sonde tourne toujours
+     connectée : une page qui laisse « Connexion / Inscription » visible, ou
+     qui cache « Déconnexion », n'a pas branché son menu — l'utilisateur s'y
+     retrouve sans profil, sans paramètres et sans porte de sortie.
+     Les pages destinées aux visiteurs (auth.html, pages légales) n'ont pas
+     ces identifiants du tout : elles sont hors de portée. */
+  const affiche = id => { const e = document.getElementById(id);
+    return e ? getComputedStyle(e).display !== 'none' : null; };
+  if (affiche('drawerProfil') !== null) {
+    const paires = [['drawerConnexion', false], ['drawerProfil', true],
+                    ['drawerLogout', true], ['drawerParametres', true]];
+    for (const [id, attendu] of paires) {
+      const vu = affiche(id);
+      if (vu !== null && vu !== attendu) {
+        out.push({ g: 'menu-desaccorde',
+          d: '#' + id + (attendu ? ' masqué' : ' affiché') + ' alors que la session est ouverte' });
+      }
+    }
+  }
   return out;
 };
 
@@ -250,8 +319,8 @@ releve.forEach(r => { const c = r.genre + '|' + r.detail; (parGenre[r.genre] = p
 
 console.log('\n═══ DÉFAUTS SILENCIEUX ═══\n');
 const ORDRE = ['page-plantee','lien-mort','ressource-absente','destination-fantome','precache-fantome',
-               'bucket-inconnu','fonction-absente','id-en-double','debordement-masque','table-inconnue',
-               'colonne-inconnue','filtre-colonne-inconnue','page-non-hors-ligne','page-orpheline'];
+               'bucket-inconnu','fonction-absente','menu-desaccorde','id-en-double','debordement-masque','table-inconnue',
+               'colonne-inconnue','jointure-sans-cle','filtre-colonne-inconnue','page-non-hors-ligne','page-orpheline'];
 let total = 0;
 for (const g of ORDRE) {
   if (!parGenre[g]) continue;

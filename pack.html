@@ -345,7 +345,7 @@
   <div class="univ-d-sec">Explorer</div>
   <a href="index.html" class="univ-d-item"><div class="univ-d-icon">🏠</div>Accueil</a>
   <a href="recherche.html" class="univ-d-item"><div class="univ-d-icon">📖</div>Manga & BD</a>
-  <a href="tutoriels.html" class="univ-d-item"><div class="univ-d-icon">🎓</div>Tutoriels <span class="univ-d-badge teal">NOUVEAU</span></a>
+  <a href="tutoriels.html" class="univ-d-item"><div class="univ-d-icon">🎓</div>Tutoriels</a>
   <a href="espace-createur.html" class="univ-d-item"><div class="univ-d-icon">🎨</div>Espace Créateur <span class="univ-d-badge teal">GRATUIT</span></a>
   <a href="communaute.html" class="univ-d-item"><div class="univ-d-icon">👥</div>Communauté</a>
   <div class="univ-d-divider"></div>
@@ -561,6 +561,7 @@ async function loadPack(packId) {
       .maybeSingle();
     const isCreator = currentUser.id === data.auteur_id;
     currentPack.accesAutorise = !!(achat || isCreator);
+    majMentionPaiement();
     // L'auteur du pack voit un accès direct à l'édition (Espace Créateur)
     if (isCreator) {
       const editBtn = document.getElementById('heroEditBtn');
@@ -677,6 +678,14 @@ function renderAvisList(avis) {
 function renderAvisForm(packId, avis) {
   const el = document.getElementById('avisForm');
   if (!currentPack || !currentPack.accesAutorise || !currentUser) { el.innerHTML = ''; return; }
+  /* L'auteur voyait un formulaire que la politique RLS rejette — elle exige
+     un achat. Comme pour les mangas : on ne note pas sa propre œuvre. */
+  if (currentPack.auteur_id === currentUser.id) {
+    el.innerHTML = '<div style="font-size:.85rem;color:var(--muted);padding:4px 0 12px;">' +
+      (avis.length ? 'Voici ce que pensent tes acheteurs.'
+                   : 'Tes acheteurs pourront noter ce pack ici.') + '</div>';
+    return;
+  }
   const mine = avis.find(a => a.user_id === currentUser.id);
   let selected = mine ? Number(mine.note) : 0;
   el.innerHTML = '<div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:16px;">' +
@@ -708,6 +717,24 @@ function renderAvisForm(packId, avis) {
     // La notification à l'auteur du pack est créée automatiquement par le
     // trigger SQL trg_notify_avis (server-side, fiable)
     await loadAvis(packId);
+  });
+}
+
+/* La mention « paiement sécurisé » ne vaut que devant un paiement à venir.
+   Elle s'affichait aussi sous « Télécharger le pack » — donc pour un pack
+   gratuit, un pack déjà acheté, ou son propre pack : trois cas où rien
+   n'est payé. L'accès n'étant connu qu'après renderPack, on repasse ici une
+   fois la vérification faite. */
+function majMentionPaiement() {
+  if (!currentPack) return;
+  const prix = Number(currentPack.prix);
+  const gratuit = prix === 0 || isNaN(prix);
+  const vaPayer = !gratuit && !currentPack.accesAutorise;
+  ['buyGuaranteeMobile', 'buyGuaranteeDesktop'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.style.display = vaPayer ? '' : 'none';
+    if (vaPayer) el.textContent = '🔒 Paiement sécurisé — Orange Money, MTN MoMo, Wave, carte';
   });
 }
 
@@ -765,14 +792,7 @@ function renderPack(pack) {
     btn.textContent = buyLabel;
     if (isFree) btn.classList.add('free-dl');
   });
-  /* Rien n'est payé sur un pack gratuit : promettre un « paiement sécurisé »
-     sous un bouton « Télécharger gratuitement » n'a pas de sens. */
-  ['buyGuaranteeMobile', 'buyGuaranteeDesktop'].forEach(id => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    if (isFree) el.style.display = 'none';
-    else el.textContent = '🔒 Paiement sécurisé — Orange Money, MTN MoMo, Wave, carte';
-  });
+  majMentionPaiement();
 
   // Ventes réelles / édition limitée
   const ventes = Number(pack.ventes) || 0;
@@ -852,7 +872,14 @@ async function loadCreatorProfile(auteurId) {
   } else {
     creatorAvatar.textContent = (data.username?.[0] || '?').toUpperCase();
   }
-  if (data.username) document.getElementById('creatorName').textContent = data.username;
+  if (data.username) {
+    document.getElementById('creatorName').textContent = data.username;
+    /* L'en-tête affichait « par Créateur » pendant que cette carte montrait
+       le vrai pseudo : `pack.auteur_nom` n'était jamais renseigné. */
+    const lien = document.getElementById('heroAuthorLink');
+    if (lien) lien.textContent = data.username;
+    if (currentPack) currentPack.auteur_nom = data.username;
+  }
   if (data.bio) document.getElementById('creatorBio').textContent = data.bio;
 }
 

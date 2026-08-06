@@ -583,12 +583,52 @@ supprimer.
 
 ---
 
+## 5. Relecture du texte affiché — ce que la lecture à voix haute a trouvé
+
+Après les trois sprints, une passe différente : au lieu de chercher des
+erreurs, dumper le **texte visible** de chaque page (`tests/_txt.js`),
+connecté et déconnecté, et le relire comme un visiteur. Rien de ce qui suit
+ne plantait ; tout était faux, contradictoire ou en cul-de-sac.
+
+| Où | Ce que la page disait | Corrigé en |
+|---|---|---|
+| `pack.html` | « par **Créateur** » en en-tête, le vrai pseudo dans la carte du bas — `auteur_nom` n'existe pas en base | l'en-tête est renseigné par le profil chargé |
+| `pack.html` | « 🔒 Paiement sécurisé » sous « Télécharger le pack » — pack gratuit, déjà acheté, ou le sien | affiché seulement quand un paiement reste à faire |
+| `pack.html` | l'auteur voyait « Laisser un avis » sur son propre pack — refusé par la règle RLS | il lit les avis reçus, sans formulaire |
+| `gestion-chapitres.html` | menu latéral proposant « Connexion / Inscription » sur une page qui **exige** une session, sans profil, ni paramètres, ni déconnexion | menu et cloche branchés sur la session |
+| `creators-remuneration.html` | « **À FIGER avant l'ouverture des paiements** » — note interne publiée aux visiteurs | passée en commentaire HTML |
+| `lecteur.html` | « 1 sur 0 » à côté de « aucune page disponible » | « — Aucune page » dans les deux modes |
+| `tutoriels.html` | filtres « Dessin (0) », « Digital (0) »… qui menaient à une grille vide | filtres vides masqués ; rangée entière retirée quand un seul thème existe |
+| 15 pages | badge `GRATUIT` (et `NOUVEAU` sur une page) à côté de « Tutoriels », alors que les packs sont surtout payants | badge retiré |
+| `confidentialite.html`, `cgu.html` | l'export RGPD, le thème mémorisé et l'abonnement push n'y figuraient pas | sections 2, 6 et 7 mises à jour |
+
+**Deux fausses pistes, pas corrigées** : le niveau brut `debutant` sur la
+page pack et « Auteur inconnu » sur la fiche manga venaient tous deux des
+**données simulées des tests**, pas du site. Vérifié avant de toucher quoi
+que ce soit.
+
+Deux contrôles ajoutés à `tests/outil-invisible.js`, chacun validé en
+réinjectant le défaut d'origine :
+
+- **`menu-desaccorde`** — page rendue avec une session ouverte dont le menu
+  latéral affirme le contraire. C'est ce contrôle qui a isolé
+  `gestion-chapitres.html`, et lui seul.
+- **`jointure-sans-cle`** — `profiles!auteur_id(username)` sans clé
+  étrangère correspondante ne plante pas : PostgREST renvoie `null` et la
+  page affiche « Auteur inconnu » pour tout le monde. Les 13 jointures du
+  site sont désormais vérifiées contre le schéma, colonnes jointes
+  comprises.
+
+---
+
 ## Annexe — méthode
 
 ```bash
-npm test                      # 173/173 ✅
-node tests/outil-chasse.js    # 21 pages × 2 états, aucun défaut bloquant
-node tests/outil-contraste.js # 2 quasi-manquements sur emojis
+npm test                       # 347/347 ✅  (14 suites)
+node tests/outil-contraste.js  # 0 couple sous le seuil, clair et sombre
+node tests/outil-invisible.js  # 0 défaut silencieux
+node tests/outil-chasse.js     # 21 pages × 2 états
+URLS=… MODES=… node tests/_txt.js   # texte visible de chaque page, à relire
 ```
 
 Plus : captures d'écran des 18 pages en 390×844 et 1280×900, connecté et

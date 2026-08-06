@@ -302,6 +302,36 @@ const check = (name, pass, detail = '') => {
         await page.locator('#gateDirection').isVisible());
   await ctx.close();
 
+  // ══ Scénario 4 : chapitre sans aucune page ══
+  console.log('\n▶ Scénario 4 — chapitre publié mais vide');
+  ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
+  await ctx.route('**/auth/v1/**', r => r.fulfill({ status: 401, body: '{}' }));
+  await ctx.route('**/rest/v1/**', r => {
+    const u = r.request().url();
+    if (u.includes('/mangas')) return r.fulfill({ status: 200, contentType: 'application/json',
+      body: JSON.stringify(FIXTURES.lrTP) });
+    if (u.includes('/chapitres')) return r.fulfill({ status: 200, contentType: 'application/json',
+      body: JSON.stringify([{ id: 10, numero: 1, titre: 'Ouverture', manga_id: 2 }]) });
+    return r.fulfill({ status: 200, contentType: 'application/json', body: '[]' });
+  });
+  // Aucune planche dans le dossier de stockage
+  await ctx.route('**/storage/v1/object/list/**', r => r.fulfill({ status: 200,
+    contentType: 'application/json', body: '[]' }));
+  page = await ctx.newPage();
+  page.on('pageerror', e => errors.push(e.message));
+  await page.goto(BASE + '/lecteur.html?manga_id=2&chapitre=10');
+  await page.waitForTimeout(1800);
+  check('le message « aucune page » est affiché',
+        await page.locator('#noPages').isVisible());
+  {
+    const indicateur = (await page.locator('.page-indicator').innerText()).replace(/\s+/g, ' ').trim();
+    check('le compteur ne prétend plus « 1 sur 0 »', !/1\s*sur\s*0/.test(indicateur), indicateur);
+    check('  il annonce l\'absence de page', /Aucune page/.test(indicateur), indicateur);
+  }
+  check('un retour vers la fiche du manga est proposé',
+        await page.locator('#noPages a[href*="manga.html"]').count() >= 1);
+  await ctx.close();
+
   await browser.close();
   server.close();
 

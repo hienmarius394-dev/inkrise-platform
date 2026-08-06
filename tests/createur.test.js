@@ -62,6 +62,18 @@ const results = []; const check = (n,p,d='')=>{results.push({n,p,d});
         await page.locator('#btnPreviewManga').getAttribute('href'));
   check('l\'aperçu s\'ouvre à côté (le travail en cours n\'est pas perdu)',
         (await page.locator('#btnPreviewManga').getAttribute('target')) === '_blank');
+  /* Le menu latéral ignorait la session : il proposait « Connexion /
+     Inscription » sur une page qui exige justement d'être connecté, et
+     n'offrait ni profil, ni paramètres, ni sortie. */
+  const vu = id => page.locator('#' + id).isVisible();
+  check('le menu sait qu\'on est connecté : plus d\'invite à se connecter', !(await vu('drawerConnexion')));
+  check('  « Mon profil » est proposé', await vu('drawerProfil'));
+  check('  « Paramètres » aussi', await vu('drawerParametres'));
+  check('  et « Déconnexion »', await vu('drawerLogout'));
+  check('la cloche de notifications est visible', await vu('navNotifLink'));
+  check('l\'avatar remplace le bouton Connexion',
+        (await vu('navAvatar')) && !(await vu('navConnexion')));
+
   const prev = page.locator('.chap-row .chap-btn.preview').first();
   check('bouton « Aperçu » sur chaque chapitre', await prev.isVisible());
   check('l\'aperçu chapitre ouvre le lecteur au bon chapitre',

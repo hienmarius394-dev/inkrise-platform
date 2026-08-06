@@ -617,7 +617,7 @@
   <div class="univ-d-sec">Explorer</div>
   <a href="index.html" class="univ-d-item"><div class="univ-d-icon">🏠</div>Accueil</a>
   <a href="recherche.html" class="univ-d-item"><div class="univ-d-icon">📖</div>Manga & BD</a>
-  <a href="tutoriels.html" class="univ-d-item"><div class="univ-d-icon">🎓</div>Tutoriels <span class="univ-d-badge teal">GRATUIT</span></a>
+  <a href="tutoriels.html" class="univ-d-item"><div class="univ-d-icon">🎓</div>Tutoriels</a>
   <a href="espace-createur.html" class="univ-d-item"><div class="univ-d-icon">🎨</div>Espace Créateur <span class="univ-d-badge teal">GRATUIT</span></a>
   <a href="communaute.html" class="univ-d-item"><div class="univ-d-icon">👥</div>Communauté</a>
   <div class="univ-d-divider"></div>
@@ -1086,6 +1086,12 @@ async function loadChapter() {
 function showPlaceholder() {
   const chapTitle = chapitre.titre || `Chapitre ${chapitre.numero}`;
 
+  /* Le compteur vit dans la barre du bas, visible dans les deux modes : en
+     lecture verticale il restait figé sur « 1 sur 0 » à côté du message
+     « aucune page ». */
+  document.getElementById('pageNum').textContent = '—';
+  document.getElementById('pageTotalLabel').textContent = 'Aucune page';
+
   if (readMode === 'pages') {
     document.getElementById('pagesViewer').classList.remove('hidden');
     document.getElementById('progressWrap').style.display = 'block';
@@ -1093,8 +1099,6 @@ function showPlaceholder() {
     document.getElementById('pagePlaceholder').style.display = 'flex';
     document.getElementById('placeholderText').innerHTML =
       `<strong>${chapTitle}</strong><br><br>Le créateur n'a pas encore uploadé les pages de ce chapitre.<br>Reviens bientôt ! 🎨`;
-    document.getElementById('pageNum').textContent = '—';
-    document.getElementById('pageTotalLabel').textContent = 'Aucune page';
     document.getElementById('progressFill').style.width = '0%';
     document.getElementById('btnPrevPage').disabled = true;
     document.getElementById('btnNextPage').disabled = true;

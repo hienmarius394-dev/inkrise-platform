@@ -120,6 +120,41 @@ console.log('\n▶ L\'espace créateur ne se fait plus passer pour un tableau de
   await ctx.close();
 }
 
+console.log('\n▶ La page Tutoriels ne propose pas de filtres vides');
+{
+  const UN = { id:1, titre:'Encrage avancé', description:'Encrage au pinceau.', prix:5,
+               auteur_id:'autre', couverture_url:null, contenu_url:'x', images:[],
+               niveau:'Intermédiaire', objectifs:[], created_at:'2026-05-01T10:00:00Z' };
+  const COULEUR = { ...UN, id:2, titre:'Mise en couleur', description:'Couleur numérique.' };
+
+  async function tutoriels(packs) {
+    const { ctx, p } = await ouvrir(b, { packsCrees:packs, achats:[] });
+    p.on('pageerror',e=>errors.push(e.message));
+    await p.goto(BASE+'/tutoriels.html'); await p.waitForTimeout(1800);
+    return { ctx, p };
+  }
+
+  // Un seul thème représenté : filtrer ne peut rien restreindre
+  {
+    const { ctx, p } = await tutoriels([UN]);
+    check('un seul thème : la rangée de filtres est masquée',
+      !(await p.locator('.filters-wrap').isVisible()));
+    check('  les packs restent affichés', /Encrage avancé/.test(await p.locator('#packsGrid').innerText()));
+    await ctx.close();
+  }
+  // Deux thèmes : la rangée revient, sans les catégories à zéro
+  {
+    const { ctx, p } = await tutoriels([UN, COULEUR]);
+    check('deux thèmes : la rangée réapparaît', await p.locator('.filters-wrap').isVisible());
+    const vus = await p.locator('#filterBtns .filter-btn:visible').allInnerTexts();
+    check('  aucun filtre à (0) n\'est proposé', !vus.some(t=>/\(0\)/.test(t)), vus.join(' | '));
+    check('  « Encrage » et « Couleur » sont là',
+      vus.some(t=>/Encrage/.test(t)) && vus.some(t=>/Couleur/.test(t)), vus.join(' | '));
+    check('  « Tout » compte les deux packs', vus.some(t=>/Tout \(2\)/.test(t)), vus.join(' | '));
+    await ctx.close();
+  }
+}
+
 await b.close(); server.close();
 console.log('\n'+'═'.repeat(56));
 const ko=results.filter(r=>!r.p);

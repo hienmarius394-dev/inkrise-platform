@@ -221,7 +221,7 @@
   <div class="univ-d-sec">Explorer</div>
   <a href="index.html" class="univ-d-item"><div class="univ-d-icon">🏠</div>Accueil</a>
   <a href="recherche.html" class="univ-d-item"><div class="univ-d-icon">📖</div>Manga & BD</a>
-  <a href="tutoriels.html" class="univ-d-item"><div class="univ-d-icon">🎓</div>Tutoriels <span class="univ-d-badge teal">GRATUIT</span></a>
+  <a href="tutoriels.html" class="univ-d-item"><div class="univ-d-icon">🎓</div>Tutoriels</a>
   <a href="espace-createur.html" class="univ-d-item"><div class="univ-d-icon">🎨</div>Espace Créateur <span class="univ-d-badge teal">GRATUIT</span></a>
   <a href="communaute.html" class="univ-d-item"><div class="univ-d-icon">👥</div>Communauté</a>
   <div class="univ-d-divider"></div>
@@ -392,12 +392,23 @@ function countPacksForFilter(filter) {
   }).length;
 }
 
+/* Un filtre à (0) est un cul-de-sac : on le cliquait pour tomber sur une
+   grille vide. Et si un seul thème est représenté, filtrer ne peut rien
+   restreindre — la rangée entière ne sert alors à rien. Les deux se
+   corrigent d'eux-mêmes à mesure que le catalogue se remplit. */
 function updateFilterCounts() {
+  let themesRemplis = 0;
   document.querySelectorAll('#filterBtns .filter-btn').forEach(btn => {
     if (btn.dataset.base === undefined) btn.dataset.base = btn.textContent.trim();
     const n = countPacksForFilter(btn.dataset.filter);
     btn.textContent = `${btn.dataset.base} (${n})`;
+    if (btn.dataset.filter === 'all') return;
+    btn.style.display = n === 0 ? 'none' : '';
+    if (n > 0) themesRemplis++;
   });
+  const rangee = document.getElementById('filterBtns');
+  const bloc = rangee && rangee.closest('.filters-wrap');
+  if (bloc) bloc.style.display = themesRemplis > 1 ? '' : 'none';
 }
 
 function renderPacks() {
