@@ -524,17 +524,9 @@ function showToast(msg, type) {
   setTimeout(() => { t.style.transition = 'opacity 0.3s'; t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 3000);
 }
 
-/* Notification best-effort au créateur du mur (jamais pour soi-même) */
-async function notifyCreator(message) {
-  try {
-    if (!state.visitor || !state.creator || state.visitor.id === state.creator.id) return;
-    const { error } = await sb.from('notifications').insert({
-      user_id: state.creator.id, type: 'info', titre: 'Communauté', message: message,
-      lien: 'communaute.html?id=' + state.creator.id, lu: false
-    });
-    if (error) { /* ignoré (best-effort) */ }
-  } catch (e) { /* ignoré */ }
-}
+/* Le créateur du mur est prévenu par le déclencheur trg_notify_communaute
+   (post, commentaire, réaction). L'insertion depuis le navigateur obligeait
+   à laisser la table des notifications ouverte à tous en écriture. */
 
 function getInitials(name) {
   if (!name) return '?';
@@ -1615,7 +1607,6 @@ function bindCreatePost() {
           if (postErr) throw postErr;
         }
 
-        await notifyCreator('@' + (state.visitor.username || 'Quelqu\'un') + ' a publié sur ta communauté');
         showToast(postType === 'annonce' ? 'Annonce publiée !' : (isSondage ? 'Sondage publié !' : 'Post publié !'), 'success');
         textarea.value = '';
         clearSelectedImage();
@@ -1707,7 +1698,6 @@ function bindReactions() {
           });
           if (error) throw error;
           /* Notification uniquement à la première réaction (pas au changement d'emoji) */
-          if (!existing) notifyCreator('@' + (state.visitor.username || 'Quelqu\'un') + ' a réagi à un post de ta communauté');
           /* Optimistic update */
           state.reactions[postId] = (state.reactions[postId] || []).filter(r => r.user_id !== state.visitor.id);
           state.reactions[postId].push({ post_id: postId, user_id: state.visitor.id, type: type });
@@ -1768,7 +1758,6 @@ function bindComments() {
         if (fileInput) fileInput.value = '';
         const prev = document.getElementById('comment-preview-' + postId);
         if (prev) { prev.style.display = 'none'; prev.innerHTML = ''; }
-        await notifyCreator('@' + (state.visitor.username || 'Quelqu\'un') + ' a commenté sur ta communauté');
         showToast('Commentaire ajouté', 'success');
         await loadPosts();
         markLocalRefresh(); render();
@@ -1847,7 +1836,6 @@ function bindComments() {
             parent_id: parentId
           });
           if (error) throw error;
-          await notifyCreator('@' + (state.visitor.username || 'Quelqu\'un') + ' a commenté sur ta communauté');
           showToast('Réponse ajoutée', 'success');
           await loadPosts();
           markLocalRefresh(); render();
