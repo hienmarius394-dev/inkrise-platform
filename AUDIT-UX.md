@@ -662,6 +662,72 @@ second passage.
 
 ---
 
+## 7. Échappement et pannes — les deux angles restants
+
+### 7.1 Échappement : rien à corriger, et c'est vérifié
+
+Presque tout le site se rend avec `innerHTML` et des gabarits `${}`. Plutôt
+que de relire les gabarits, `tests/outil-injection.js` empoisonne **chaque
+champ texte** servi par Supabase — pseudo, titre, synopsis, commentaire,
+avis, bio, message de notification — et cherche les traces dans le DOM :
+une balise devenue élément, un attribut apparu, du code exécuté.
+
+**Zéro défaut.** Les treize fonctions d'échappement font leur travail.
+
+Deux helpers divergeaient tout de même des onze autres, sans que rien ne
+les exploite aujourd'hui — alignés par précaution :
+
+- `espace-createur.html` ne neutralisait pas l'apostrophe, et appelait
+  `.replace` directement sur son argument (un nombre le faisait planter).
+  Un attribut écrit `title='${escHtml(x)}'` aurait suffi à ouvrir la porte.
+- `gestion-chapitres.html` faisait `String(s)` sans repli : un chapitre
+  sans titre affichait « null ».
+
+L'outil a d'abord été **inutile sans qu'on le voie** : tous les champs
+image étaient à `null`, donc aucun contexte d'attribut (`src`, `alt`,
+`style`) n'était éprouvé — précisément là où l'échappement se rate. La
+première tentative de validation a échoué pour la même raison : le défaut
+injecté se trouvait derrière `if (manga.couverture_url)`. Corrigé, puis les
+trois familles de détection validées en cassant un échappement de chaque
+sorte.
+
+### 7.2 Pannes : les treize pages tournaient dans le vide
+
+`tests/outil-panne.js` rejoue trois pannes sur chaque page : erreur serveur
+(500), session expirée (401), réseau coupé.
+
+| Panne | Ce que voyait l'utilisateur |
+|---|---|
+| réseau coupé | **les 13 pages** restaient sur « Chargement… », « Chargement du manga… », « Recherche en cours… » — indéfiniment, sans un mot |
+| session expirée (401) | pages vides, sans rien indiquer : on croyait le site cassé alors qu'il suffisait de se reconnecter |
+| serveur en erreur (500) | `internal server error` et `JWT expired` recopiés à l'écran sur `communaute.html` et `tutoriels.html` |
+
+Chaque page a sa propre mécanique de chargement ; plutôt que d'en réécrire
+treize, `assets/inkrise-reseau.js` observe les requêtes vers Supabase et
+affiche un bandeau dès qu'elles échouent — trois messages selon le cas,
+avec « Réessayer » ou « Se reconnecter ». Il n'efface aucun contenu : il ne
+peut donc pas faire disparaître par erreur quelque chose qui aurait fini
+par charger.
+
+`manga.html` faisait **déjà** ce qu'il fallait — message français, bouton
+Réessayer, détail technique relégué en petit. L'outil le dénonçait à tort :
+la règle est devenue « du jargon servi comme explication, sans phrase
+française pour l'accompagner ».
+
+Deux autres réglages, tous deux dus à l'outil et non au site :
+
+- `offsetParent` vaut `null` sur un élément `position: fixed` — et le
+  bandeau l'est. Il était jugé invisible alors qu'il mesurait 45 pixels.
+- Quarante-deux combinaisons page × panne se disputent le processeur : une
+  page correcte se faisait dénoncer une fois sur trois, jamais la même,
+  alors qu'elle passait huit fois sur huit en isolation. Toute page mise en
+  cause est désormais revérifiée avant d'être signalée.
+
+Relu dans les deux sens : module retiré de deux pages, l'outil ressort
+exactement ces deux pages sur les trois pannes, et rien d'autre.
+
+---
+
 ## Annexe — méthode
 
 ```bash
@@ -669,6 +735,8 @@ npm test                       # 347/347 ✅  (14 suites)
 node tests/outil-contraste.js  # 0 couple sous le seuil, clair et sombre
 node tests/outil-invisible.js  # 0 défaut silencieux
 node tests/outil-rls.js        # 41/41 — PostgreSQL réel, schéma chargé
+node tests/outil-injection.js  # 0 contenu utilisateur hors de son cadre
+node tests/outil-panne.js      # 0 page muette sur 42 combinaisons
 node tests/outil-chasse.js     # 21 pages × 2 états
 URLS=… MODES=… node tests/_txt.js   # texte visible de chaque page, à relire
 ```
