@@ -21,6 +21,7 @@
   <link rel="stylesheet" href="assets/inkrise-theme.css" />
   <script src="assets/inkrise-theme.js"></script>
   <script src="assets/inkrise-reseau.js"></script>
+  <script src="assets/inkrise-vue.js"></script>
   <script src="assets/inkrise-config.js"></script>
 <style>
 /* Nav, menu latéral et barre du bas : voir assets/inkrise-theme.css */
@@ -784,13 +785,11 @@ async function loadManga(mangaId) {
     .order('numero', { ascending: true });
   chapitres = chaps || [];
 
-  // Enregistrer une vue (unique par utilisateur, compteur entretenu par trigger SQL)
-  if (currentUser) {
-    await sb.from('vues').upsert(
-      { manga_id: mangaId, user_id: currentUser.id },
-      { onConflict: 'manga_id,user_id', ignoreDuplicates: true }
-    );
-  }
+  /* Une vue par appareil ou par compte, comptée aussi pour les visiteurs
+     déconnectés — ils formaient l'essentiel du trafic et n'étaient pas
+     comptés du tout. Le tri (auteur qui relit, empreinte fantaisiste) se
+     fait côté serveur. */
+  if (window.inkriseVue && navigator.onLine) inkriseVue.compter(sb, mangaId);
 
   document.getElementById('pageLoading').style.display = 'none';
   document.getElementById('mainContent').style.display = 'block';

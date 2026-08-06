@@ -1344,6 +1344,81 @@ END; $$;
 REVOKE ALL ON FUNCTION public.apercu_signale(TEXT, TEXT) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.apercu_signale(TEXT, TEXT) TO authenticated;
 
+-- ═══════════════════════════════════════════════════════════════
+-- COMPTAGE DES VUES — deux trous mesurés
+-- ═══════════════════════════════════════════════════════════════
+-- 1. Un auteur pouvait écrire directement `mangas.vues` : sa politique
+--    « mangas update own » l'autorise à modifier sa ligne, toutes colonnes
+--    comprises. Une ligne dans la console du navigateur et le compteur
+--    passait à 999 999. Même chose pour `abonnes`, `note_moyenne` et
+--    `nb_avis`. Ces quatre colonnes sont calculées par des déclencheurs :
+--    personne ne devrait les écrire à la main.
+-- 2. Un visiteur déconnecté ne pouvait enregistrer aucune vue — la
+--    politique exige `user_id = auth.uid()`. Sur un site de lecture
+--    public, c'est l'essentiel du trafic qui n'était pas compté.
+
+-- ─────────────────────────────────────────────────────────────
+-- 1. Les compteurs ne s'écrivent plus à la main
+-- ─────────────────────────────────────────────────────────────
+-- Pas de SECURITY DEFINER : dans une fonction « definer », current_user
+-- vaut le propriétaire de la fonction et jamais l'appelant — la
+-- protection ne se déclencherait pas. C'est aussi ce qui fait que les
+-- déclencheurs de comptage, eux, passent : ils sont SECURITY DEFINER,
+-- donc vus comme « postgres » et non comme le site.
+CREATE OR REPLACE FUNCTION public.proteger_compteurs_manga()
+RETURNS TRIGGER LANGUAGE plpgsql SET search_path = public AS $$
+BEGIN
+  IF current_user IN ('authenticated', 'anon') THEN
+    NEW.vues         := OLD.vues;
+    NEW.abonnes      := OLD.abonnes;
+    NEW.note_moyenne := OLD.note_moyenne;
+    NEW.nb_avis      := OLD.nb_avis;
+  END IF;
+  RETURN NEW;
+END; $$;
+DROP TRIGGER IF EXISTS trg_proteger_compteurs_manga ON mangas;
+CREATE TRIGGER trg_proteger_compteurs_manga BEFORE UPDATE ON mangas
+  FOR EACH ROW EXECUTE FUNCTION public.proteger_compteurs_manga();
+
+-- ─────────────────────────────────────────────────────────────
+-- 2. Compter aussi les lecteurs déconnectés
+-- ─────────────────────────────────────────────────────────────
+-- Une empreinte tirée au hasard par le navigateur et rangée dans son
+-- stockage local : pas d'adresse IP, pas d'empreinte matérielle, rien qui
+-- désigne une personne. Elle sert uniquement à ne pas compter dix fois le
+-- même appareil.
+ALTER TABLE vues ADD COLUMN IF NOT EXISTS empreinte TEXT;
+-- Une vue par appareil et par œuvre, comme pour les comptes.
+CREATE UNIQUE INDEX IF NOT EXISTS uniq_vues_empreinte
+  ON vues(manga_id, empreinte) WHERE empreinte IS NOT NULL;
+
+-- Le comptage passe par une fonction : sans elle, il faudrait ouvrir la
+-- table `vues` en écriture aux visiteurs anonymes, et n'importe qui
+-- pourrait alors y déverser autant de lignes qu'il veut.
+CREATE OR REPLACE FUNCTION public.enregistrer_vue(p_manga_id BIGINT, p_empreinte TEXT)
+RETURNS VOID LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+DECLARE proprio UUID;
+BEGIN
+  -- Une empreinte trop courte ou absurde ne compte pas : on refuse
+  -- silencieusement plutôt que de polluer la table.
+  IF p_empreinte IS NULL OR length(p_empreinte) < 16 OR length(p_empreinte) > 64 THEN
+    RETURN;
+  END IF;
+  -- L'auteur qui relit son propre manga ne se compte pas une vue.
+  SELECT auteur_id INTO proprio FROM mangas WHERE id = p_manga_id;
+  IF proprio IS NULL OR proprio = auth.uid() THEN RETURN; END IF;
+
+  IF auth.uid() IS NOT NULL THEN
+    INSERT INTO vues (manga_id, user_id) VALUES (p_manga_id, auth.uid())
+    ON CONFLICT (manga_id, user_id) DO NOTHING;
+  ELSE
+    INSERT INTO vues (manga_id, empreinte) VALUES (p_manga_id, p_empreinte)
+    ON CONFLICT (manga_id, empreinte) WHERE empreinte IS NOT NULL DO NOTHING;
+  END IF;
+END; $$;
+REVOKE ALL ON FUNCTION public.enregistrer_vue(BIGINT, TEXT) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.enregistrer_vue(BIGINT, TEXT) TO anon, authenticated;
+
 GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO anon, authenticated;
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated;
 

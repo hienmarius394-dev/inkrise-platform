@@ -853,6 +853,51 @@ ouvrirait bien plus que le masquage :
 
 ---
 
+## 7.6 Comptage des lectures — deux trous mesurés
+
+Le compteur de vues devait devenir fiable avant qu'il ne serve à décider
+d'une rémunération. Deux problèmes, tous deux vérifiés sur un vrai
+PostgreSQL avant correction.
+
+**1. Un auteur pouvait écrire directement `mangas.vues`.** Sa politique
+« mangas update own » l'autorise à modifier sa ligne, *toutes colonnes
+comprises*. Une ligne dans la console du navigateur et le compteur passait
+à 999 999 — de même pour `abonnes`, `note_moyenne` et `nb_avis`. Ces quatre
+colonnes sont entretenues par des déclencheurs : personne ne devrait les
+écrire à la main. Un déclencheur `BEFORE UPDATE` remet désormais l'ancienne
+valeur quand la modification vient du site.
+
+Le détail qui fait tout fonctionner : ce déclencheur n'est **pas**
+`SECURITY DEFINER`, donc `current_user` y vaut bien l'appelant. Et c'est
+aussi pour ça que les déclencheurs de comptage, eux, passent sans
+encombre — ils *sont* `SECURITY DEFINER`, donc vus comme « postgres » et
+non comme le site.
+
+**2. Un visiteur déconnecté n'était pas compté du tout.** La politique
+exige `user_id = auth.uid()` : sur un site de lecture public, l'essentiel
+du trafic échappait au compteur. L'enregistrement passe maintenant par une
+fonction serveur — ouvrir la table `vues` en écriture aux anonymes aurait
+permis à n'importe qui d'y déverser autant de lignes qu'il veut. Elle
+écarte d'elle-même l'auteur qui relit son œuvre, les empreintes
+fantaisistes et les doublons.
+
+L'empreinte est un nombre tiré au hasard, rangé dans le stockage local :
+pas d'adresse IP, pas d'empreinte matérielle, rien qui désigne une
+personne. Ajoutée à la politique de confidentialité.
+
+**Deux corrections de méthode dans l'outil :**
+
+- Le critère « 0 ligne affectée = refusé » ne voit pas une écriture
+  **silencieusement annulée** : le déclencheur laisse l'`UPDATE` passer et
+  remet l'ancienne valeur, donc une ligne est bien touchée. Les cas de
+  compteurs comparent désormais la **valeur**, pas le nombre de lignes.
+- Le cas « hors ligne, aucune tentative » échouait sur `lecteur.html` —
+  qui, sans chapitre en cache, **redirige vers `manga.html`**. C'est cette
+  page-là qui comptait sans garde-fou : le vrai défaut était bien là où le
+  test pointait, pas là où je le croyais.
+
+---
+
 ## Annexe — méthode
 
 ```bash
@@ -865,6 +910,7 @@ node tests/outil-panne.js      # 0 page muette sur 42 combinaisons
 npm test -- veille             # 16/16 — écran maintenu allumé
 npm test -- confort            # 21/21 — plein écran et zoom
 npm test -- moderation         # 24/24 — masquer, rétablir, classer
+npm test -- vues               # 12/12 — lectures comptées, y compris sans compte
 node tests/outil-chasse.js     # 21 pages × 2 états
 URLS=… MODES=… node tests/_txt.js   # texte visible de chaque page, à relire
 ```

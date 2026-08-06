@@ -81,8 +81,9 @@ Inkrise = plateforme pour artistes manga/webtoon :
    moment du paiement, pour ceux qui règlent en Mobile Money.
 7. **Connexion Google** — le CSS `.or-divider` d'`auth.html` est prêt.
 8. **Case « J'accepte les CGU »** à l'inscription.
-9. **Comptage des vues côté serveur** — aujourd'hui déclaratif depuis le
-   navigateur ; à consolider avant que les vues décident d'une rémunération.
+~~9. **Comptage des vues côté serveur**~~ — ✅ livré : les compteurs ne
+   s'écrivent plus à la main (un auteur pouvait mettre ses vues à 999 999),
+   et les lecteurs déconnectés sont enfin comptés.
 10. **Fusionner `espace-createur.html` dans `profil.html`** — deux tableaux
     de bord pour la même personne.
 11. **Polices auto-hébergées** — supprimerait deux allers-retours réseau et

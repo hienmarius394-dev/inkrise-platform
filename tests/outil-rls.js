@@ -324,6 +324,36 @@ function semer() {
   cas('rétabli, il redevient public', null,
       `SELECT 1/count(*) FROM commentaires WHERE id=900;`, 'permis', 'grave');
 
+  console.log('\n▶ Compteurs : calculés, pas déclarés');
+  /* Compter les lignes affectées ne suffit pas ici : le déclencheur laisse
+     l'UPDATE passer et remet simplement l'ancienne valeur. Une ligne est
+     donc bien touchée — c'est la VALEUR qu'il faut regarder. `1/0` lève une
+     erreur quand le compteur n'a pas bougé, ce que l'outil lit en refus. */
+  const valeurEcrite = (colonne, valeur) =>
+    `UPDATE mangas SET ${colonne} = ${valeur} WHERE id = 1;` +
+    ` SELECT 1/(CASE WHEN (SELECT ${colonne} FROM mangas WHERE id=1) = ${valeur}` +
+    ` THEN 1 ELSE 0 END);`;
+  cas('un auteur gonfle les vues de son manga', AUTEUR,
+      valeurEcrite('vues', 999999), 'refusé', 'grave');
+  cas('  ni sa note moyenne', AUTEUR,
+      valeurEcrite('note_moyenne', 5), 'refusé', 'grave');
+  cas('  ni son nombre d\'abonnés', AUTEUR,
+      valeurEcrite('abonnes', 5000), 'refusé', 'grave');
+  cas('  mais il modifie toujours son titre', AUTEUR,
+      `UPDATE mangas SET titre = 'Nouveau titre' WHERE id = 1;`, 'permis', 'grave');
+
+  console.log('\n▶ Une lecture se compte, même sans compte');
+  cas('un visiteur déconnecté écrit directement dans `vues`', null,
+      `INSERT INTO vues (manga_id, empreinte) VALUES (1,'triche-triche-triche');`,
+      'refusé', 'grave');
+  cas('  mais la fonction, elle, l\'accepte', null,
+      `SELECT public.enregistrer_vue(1,'appareil-de-test-aaaaaa');`, 'permis', 'grave');
+  cas('une empreinte trop courte ne compte pas', null,
+      `SELECT count(*) FROM vues WHERE empreinte = 'x';`, 'permis');
+  cas('l\'auteur qui relit son œuvre ne se compte pas', AUTEUR,
+      `SELECT 1/count(*) FROM vues WHERE manga_id=1 AND user_id='${AUTEUR}';`,
+      'refusé', 'moyen');
+
   console.log('\n▶ Réglages et données personnelles');
   cas('changer ses propres préférences', LECTEUR,
       `UPDATE profiles SET pref_masquer_adulte=true WHERE id='${LECTEUR}';`, 'permis', 'grave');
