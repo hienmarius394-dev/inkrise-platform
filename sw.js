@@ -25,7 +25,7 @@ const PRECACHE = [
   'mentions-legales.html', 'cgu.html', 'confidentialite.html',
   'creators-remuneration.html',
   'assets/inkrise-theme.css', 'assets/inkrise-theme.js', 'assets/inkrise-config.js', 'assets/supabase.js', 'assets/inkrise-nav.js', 'assets/inkrise-offline.js',
-  'assets/inkrise-reseau.js', 'assets/inkrise-veille.js',
+  'assets/inkrise-reseau.js', 'assets/inkrise-veille.js', 'assets/inkrise-vue.js',
   'assets/inkrise-img.js', 'assets/legal.css',
   'assets/favicon.svg', 'assets/icon-192.png', 'assets/icon-512.png',
   'manifest.webmanifest'

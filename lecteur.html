@@ -23,6 +23,7 @@
   <link rel="stylesheet" href="assets/inkrise-theme.css" />
   <script src="assets/inkrise-theme.js"></script>
   <script src="assets/inkrise-reseau.js"></script>
+  <script src="assets/inkrise-vue.js"></script>
   <script src="assets/inkrise-veille.js"></script>
   <script src="assets/inkrise-config.js"></script>
 <style>
@@ -1038,13 +1039,12 @@ async function loadChapter() {
   document.getElementById('topbarChap').textContent = chapTitle;
   document.title = `${chapTitle} — ${manga?.titre || ''} — Inkrise`;
 
-  // Enregistrer vue (unique par utilisateur — compteur entretenu par trigger SQL)
-  const { data: { session } } = await sb.auth.getSession();
-  if (session && navigator.onLine && !offlineMode) {
-    await sbSafe(sb.from('vues').upsert(
-      { manga_id: mangaId, user_id: session.user.id },
-      { onConflict: 'manga_id,user_id', ignoreDuplicates: true }
-    ));
+  /* Une vue par appareil ou par compte, comptée aussi pour les visiteurs
+     déconnectés. Hors ligne, on ne tente rien : la lecture vient du cache,
+     et une requête vouée à échouer déclencherait le bandeau réseau pour
+     rien. */
+  if (window.inkriseVue && navigator.onLine && !offlineMode) {
+    inkriseVue.compter(sb, mangaId);
   }
 
   // Charger les pages depuis Supabase storage (dossier chapitres/{chapitreId}/)
