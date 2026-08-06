@@ -70,8 +70,9 @@ Inkrise = plateforme pour artistes manga/webtoon :
 3. **Confort du lecteur** — double page sur tablette, signets, défilement
    automatique pour le webtoon. *(Écran maintenu allumé, plein écran et
    zoom : ✅ livrés.)*
-4. **Modération** — `admin.html` ne permet que de cocher « traité » : ni
-   masquage, ni suppression, ni lien vers un commentaire signalé.
+~~4. **Modération**~~ — ✅ livré : masquer / rétablir / classer sans suite,
+   aperçu du contenu incriminé, regroupement des plaintes, lien vers le
+   commentaire dans son chapitre.
 5. **Profil de lecteur** — chapitres lus, temps de lecture, genres favoris.
    Aujourd'hui un profil ne parle que de création.
 ~~6. **Prix en FCFA à l'affichage**~~ — **écarté**. Inkrise s'adresse à un

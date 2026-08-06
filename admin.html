@@ -18,23 +18,43 @@
 <script src="assets/inkrise-config.js"></script>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  :root { --border: rgba(0,0,0,.09); }
-  body { font-family: 'DM Sans', sans-serif; background: #faf9fd; color: var(--text); padding: 24px 16px 90px; }
+  /* La page codait ses fonds en dur (#fff, #faf9fd) tout en prenant ses
+     couleurs de texte au thème : en mode sombre, cela donnait du texte
+     clair sur une carte blanche. Défaut préexistant, révélé par le relevé
+     de contraste. Tout passe par les variables partagées. */
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); padding: 24px 16px 90px; }
   .wrap { max-width: 760px; margin: 0 auto; }
   h1 { font-family: 'Syne', sans-serif; font-size: 1.4rem; margin-bottom: 4px; }
   .sub { font-size: .85rem; color: var(--muted); margin-bottom: 22px; }
   .gate { text-align: center; padding: 70px 20px; color: var(--muted); }
-  .sig { background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 16px; margin-bottom: 12px; display: flex; gap: 14px; align-items: flex-start; }
+  .sig { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 16px; margin-bottom: 12px; display: flex; gap: 14px; align-items: flex-start; }
   .sig.traite { opacity: .55; }
   .sig-icon { font-size: 1.3rem; flex-shrink: 0; }
   .sig-body { flex: 1; min-width: 0; }
   .sig-raison { font-weight: 800; font-size: .92rem; }
   .sig-meta { font-size: .78rem; color: var(--muted); margin-top: 3px; line-height: 1.5; }
   .sig-meta a { color: var(--purple-link); font-weight: 700; }
-  .btn-traite { border: none; background: rgba(124,92,252,.1); color: var(--purple-link); font-weight: 800; font-size: .78rem; padding: 8px 14px; border-radius: 9px; cursor: pointer; white-space: nowrap; font-family: 'DM Sans', sans-serif; }
+  .sig-actions { display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; }
+  .btn-mod { border: 1px solid var(--border); background: var(--surface); color: var(--text); font-weight: 800; font-size: .78rem; padding: 8px 14px; border-radius: 9px; cursor: pointer; white-space: nowrap; font-family: 'DM Sans', sans-serif; }
+  .btn-mod:hover:not(:disabled) { border-color: var(--purple); color: var(--purple-link); }
+  .btn-mod:disabled { opacity: .5; cursor: progress; }
+  .btn-mod.danger { background: rgba(224,92,110,.10); border-color: rgba(224,92,110,.35); color: #b3243c; }
+  .btn-mod.primary { background: rgba(124,92,252,.1); border-color: rgba(124,92,252,.3); color: var(--purple-link); }
   .badge { display: inline-block; font-size: .68rem; font-weight: 800; padding: 2px 8px; border-radius: 99px; background: rgba(255,95,168,.14); color: #d63384; margin-left: 6px; vertical-align: 1px; }
+  .badge.masque { background: rgba(224,92,110,.14); color: #b3243c; }
+  /* L'extrait du contenu incriminé : sans lui, on ne peut pas juger sans
+     ouvrir un autre onglet — et plus du tout une fois le contenu masqué. */
+  .apercu { margin-top: 9px; padding: 10px 12px; background: var(--surface2); border: 1px solid var(--border); border-left: 3px solid rgba(124,92,252,.45); border-radius: 8px; font-size: .84rem; line-height: 1.55; white-space: pre-wrap; word-break: break-word; }
+  .apercu-vide { color: var(--muted); font-style: italic; }
+  .filtres { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+  .filtre { border: 1px solid var(--border); background: var(--surface); color: var(--muted); font-weight: 700; font-size: .8rem; padding: 7px 15px; border-radius: 99px; cursor: pointer; font-family: 'DM Sans', sans-serif; }
+  /* Fond plus clair que les autres pastilles du site : à .13 le couple
+     tombait à 4,45:1, juste sous le seuil de lisibilité. Mesuré, pas
+     estimé (tests/outil-contraste.js). */
+  .filtre[aria-pressed="true"] { background: rgba(124,92,252,.07); border-color: var(--purple); color: var(--purple-link); }
   .empty { text-align: center; padding: 50px 20px; color: var(--muted); }
   .back { display: inline-block; margin-bottom: 18px; color: var(--purple-link); font-weight: 700; text-decoration: none; font-size: .85rem; }
+  .msg { font-size: .84rem; font-weight: 700; min-height: 20px; margin-bottom: 10px; }
 </style>
 </head>
 <body>
@@ -42,6 +62,12 @@
   <a href="index.html" class="back">← Retour au site</a>
   <h1>🚩 Modération</h1>
   <div class="sub">Signalements envoyés par la communauté — les plus récents d'abord.</div>
+  <div class="msg" id="message" role="status"></div>
+  <div class="filtres" id="filtres" style="display:none;">
+    <button class="filtre" data-f="nouveau" aria-pressed="true">À traiter</button>
+    <button class="filtre" data-f="traite"  aria-pressed="false">Traités</button>
+    <button class="filtre" data-f="tous"    aria-pressed="false">Tous</button>
+  </div>
   <div id="content"><div class="gate">Chargement…</div></div>
 </div>
 
@@ -53,58 +79,189 @@ const sb = supabase.createClient(
 );
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const ICONS = { manga: '📖', commentaire: '💬', post: '📣', pack: '🎓', profil: '👤' };
+const NOMS  = { manga: 'Manga', commentaire: 'Commentaire', post: 'Message de communauté',
+                pack: 'Pack', profil: 'Profil' };
 
-function lienContenu(s) {
-  if (s.type_contenu === 'manga')  return 'manga.html?id=' + encodeURIComponent(s.contenu_id);
-  if (s.type_contenu === 'pack')   return 'pack.html?id=' + encodeURIComponent(s.contenu_id);
-  if (s.type_contenu === 'profil') return 'auteur.html?id=' + encodeURIComponent(s.contenu_id);
+let filtre = 'nouveau';
+let groupes = [];          // un contenu incriminé = une carte, même signalé 10 fois
+
+/* Le lien vient du serveur (`apercu_signale`) : lui seul sait dans quel
+   manga et quel chapitre vit un commentaire signalé. Les types sans
+   contexte à charger gardent leur adresse évidente. */
+function lienContenu(g) {
+  if (g.lien) return g.lien;
+  if (g.type === 'manga')  return 'manga.html?id='  + encodeURIComponent(g.id);
+  if (g.type === 'pack')   return 'pack.html?id='   + encodeURIComponent(g.id);
+  if (g.type === 'profil') return 'auteur.html?id=' + encodeURIComponent(g.id);
   return null;
+}
+
+function dire(texte, erreur) {
+  const m = document.getElementById('message');
+  m.textContent = texte || '';
+  m.style.color = erreur ? 'var(--danger-link)' : 'var(--success-link, var(--purple-link))';
+}
+
+function quand(d) {
+  return new Date(d).toLocaleDateString('fr-FR',
+    { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
 }
 
 async function init() {
   const box = document.getElementById('content');
   const { data: { session } } = await sb.auth.getSession();
-  if (!session) { box.innerHTML = '<div class="gate">Connecte-toi pour accéder à la modération.<br><br><a href="auth.html" style="color:var(--purple-link);font-weight:700;">Connexion →</a></div>'; return; }
+  if (!session) {
+    box.innerHTML = '<div class="gate">Connecte-toi pour accéder à la modération.<br><br>' +
+      '<a href="auth.html" style="color:var(--purple-link);font-weight:700;">Connexion →</a></div>';
+    return;
+  }
 
   const { data: me } = await sb.from('profiles').select('is_admin').eq('id', session.user.id).single();
   if (!me?.is_admin) { box.innerHTML = '<div class="gate">⛔ Accès réservé à la modération.</div>'; return; }
 
-  const { data: sigs, error } = await sb.from('signalements')
-    .select('*').order('created_at', { ascending: false }).limit(200);
-  if (error) { box.innerHTML = '<div class="gate">Erreur : ' + esc(error.message) + '</div>'; return; }
-  if (!sigs || !sigs.length) { box.innerHTML = '<div class="empty">✅ Aucun signalement — tout est calme.</div>'; return; }
+  document.getElementById('filtres').style.display = 'flex';
+  document.querySelectorAll('.filtre').forEach(b => b.addEventListener('click', () => {
+    filtre = b.dataset.f;
+    document.querySelectorAll('.filtre').forEach(x =>
+      x.setAttribute('aria-pressed', String(x.dataset.f === filtre)));
+    rendre();
+  }));
 
-  // Pseudo des signaleurs
-  const ids = [...new Set(sigs.map(s => s.signale_par))];
-  const { data: profs } = await sb.from('profiles').select('id, username').in('id', ids);
-  const pmap = {}; (profs || []).forEach(p => pmap[p.id] = p.username);
+  await charger();
+}
+
+async function charger() {
+  const box = document.getElementById('content');
+  const { data: sigs, error } = await sb.from('signalements')
+    .select('*').order('created_at', { ascending: false }).limit(300);
+  if (error) {
+    console.error('Modération :', error);
+    box.innerHTML = '<div class="gate">Chargement impossible. Vérifie ta connexion et réessaie.</div>';
+    return;
+  }
+
+  /* Dix personnes qui signalent le même commentaire produisaient dix
+     lignes identiques : on décidait dix fois de la même chose. Un contenu
+     incriminé = une carte, avec le nombre de plaintes. */
+  const parContenu = new Map();
+  (sigs || []).forEach(s => {
+    const cle = s.type_contenu + '|' + s.contenu_id;
+    if (!parContenu.has(cle)) {
+      parContenu.set(cle, { type: s.type_contenu, id: s.contenu_id,
+                            motifs: [], signaleurs: new Set(),
+                            dernier: s.created_at, nouveau: false });
+    }
+    const g = parContenu.get(cle);
+    g.motifs.push(s.raison);
+    g.signaleurs.add(s.signale_par);
+    if (s.statut === 'nouveau') g.nouveau = true;
+    if (s.created_at > g.dernier) g.dernier = s.created_at;
+  });
+  groupes = [...parContenu.values()].sort((a, b) => b.dernier.localeCompare(a.dernier));
+
+  // Pseudos des personnes qui ont signalé
+  const ids = [...new Set(groupes.flatMap(g => [...g.signaleurs]))];
+  if (ids.length) {
+    const { data: profs } = await sb.from('profiles').select('id, username').in('id', ids);
+    const pmap = {}; (profs || []).forEach(p => pmap[p.id] = p.username);
+    groupes.forEach(g => { g.noms = [...g.signaleurs].map(i => pmap[i] || '?'); });
+  } else {
+    groupes.forEach(g => { g.noms = []; });
+  }
+
+  /* L'aperçu vient d'une fonction serveur : le contenu masqué reste
+     invisible aux requêtes normales, y compris pour la modération qui
+     doit pourtant pouvoir le relire avant de rétablir. */
+  await Promise.all(groupes.map(async g => {
+    const { data } = await sb.rpc('apercu_signale', { p_type: g.type, p_id: String(g.id) });
+    const a = Array.isArray(data) ? data[0] : data;
+    if (a) { g.extrait = a.extrait; g.auteur = a.auteur; g.masque = a.masque; g.lien = a.lien; }
+    else   { g.absent = true; }
+  }));
+
+  rendre();
+}
+
+function rendre() {
+  const box = document.getElementById('content');
+  const liste = groupes.filter(g =>
+    filtre === 'tous' ? true : filtre === 'nouveau' ? g.nouveau : !g.nouveau);
+
+  if (!liste.length) {
+    box.innerHTML = '<div class="empty">' + (
+      filtre === 'nouveau' ? '✅ Rien à traiter — tout est calme.'
+                           : 'Aucun signalement dans cette vue.') + '</div>';
+    return;
+  }
 
   box.innerHTML = '';
-  sigs.forEach(s => {
+  liste.forEach(g => {
     const div = document.createElement('div');
-    div.className = 'sig' + (s.statut === 'traite' ? ' traite' : '');
-    const lien = lienContenu(s);
-    const cible = lien
-      ? '<a href="' + lien + '">voir le contenu</a>'
-      : esc(s.type_contenu) + ' #' + esc(s.contenu_id);
+    div.className = 'sig' + (g.nouveau ? '' : ' traite');
+    const lien = lienContenu(g);
+    const motifs = [...new Set(g.motifs)].join(', ');
+    const nb = g.signaleurs.size;
+
+    const apercu = g.absent
+      ? '<div class="apercu apercu-vide">Contenu supprimé depuis le signalement.</div>'
+      : '<div class="apercu">' + esc(g.extrait || '(vide)') + '</div>';
+
     div.innerHTML =
-      '<div class="sig-icon">' + (ICONS[s.type_contenu] || '🚩') + '</div>' +
+      '<div class="sig-icon">' + (ICONS[g.type] || '🚩') + '</div>' +
       '<div class="sig-body">' +
-        '<div class="sig-raison">' + esc(s.raison) + (s.statut === 'nouveau' ? '<span class="badge">NOUVEAU</span>' : '') + '</div>' +
-        '<div class="sig-meta">' + esc(s.type_contenu) + ' — ' + cible +
-          ' · signalé par @' + esc(pmap[s.signale_par] || '?') +
-          ' · ' + new Date(s.created_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) +
+        '<div class="sig-raison">' + esc(motifs) +
+          (g.nouveau ? '<span class="badge">À TRAITER</span>' : '') +
+          (g.masque ? '<span class="badge masque">MASQUÉ</span>' : '') +
         '</div>' +
+        '<div class="sig-meta">' + esc(NOMS[g.type] || g.type) +
+          (g.auteur ? ' de @' + esc(g.auteur) : '') +
+          (lien ? ' · <a href="' + lien + '" target="_blank" rel="noopener">ouvrir</a>' : '') +
+          ' · ' + nb + ' signalement' + (nb > 1 ? 's' : '') +
+          ' (@' + g.noms.slice(0, 3).map(esc).join(', @') +
+          (g.noms.length > 3 ? ', +' + (g.noms.length - 3) : '') + ')' +
+          ' · ' + quand(g.dernier) +
+        '</div>' + apercu +
       '</div>' +
-      (s.statut === 'nouveau' ? '<button class="btn-traite">✓ Traité</button>' : '');
-    const btn = div.querySelector('.btn-traite');
-    if (btn) btn.addEventListener('click', async () => {
-      const { error: upErr } = await sb.from('signalements').update({ statut: 'traite' }).eq('id', s.id);
-      if (!upErr) { div.classList.add('traite'); btn.remove(); div.querySelector('.badge')?.remove(); }
-    });
+      '<div class="sig-actions"></div>';
+
+    const actions = div.querySelector('.sig-actions');
+    if (!g.absent) actions.appendChild(
+      bouton(g.masque ? '↩ Rétablir' : '🚫 Masquer', g.masque ? 'primary' : 'danger',
+             () => moderer(g, !g.masque)));
+    if (g.nouveau) actions.appendChild(bouton('✓ Sans suite', '', () => classer(g)));
     box.appendChild(div);
   });
 }
+
+function bouton(libelle, classe, action) {
+  const b = document.createElement('button');
+  b.className = 'btn-mod' + (classe ? ' ' + classe : '');
+  b.textContent = libelle;
+  b.addEventListener('click', async () => {
+    b.disabled = true;
+    try { await action(); } finally { b.disabled = false; }
+  });
+  return b;
+}
+
+async function moderer(g, masquer) {
+  const { error } = await sb.rpc('moderer_contenu',
+    { p_type: g.type, p_id: String(g.id), p_masquer: masquer });
+  if (error) { console.error(error); dire('Action impossible. Réessaie.', true); return; }
+  dire(masquer ? 'Contenu masqué. Il n\'apparaît plus sur le site.'
+                : 'Contenu rétabli. Il est de nouveau visible.');
+  await charger();
+}
+
+/* « Sans suite » : le signalement est examiné, le contenu reste en ligne. */
+async function classer(g) {
+  const { error } = await sb.from('signalements').update({ statut: 'traite' })
+    .eq('type_contenu', g.type).eq('contenu_id', String(g.id)).select('id');
+  if (error) { console.error(error); dire('Action impossible. Réessaie.', true); return; }
+  dire('Classé sans suite.');
+  await charger();
+}
+
 init();
 </script>
 </body>

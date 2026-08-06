@@ -1213,6 +1213,137 @@ DROP POLICY IF EXISTS "notif insert own" ON notifications;
 CREATE POLICY "notif insert own" ON notifications
   FOR INSERT TO authenticated WITH CHECK (user_id = auth.uid());
 
+-- ═══════════════════════════════════════════════════════════════
+-- MODÉRATION — de la case à cocher aux vrais outils
+-- ═══════════════════════════════════════════════════════════════
+-- `admin.html` ne savait que marquer un signalement « traité » : le
+-- contenu incriminé, lui, restait en ligne. Il fallait pouvoir le
+-- retirer — et le remettre, parce qu'une erreur de modération arrive.
+
+-- ─────────────────────────────────────────────────────────────
+-- 1. Un contenu masqué, et par qui
+-- ─────────────────────────────────────────────────────────────
+ALTER TABLE mangas            ADD COLUMN IF NOT EXISTS masque_le TIMESTAMPTZ;
+ALTER TABLE mangas            ADD COLUMN IF NOT EXISTS masque_par UUID REFERENCES profiles(id);
+ALTER TABLE commentaires      ADD COLUMN IF NOT EXISTS masque_le TIMESTAMPTZ;
+ALTER TABLE commentaires      ADD COLUMN IF NOT EXISTS masque_par UUID REFERENCES profiles(id);
+ALTER TABLE posts_communaute  ADD COLUMN IF NOT EXISTS masque_le TIMESTAMPTZ;
+ALTER TABLE posts_communaute  ADD COLUMN IF NOT EXISTS masque_par UUID REFERENCES profiles(id);
+
+-- ─────────────────────────────────────────────────────────────
+-- 2. Le masquage passe par les politiques, pas par les pages
+-- ─────────────────────────────────────────────────────────────
+-- Filtrer dans le navigateur voudrait dire ajouter `.is('masque_le', null)`
+-- à chaque requête des vingt et une pages — et suffirait qu'on en oublie
+-- une pour que le contenu retiré réapparaisse. La règle est donc posée une
+-- fois, côté base : plus personne ne peut l'oublier.
+-- L'auteur continue de voir son propre contenu (il saura qu'il est retiré
+-- par la mention affichée), et la modération voit tout.
+CREATE OR REPLACE FUNCTION public.est_moderateur() RETURNS BOOLEAN
+LANGUAGE sql STABLE SECURITY DEFINER SET search_path = public AS $$
+  SELECT EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND is_admin);
+$$;
+
+DROP POLICY IF EXISTS "mangas select public" ON mangas;
+CREATE POLICY "mangas select public" ON mangas FOR SELECT USING (
+  (statut IS DISTINCT FROM 'brouillon' OR auteur_id = auth.uid())
+  AND (masque_le IS NULL OR auteur_id = auth.uid() OR public.est_moderateur())
+);
+
+DROP POLICY IF EXISTS "comm select public" ON commentaires;
+CREATE POLICY "comm select public" ON commentaires FOR SELECT USING (
+  masque_le IS NULL OR user_id = auth.uid() OR public.est_moderateur()
+);
+
+DROP POLICY IF EXISTS "posts select public" ON posts_communaute;
+CREATE POLICY "posts select public" ON posts_communaute FOR SELECT USING (
+  masque_le IS NULL OR auteur_id = auth.uid() OR creator_id = auth.uid()
+  OR public.est_moderateur()
+);
+
+-- ─────────────────────────────────────────────────────────────
+-- 3. Une seule porte d'entrée pour agir
+-- ─────────────────────────────────────────────────────────────
+-- Donner aux modérateurs le droit d'écrire sur mangas, commentaires et
+-- posts_communaute ouvrirait bien plus que le masquage. Cette fonction ne
+-- touche qu'une colonne, vérifie elle-même les droits, et classe les
+-- signalements liés au passage.
+CREATE OR REPLACE FUNCTION public.moderer_contenu(
+  p_type TEXT, p_id TEXT, p_masquer BOOLEAN
+) RETURNS VOID
+LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+DECLARE quand TIMESTAMPTZ; qui UUID;
+BEGIN
+  IF NOT public.est_moderateur() THEN
+    RAISE EXCEPTION 'Action réservée à la modération';
+  END IF;
+  quand := CASE WHEN p_masquer THEN now() ELSE NULL END;
+  qui   := CASE WHEN p_masquer THEN auth.uid() ELSE NULL END;
+
+  IF p_type = 'manga' THEN
+    UPDATE mangas SET masque_le = quand, masque_par = qui WHERE id = p_id::bigint;
+  ELSIF p_type = 'commentaire' THEN
+    UPDATE commentaires SET masque_le = quand, masque_par = qui WHERE id = p_id::bigint;
+  ELSIF p_type = 'post' THEN
+    UPDATE posts_communaute SET masque_le = quand, masque_par = qui WHERE id = p_id::bigint;
+  ELSE
+    RAISE EXCEPTION 'Type de contenu inconnu : %', p_type;
+  END IF;
+
+  -- Masquer, c'est trancher : les signalements sur ce contenu sont réglés.
+  UPDATE signalements SET statut = CASE WHEN p_masquer THEN 'traite' ELSE 'nouveau' END
+  WHERE type_contenu = p_type AND contenu_id = p_id;
+END; $$;
+REVOKE ALL ON FUNCTION public.moderer_contenu(TEXT, TEXT, BOOLEAN) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.moderer_contenu(TEXT, TEXT, BOOLEAN) TO authenticated;
+
+-- ─────────────────────────────────────────────────────────────
+-- 4. La modération doit voir CE QU'ELLE juge
+-- ─────────────────────────────────────────────────────────────
+-- La page n'affichait que le motif du signalement : impossible de décider
+-- sans aller ouvrir le contenu dans un autre onglet, et impossible tout
+-- court une fois celui-ci masqué. Cette fonction rend l'essentiel du
+-- contenu, son auteur, et s'il est déjà retiré.
+-- La signature a changé (ajout de `lien`) : PostgreSQL refuse de remplacer
+-- une fonction dont le type de retour diffère, il faut la retirer d'abord.
+DROP FUNCTION IF EXISTS public.apercu_signale(TEXT, TEXT);
+CREATE OR REPLACE FUNCTION public.apercu_signale(p_type TEXT, p_id TEXT)
+RETURNS TABLE (extrait TEXT, auteur TEXT, auteur_id UUID, masque BOOLEAN, lien TEXT)
+LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path = public AS $$
+BEGIN
+  IF NOT public.est_moderateur() THEN
+    RAISE EXCEPTION 'Action réservée à la modération';
+  END IF;
+  /* Le lien est calculé ici parce que le serveur est le seul à connaître
+     le contexte : un commentaire ne se retrouve qu'avec son manga et son
+     chapitre, que la page de modération n'a pas. */
+  IF p_type = 'manga' THEN
+    RETURN QUERY
+      SELECT COALESCE(m.titre, '(sans titre)') || COALESCE(' — ' || left(m.synopsis, 180), ''),
+             p.username, m.auteur_id, m.masque_le IS NOT NULL,
+             'manga.html?id=' || m.id
+      FROM mangas m LEFT JOIN profiles p ON p.id = m.auteur_id
+      WHERE m.id = p_id::bigint;
+  ELSIF p_type = 'commentaire' THEN
+    RETURN QUERY
+      SELECT left(c.contenu, 400), p.username, c.user_id, c.masque_le IS NOT NULL,
+             CASE WHEN c.chapitre_id IS NOT NULL
+                  THEN 'lecteur.html?manga_id=' || c.manga_id || '&chapitre=' || c.chapitre_id
+                       || '#comment-' || c.id
+                  ELSE 'manga.html?id=' || c.manga_id END
+      FROM commentaires c LEFT JOIN profiles p ON p.id = c.user_id
+      WHERE c.id = p_id::bigint;
+  ELSIF p_type = 'post' THEN
+    RETURN QUERY
+      SELECT left(o.contenu, 400), p.username, o.auteur_id, o.masque_le IS NOT NULL,
+             'communaute.html?id=' || o.creator_id
+      FROM posts_communaute o LEFT JOIN profiles p ON p.id = o.auteur_id
+      WHERE o.id = p_id::bigint;
+  END IF;
+END; $$;
+REVOKE ALL ON FUNCTION public.apercu_signale(TEXT, TEXT) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.apercu_signale(TEXT, TEXT) TO authenticated;
+
 GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO anon, authenticated;
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated;
 

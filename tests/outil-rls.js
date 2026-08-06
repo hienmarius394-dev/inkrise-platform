@@ -47,7 +47,11 @@ function commeUtilisateur(uid, sql) {
   const prologue = uid
     ? `SET LOCAL ROLE authenticated; SET LOCAL request.jwt.claim.sub = '${uid}';`
     : `SET LOCAL ROLE anon; SET LOCAL request.jwt.claim.sub = '';`;
-  const compte = /^\s*(UPDATE|DELETE|INSERT)/i.test(sql)
+  /* `RETURNING 1` ne s'ajoute qu'à une instruction SEULE : sur un cas en
+     plusieurs temps (préparer une ligne, puis appeler une fonction), il
+     atterrissait derrière le SELECT final et cassait la syntaxe. */
+  const seule = sql.trim().replace(/;\s*$/, '').indexOf(';') === -1;
+  const compte = seule && /^\s*(UPDATE|DELETE|INSERT)/i.test(sql)
     ? sql.replace(/;\s*$/, '') + ' RETURNING 1;'
     : sql;
   const r = psql(`BEGIN; ${prologue} ${compte} ROLLBACK;`);
@@ -83,6 +87,17 @@ function cas(intention, uid, sql, attendu, gravite = 'moyen') {
   return conforme;
 }
 const premiereLigne = t => (t || '').split('\n').find(l => /ERROR|error/.test(l)) || (t || '').split('\n')[0];
+
+/* Préparer un état durable sous une identité donnée. `psql()` seul tourne
+   en superutilisateur, où auth.uid() est NULL : les fonctions qui vérifient
+   les droits refusaient donc en silence, et le cas suivant mesurait un
+   masquage qui n'avait jamais eu lieu. */
+function poser(uid, sql) {
+  const r = psql(`BEGIN; SET LOCAL ROLE authenticated;` +
+                 ` SET LOCAL request.jwt.claim.sub = '${uid}'; ${sql} COMMIT;`);
+  if (!r.ok) { console.error('   ⚠️  préparation impossible : ' + premiereLigne(r.err)); }
+  return r.ok;
+}
 
 /* ══ Serveur jetable ══ */
 const SHIM = `
@@ -163,6 +178,9 @@ function semer() {
        indiscernable d'un refus. Chaque cas d'UPDATE a donc sa donnée. */
     INSERT INTO notifications (user_id, message) VALUES ('${LECTEUR}','Nouveau chapitre')
       ON CONFLICT DO NOTHING;
+    INSERT INTO commentaires (id, manga_id, chapitre_id, user_id, contenu)
+      VALUES (900, 1, 10, '${LECTEUR}', 'Message signalé')
+      ON CONFLICT (id) DO NOTHING;
     /* Les ids semés à la main n'avancent pas les séquences : sans ça, le
        premier INSERT sans id retombe sur une ligne existante et l'échec
        ressemble à un refus de RLS. On se cale sur le plus grand id présent
@@ -273,6 +291,38 @@ function semer() {
       `SELECT 1/count(*) FROM notifications WHERE user_id='${LECTEUR}';`, 'refusé', 'grave');
   cas('marquer ses propres notifications comme lues', LECTEUR,
       `UPDATE notifications SET lu=true WHERE user_id='${LECTEUR}';`, 'permis', 'moyen');
+
+  console.log('\n▶ Masquer un contenu : réservé à la modération');
+  cas('un lecteur masque un commentaire', LECTEUR,
+      `SELECT public.moderer_contenu('commentaire','900',true);`, 'refusé', 'grave');
+  cas('l\'auteur du manga masque le commentaire d\'un autre', AUTEUR,
+      `SELECT public.moderer_contenu('commentaire','900',true);`, 'refusé', 'grave');
+  /* La ligne à modérer est semée hors RLS : un modérateur ne peut pas
+     écrire un commentaire au nom d'un autre, et c'est très bien ainsi —
+     ce n'est pas ce qu'on cherche à vérifier ici. */
+  cas('un modérateur masque', ADMIN,
+      `SELECT public.moderer_contenu('commentaire','900',true);`, 'permis', 'grave');
+  cas('un lecteur lit l\'aperçu de modération', LECTEUR,
+      `SELECT * FROM public.apercu_signale('commentaire','900');`, 'refusé', 'grave');
+  cas('un modérateur lit l\'aperçu', ADMIN,
+      `SELECT * FROM public.apercu_signale('manga','1');`, 'permis', 'moyen');
+  cas('un type de contenu inventé est rejeté', ADMIN,
+      `SELECT public.moderer_contenu('nimportequoi','1',true);`, 'refusé', 'moyen');
+
+  /* Masquer doit RETIRER, pas seulement marquer. La règle vit dans la
+     politique de lecture : aucune page ne peut donc l'oublier. */
+  poser(ADMIN, `SELECT public.moderer_contenu('commentaire','900',true);`);
+  cas('un contenu masqué disparaît pour le public', null,
+      `SELECT 1/count(*) FROM commentaires WHERE id=900;`, 'refusé', 'grave');
+  cas('  et pour les autres inscrits', TIERS,
+      `SELECT 1/count(*) FROM commentaires WHERE id=900;`, 'refusé', 'grave');
+  cas('  son auteur continue de le voir', LECTEUR,
+      `SELECT 1/count(*) FROM commentaires WHERE id=900;`, 'permis', 'moyen');
+  cas('  la modération aussi', ADMIN,
+      `SELECT 1/count(*) FROM commentaires WHERE id=900;`, 'permis', 'grave');
+  poser(ADMIN, `SELECT public.moderer_contenu('commentaire','900',false);`);
+  cas('rétabli, il redevient public', null,
+      `SELECT 1/count(*) FROM commentaires WHERE id=900;`, 'permis', 'grave');
 
   console.log('\n▶ Réglages et données personnelles');
   cas('changer ses propres préférences', LECTEUR,
