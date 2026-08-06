@@ -891,13 +891,24 @@
 
   <!-- TAB : Mes Formations -->
   <div class="tab-panel" id="tab-formations">
-    <div class="section-header">
-      <div class="section-title">Mes Formations</div>
-      <a href="tutoriels.html" class="btn-upload" style="text-decoration:none;">Découvrir les formations</a>
-    </div>
-
     <div id="formationsLoading" class="loading-dots">
       <span></span><span></span><span></span>
+    </div>
+
+    <div id="formationsCreees" style="display:none;">
+      <div class="section-header" style="margin-top:4px;">
+        <div class="section-title" style="font-size:.92rem;">✏️ Mes créations</div>
+        <a href="espace-createur.html" class="btn-upload" style="text-decoration:none;">＋ Nouveau pack</a>
+      </div>
+      <div class="manga-grid" id="formationsGrilleCreees"></div>
+    </div>
+
+    <div id="formationsAchetees" style="display:none;">
+      <div class="section-header" style="margin-top:18px;">
+        <div class="section-title" style="font-size:.92rem;">🎓 Mes achats</div>
+        <a href="tutoriels.html" class="btn-upload" style="text-decoration:none;">Découvrir</a>
+      </div>
+      <div class="manga-grid" id="formationsGrilleAchetees"></div>
     </div>
 
     <div class="manga-grid" id="formationsGrid" style="display:none;"></div>
@@ -1643,25 +1654,60 @@
 
     if (!packs.length) {
       gridEl.style.display = 'none';
+      document.getElementById('formationsCreees').style.display = 'none';
+      document.getElementById('formationsAchetees').style.display = 'none';
       emptyEl.style.display = 'block';
       return;
     }
     gridEl.style.display = 'grid';
     emptyEl.style.display = 'none';
 
-    gridEl.innerHTML = packs.map(p => {
+    /* Créations et achats étaient mélangés dans une seule grille : on
+       ne savait pas d'un coup d'œil ce qu'on pouvait modifier, et rien
+       ne menait à l'édition. Deux sections, et un bouton « Gérer » qui
+       ouvre directement le pack concerné dans l'espace créateur. */
+    const mesCreations = packs.filter(p => p.auteur_id === currentUser.id);
+    const mesAchats    = packs.filter(p => p.auteur_id !== currentUser.id);
+
+    const carte = (p, gerable) => {
       const cover = p.image_url
         ? '<img class="manga-cover" src="' + escFormation(p.image_url) + '" alt="" loading="lazy" />'
         : '<div class="manga-cover-placeholder">🎓</div>';
-      const isAuteur = p.auteur_id === currentUser.id;
-      return '<a href="pack.html?id=' + p.id + '" class="manga-card" style="display:block;text-decoration:none;color:inherit;">' +
-        cover +
-        '<div class="manga-info">' +
-          '<div class="manga-title">' + escFormation(p.titre || 'Sans titre') + '</div>' +
-          '<div class="manga-meta"><span>' + (isAuteur ? '✏️ Créée par toi' : '🎓 Achetée') + '</span></div>' +
-        '</div>' +
-      '</a>';
-    }).join('');
+      const prix = Number(p.prix);
+      const etiquette = !prix || isNaN(prix) ? 'Gratuit'
+        : (prix % 1 === 0 ? prix : prix.toFixed(2)) + ' €';
+      return '<div class="manga-card" style="display:flex;flex-direction:column;">' +
+        '<a href="pack.html?id=' + p.id + '" style="text-decoration:none;color:inherit;display:block;">' +
+          cover +
+          '<div class="manga-info">' +
+            '<div class="manga-title">' + escFormation(p.titre || 'Sans titre') + '</div>' +
+            '<div class="manga-meta"><span>' + (gerable ? etiquette : '🎓 Achetée') + '</span></div>' +
+          '</div>' +
+        '</a>' +
+        (gerable
+          ? '<a href="espace-createur.html?edit=' + p.id + '" ' +
+            'style="display:block;margin:0 10px 10px;padding:9px;border-radius:9px;text-align:center;' +
+            'background:var(--surface);border:1px solid var(--border);color:var(--text);' +
+            'font-size:.8rem;font-weight:700;text-decoration:none;">✏️ Gérer</a>'
+          : '') +
+      '</div>';
+    };
+
+    const secC = document.getElementById('formationsCreees');
+    const secA = document.getElementById('formationsAchetees');
+    gridEl.style.display = 'none';
+
+    if (mesCreations.length) {
+      secC.style.display = 'block';
+      document.getElementById('formationsGrilleCreees').innerHTML =
+        mesCreations.map(p => carte(p, true)).join('');
+    } else { secC.style.display = 'none'; }
+
+    if (mesAchats.length) {
+      secA.style.display = 'block';
+      document.getElementById('formationsGrilleAchetees').innerHTML =
+        mesAchats.map(p => carte(p, false)).join('');
+    } else { secA.style.display = 'none'; }
   }
 
   // ── TABS ──

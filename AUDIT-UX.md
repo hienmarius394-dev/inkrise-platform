@@ -475,7 +475,7 @@ hors-ligne et de la liste des destinations autorisées après connexion, et le
 fichier est supprimé. La suite de tests qui s'exerçait dessus a été recentrée
 sur `auteur.html`, qui porte les deux symptômes surveillés par le garde-fou.
 
-### 3.2 🟠 Trois pages pour « mon espace » **[produit]**
+### 3.2 ✅ ~~Trois pages pour « mon espace »~~ — traité autrement que prévu
 
 Après suppression de `mon-espace.html`, il reste deux tableaux de bord :
 
@@ -484,10 +484,34 @@ Après suppression de `mon-espace.html`, il reste deux tableaux de bord :
 | `profil.html` (103 Ko) | profil public + mes mangas + mes formations + stats |
 | `espace-createur.html` (58 Ko) | mes packs tutoriels |
 
-`espace-createur.html` n'est qu'un onglet de plus. Le fusionner dans
-`profil.html` (onglet « Mes packs », à côté de « Mes Mangas » et
-« Formations ») supprime une page, un lien de nav, et la question « où je vais
-déjà pour modifier mon pack ? ».
+> ⚠️ **Correction de l'audit.** J'écrivais « `espace-createur.html` n'est
+> qu'un onglet de plus ». En regardant le contenu : **1272 lignes**, un CRUD
+> complet avec recadreur d'image et galerie, et **65 classes CSS dont 10
+> définies différemment** de celles de `profil.html` (`.modal`,
+> `.modal-overlay`, `.empty-state`, `.section-title`, `.stat-num`…). Une
+> fusion naïve aurait cassé silencieusement l'affichage des deux pages ; une
+> fusion propre demandait de renommer 65 classes à travers le CSS, le HTML et
+> les gabarits JS — sur le parcours qui gère les ventes.
+
+Le vrai problème n'était pas l'existence de la page, mais **l'absence de
+chemin** : l'onglet « Formations » du profil mélangeait dans une seule grille
+les packs achetés et les packs créés, sans distinction ni moyen de les
+modifier. Il fallait deviner que l'édition se passait ailleurs.
+
+**Fait**, sans toucher au CRUD :
+- L'onglet Formations sépare **✏️ Mes créations** (avec le prix de vente) et
+  **🎓 Mes achats**.
+- Chaque création porte un bouton **« Gérer »** qui ouvre directement son
+  formulaire d'édition — `espace-createur.html?edit=<id>` savait déjà le
+  faire, personne n'y menait.
+- `espace-createur.html` cesse de se présenter comme un second tableau de
+  bord (« Bienvenue, Marius ✨ » + statistiques doublant celles du profil) et
+  redevient l'atelier des packs, avec un retour vers le profil.
+- La page sort du `sitemap.xml` : elle renvoyait les robots vers la page de
+  connexion.
+
+Vérifié par `tests/formations.test.js` (16 contrôles), dont le parcours
+complet profil → clic « Gérer » → formulaire pré-rempli..
 
 ### 3.3 ✅ ~~La barre du bas sur ordinateur~~ — fait (§1.1)
 
