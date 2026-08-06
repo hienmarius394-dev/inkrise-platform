@@ -1,4 +1,4 @@
-/* Boîte de confirmation partagée + état d'erreur de mon-espace. */
+/* Boîte de confirmation partagée + garde-fou anti-page-figée. */
 const { chromium } = require('playwright');
 const http = require('http'); const fs = require('fs'); const path = require('path');
 const ROOT = path.join(__dirname, '..');
@@ -90,8 +90,12 @@ const natifs = await p.evaluate(()=>({c:window.confirm.toString().includes('[nat
 check('les appels natifs ont disparu du code source', true, 'vérifié côté fichiers');
 await ctx.close();
 
-// ── 2. mon-espace : échec de chargement ──
-console.log('\n▶ mon-espace : panne de chargement');
+// ── 2. Garde-fou anti-page-figée ──
+// Le garde-fou vit dans inkrise-nav.js. On l'éprouve sur auteur.html, qui
+// porte à la fois un écran de chargement (#pageLoading) et une zone de
+// contenu (#mainContent) — les deux symptômes qu'il surveille.
+// (Il s'exerçait sur mon-espace.html avant la suppression de cette page.)
+console.log('\n▶ Page figée par une base injoignable');
 const ctx2=await b.newContext({viewport:{width:390,height:844},hasTouch:true,isMobile:true});
 await ctx2.addInitScript(u=>localStorage.setItem('sb-bsdcpwtimsgxcnaamwip-auth-token',
   JSON.stringify({access_token:'t',refresh_token:'r',token_type:'bearer',
@@ -103,8 +107,8 @@ await ctx2.route('**/auth/v1/**',r=>r.fulfill({status:200,contentType:'applicati
 await ctx2.route('**/rest/v1/**',r=>r.abort());
 await ctx2.route('**/storage/v1/**',r=>r.abort());
 const p2=await ctx2.newPage();
-p2.on('pageerror',e=>errors.push('mon-espace: '+e.message));
-await p2.goto(BASE + '/mon-espace.html');
+p2.on('pageerror',e=>errors.push('auteur: '+e.message));
+await p2.goto(BASE + '/auteur.html?id=u1');
 // Le garde-fou partagé laisse au serveur 10 s avant de conclure à la panne
 await p2.waitForSelector('#inkStalled', { timeout: 20000 }).catch(()=>{});
 const t = await p2.locator('body').innerText();
@@ -117,8 +121,10 @@ check('plus aucun écran de chargement affiché', await p2.evaluate(()=>{
   const e=document.getElementById('loading-screen');
   return !e || getComputedStyle(e).display==='none';
 }));
-check('aucune statistique trompeuse à zéro affichée', !/0\s*(manga|vue|abonné)/i.test(t));
-await p2.screenshot({path:path.join(__dirname,'shot-14-mon-espace-erreur.png')});
+// Assertion propre à mon-espace, supprimée avec la page : cette page-ci
+// n'affiche pas de compteurs pendant le chargement.
+check('aucun contenu inventé pendant la panne', !/Chargement…$/.test(t.trim()));
+await p2.screenshot({path:path.join(__dirname,'shot-14-page-figee.png')});
 await ctx2.close();
 
 await b.close(); server.close();

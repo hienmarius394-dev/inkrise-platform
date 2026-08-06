@@ -9,7 +9,7 @@
    - planches téléchargées (cache "inkrise-pages", rempli par
      assets/inkrise-offline.js) : cache d'abord — lecture hors-ligne
    - tout le reste (API Supabase, autres origines) : jamais intercepté */
-const CACHE = 'inkrise-v6';
+const CACHE = 'inkrise-v10';
 const PAGES_CACHE = 'inkrise-pages';
 
 // Toute la « coquille » de l'app est mise en cache dès l'installation
@@ -20,11 +20,11 @@ const PRECACHE = [
   'index.html', 'recherche.html', 'manga.html', 'lecteur.html',
   'bibliotheque.html', 'profil.html', 'auteur.html', 'communaute.html',
   'tutoriels.html', 'pack.html', 'espace-createur.html',
-  'mon-espace.html', 'upload-manga.html', 'gestion-chapitres.html',
-  'auth.html', 'admin.html', '404.html',
+  'upload-manga.html', 'gestion-chapitres.html',
+  'auth.html', 'admin.html', '404.html', 'parametres.html',
   'mentions-legales.html', 'cgu.html', 'confidentialite.html',
   'creators-remuneration.html',
-  'assets/inkrise-theme.css', 'assets/supabase.js', 'assets/inkrise-nav.js', 'assets/inkrise-offline.js',
+  'assets/inkrise-theme.css', 'assets/inkrise-theme.js', 'assets/inkrise-config.js', 'assets/supabase.js', 'assets/inkrise-nav.js', 'assets/inkrise-offline.js',
   'assets/inkrise-img.js', 'assets/legal.css',
   'assets/favicon.svg', 'assets/icon-192.png', 'assets/icon-512.png',
   'manifest.webmanifest'
@@ -45,6 +45,53 @@ self.addEventListener('activate', (e) => {
         keys.filter(k => k !== CACHE && k !== PAGES_CACHE).map(k => caches.delete(k))
       ))
       .then(() => self.clients.claim())
+  );
+});
+
+/* ── Notifications push ──────────────────────────────────────────────
+   Le service worker est le seul code qui tourne encore quand l'onglet est
+   fermé : c'est donc lui qui reçoit la notification et l'affiche.
+
+   `userVisibleOnly: true` a été promis au navigateur à l'abonnement : il
+   faut afficher quelque chose à chaque push reçu, sinon il finit par
+   révoquer l'abonnement. D'où la notification de repli si la charge utile
+   est absente ou illisible. */
+self.addEventListener('push', (e) => {
+  let d = {};
+  try { d = e.data ? e.data.json() : {}; }
+  catch (err) {
+    try { d = { corps: e.data.text() }; } catch (err2) { d = {}; }
+  }
+  const titre = d.titre || 'Inkrise';
+  const options = {
+    body: d.corps || 'Tu as du nouveau sur Inkrise.',
+    icon: 'assets/icon-192.png',
+    badge: 'assets/icon-192.png',
+    lang: 'fr',
+    data: { lien: d.lien || 'index.html' },
+    /* Même tag = la nouvelle notification remplace la précédente au lieu
+       d'empiler dix lignes dans le volet système. */
+    tag: d.tag || 'inkrise',
+    renotify: true
+  };
+  e.waitUntil(self.registration.showNotification(titre, options));
+});
+
+self.addEventListener('notificationclick', (e) => {
+  e.notification.close();
+  const lien = (e.notification.data && e.notification.data.lien) || 'index.html';
+  const cible = new URL(lien, self.location.origin).href;
+  e.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((liste) => {
+      /* Si Inkrise est déjà ouvert quelque part, on y navigue plutôt que
+         d'ouvrir un énième onglet. */
+      for (const c of liste) {
+        if (c.url.indexOf(self.location.origin) === 0 && 'focus' in c) {
+          return c.focus().then(() => (c.navigate ? c.navigate(cible) : null));
+        }
+      }
+      return clients.openWindow(cible);
+    })
   );
 });
 
@@ -83,6 +130,11 @@ self.addEventListener('fetch', (e) => {
   }
 
   if (url.origin !== self.location.origin) return;
+
+  // Fonctions serverless (/api/…) : jamais mises en cache. Elles rendent
+  // une réponse propre à la requête ; la servir depuis le cache n'aurait
+  // aucun sens et masquerait une mise à jour.
+  if (url.pathname.startsWith('/api/')) return;
 
   // Assets statiques : stale-while-revalidate (sert le cache, met à jour en fond)
   if (url.pathname.includes('/assets/') || url.pathname.endsWith('.webmanifest')) {

@@ -14,8 +14,13 @@
 <meta property="og:description" content="Lis des mangas et webtoons gratuitement, publie les tiens et vends tes packs — Inkrise est une plateforme pensée pour aider les créateurs manga à vivre de leur art." />
 <meta property="og:image" content="https://inkrise-platform.vercel.app/assets/hero-manga.jpg" />
 <meta name="twitter:card" content="summary_large_image" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="preconnect" href="https://bsdcpwtimsgxcnaamwip.supabase.co" />
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600;700&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/inkrise-theme.css" />
+<script src="assets/inkrise-theme.js"></script>
+<script src="assets/inkrise-config.js"></script>
 <style>
 :root {
   /* ── Design system premium clair "aurora glass" 2026 ── */
@@ -44,6 +49,13 @@
   --shadow-lg: 0 20px 50px -12px rgba(35,20,90,0.18);
   --glow-purple: 0 10px 30px -8px rgba(124,92,252,0.45);
   --glow-pink: 0 10px 30px -8px rgba(255,95,168,0.4);
+  /* L'accueil est plus translucide que le reste du site : c'est son
+     identité. On redéclare donc les deux teintes ici plutôt que de les
+     écrire en dur dans les règles — ainsi le thème sombre les reprend,
+     puisque `:root[data-theme="dark"]` (0,2,0) l'emporte sur ce `:root`. */
+  --nav-fond: rgba(255,255,255,0.72);
+  --bnav-fond: rgba(255,255,255,0.78);
+  --drawer-fond: rgba(255,255,255,0.88);
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html { background: var(--bg); }
@@ -65,7 +77,7 @@ h1,h2,h3,.logo { font-family: 'Syne', sans-serif; }
 ::selection { background: rgba(124,92,252,0.22); color: var(--text); }
 
 /* ── NAV UNIVERSEL (verre clair) ── */
-    .univ-nav { position: sticky; top: 0; z-index: 100; background: rgba(255,255,255,0.72); backdrop-filter: blur(14px) saturate(160%); -webkit-backdrop-filter: blur(14px) saturate(160%); border-bottom: 1px solid var(--glass-border); padding: 0 16px; height: 60px; display: flex; align-items: center; gap: 8px; }
+    .univ-nav { position: sticky; top: 0; z-index: 100; background: var(--nav-fond); backdrop-filter: blur(14px) saturate(160%); -webkit-backdrop-filter: blur(14px) saturate(160%); border-bottom: 1px solid var(--glass-border); padding: 0 16px; height: 60px; display: flex; align-items: center; gap: 8px; }
     .univ-nav-logo { font-family: 'Syne', sans-serif; font-size: 1.25rem; font-weight: 900; text-decoration: none; background: linear-gradient(135deg, #7c5cfc, #ff5fa8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; flex-shrink: 0; letter-spacing: 1px; }
     .univ-nav-links-d { display: flex; align-items: center; gap: 2px; flex: 1; margin: 0 8px; }
     @media (max-width: 680px) { .univ-nav-links-d { display: none; } }
@@ -94,7 +106,7 @@ h1,h2,h3,.logo { font-family: 'Syne', sans-serif; }
     /* ── DRAWER (verre clair) ── */
     .univ-overlay { display: none; position: fixed; inset: 0; background: rgba(22,19,42,.35); z-index: 150; backdrop-filter: blur(4px); }
     .univ-overlay.open { display: block; }
-    .univ-drawer { position: fixed; top: 0; right: 0; width: 280px; height: 100%; background: rgba(255,255,255,0.88); backdrop-filter: blur(16px) saturate(160%); -webkit-backdrop-filter: blur(16px) saturate(160%); z-index: 151; overflow-y: auto; transform: translateX(100%); transition: transform .28s cubic-bezier(.4,0,.2,1); box-shadow: -12px 0 48px rgba(35,20,90,.15); border-left: 1px solid var(--glass-border); }
+    .univ-drawer { position: fixed; top: 0; right: 0; width: 280px; height: 100%; background: var(--drawer-fond, var(--bg-2)); backdrop-filter: blur(16px) saturate(160%); -webkit-backdrop-filter: blur(16px) saturate(160%); z-index: 151; overflow-y: auto; transform: translateX(100%); transition: transform .28s cubic-bezier(.4,0,.2,1); box-shadow: -12px 0 48px rgba(35,20,90,.15); border-left: 1px solid var(--glass-border); }
     .univ-drawer.open { transform: translateX(0); }
     .univ-d-hdr { display: flex; align-items: center; justify-content: space-between; padding: 16px; border-bottom: 1px solid var(--glass-border); }
     .univ-d-logo { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 900; text-decoration: none; background: linear-gradient(135deg, #7c5cfc, #ff5fa8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
@@ -109,7 +121,10 @@ h1,h2,h3,.logo { font-family: 'Syne', sans-serif; }
     .univ-d-divider { height: 1px; background: var(--glass-border); margin: 8px 16px; }
 
     /* ── BOTTOM NAV (dock flottant verre) ── */
-    .univ-bnav { position: fixed; bottom: 12px; left: 12px; right: 12px; z-index: 100; background: rgba(255,255,255,0.78); border: 1px solid var(--glass-border); border-radius: 24px; box-shadow: var(--shadow-lg); display: flex; align-items: center; justify-content: space-around; padding: 9px 0 11px; backdrop-filter: blur(14px) saturate(160%); -webkit-backdrop-filter: blur(14px) saturate(160%); }
+    .univ-bnav { position: fixed; bottom: 12px; left: 12px; right: 12px; z-index: 100; background: var(--bnav-fond); border: 1px solid var(--glass-border); border-radius: 24px; box-shadow: var(--shadow-lg); display: flex; align-items: center; justify-content: space-around; padding: 9px 0 11px; backdrop-filter: blur(14px) saturate(160%); -webkit-backdrop-filter: blur(14px) saturate(160%); }
+    /* Au-delà du mobile, la nav du haut suffit : la barre du bas recouvrirait
+       le bas du contenu sur toute la largeur de l'écran. */
+    @media (min-width: 681px) { .univ-bnav { display: none; } body { padding-bottom: 24px; } }
     .univ-bnav-item { display: flex; flex-direction: column; align-items: center; gap: 2px; text-decoration: none; color: var(--text-3); padding: 0 8px; transition: color .2s; border: none; background: none; cursor: pointer; }
     .univ-bnav-item:hover { color: var(--text); }
     .univ-bnav-item.active { color: var(--purple2); }
@@ -159,8 +174,10 @@ h1,h2,h3,.logo { font-family: 'Syne', sans-serif; }
 }
 
 /* ── CRÉATEURS ── */
-.creators-section { padding: 22px 12px 0; }
-.creators-scroll { display: flex; gap: 16px; overflow-x: auto; scrollbar-width: none; }
+/* Le titre et la rangée portent chacun leurs 12px, comme .sec-header et
+   .featured-scroll — sinon les marges se cumulent et la rangée se décale. */
+.creators-section { padding: 0; }
+.creators-scroll { display: flex; gap: 16px; padding: 0 12px; overflow-x: auto; scrollbar-width: none; }
 .creators-scroll::-webkit-scrollbar { display: none; }
 .creator-item { display: flex; flex-direction: column; align-items: center; gap: 6px; flex-shrink: 0; cursor: pointer; }
 .creator-avatar {
@@ -387,7 +404,8 @@ h1,h2,h3,.logo { font-family: 'Syne', sans-serif; }
   <a href="bibliotheque.html" class="univ-d-item"><div class="univ-d-icon">📚</div>Ma bibliothèque</a>
   <a href="upload-manga.html" class="univ-d-item" id="drawerPublier" style="display:none;"><div class="univ-d-icon">📤</div>Publier un manga</a>
   <a href="auth.html" class="univ-d-item" id="drawerConnexion"><div class="univ-d-icon">🔑</div>Connexion / Inscription</a>
-  <button class="univ-d-item" id="drawerLogout" style="display:none;" onclick="doLogout()"><div class="univ-d-icon">🚪</div><span style="color:#da380f;">Déconnexion</span></button>
+  <a href="parametres.html" class="univ-d-item" id="drawerParametres" style="display:none;"><div class="univ-d-icon">⚙️</div>Paramètres</a>
+  <button class="univ-d-item" id="drawerLogout" style="display:none;" onclick="doLogout()"><div class="univ-d-icon">🚪</div><span style="color:var(--danger-link);">Déconnexion</span></button>
 </div>
 
 <!-- BANNIERE -->
@@ -410,6 +428,9 @@ h1,h2,h3,.logo { font-family: 'Syne', sans-serif; }
 
 <!-- CRÉATEURS -->
 <div class="creators-section" id="creatorsSection">
+  <div class="sec-header">
+    <div class="sec-title">🧑‍🎨 Les <span>créateurs</span></div>
+  </div>
   <div class="creators-scroll" id="creatorsScroll"></div>
 </div>
 
@@ -658,7 +679,7 @@ async function choosePlan(plan) {
   const { error } = await supabaseClient.from('profiles').update({ is_creator: true }).eq('id', data.session.user.id)
   if (error) { showToast('Erreur : ' + error.message); return }
   showToast('Espace créateur activé 🎉')
-  setTimeout(() => window.location.href = 'mon-espace.html', 900)
+  setTimeout(() => window.location.href = 'profil.html', 900)
 }
 
 // CRÉATEURS

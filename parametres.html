@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Paramètres — Inkrise</title>
+<meta name="description" content="Tes préférences de lecture, de notifications et de confidentialité sur Inkrise." />
+<meta name="robots" content="noindex" />
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
+<link rel="manifest" href="manifest.webmanifest" />
+<meta name="theme-color" content="#7c5cfc" />
+<meta property="og:site_name" content="Inkrise" />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="Paramètres — Inkrise" />
+<meta property="og:description" content="Tes préférences de lecture, de notifications et de confidentialité sur Inkrise." />
+<meta property="og:image" content="https://inkrise-platform.vercel.app/assets/hero-manga.jpg" />
+<meta name="twitter:card" content="summary_large_image" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="preconnect" href="https://bsdcpwtimsgxcnaamwip.supabase.co" />
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/inkrise-theme.css" />
+<script src="assets/inkrise-theme.js"></script>
+<script src="assets/inkrise-config.js"></script>
+<style>
+/* Nav, menu latéral et barre du bas : voir assets/inkrise-theme.css */
+:root {
+  --ink: #ffffff; --ink-2: #f2f2f7; --text-2: rgba(0,0,0,0.6);
+  --text-3:rgba(0,0,0,0.55); --purple-dark: #5040c8;
+  --radius: 10px; --radius-lg: 14px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+/* Pas de padding-top : la nav est `sticky`, elle occupe donc déjà sa place
+   dans le flux. Les 70px hérités de l'époque où elle était `fixed` créaient
+   une bande blanche au-dessus de l'en-tête. */
+body { background: var(--ink); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; padding: 0 0 100px; }
+
+
+/* Au-delà du mobile, la nav du haut suffit : la barre du bas recouvrirait
+   le bas du contenu sur toute la largeur de l'écran. */
+@media (min-width: 681px) { .univ-bnav { display: none; } body { padding-bottom: 24px; } }
+
+/* CONTENU */
+.page-header{padding:0 14px 16px;}
+.page-title{font-family:'Syne',sans-serif;font-size:1.3rem;font-weight:800;}
+.page-sub{color:var(--text-3);font-size:.82rem;margin-top:4px;}
+
+.library-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;text-align:center;}
+.library-empty-icon{font-size:48px;margin-bottom:16px;opacity:0.3;}
+.library-empty-title{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:700;margin-bottom:6px;}
+.library-empty-text{color:var(--text-3);font-size:.85rem;max-width:280px;line-height:1.5;margin-bottom:20px;}
+.btn-primary{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,var(--purple),var(--pink));color:#fff;font-size:.85rem;font-weight:700;padding:10px 20px;border-radius:10px;text-decoration:none;transition:transform .2s;}
+.btn-primary:hover{transform:scale(1.03);}
+
+.library-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;padding:0 14px 20px;}
+.lib-card{background:rgba(255,255,255,0.6);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(124,92,252,0.1);box-shadow:0 4px 20px rgba(124,92,252,0.06);border-radius:var(--radius-lg);overflow:hidden;cursor:pointer;text-decoration:none;color:inherit;transition:transform .2s;display:block;position:relative;}
+.lib-card:hover{transform:translateY(-3px);}
+.lib-cover{width:100%;aspect-ratio:3/4;background:var(--surface-2);display:flex;align-items:center;justify-content:center;font-size:2.5rem;position:relative;overflow:hidden;}
+.lib-cover img{width:100%;height:100%;object-fit:cover;}
+.lib-cover-fallback{font-size:2rem;opacity:0.3;}
+.lib-info{padding:10px 10px 12px;}
+.lib-title{font-size:.85rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.lib-meta{font-size:.72rem;color:var(--text-3);margin-top:3px;}
+.lib-continue{position:absolute;bottom:48px;left:8px;right:8px;background:linear-gradient(135deg,var(--purple),var(--pink));color:#fff;font-size:.72rem;font-weight:700;padding:6px 10px;border-radius:7px;text-align:center;border:none;cursor:pointer;transition:transform .2s;text-decoration:none;display:none;}
+.lib-card:hover .lib-continue{display:block;}
+.lib-continue:hover{transform:scale(1.03);}
+.lib-new-badge{position:absolute;top:6px;left:6px;background:var(--purple);color:#fff;font-size:9px;font-weight:800;padding:3px 7px;border-radius:5px;}
+
+.loading{text-align:center;padding:40px;color:var(--text-3);font-size:.85rem;}
+.error-state{text-align:center;padding:40px;color:var(--danger);font-size:.85rem;}
+.lib-remove{position:absolute;top:6px;right:6px;width:26px;height:26px;border-radius:50%;background:rgba(0,0,0,.55);color:#fff;border:none;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;z-index:3;}
+.lib-remove:hover{background:var(--danger);}
+#toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:var(--text);color:#fff;padding:10px 18px;border-radius:10px;font-size:.82rem;font-weight:600;opacity:0;pointer-events:none;transition:opacity .25s;z-index:300;}
+#toast.show{opacity:1;}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="univ-nav">
+  <a href="index.html" class="univ-nav-logo">INKRISE</a>
+  <div class="univ-nav-links-d">
+    <a href="index.html" class="univ-nav-lk">Accueil</a>
+    <a href="recherche.html" class="univ-nav-lk">Mangas</a>
+    <a href="tutoriels.html" class="univ-nav-lk">Tutoriels</a>
+    <a href="espace-createur.html" class="univ-nav-lk">Espace Créateur</a>
+  </div>
+  <div class="univ-nav-search">
+    <input type="text" id="navSearchInput" class="univ-nav-si" placeholder="Rechercher…" onkeydown="if(event.key==='Enter')doSearch()" />
+    <button class="univ-nav-sb" onclick="doSearch()">🔍</button>
+  </div>
+  <div class="nav-right">
+    <a href="auth.html" class="nav-connexion-btn" id="navConnexion">Connexion</a>
+    <a href="profil.html" class="nav-avatar-btn" id="navAvatar">?</a>
+    <a href="profil.html#notifications" class="nav-notif-link" id="navNotifLink" title="Notifications">🔔<span class="nav-notif-dot" id="navNotifDot"></span></a>
+    <button class="univ-nav-hbg" onclick="openDrawer()">☰</button>
+  </div>
+</nav>
+
+<!-- DRAWER -->
+<div class="univ-overlay" id="univOverlay" onclick="closeDrawer()"></div>
+<div class="univ-drawer" id="univDrawer">
+  <div class="univ-d-hdr">
+    <a href="index.html" class="univ-d-logo">INKRISE</a>
+    <button class="univ-d-close" onclick="closeDrawer()">✕</button>
+  </div>
+  <div class="univ-d-sec">Explorer</div>
+  <a href="index.html" class="univ-d-item"><div class="univ-d-icon">🏠</div>Accueil</a>
+  <a href="recherche.html" class="univ-d-item"><div class="univ-d-icon">📖</div>Manga & BD</a>
+  <a href="tutoriels.html" class="univ-d-item"><div class="univ-d-icon">🎓</div>Tutoriels <span class="univ-d-badge teal">GRATUIT</span></a>
+  <a href="espace-createur.html" class="univ-d-item"><div class="univ-d-icon">🎨</div>Espace Créateur <span class="univ-d-badge teal">GRATUIT</span></a>
+  <a href="communaute.html" class="univ-d-item"><div class="univ-d-icon">👥</div>Communauté</a>
+  <div class="univ-d-divider"></div>
+  <div class="univ-d-sec">Mon compte</div>
+  <a href="profil.html" class="univ-d-item" id="drawerProfil" style="display:none;"><div class="univ-d-icon">🧑‍🎨</div>Mon profil</a>
+  <a href="bibliotheque.html" class="univ-d-item"><div class="univ-d-icon">📚</div>Ma bibliothèque</a>
+  <a href="upload-manga.html" class="univ-d-item" id="drawerPublier" style="display:none;"><div class="univ-d-icon">📤</div>Publier un manga</a>
+  <a href="auth.html" class="univ-d-item" id="drawerConnexion"><div class="univ-d-icon">🔑</div>Connexion / Inscription</a>
+  <button class="univ-d-item" id="drawerLogout" style="display:none;" onclick="doLogout()"><div class="univ-d-icon">🚪</div><span style="color:var(--danger-link);">Déconnexion</span></button>
+</div>
+
+<!-- CONTENU -->
+<div class="page-header">
+  <div class="page-title">⚙️ Paramètres</div>
+  <div class="page-sub" id="sousTitre">Tes préférences de lecture et de notifications</div>
+</div>
+
+<main id="app" class="wrap">
+  <div id="chargement" style="text-align:center;padding:60px 20px;color:var(--text-3);">Chargement…</div>
+</main>
+
+<div id="inkriseBottomNav" data-active=""></div>
+
+<script src="assets/inkrise-nav.js"></script>
+<script src="assets/supabase.js"></script>
+<script>
+const SUPABASE_URL = 'https://bsdcpwtimsgxcnaamwip.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJzZGNwd3RpbXNneGNuYWFtd2lwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAzMTQ1MDIsImV4cCI6MjA5NTg5MDUwMn0.uMcfUsnlULHNqS_87xzUWRUB8tEaCCNQglrWwN2fb44';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+function doSearch(){
+  const q=document.getElementById('navSearchInput');
+  if(q&&q.value.trim())window.location.href='recherche.html?q='+encodeURIComponent(q.value.trim());
+  else if(q)q.focus();
+}
+function focusSearch(){const i=document.getElementById('navSearchInput');if(i){i.focus();window.scrollTo({top:0,behavior:'smooth'});}}
+function openDrawer(){document.getElementById('univDrawer').classList.add('open');document.getElementById('univOverlay').classList.add('open');}
+function closeDrawer(){document.getElementById('univDrawer').classList.remove('open');document.getElementById('univOverlay').classList.remove('open');}
+function openModal(){ window.location.href = 'index.html?premium=1'; }
+async function doLogout(){ await sb.auth.signOut(); window.location.href = 'index.html'; }
+
+function majNav(user){
+  const b=document.getElementById('navConnexion'), a=document.getElementById('navAvatar'),
+        n=document.getElementById('navNotifLink'), p=document.getElementById('drawerProfil'),
+        pub=document.getElementById('drawerPublier'), c=document.getElementById('drawerConnexion'),
+        l=document.getElementById('drawerLogout');
+  if(user){
+    if(b)b.style.display='none'; if(a){a.classList.add('show');a.textContent=(user.email||'U')[0].toUpperCase();}
+    if(n)n.classList.add('show'); if(p)p.style.display='flex'; if(pub)pub.style.display='flex';
+    if(c)c.style.display='none'; if(l)l.style.display='flex';
+  } else {
+    if(b)b.style.display=''; if(a)a.classList.remove('show'); if(n)n.classList.remove('show');
+    if(p)p.style.display='none'; if(pub)pub.style.display='none';
+    if(c)c.style.display='flex'; if(l)l.style.display='none';
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   PARAMÈTRES
+   ═══════════════════════════════════════════════════════════════════
+   Jusqu'ici il n'existait aucune page de réglages : « Supprimer mon
+   compte » était enterré au fond du profil, le filtre 18+ n'existait pas
+   malgré le champ `adulte` en base, et les notifications étaient tout ou
+   rien. Chaque réglage ci-dessous a un effet réel — un interrupteur
+   décoratif serait pire que pas d'interrupteur du tout. */
+
+let moi = null;      // session utilisateur
+let profil = null;   // ligne profiles
+
+function ligne(id, titre, detail, actif) {
+  return '<div style="display:flex;align-items:center;gap:14px;padding:14px 0;border-top:1px solid var(--border);">' +
+    '<div style="flex:1;min-width:0;">' +
+      '<label for="' + id + '" style="display:block;font-weight:700;font-size:.92rem;color:var(--text);cursor:pointer;">' + esc(titre) + '</label>' +
+      '<div style="font-size:.8rem;color:var(--text-3);margin-top:3px;line-height:1.5;">' + esc(detail) + '</div>' +
+    '</div>' +
+    '<button type="button" role="switch" id="' + id + '" aria-checked="' + !!actif + '" ' +
+      'style="flex-shrink:0;width:52px;height:32px;border-radius:999px;border:none;cursor:pointer;position:relative;' +
+      'transition:background .2s;background:' + (actif ? 'var(--purple-link)' : 'var(--surface3)') + ';">' +
+      '<span aria-hidden="true" style="position:absolute;top:4px;left:' + (actif ? '24px' : '4px') + ';width:24px;height:24px;' +
+        'border-radius:50%;background:#fff;transition:left .2s;box-shadow:0 1px 3px rgba(0,0,0,.3);"></span>' +
+    '</button>' +
+  '</div>';
+}
+
+function carte(titre, contenu) {
+  return '<section style="background:var(--ink-2);border:1px solid var(--border);border-radius:14px;padding:16px 18px;margin-bottom:14px;">' +
+    '<h2 style="font-family:\'Syne\',sans-serif;font-size:1rem;font-weight:800;color:var(--text);margin-bottom:4px;">' + titre + '</h2>' +
+    contenu + '</section>';
+}
+
+function brancherInterrupteur(id, surChangement) {
+  const b = document.getElementById(id);
+  if (!b) return;
+  b.addEventListener('click', async () => {
+    const nouveau = b.getAttribute('aria-checked') !== 'true';
+    peindreInterrupteur(b, nouveau);
+    const ok = await surChangement(nouveau);
+    /* Un réglage qui n'a pas pu être enregistré ne doit pas rester
+       affiché comme actif : on revient à l'état réel. */
+    if (ok === false) { peindreInterrupteur(b, !nouveau); dire('Réglage non enregistré. Réessaie.', true); }
+  });
+}
+function peindreInterrupteur(b, actif) {
+  b.setAttribute('aria-checked', String(actif));
+  b.style.background = actif ? 'var(--purple-link)' : 'var(--surface3)';
+  b.querySelector('span').style.left = actif ? '24px' : '4px';
+}
+
+let minuteurMsg = null;
+function dire(texte, erreur) {
+  const z = document.getElementById('messageGlobal');
+  if (!z) return;
+  z.textContent = texte;
+  z.style.color = erreur ? 'var(--danger-link)' : 'var(--success-link)';
+  clearTimeout(minuteurMsg);
+  minuteurMsg = setTimeout(() => { z.textContent = ''; }, 2600);
+}
+
+async function enregistrer(champs) {
+  const { error } = await sb.from('profiles').update(champs).eq('id', moi.id);
+  if (error) return false;
+  Object.assign(profil, champs);
+  dire('✅ Enregistré');
+  return true;
+}
+
+(async function init() {
+  const { data: { session } } = await sb.auth.getSession();
+  majNav(session && session.user);
+  const app = document.getElementById('app');
+
+  if (!session || !session.user) {
+    document.getElementById('sousTitre').textContent = '';
+    app.innerHTML = '<div style="text-align:center;padding:60px 20px;">' +
+      '<div style="font-size:3rem;margin-bottom:14px;">🔒</div>' +
+      '<div style="font-size:1.1rem;font-weight:700;color:var(--text);margin-bottom:10px;">Connecte-toi</div>' +
+      '<div style="font-size:.9rem;color:var(--text-3);margin-bottom:24px;">Tes paramètres sont liés à ton compte.</div>' +
+      '<a href="auth.html?next=' + encodeURIComponent('parametres.html') + '" style="display:inline-block;min-height:44px;padding:13px 28px;' +
+      'background:var(--purple-link);color:var(--sur-purple);border-radius:12px;font-weight:700;text-decoration:none;">Se connecter</a></div>';
+    return;
+  }
+  moi = session.user;
+
+  const { data } = await sb.from('profiles')
+    .select('id, username, pref_masquer_adulte, pref_mode_lecture, pref_notif_chapitres, pref_notif_social, pref_notif_push')
+    .eq('id', moi.id).maybeSingle();
+  profil = data || {};
+
+  const themeActuel = window.inkriseTheme ? window.inkriseTheme.get() : 'auto';
+
+  app.innerHTML =
+    '<div id="messageGlobal" role="status" style="min-height:20px;font-size:.85rem;font-weight:700;margin-bottom:8px;"></div>' +
+
+    carte('🎨 Apparence',
+      '<div style="font-size:.8rem;color:var(--text-3);margin-bottom:12px;">Le thème sombre suit ton téléphone si tu choisis « Auto ».</div>' +
+      '<div class="ink-theme-row" id="themeRow" style="margin:0;">' +
+        ['clair','sombre','auto'].map(v =>
+          '<button type="button" class="ink-theme-opt" data-valeur="' + v + '" aria-pressed="' + (v === themeActuel) + '">' +
+          '<span aria-hidden="true">' + ({clair:'☀️',sombre:'🌙',auto:'🌗'})[v] + '</span>' +
+          '<span>' + ({clair:'Clair',sombre:'Sombre',auto:'Auto'})[v] + '</span></button>').join('') +
+      '</div>') +
+
+    carte('📖 Lecture',
+      ligne('prefAdulte', 'Masquer le contenu 18+',
+            'Les œuvres marquées « adulte » n\'apparaîtront ni dans le catalogue ni dans la recherche.',
+            profil.pref_masquer_adulte !== false) +
+      '<div style="padding:14px 0;border-top:1px solid var(--border);">' +
+        '<label for="prefMode" style="display:block;font-weight:700;font-size:.92rem;color:var(--text);">Mode de lecture par défaut</label>' +
+        '<div style="font-size:.8rem;color:var(--text-3);margin:3px 0 10px;line-height:1.5;">Le lecteur s\'ouvrira directement ainsi. Tu peux toujours changer en cours de lecture.</div>' +
+        '<select id="prefMode" style="width:100%;min-height:44px;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--bg);color:var(--text);font-family:inherit;font-size:.9rem;">' +
+          '<option value="">Choisir à chaque fois</option>' +
+          '<option value="scroll"' + (profil.pref_mode_lecture === 'scroll' ? ' selected' : '') + '>Vertical (webtoon)</option>' +
+          '<option value="pages"' + (profil.pref_mode_lecture === 'pages' ? ' selected' : '') + '>Horizontal (page par page)</option>' +
+        '</select>' +
+      '</div>') +
+
+    carte('🔔 Notifications',
+      ligne('prefChap', 'Nouveaux chapitres',
+            'Quand un manga que tu suis publie la suite.', profil.pref_notif_chapitres !== false) +
+      ligne('prefSocial', 'Abonnés, avis et réactions',
+            'Quand quelqu\'un te suit, note ton œuvre ou réagit à un message.', profil.pref_notif_social !== false) +
+      '<div id="zonePush"></div>') +
+
+    carte('🔐 Mes données',
+      '<div style="font-size:.8rem;color:var(--text-3);margin:6px 0 14px;line-height:1.6;">' +
+        'Le RGPD te donne un droit de portabilité : tu peux récupérer une copie de tes données quand tu veux.</div>' +
+      '<button type="button" id="btnExport" style="width:100%;min-height:44px;padding:12px;border:1px solid var(--border);' +
+        'border-radius:10px;background:var(--surface);color:var(--text);font-family:inherit;font-size:.9rem;font-weight:700;cursor:pointer;">' +
+        '📦 Télécharger mes données (JSON)</button>' +
+      '<div style="margin-top:18px;padding-top:16px;border-top:1px solid var(--border);">' +
+        '<div style="font-weight:700;font-size:.9rem;color:var(--danger-link);margin-bottom:6px;">Zone sensible</div>' +
+        '<div style="font-size:.8rem;color:var(--text-3);margin-bottom:12px;line-height:1.6;">' +
+          'La suppression est définitive : profil, mangas, chapitres, avis et messages sont effacés.</div>' +
+        '<button type="button" id="btnSupprimer" style="width:100%;min-height:44px;padding:12px;border:1.5px solid var(--danger-link);' +
+          'border-radius:10px;background:none;color:var(--danger-link);font-family:inherit;font-size:.9rem;font-weight:700;cursor:pointer;">' +
+          '🗑️ Supprimer mon compte</button>' +
+      '</div>');
+
+  /* ── Thème ── */
+  app.querySelectorAll('#themeRow .ink-theme-opt').forEach(b => b.addEventListener('click', () => {
+    window.inkriseTheme.set(b.dataset.valeur);
+    app.querySelectorAll('#themeRow .ink-theme-opt').forEach(x =>
+      x.setAttribute('aria-pressed', String(x.dataset.valeur === window.inkriseTheme.get())));
+    dire('✅ Thème enregistré');
+  }));
+
+  /* ── Lecture ── */
+  brancherInterrupteur('prefAdulte', v => enregistrer({ pref_masquer_adulte: v }));
+  document.getElementById('prefMode').addEventListener('change', e =>
+    enregistrer({ pref_mode_lecture: e.target.value || null }));
+
+  /* ── Notifications ── */
+  brancherInterrupteur('prefChap',   v => enregistrer({ pref_notif_chapitres: v }));
+  brancherInterrupteur('prefSocial', v => enregistrer({ pref_notif_social: v }));
+  await rendrePush();
+
+  /* ── Données ── */
+  document.getElementById('btnExport').addEventListener('click', exporterMesDonnees);
+  document.getElementById('btnSupprimer').addEventListener('click', supprimerMonCompte);
+})();
+
+/* ═══════════════════════════════════════════════════════════════════
+   NOTIFICATIONS PUSH
+   ═══════════════════════════════════════════════════════════════════
+   Sans elles, une notification n'était vue que si la personne revenait
+   d'elle-même — sur un site de publication en série, c'était le canal de
+   rappel manquant.
+
+   La clé publique VAPID est injectée à la construction ; tant qu'elle est
+   absente, on n'affiche pas un interrupteur qui ne pourrait rien faire. */
+const CLE_VAPID = window.INKRISE_VAPID_PUBLIC || '';
+
+function base64UrlVersOctets(base64) {
+  const rempli = (base64 + '='.repeat((4 - base64.length % 4) % 4))
+    .replace(/-/g, '+').replace(/_/g, '/');
+  const brut = atob(rempli);
+  return Uint8Array.from([...brut].map(c => c.charCodeAt(0)));
+}
+
+async function rendrePush() {
+  const zone = document.getElementById('zonePush');
+  if (!zone) return;
+
+  const supporte = 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
+  if (!supporte || !CLE_VAPID) {
+    zone.innerHTML = '<div style="padding:14px 0;border-top:1px solid var(--border);font-size:.8rem;color:var(--text-3);line-height:1.6;">' +
+      (supporte
+        ? 'Les notifications sur ton téléphone ne sont pas encore activées sur ce site.'
+        : 'Ton navigateur ne gère pas les notifications push.') +
+      '</div>';
+    return;
+  }
+
+  if (Notification.permission === 'denied') {
+    zone.innerHTML = '<div style="padding:14px 0;border-top:1px solid var(--border);font-size:.8rem;color:var(--text-3);line-height:1.6;">' +
+      '🔕 Tu as refusé les notifications pour ce site. Pour les réactiver, autorise-les dans les réglages de ton navigateur.</div>';
+    return;
+  }
+
+  const inscription = await navigator.serviceWorker.getRegistration();
+  const abo = inscription ? await inscription.pushManager.getSubscription() : null;
+  zone.innerHTML = ligne('prefPush', 'Sur mon téléphone',
+    'Recevoir les notifications même quand Inkrise est fermé.', !!abo);
+
+  brancherInterrupteur('prefPush', async (actif) => {
+    if (actif) return await activerPush();
+    return await desactiverPush();
+  });
+}
+
+async function activerPush() {
+  try {
+    const permission = await Notification.requestPermission();
+    if (permission !== 'granted') {
+      dire(permission === 'denied'
+        ? 'Notifications refusées dans le navigateur.'
+        : 'Autorisation non accordée.', true);
+      return false;
+    }
+    const inscription = await navigator.serviceWorker.ready;
+    const abo = await inscription.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: base64UrlVersOctets(CLE_VAPID)
+    });
+    const brut = abo.toJSON();
+    const { error } = await sb.from('push_subscriptions').upsert({
+      user_id: moi.id,
+      endpoint: brut.endpoint,
+      p256dh: brut.keys.p256dh,
+      auth: brut.keys.auth,
+      user_agent: navigator.userAgent.slice(0, 300)
+    }, { onConflict: 'endpoint' });
+    if (error) {
+      /* L'abonnement navigateur existe mais on ne sait pas où envoyer :
+         on le retire pour ne pas laisser croire que c'est actif. */
+      await abo.unsubscribe();
+      dire('Enregistrement impossible : ' + error.message, true);
+      return false;
+    }
+    await enregistrer({ pref_notif_push: true });
+    return true;
+  } catch (e) {
+    dire('Activation impossible : ' + e.message, true);
+    return false;
+  }
+}
+
+async function desactiverPush() {
+  try {
+    const inscription = await navigator.serviceWorker.getRegistration();
+    const abo = inscription ? await inscription.pushManager.getSubscription() : null;
+    if (abo) {
+      await sb.from('push_subscriptions').delete().eq('endpoint', abo.endpoint);
+      await abo.unsubscribe();
+    }
+    await enregistrer({ pref_notif_push: false });
+    return true;
+  } catch (e) {
+    dire('Désactivation impossible : ' + e.message, true);
+    return false;
+  }
+}
+
+/* ── Export RGPD ──
+   La politique de confidentialité promettait un droit de portabilité mais
+   ne proposait qu'une adresse email. Le navigateur sait très bien
+   assembler et télécharger un fichier : autant le faire tout de suite. */
+async function exporterMesDonnees() {
+  const b = document.getElementById('btnExport');
+  const libelle = b.textContent;
+  b.disabled = true; b.textContent = 'Préparation…';
+  try {
+    const tables = [
+      ['profil', sb.from('profiles').select('*').eq('id', moi.id)],
+      ['mangas', sb.from('mangas').select('*').eq('auteur_id', moi.id)],
+      ['bibliotheque', sb.from('bibliotheque').select('*').eq('user_id', moi.id)],
+      ['avis_mangas', sb.from('avis_mangas').select('*').eq('user_id', moi.id)],
+      ['commentaires', sb.from('commentaires').select('*').eq('user_id', moi.id)],
+      ['abonnements', sb.from('follows').select('*').eq('user_id', moi.id)],
+      ['achats', sb.from('achats_packs').select('*').eq('user_id', moi.id)],
+      ['notifications', sb.from('notifications').select('*').eq('user_id', moi.id)],
+    ];
+    const paquet = { exporte_le: new Date().toISOString(), compte: { id: moi.id, email: moi.email } };
+    for (const [nom, requete] of tables) {
+      const { data, error } = await requete;
+      /* Une table absente sur cette installation ne doit pas faire échouer
+         tout l'export : on note l'anomalie et on continue. */
+      paquet[nom] = error ? { erreur: error.message } : (data || []);
+    }
+    const blob = new Blob([JSON.stringify(paquet, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'inkrise-mes-donnees-' + new Date().toISOString().slice(0, 10) + '.json';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+    dire('✅ Fichier téléchargé');
+  } catch (e) {
+    dire('Export impossible : ' + e.message, true);
+  }
+  b.disabled = false; b.textContent = libelle;
+}
+
+async function supprimerMonCompte() {
+  const ok = await inkriseConfirm({
+    title: 'Supprimer définitivement ton compte ?',
+    message: 'Ton profil, tes mangas, tes chapitres, tes avis et tes messages seront effacés.\nCette action est irréversible.',
+    requireText: 'SUPPRIMER',
+    confirmLabel: 'Supprimer mon compte'
+  });
+  if (!ok) return;
+  const { error } = await sb.rpc('delete_my_account');
+  if (error) { dire('Suppression impossible : ' + error.message, true); return; }
+  await sb.auth.signOut();
+  window.location.href = 'index.html';
+}
+</script>
+</body>
+</html>

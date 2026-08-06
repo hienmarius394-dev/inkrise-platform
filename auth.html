@@ -14,10 +14,15 @@
 <meta property="og:description" content="Crée ton compte Inkrise gratuitement : lecture illimitée et accès à la communauté." />
 <meta property="og:image" content="https://inkrise-platform.vercel.app/assets/hero-manga.jpg" />
 <meta name="twitter:card" content="summary_large_image" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="preconnect" href="https://bsdcpwtimsgxcnaamwip.supabase.co" />
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-<script src="assets/supabase.js"></script>
 <link rel="stylesheet" href="assets/inkrise-theme.css" />
+<script src="assets/inkrise-theme.js"></script>
+<script src="assets/inkrise-config.js"></script>
 <style>
+/* Nav, menu latéral et barre du bas : voir assets/inkrise-theme.css */
 :root {
   --bg: #faf9fd;
   --ink: #faf9fd;
@@ -277,56 +282,8 @@ body::after {
 }
 .back-link a:hover { text-decoration: underline; }
 
-/* ── NAV UNIVERSEL ── */
-.univ-nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,0.96);backdrop-filter:blur(14px);border-bottom:1px solid rgba(0,0,0,0.08);padding:0 16px;height:58px;display:flex;align-items:center;gap:8px;}
-.univ-nav-logo{font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:900;text-decoration:none;background:linear-gradient(135deg,#7c5cfc,#a594f9);-webkit-background-clip:text;-webkit-text-fill-color:transparent;flex-shrink:0;letter-spacing:1px;}
-.univ-nav-links-d{display:flex;align-items:center;gap:2px;flex:1;margin:0 8px;}
-@media(max-width:680px){.univ-nav-links-d{display:none;}}
-.univ-nav-lk{color:rgba(0,0,0,0.6);font-size:.82rem;font-weight:600;text-decoration:none;padding:5px 10px;border-radius:7px;transition:all .2s;white-space:nowrap;font-family:'DM Sans',sans-serif;}
-.univ-nav-lk:hover{color:#1c1c1e;background:rgba(0,0,0,0.06);}
-.univ-nav-search{display:flex;align-items:center;background:rgba(0,0,0,0.05);border:1px solid rgba(0,0,0,0.1);border-radius:18px;overflow:hidden;max-width:200px;flex-shrink:0;}
-@media(max-width:480px){.univ-nav-search{max-width:120px;}}
-.univ-nav-si{background:none;border:none;outline:none;color:#1c1c1e;font-size:.8rem;padding:7px 10px;width:100%;font-family:'DM Sans',sans-serif;}
-.univ-nav-si::placeholder{color:rgba(0,0,0,.35);}
-.univ-nav-sb{background:none;border:none;cursor:pointer;padding:6px 8px;font-size:13px;color:rgba(0,0,0,.5);flex-shrink:0;}
-.univ-nav-sb:hover{color:#7c5cfc;}
-.univ-nav-hbg{width:34px;height:34px;border-radius:8px;background:rgba(0,0,0,.05);border:1px solid rgba(0,0,0,.08);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;color:var(--text);transition:background .2s;flex-shrink:0;}
-.univ-nav-hbg:hover{background:rgba(0,0,0,.1);}
-.nav-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-.nav-connexion-btn { color: var(--text-2); font-size: .8rem; font-weight: 600; padding: 6px 13px; border-radius: 20px; border: 1px solid rgba(0,0,0,.15); text-decoration: none; transition: all .2s; white-space: nowrap; }
-.nav-connexion-btn:hover { border-color: var(--purple); color: var(--purple); }
-.nav-avatar-btn { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, var(--purple), var(--pink)); display: none; align-items: center; justify-content: center; font-size: .85rem; font-weight: 700; color: #fff; text-decoration: none; text-transform: uppercase; }
-.nav-avatar-btn.show { display: flex; }
-.nav-notif-link { position: relative; display: none; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 8px; background: rgba(0,0,0,.05); border: 1px solid rgba(0,0,0,.08); text-decoration: none; font-size: .95rem; transition: all .2s; }
-.nav-notif-link.show { display: flex; }
-.nav-notif-link:hover { background: rgba(0,0,0,.1); }
-.nav-notif-dot { position: absolute; top: -5px; right: -5px; min-width: 16px; height: 16px; border-radius: 8px; background: var(--accent); color: #fff; font-size: 9px; font-weight: 800; padding: 0 3px; display: none; align-items: center; justify-content: center; border: 2px solid #fff; }
-.nav-notif-dot.show { display: flex; }
-/* Drawer */
-.univ-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:150;backdrop-filter:blur(3px);}
-.univ-overlay.open{display:block;}
-.univ-drawer{position:fixed;top:0;right:0;width:270px;height:100%;background:#ffffff;z-index:151;overflow-y:auto;transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1);box-shadow:-4px 0 32px rgba(0,0,0,.12);border-left:1px solid var(--border);}
-.univ-drawer.open{transform:translateX(0);}
-.univ-d-hdr{display:flex;align-items:center;justify-content:space-between;padding:16px;border-bottom:1px solid var(--border);}
-.univ-d-logo{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:900;text-decoration:none;background:linear-gradient(135deg,#7c5cfc,#a594f9);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
-.univ-d-close{width:30px;height:30px;border-radius:50%;background:rgba(0,0,0,.06);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;color:var(--text-2);}
-.univ-d-sec{font-size:.65rem;font-weight:800;color:var(--text-3);letter-spacing:1.5px;text-transform:uppercase;padding:14px 16px 5px;}
-.univ-d-item{display:flex;align-items:center;gap:10px;padding:10px 12px;margin:2px 8px;text-decoration:none;color:var(--text);font-weight:600;font-size:.88rem;cursor:pointer;transition:background .15s;border:none;background:none;width:calc(100% - 16px);text-align:left;border-radius:9px;font-family:'DM Sans',sans-serif;}
-.univ-d-item:hover{background:rgba(0,0,0,.05);}
-.univ-d-icon{width:34px;height:34px;border-radius:9px;background:rgba(0,0,0,.05);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
-.univ-d-badge{font-size:.65rem;font-weight:800;padding:2px 7px;border-radius:6px;margin-left:auto;}
-.univ-d-badge.orange{background:rgba(255,107,53,.15);color:#b33f14;}
-.univ-d-badge.teal{background:rgba(0,201,167,.15);color:#007a66;}
-.univ-d-divider{height:1px;background:var(--border);margin:8px 16px;}
-/* Bottom nav */
-.univ-bnav{position:fixed;bottom:0;left:0;right:0;z-index:100;background:rgba(255,255,255,.97);border-top:1px solid var(--border);box-shadow:0 -2px 12px rgba(0,0,0,.05);display:flex;align-items:center;justify-content:space-around;padding:8px 0 16px;backdrop-filter:blur(14px);}
-.univ-bnav-item{display:flex;flex-direction:column;align-items:center;gap:2px;text-decoration:none;color:var(--text-3);padding:0 8px;transition:color .2s;border:none;background:none;cursor:pointer;}
-.univ-bnav-item:hover{color:var(--text);}
-.univ-bnav-item.active{color:var(--purple);}
-.univ-bnav-icon{font-size:20px;}
-.univ-bnav-label{font-size:.6rem;font-weight:800;font-family:'DM Sans',sans-serif;}
-.univ-bnav-search{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--pink));border:none;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;margin-top:-18px;box-shadow:0 4px 18px rgba(124,111,239,.5);transition:transform .2s;flex-shrink:0;}
-.univ-bnav-search:hover{transform:scale(1.08);}
+/* Au-delà du mobile, la nav du haut suffit : la barre du bas recouvrirait
+   le bas du contenu sur toute la largeur de l'écran. */
 
 /* LOADING SPINNER */
 .spinner {
@@ -405,7 +362,8 @@ body::after {
   <a href="bibliotheque.html" class="univ-d-item"><div class="univ-d-icon">📚</div>Ma bibliothèque</a>
   <a href="upload-manga.html" class="univ-d-item" id="drawerPublier" style="display:none;"><div class="univ-d-icon">📤</div>Publier un manga</a>
   <a href="auth.html" class="univ-d-item" id="drawerConnexion"><div class="univ-d-icon">🔑</div>Connexion / Inscription</a>
-  <button class="univ-d-item" id="drawerLogout" style="display:none;" onclick="doLogout()"><div class="univ-d-icon">🚪</div><span style="color:#da380f;">Déconnexion</span></button>
+  <a href="parametres.html" class="univ-d-item" id="drawerParametres" style="display:none;"><div class="univ-d-icon">⚙️</div>Paramètres</a>
+  <button class="univ-d-item" id="drawerLogout" style="display:none;" onclick="doLogout()"><div class="univ-d-icon">🚪</div><span style="color:var(--danger-link);">Déconnexion</span></button>
 </div>
 
 <div class="aurora-blob-teal"></div>
@@ -429,7 +387,7 @@ body::after {
     </div>
     <div class="field">
       <label>Mot de passe</label>
-      <div style="position:relative"><input type="password" id="loginPassword" placeholder="••••••••" style="padding-right:44px;width:100%" /><button type="button" onclick="togglePwd('loginPassword',this)" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#5e5c7a;font-size:16px;padding:0">👁</button></div>
+      <div style="position:relative"><input type="password" id="loginPassword" placeholder="••••••••" style="padding-right:44px;width:100%" /><button type="button" onclick="togglePwd('loginPassword',this)" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text-3);font-size:16px;padding:0">👁</button></div>
     </div>
     <button class="btn-submit" id="loginBtn" onclick="handleLogin()">
       <span class="spinner" id="loginSpinner"></span>
@@ -490,19 +448,22 @@ body::after {
         </div>
       </div>
       <div class="field">
-        <label>Nom d'utilisateur</label>
-        <input type="text" id="signupUsername" placeholder="ton_pseudo" />
+        <label for="signupUsername">Nom d'utilisateur</label>
+        <input type="text" id="signupUsername" placeholder="ton_pseudo" autocomplete="username"
+               oninput="checkUsername()" aria-describedby="usernameHint" />
+        <div id="usernameHint" role="status" aria-live="polite"
+             style="display:none;font-size:12px;margin-top:6px;"></div>
       </div>
       <div class="field">
         <label>Email</label>
         <input type="email" id="signupEmail" placeholder="ton@email.com" oninput="checkEmailTypo()" />
-        <div id="emailTypoHint" style="display:none;font-size:12px;margin-top:6px;color:#6649f5;cursor:pointer;">
+        <div id="emailTypoHint" style="display:none;font-size:12px;margin-top:6px;color:var(--purple-link);cursor:pointer;">
           Tu voulais dire <strong id="emailTypoSuggest"></strong> ? <span style="text-decoration:underline;">Corriger</span>
         </div>
       </div>
       <div class="field">
         <label>Mot de passe</label>
-        <div style="position:relative"><input type="password" id="signupPassword" placeholder="6 caractères minimum" style="padding-right:44px;width:100%" /><button type="button" onclick="togglePwd('signupPassword',this)" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:#5e5c7a;font-size:16px;padding:0">👁</button></div>
+        <div style="position:relative"><input type="password" id="signupPassword" placeholder="6 caractères minimum" style="padding-right:44px;width:100%" /><button type="button" onclick="togglePwd('signupPassword',this)" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--text-3);font-size:16px;padding:0">👁</button></div>
       </div>
       <button class="btn-submit" id="signupBtn" onclick="handleSignup()">
         <span class="spinner" id="signupSpinner"></span>
@@ -518,6 +479,7 @@ body::after {
 </div>
 </div><!-- /.auth-wrap -->
 
+<script src="assets/supabase.js"></script>
 <script>
 // =============================================
 // CONFIG SUPABASE
@@ -531,7 +493,7 @@ const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
    connecté. Sans ça, quelqu'un qui cliquait « Publier un manga » se
    retrouvait sur la connexion sans explication, puis atterrissait sur
    l'accueil : son intention de départ était perdue en route. */
-const PAGES_AUTORISEES = ['index.html','profil.html','upload-manga.html','mon-espace.html',
+const PAGES_AUTORISEES = ['index.html','profil.html','upload-manga.html',
   'espace-createur.html','gestion-chapitres.html','bibliotheque.html','communaute.html',
   'manga.html','pack.html','tutoriels.html','recherche.html','auteur.html','lecteur.html'];
 
@@ -559,7 +521,7 @@ function afficherRaisonConnexion() {
   const note = document.createElement('div');
   note.setAttribute('role', 'status');
   note.style.cssText = 'background:rgba(124,92,252,.10);border:1px solid rgba(124,92,252,.28);' +
-    'border-radius:12px;padding:11px 14px;margin-bottom:14px;font-size:.84rem;line-height:1.55;color:#48484a;';
+    'border-radius:12px;padding:11px 14px;margin-bottom:14px;font-size:.84rem;line-height:1.55;color:var(--text-2);';
   note.textContent = raison === 'createur'
     ? '🎨 Connecte-toi pour accéder à tes outils de création.'
     : '🔒 Connecte-toi pour continuer — tu reviendras là où tu étais.';
@@ -707,6 +669,52 @@ function checkEmailTypo() {
 }
 
 // =============================================
+// DISPONIBILITÉ DU PSEUDO
+// =============================================
+// `profiles.username` est UNIQUE. Sans cette vérification, la personne
+// découvrait la collision au moment de valider — et le message affiché
+// parlait alors de l'email, ce qui l'envoyait chercher au mauvais endroit.
+// On répond donc pendant la saisie, avant le clic.
+let usernameLibre = null   // null = pas encore vérifié
+let usernameVerif = 0
+
+function montrerHintPseudo(texte, couleur) {
+  const hint = document.getElementById('usernameHint')
+  hint.textContent = texte
+  hint.style.color = couleur
+  hint.style.display = texte ? 'block' : 'none'
+}
+
+async function checkUsername() {
+  const nom = document.getElementById('signupUsername').value.trim()
+  const verif = ++usernameVerif
+  usernameLibre = null
+
+  if (!nom) { montrerHintPseudo('', ''); return }
+  if (nom.length < 3) { montrerHintPseudo('3 caractères minimum.', '#5e5c7a'); return }
+
+  // On laisse passer la frappe avant d'interroger la base
+  await new Promise(r => setTimeout(r, 400))
+  if (verif !== usernameVerif) return
+
+  const { data, error } = await supabaseClient
+    .from('profiles').select('id').ilike('username', nom).maybeSingle()
+  if (verif !== usernameVerif) return
+
+  // En cas d'erreur réseau on ne bloque pas : le trigger SQL suffixe le
+  // pseudo plutôt que de faire échouer l'inscription.
+  if (error) { usernameLibre = null; montrerHintPseudo('', ''); return }
+
+  usernameLibre = !data
+  montrerHintPseudo(
+    data ? '✕ « ' + nom +' » est déjà pris — choisis-en un autre.'
+         : '✓ « ' + nom + ' » est disponible.',
+    data ? '#c62b09' : '#0a7f5f'
+  )
+}
+window.checkUsername = checkUsername
+
+// =============================================
 // INSCRIPTION
 // =============================================
 // Rôle choisi à l'inscription (lecteur par défaut)
@@ -736,6 +744,14 @@ async function handleSignup() {
     showMsg('signupMsg', '⚠️ Le mot de passe doit faire au moins 6 caractères.', 'error')
     return
   }
+  // Pseudo pris : on le dit ici plutôt que de laisser la base trancher.
+  // (usernameLibre === null = vérification impossible → on laisse passer,
+  //  le trigger SQL suffixera au besoin.)
+  if (usernameLibre === false) {
+    showMsg('signupMsg', '« ' + username + ' » est déjà pris. Choisis un autre pseudo.', 'error')
+    document.getElementById('signupUsername').focus()
+    return
+  }
 
   setLoading('signupBtn', 'signupSpinner', 'signupBtnText', true, 'Création...')
 
@@ -746,8 +762,20 @@ async function handleSignup() {
   })
 
   if (error) {
-    let msg = 'Une erreur est survenue.'
-    if (error.message.includes('already')) msg = 'Cet email est déjà utilisé.'
+    // Ne jamais accuser l'email par défaut : une erreur du trigger SQL
+    // contient elle aussi « already », et on envoyait alors la personne
+    // changer d'adresse pour un problème qui n'avait rien à voir.
+    const brut = String(error.message || '')
+    let msg = 'Inscription impossible pour le moment. Réessaie dans un instant.'
+    if (/already registered|already been registered|User already/i.test(brut)) {
+      msg = 'Cet email est déjà utilisé. Connecte-toi, ou utilise « Mot de passe oublié ».'
+    } else if (/username|profiles_username/i.test(brut)) {
+      msg = 'Ce pseudo est déjà pris. Choisis-en un autre.'
+    } else if (/password/i.test(brut)) {
+      msg = 'Mot de passe refusé : essaie-en un plus long.'
+    } else if (/rate|too many/i.test(brut)) {
+      msg = 'Trop de tentatives. Patiente une minute avant de réessayer.'
+    }
     showMsg('signupMsg', msg, 'error')
     setLoading('signupBtn', 'signupSpinner', 'signupBtnText', false, 'Créer mon compte')
     return

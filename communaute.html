@@ -14,10 +14,15 @@
 <meta property="og:description" content="Rejoins la communauté Inkrise : posts, sondages et échanges avec les créateurs de mangas." />
 <meta property="og:image" content="https://inkrise-platform.vercel.app/assets/hero-manga.jpg" />
 <meta name="twitter:card" content="summary_large_image" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="preconnect" href="https://bsdcpwtimsgxcnaamwip.supabase.co" />
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<script src="assets/supabase.js"></script>
 <link rel="stylesheet" href="assets/inkrise-theme.css" />
+<script src="assets/inkrise-theme.js"></script>
+<script src="assets/inkrise-config.js"></script>
 <style>
+/* Nav, menu latéral et barre du bas : voir assets/inkrise-theme.css */
 :root {
   --purple-dim: #7c5cfc;
   --text-muted:#656569;
@@ -40,58 +45,10 @@ a { color: var(--purple); text-decoration: none; }
 img { max-width: 100%; display: block; }
 
 /* ── STANDARD NAV (universel) ── */
-.univ-nav { position: sticky; top: 0; z-index: 100; background: rgba(255,255,255,0.96); backdrop-filter: blur(14px); border-bottom: 1px solid rgba(0,0,0,0.08); padding: 0 16px; height: 58px; display: flex; align-items: center; gap: 8px; }
-.univ-nav-logo { font-family: 'Syne', sans-serif; font-size: 1.2rem; font-weight: 900; text-decoration: none; background: linear-gradient(135deg, var(--purple), var(--pink)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; flex-shrink: 0; letter-spacing: 1px; }
-.univ-nav-links-d { display: flex; align-items: center; gap: 2px; flex: 1; margin: 0 8px; }
-@media (max-width: 680px) { .univ-nav-links-d { display: none; } }
-.univ-nav-lk { color: rgba(0,0,0,0.6); font-size: .82rem; font-weight: 600; text-decoration: none; padding: 5px 10px; border-radius: 7px; transition: all .2s; white-space: nowrap; font-family: 'DM Sans', sans-serif; }
-.univ-nav-lk:hover { color: #1c1c1e; background: rgba(0,0,0,0.05); }
-.univ-nav-lk.active { color: #6649f5; background: rgba(124,111,239,0.1); }
-.univ-nav-search { display: flex; align-items: center; background: rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.08); border-radius: 18px; overflow: hidden; max-width: 200px; flex-shrink: 0; }
-@media (max-width: 480px) { .univ-nav-search { max-width: 110px; } }
-.univ-nav-si { background: none; border: none; outline: none; color: #1c1c1e; font-size: .8rem; padding: 7px 10px; width: 100%; font-family: 'DM Sans', sans-serif; }
-.univ-nav-si::placeholder { color: rgba(0,0,0,.35); }
-.univ-nav-sb { background: none; border: none; cursor: pointer; padding: 6px 8px; font-size: 13px; color: rgba(0,0,0,.5); flex-shrink: 0; }
-.univ-nav-sb:hover { color: #7c5cfc; }
-.nav-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-.nav-connexion-btn { color: var(--text-2); font-size: .8rem; font-weight: 600; padding: 6px 13px; border-radius: 20px; border: 1px solid rgba(0,0,0,.15); text-decoration: none; transition: all .2s; white-space: nowrap; font-family: 'DM Sans', sans-serif; }
-.nav-connexion-btn:hover { border-color: var(--purple); color: var(--purple); }
-.nav-avatar-btn { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, var(--purple), var(--pink)); display: none; align-items: center; justify-content: center; font-size: .85rem; font-weight: 700; color: #fff; text-decoration: none; text-transform: uppercase; }
-.nav-avatar-btn.show { display: flex; }
-.nav-notif-link { position: relative; display: none; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 8px; background: rgba(0,0,0,.05); border: 1px solid rgba(0,0,0,.08); text-decoration: none; font-size: .95rem; transition: all .2s; }
-.nav-notif-link.show { display: flex; }
-.nav-notif-link:hover { background: rgba(0,0,0,.1); }
-.nav-notif-dot { position: absolute; top: -5px; right: -5px; min-width: 16px; height: 16px; border-radius: 8px; background: var(--danger); color: #fff; font-size: 9px; font-weight: 800; padding: 0 3px; display: none; align-items: center; justify-content: center; border: 2px solid #fff; }
-.nav-notif-dot.show { display: flex; }
-.univ-nav-hbg { width: 34px; height: 34px; border-radius: 8px; background: rgba(0,0,0,.05); border: 1px solid rgba(0,0,0,.08); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; color: var(--text); transition: background .2s; flex-shrink: 0; }
-.univ-nav-hbg:hover { background: rgba(0,0,0,.1); }
 
-/* ── DRAWER ── */
-.univ-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.35); z-index: 150; backdrop-filter: blur(3px); }
-.univ-overlay.open { display: block; }
-.univ-drawer { position: fixed; top: 0; right: 0; width: 270px; height: 100%; background: #ffffff; z-index: 151; overflow-y: auto; transform: translateX(100%); transition: transform .28s cubic-bezier(.4,0,.2,1); box-shadow: -4px 0 32px rgba(0,0,0,.12); border-left: 1px solid var(--border); }
-.univ-drawer.open { transform: translateX(0); }
-.univ-d-hdr { display: flex; align-items: center; justify-content: space-between; padding: 16px; border-bottom: 1px solid var(--border); }
-.univ-d-logo { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 900; text-decoration: none; background: linear-gradient(135deg, var(--purple), var(--pink)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-.univ-d-close { width: 30px; height: 30px; border-radius: 50%; background: rgba(0,0,0,.06); border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; color: var(--text-2); }
-.univ-d-sec { font-size: .65rem; font-weight: 800; color: var(--text-3); letter-spacing: 1.5px; text-transform: uppercase; padding: 14px 16px 5px; }
-.univ-d-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; margin: 2px 8px; text-decoration: none; color: var(--text); font-weight: 600; font-size: .88rem; cursor: pointer; transition: background .15s; border: none; background: none; width: calc(100% - 16px); text-align: left; border-radius: 9px; font-family: 'DM Sans', sans-serif; }
-.univ-d-item:hover { background: rgba(0,0,0,.05); }
-.univ-d-icon { width: 34px; height: 34px; border-radius: 9px; background: rgba(0,0,0,.05); display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
-.univ-d-badge { font-size: .65rem; font-weight: 800; padding: 2px 7px; border-radius: 6px; margin-left: auto; }
-.univ-d-badge.orange { background: rgba(255,107,53,.15); color: #b33f14; }
-.univ-d-badge.teal { background: rgba(0,201,167,.15); color: #007a66; }
-.univ-d-divider { height: 1px; background: var(--border); margin: 8px 16px; }
 
-/* ── BOTTOM NAV ── */
-.univ-bnav { position: fixed; bottom: 0; left: 0; right: 0; z-index: 100; background: rgba(255,255,255,.97); border-top: 1px solid var(--border); box-shadow: 0 -2px 12px rgba(0,0,0,.05); display: flex; align-items: center; justify-content: space-around; padding: 8px 0 16px; backdrop-filter: blur(14px); }
-.univ-bnav-item { display: flex; flex-direction: column; align-items: center; gap: 2px; text-decoration: none; color: var(--text-3); padding: 0 8px; transition: color .2s; border: none; background: none; cursor: pointer; }
-.univ-bnav-item:hover { color: var(--text); }
-.univ-bnav-item.active { color: var(--purple); }
-.univ-bnav-icon { font-size: 20px; }
-.univ-bnav-label { font-size: .6rem; font-weight: 800; font-family: 'DM Sans', sans-serif; }
-.univ-bnav-search { width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, var(--purple), var(--pink)); border: none; display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer; margin-top: -18px; box-shadow: 0 4px 18px rgba(124,111,239,.5); transition: transform .2s; flex-shrink: 0; }
-.univ-bnav-search:hover { transform: scale(1.08); }
+/* Au-delà du mobile, la nav du haut suffit : la barre du bas recouvrirait
+   le bas du contenu sur toute la largeur de l'écran. */
 
 /* ===== COMMUNAUTE LAYOUT ===== */
 .comm-container {
@@ -512,7 +469,8 @@ img { max-width: 100%; display: block; }
   <a href="bibliotheque.html" class="univ-d-item"><div class="univ-d-icon">📚</div>Ma bibliothèque</a>
   <a href="upload-manga.html" class="univ-d-item" id="drawerPublier" style="display:none;"><div class="univ-d-icon">📤</div>Publier un manga</a>
   <a href="auth.html" class="univ-d-item" id="drawerConnexion"><div class="univ-d-icon">🔑</div>Connexion / Inscription</a>
-  <button class="univ-d-item" id="drawerLogout" style="display:none;" onclick="doLogout()"><div class="univ-d-icon">🚪</div><span style="color:#da380f;">Déconnexion</span></button>
+  <a href="parametres.html" class="univ-d-item" id="drawerParametres" style="display:none;"><div class="univ-d-icon">⚙️</div>Paramètres</a>
+  <button class="univ-d-item" id="drawerLogout" style="display:none;" onclick="doLogout()"><div class="univ-d-icon">🚪</div><span style="color:var(--danger-link);">Déconnexion</span></button>
 </div>
 
 <div class="comm-container" id="app">
@@ -527,6 +485,7 @@ img { max-width: 100%; display: block; }
 
 <div class="toast-container" id="toast-container"></div>
 
+<script src="assets/supabase.js"></script>
 <script>
 const SUPABASE_URL = 'https://bsdcpwtimsgxcnaamwip.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJzZGNwd3RpbXNneGNuYWFtd2lwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAzMTQ1MDIsImV4cCI6MjA5NTg5MDUwMn0.uMcfUsnlULHNqS_87xzUWRUB8tEaCCNQglrWwN2fb44';
@@ -652,56 +611,250 @@ document.addEventListener('DOMContentLoaded', function() {
   if (ol) ol.classList.remove('open');
 });
 
+/* ═══════════════════════════════════════════════════════════════════
+   ACCUEIL COMMUNAUTÉ (sans ?id=)
+   ═══════════════════════════════════════════════════════════════════
+   Deux onglets :
+     • Mon fil    — ce que publient les créateurs suivis
+     • Découvrir  — les espaces les plus vivants, pour en trouver d'autres
+   Les murs sont publics en lecture (RLS « posts select public »), donc la
+   découverte fonctionne aussi sans compte. */
+
+const ACCUEIL = { onglet: 'fil', suivis: [], moi: null };
+
+async function afficherAccueilCommunaute(session) {
+  ACCUEIL.moi = session && session.user ? session.user : null;
+  document.title = 'Communauté — Inkrise';
+
+  const app = document.getElementById('app');
+  app.innerHTML = '<div class="empty-state" style="padding:60px 20px;">Chargement…</div>';
+
+  if (ACCUEIL.moi) {
+    const { data } = await sb.from('follows').select('followed_id').eq('user_id', ACCUEIL.moi.id);
+    ACCUEIL.suivis = (data || []).map(f => f.followed_id).filter(Boolean);
+  }
+  /* Sans personne à suivre, un fil vide n'apprend rien : on ouvre
+     directement sur la découverte. */
+  ACCUEIL.onglet = ACCUEIL.suivis.length ? 'fil' : 'decouvrir';
+
+  app.innerHTML =
+    '<div class="creator-header" style="display:block;">' +
+      '<div style="font-family:\'Syne\',sans-serif;font-size:1.25rem;font-weight:800;color:var(--text);">👥 Communauté</div>' +
+      '<div style="font-size:.84rem;color:var(--text-muted);margin-top:4px;line-height:1.5;">' +
+        'Chaque créateur a son espace. Suis-en un pour retrouver ses publications ici.' +
+      '</div>' +
+    '</div>' +
+    '<div role="tablist" aria-label="Vue de la communauté" style="display:flex;gap:8px;margin:14px 0 16px;">' +
+      onglet('fil', '📰 Mon fil') + onglet('decouvrir', '🧭 Découvrir') +
+    '</div>' +
+    '<div id="accueilVue"></div>';
+
+  app.querySelectorAll('[data-onglet]').forEach(b => b.addEventListener('click', () => {
+    ACCUEIL.onglet = b.dataset.onglet;
+    app.querySelectorAll('[data-onglet]').forEach(x => majOnglet(x));
+    rendreVue();
+  }));
+  rendreVue();
+}
+
+function onglet(id, libelle) {
+  const actif = ACCUEIL.onglet === id;
+  return '<button type="button" role="tab" data-onglet="' + id + '" aria-selected="' + actif + '" ' +
+    'style="' + styleOnglet(actif) + '">' + libelle + '</button>';
+}
+function styleOnglet(actif) {
+  return 'flex:1;min-height:44px;padding:10px 12px;border-radius:999px;cursor:pointer;' +
+    'font-family:inherit;font-size:.86rem;font-weight:700;transition:all .2s;' +
+    (actif ? 'background:var(--purple-link);color:var(--sur-purple);border:1px solid var(--purple-link);'
+           : 'background:var(--surface);color:var(--text-2);border:1px solid var(--border);');
+}
+function majOnglet(b) {
+  const actif = b.dataset.onglet === ACCUEIL.onglet;
+  b.setAttribute('aria-selected', String(actif));
+  b.style.cssText = styleOnglet(actif);
+}
+
+function rendreVue() {
+  const vue = document.getElementById('accueilVue');
+  vue.innerHTML = '<div class="empty-state" style="padding:40px 20px;">Chargement…</div>';
+  (ACCUEIL.onglet === 'fil' ? rendreFil(vue) : rendreDecouverte(vue));
+}
+
+/* ── Mon fil ── */
+async function rendreFil(vue) {
+  if (!ACCUEIL.moi) {
+    vue.innerHTML = etatVide('🔑', 'Connecte-toi pour avoir un fil',
+      'Ton fil rassemble les publications des créateurs que tu suis.',
+      'auth.html', 'Connexion / Inscription');
+    return;
+  }
+  if (!ACCUEIL.suivis.length) {
+    vue.innerHTML = etatVide('🧭', 'Tu ne suis encore personne',
+      'Suis un créateur et ses publications apparaîtront ici.',
+      '#decouvrir', 'Découvrir des créateurs');
+    const b = vue.querySelector('a[href="#decouvrir"]');
+    if (b) b.addEventListener('click', e => {
+      e.preventDefault();
+      ACCUEIL.onglet = 'decouvrir';
+      document.querySelectorAll('[data-onglet]').forEach(x => majOnglet(x));
+      rendreVue();
+    });
+    return;
+  }
+
+  const { data: posts, error } = await sb.from('posts_communaute')
+    .select('id, creator_id, auteur_id, type, contenu, image_url, created_at')
+    .in('creator_id', ACCUEIL.suivis)
+    .order('created_at', { ascending: false })
+    .limit(40);
+
+  if (error) { vue.innerHTML = etatVide('⚠️', 'Chargement impossible', error.message); return; }
+  if (!posts || !posts.length) {
+    vue.innerHTML = etatVide('🌱', 'Rien de neuf pour l\'instant',
+      'Les créateurs que tu suis n\'ont pas encore publié. Reviens bientôt !',
+      '#decouvrir', 'Découvrir d\'autres créateurs');
+    const b = vue.querySelector('a[href="#decouvrir"]');
+    if (b) b.addEventListener('click', e => {
+      e.preventDefault(); ACCUEIL.onglet = 'decouvrir';
+      document.querySelectorAll('[data-onglet]').forEach(x => majOnglet(x)); rendreVue();
+    });
+    return;
+  }
+
+  const profils = await chargerProfils(posts.flatMap(p => [p.creator_id, p.auteur_id]));
+  vue.innerHTML = posts.map(p => carteFil(p, profils)).join('');
+}
+
+function carteFil(p, profils) {
+  const auteur = profils[p.auteur_id] || {};
+  const mur = profils[p.creator_id] || {};
+  const nom = auteur.username || 'Créateur';
+  const lien = 'communaute.html?id=' + encodeURIComponent(p.creator_id);
+  const avatar = auteur.avatar_url
+    ? '<img src="' + escHtml(auteur.avatar_url) + '" alt="" style="width:38px;height:38px;border-radius:50%;object-fit:cover;flex-shrink:0;" />'
+    : '<div style="width:38px;height:38px;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg,var(--purple),var(--pink));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:.85rem;">' + escHtml(getInitials(nom)) + '</div>';
+
+  /* Le fil mélange plusieurs murs : sans rappel, on ne sait plus chez qui
+     on lit. On ne l'affiche que si l'auteur n'est pas le maître du mur. */
+  const situe = (mur.username && p.creator_id !== p.auteur_id)
+    ? '<span style="color:var(--text-3);font-weight:500;"> · chez ' + escHtml(mur.username) + '</span>' : '';
+
+  const image = p.image_url
+    ? '<img src="' + escHtml(p.image_url) + '" alt="" loading="lazy" style="width:100%;border-radius:var(--radius-sm);margin-top:10px;display:block;" />' : '';
+
+  const badge = p.type === 'annonce'
+    ? '<span style="font-size:.66rem;font-weight:800;padding:2px 8px;border-radius:999px;background:rgba(255,107,53,.15);color:var(--orange-link);margin-left:6px;">ANNONCE</span>' : '';
+
+  const texte = String(p.contenu || '');
+  const extrait = texte.length > 280 ? escHtml(texte.slice(0, 280)) + '…' : escHtml(texte);
+
+  return '<a href="' + lien + '" class="post-card" style="display:block;text-decoration:none;color:inherit;margin-bottom:12px;">' +
+    '<div style="display:flex;align-items:center;gap:10px;">' + avatar +
+      '<div style="min-width:0;flex:1;">' +
+        '<div style="font-weight:700;font-size:.92rem;color:var(--text);">' + escHtml(nom) + badge + situe + '</div>' +
+        '<div style="font-size:.75rem;color:var(--text-3);">' + escHtml(timeAgo(p.created_at)) + '</div>' +
+      '</div>' +
+    '</div>' +
+    (extrait ? '<div style="margin-top:10px;font-size:.9rem;line-height:1.6;color:var(--text);white-space:pre-line;">' + extrait + '</div>' : '') +
+    image +
+    (p.type === 'sondage' ? '<div style="margin-top:10px;font-size:.82rem;color:var(--purple-link);font-weight:700;">📊 Sondage — voir et voter →</div>' : '') +
+    '</a>';
+}
+
+/* ── Découvrir ── */
+async function rendreDecouverte(vue) {
+  const { data: posts, error } = await sb.from('posts_communaute')
+    .select('creator_id, created_at')
+    .order('created_at', { ascending: false })
+    .limit(300);
+
+  if (error) { vue.innerHTML = etatVide('⚠️', 'Chargement impossible', error.message); return; }
+
+  /* On classe les murs par activité récente : un espace vivant a plus de
+     chances d'accrocher qu'un espace nommé en premier par hasard. */
+  const parMur = new Map();
+  (posts || []).forEach(p => {
+    if (!p.creator_id) return;
+    const e = parMur.get(p.creator_id) || { id: p.creator_id, nb: 0, dernier: p.created_at };
+    e.nb++;
+    if (p.created_at > e.dernier) e.dernier = p.created_at;
+    parMur.set(p.creator_id, e);
+  });
+
+  let murs = [...parMur.values()].sort((a, b) => (a.dernier < b.dernier ? 1 : -1)).slice(0, 30);
+  if (!murs.length) {
+    vue.innerHTML = etatVide('🌱', 'Aucun espace actif pour l\'instant',
+      'Les créateurs n\'ont pas encore publié. Deviens le premier à animer le tien !',
+      ACCUEIL.moi ? 'profil.html' : 'auth.html',
+      ACCUEIL.moi ? 'Mon espace' : 'Créer mon compte');
+    return;
+  }
+
+  const profils = await chargerProfils(murs.map(m => m.id));
+  /* Un mur dont le profil a disparu ne mène nulle part : on l'écarte. */
+  murs = murs.filter(m => profils[m.id]);
+  if (!murs.length) { vue.innerHTML = etatVide('🌱', 'Aucun espace à afficher', ''); return; }
+
+  vue.innerHTML = murs.map(m => {
+    const p = profils[m.id];
+    const nom = p.username || 'Créateur';
+    const suivi = ACCUEIL.suivis.indexOf(m.id) !== -1;
+    const avatar = p.avatar_url
+      ? '<img src="' + escHtml(p.avatar_url) + '" alt="" style="width:46px;height:46px;border-radius:50%;object-fit:cover;flex-shrink:0;" />'
+      : '<div style="width:46px;height:46px;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg,var(--purple),var(--pink));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;">' + escHtml(getInitials(nom)) + '</div>';
+    return '<a href="communaute.html?id=' + encodeURIComponent(m.id) + '" class="post-card" ' +
+      'style="display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit;margin-bottom:10px;">' +
+      avatar +
+      '<div style="min-width:0;flex:1;">' +
+        '<div style="font-weight:700;font-size:.94rem;color:var(--text);">' + escHtml(nom) +
+          (suivi ? '<span style="font-size:.64rem;font-weight:800;padding:2px 7px;border-radius:999px;background:rgba(61,220,132,.16);color:var(--success-link);margin-left:6px;">SUIVI</span>' : '') +
+        '</div>' +
+        (p.bio ? '<div style="font-size:.78rem;color:var(--text-2);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + escHtml(p.bio) + '</div>' : '') +
+        '<div style="font-size:.72rem;color:var(--text-3);margin-top:3px;">' +
+          m.nb + ' publication' + (m.nb > 1 ? 's' : '') + ' · ' + escHtml(timeAgo(m.dernier)) +
+        '</div>' +
+      '</div>' +
+      '<span aria-hidden="true" style="color:var(--purple-link);font-weight:800;">→</span>' +
+    '</a>';
+  }).join('');
+}
+
+/* ── Petits utilitaires ── */
+async function chargerProfils(ids) {
+  const uniques = [...new Set(ids.filter(Boolean))];
+  if (!uniques.length) return {};
+  const { data } = await sb.from('profiles').select('id, username, avatar_url, bio').in('id', uniques);
+  const map = {};
+  (data || []).forEach(p => { map[p.id] = p; });
+  return map;
+}
+
+function etatVide(icone, titre, texte, href, libelle) {
+  return '<div class="empty-state" style="padding:56px 20px;text-align:center;">' +
+    '<div style="font-size:3rem;margin-bottom:14px;">' + icone + '</div>' +
+    '<div style="font-size:1.05rem;font-weight:700;color:var(--text);margin-bottom:10px;">' + escHtml(titre) + '</div>' +
+    (texte ? '<div style="font-size:.88rem;color:var(--text-muted);max-width:400px;margin:0 auto 22px;line-height:1.7;">' + escHtml(texte) + '</div>' : '') +
+    (href ? '<a href="' + href + '" style="display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:12px 26px;' +
+      'background:var(--purple-link);color:var(--sur-purple);border-radius:var(--radius-sm);font-weight:700;font-size:.9rem;text-decoration:none;">' +
+      escHtml(libelle) + '</a>' : '') +
+  '</div>';
+}
+
 /* ===== MAIN INIT ===== */
 (async function init() {
   const params = new URLSearchParams(window.location.search);
   state.creatorId = params.get('id');
 
-  /* ── Welcome / empty state when no creator ID ── */
+  /* ── Sans identifiant de créateur : le fil et la découverte ──
+     Auparavant, une personne connectée était redirigée vers SON PROPRE mur.
+     L'onglet « Communauté » de la barre du bas menait donc un nouveau
+     créateur — zéro abonné, zéro publication — à se parler à lui-même, et
+     aucun chemin ne menait au mur de quelqu'un d'autre. */
   if (!state.creatorId) {
-    /* If logged in, go to their own community */
     const { data: { session } } = await sb.auth.getSession();
     updateNavAuth(session);
-    if (session && session.user) {
-      /* Verify the user has a profile before redirecting */
-      const { data: myProfile } = await sb.from('profiles').select('id').eq('id', session.user.id).maybeSingle();
-      if (myProfile) {
-        window.location.href = 'communaute.html?id=' + session.user.id;
-        return;
-      }
-      /* No profile yet — show setup prompt */
-      state.loading = false;
-      const app = document.getElementById('app');
-      app.innerHTML = '' +
-        '<div class="empty-state" style="padding:80px 20px;">' +
-          '<div class="empty-state-icon" style="font-size:4rem;margin-bottom:16px;">👤</div>' +
-          '<div style="font-size:1.2rem;font-weight:700;color:var(--text);margin-bottom:12px;">Bienvenue sur Inkrise !</div>' +
-          '<div style="font-size:0.9rem;color:var(--text-muted);max-width:420px;margin:0 auto 28px;line-height:1.7;">' +
-            'Tu es connecté mais tu n\'as pas encore de profil public. ' +
-            'Rends-toi sur ton profil pour le configurer, puis reviens ici.' +
-          '</div>' +
-          '<div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">' +
-            '<a href="profil.html" style="display:inline-flex;align-items:center;gap:8px;padding:12px 28px;background:#7857fc;color:#fff;border-radius:var(--radius-sm);font-weight:700;font-size:0.9rem;text-decoration:none;">⚙️ Mon profil</a>' +
-            '<a href="index.html" style="display:inline-flex;align-items:center;gap:8px;padding:12px 28px;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:var(--radius-sm);font-weight:600;font-size:0.9rem;text-decoration:none;">🏠 Accueil</a>' +
-          '</div>' +
-        '</div>';
-      return;
-    }
     state.loading = false;
-    const app = document.getElementById('app');
-    app.innerHTML = '' +
-      '<div class="empty-state" style="padding:80px 20px;">' +
-        '<div class="empty-state-icon" style="font-size:4rem;margin-bottom:16px;">👥</div>' +
-        '<div style="font-size:1.2rem;font-weight:700;color:var(--text);margin-bottom:12px;">Bienvenue sur la communauté Inkrise !</div>' +
-        '<div style="font-size:0.9rem;color:var(--text-muted);max-width:420px;margin:0 auto 28px;line-height:1.7;">' +
-          'Chaque créateur possède son propre espace communautaire. ' +
-          'Connecte-toi ou inscris-toi pour accéder à l\'espace de ton créateur préféré.' +
-        '</div>' +
-        '<div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">' +
-          '<a href="auth.html" style="display:inline-flex;align-items:center;gap:8px;padding:12px 28px;background:#7857fc;color:#fff;border-radius:var(--radius-sm);font-weight:700;font-size:0.9rem;text-decoration:none;">🔑 Connexion / Inscription</a>' +
-          '<a href="index.html" style="display:inline-flex;align-items:center;gap:8px;padding:12px 28px;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:var(--radius-sm);font-weight:600;font-size:0.9rem;text-decoration:none;">🏠 Retour à l\'accueil</a>' +
-        '</div>' +
-      '</div>';
+    await afficherAccueilCommunaute(session);
     return;
   }
 

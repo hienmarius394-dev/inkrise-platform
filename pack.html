@@ -14,69 +14,26 @@
   <meta property="og:description" content="Pack de dessin et tutoriel manga sur Inkrise — apprends avec les meilleurs créateurs." />
   <meta property="og:image" content="https://inkrise-platform.vercel.app/assets/hero-manga.jpg" />
   <meta name="twitter:card" content="summary_large_image" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://bsdcpwtimsgxcnaamwip.supabase.co" />
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-  <script src="assets/supabase.js"></script>
   <link rel="stylesheet" href="assets/inkrise-theme.css" />
+  <script src="assets/inkrise-theme.js"></script>
+  <script src="assets/inkrise-config.js"></script>
 <style>
+/* Nav, menu latéral et barre du bas : voir assets/inkrise-theme.css */
     :root {
           --border2: rgba(124,111,239,0.15);
         }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding-bottom: 90px; }
 
-    /* ── NAV UNIVERSEL ── */
-    .univ-nav { position: sticky; top: 0; z-index: 100; background: rgba(255,255,255,0.96); backdrop-filter: blur(14px); border-bottom: 1px solid rgba(0,0,0,0.08); padding: 0 16px; height: 58px; display: flex; align-items: center; gap: 8px; }
-    .univ-nav-logo { font-family: 'Syne', sans-serif; font-size: 1.2rem; font-weight: 900; text-decoration: none; background: linear-gradient(135deg, var(--purple), var(--pink)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; flex-shrink: 0; letter-spacing: 1px; }
-    .univ-nav-links-d { display: flex; align-items: center; gap: 2px; flex: 1; margin: 0 8px; }
-    @media (max-width: 680px) { .univ-nav-links-d { display: none; } }
-    .univ-nav-lk { color: rgba(0,0,0,0.6); font-size: .82rem; font-weight: 600; text-decoration: none; padding: 5px 10px; border-radius: 7px; transition: all .2s; white-space: nowrap; font-family: 'DM Sans', sans-serif; }
-    .univ-nav-lk:hover { color: #1c1c1e; background: rgba(0,0,0,0.05); }
-    .univ-nav-lk.active { color: #6649f5; background: rgba(124,111,239,0.1); }
-    .univ-nav-search { display: flex; align-items: center; background: rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.1); border-radius: 18px; overflow: hidden; max-width: 200px; flex-shrink: 0; }
-    @media (max-width: 480px) { .univ-nav-search { max-width: 110px; } }
-    .univ-nav-si { background: none; border: none; outline: none; color: #1c1c1e; font-size: .8rem; padding: 7px 10px; width: 100%; font-family: 'DM Sans', sans-serif; }
-    .univ-nav-si::placeholder { color: rgba(0,0,0,.35); }
-    .univ-nav-sb { background: none; border: none; cursor: pointer; padding: 6px 8px; font-size: 13px; color: rgba(0,0,0,.5); flex-shrink: 0; }
-    .univ-nav-sb:hover { color: #7c5cfc; }
-    .nav-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
-    .nav-connexion-btn { color: var(--text-2); font-size: .8rem; font-weight: 600; padding: 6px 13px; border-radius: 20px; border: 1px solid rgba(0,0,0,.15); text-decoration: none; transition: all .2s; white-space: nowrap; }
-    .nav-connexion-btn:hover { border-color: var(--purple); color: var(--purple2); }
-    .nav-avatar-btn { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, var(--purple), var(--pink)); display: none; align-items: center; justify-content: center; font-size: .85rem; font-weight: 700; color: #fff; text-decoration: none; text-transform: uppercase; }
-    .nav-avatar-btn.show { display: flex; }
-    .nav-notif-link { position: relative; display: none; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 8px; background: rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.08); text-decoration: none; font-size: .95rem; transition: all .2s; }
-    .nav-notif-link.show { display: flex; }
-    .nav-notif-link:hover { background: rgba(0,0,0,0.1); }
-    .nav-notif-dot { position: absolute; top: -5px; right: -5px; min-width: 16px; height: 16px; border-radius: 8px; background: var(--accent); color: #fff; font-size: 9px; font-weight: 800; padding: 0 3px; display: none; align-items: center; justify-content: center; border: 2px solid var(--bg); }
-    .nav-notif-dot.show { display: flex; }
-    .univ-nav-hbg { width: 34px; height: 34px; border-radius: 8px; background: rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.08); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 16px; color: var(--text); transition: background .2s; flex-shrink: 0; }
-    .univ-nav-hbg:hover { background: rgba(0,0,0,0.1); }
 
-    /* ── DRAWER ── */
-    .univ-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 150; backdrop-filter: blur(3px); }
-    .univ-overlay.open { display: block; }
-    .univ-drawer { position: fixed; top: 0; right: 0; width: 270px; height: 100%; background: #ffffff; z-index: 151; overflow-y: auto; transform: translateX(100%); transition: transform .28s cubic-bezier(.4,0,.2,1); box-shadow: -4px 0 32px rgba(0,0,0,.12); border-left: 1px solid var(--border); }
-    .univ-drawer.open { transform: translateX(0); }
-    .univ-d-hdr { display: flex; align-items: center; justify-content: space-between; padding: 16px; border-bottom: 1px solid var(--border); }
-    .univ-d-logo { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 900; text-decoration: none; background: linear-gradient(135deg, var(--purple), var(--pink)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-    .univ-d-close { width: 30px; height: 30px; border-radius: 50%; background: rgba(0,0,0,.06); border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 14px; color: var(--text-2); }
-    .univ-d-sec { font-size: .65rem; font-weight: 800; color: var(--text-3); letter-spacing: 1.5px; text-transform: uppercase; padding: 14px 16px 5px; }
-    .univ-d-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; margin: 2px 8px; text-decoration: none; color: var(--text); font-weight: 600; font-size: .88rem; cursor: pointer; transition: background .15s; border: none; background: none; width: calc(100% - 16px); text-align: left; border-radius: 9px; font-family: 'DM Sans', sans-serif; }
-    .univ-d-item:hover { background: rgba(0,0,0,.05); }
-    .univ-d-icon { width: 34px; height: 34px; border-radius: 9px; background: rgba(0,0,0,.05); display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
-    .univ-d-badge { font-size: .65rem; font-weight: 800; padding: 2px 7px; border-radius: 6px; margin-left: auto; }
-    .univ-d-badge.orange { background: rgba(255,107,53,.15); color: #b33f14; }
-    .univ-d-badge.teal { background: rgba(0,201,167,.15); color: #007a66; }
-    .univ-d-divider { height: 1px; background: var(--border); margin: 8px 16px; }
 
-    /* ── BOTTOM NAV ── */
-    .univ-bnav { position: fixed; bottom: 0; left: 0; right: 0; z-index: 100; background: rgba(255,255,255,.97); border-top: 1px solid var(--border); box-shadow: 0 -2px 12px rgba(0,0,0,.05); display: flex; align-items: center; justify-content: space-around; padding: 8px 0 16px; backdrop-filter: blur(14px); }
-    .univ-bnav-item { display: flex; flex-direction: column; align-items: center; gap: 2px; text-decoration: none; color: var(--text-3); padding: 0 8px; transition: color .2s; border: none; background: none; cursor: pointer; }
-    .univ-bnav-item:hover { color: var(--text); }
-    .univ-bnav-item.active { color: var(--purple); }
-    .univ-bnav-icon { font-size: 20px; }
-    .univ-bnav-label { font-size: .6rem; font-weight: 800; font-family: 'DM Sans', sans-serif; }
-    .univ-bnav-search { width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, var(--purple), var(--pink)); border: none; display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer; margin-top: -18px; box-shadow: 0 4px 18px rgba(124,111,239,.5); transition: transform .2s; flex-shrink: 0; }
-    .univ-bnav-search:hover { transform: scale(1.08); }
+    /* Au-delà du mobile, la nav du haut suffit : la barre du bas recouvrirait
+       le bas du contenu sur toute la largeur de l'écran. */
+    @media (min-width: 681px) { .univ-bnav { display: none; } body { padding-bottom: 24px; } }
 
     /* ── TOAST ── */
     .toast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; padding: 10px 20px; font-size: .88rem; font-weight: 600; opacity: 0; transition: all .3s; z-index: 200; pointer-events: none; white-space: nowrap; }
@@ -84,7 +41,7 @@
 
     /* ── LOADING ── */
     .page-loading { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; min-height: 60vh; color: var(--muted); }
-    .loading-ring { width: 36px; height: 36px; border: 3px solid rgba(124,111,239,.2); border-top-color: #7c5cfc; border-radius: 50%; animation: spin .8s linear infinite; }
+    .loading-ring { width: 36px; height: 36px; border: 3px solid rgba(124,111,239,.2); border-top-color: var(--purple); border-radius: 50%; animation: spin .8s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
 
     /* ── NOT FOUND ── */
@@ -92,7 +49,7 @@
     .not-found-icon { font-size: 3.5rem; margin-bottom: 16px; }
     .not-found h2 { font-family: 'Syne', sans-serif; font-size: 1.4rem; font-weight: 700; margin-bottom: 10px; }
     .not-found p { color: var(--muted); margin-bottom: 24px; }
-    .btn-home { display: inline-block; padding: 10px 22px; background: rgba(124,111,239,.15); border: 1px solid rgba(124,111,239,.3); border-radius: 20px; color: #6649f5; text-decoration: none; font-weight: 700; font-size: .9rem; transition: all .2s; }
+    .btn-home { display: inline-block; padding: 10px 22px; background: rgba(124,111,239,.15); border: 1px solid rgba(124,111,239,.3); border-radius: 20px; color: var(--purple-link); text-decoration: none; font-weight: 700; font-size: .9rem; transition: all .2s; }
     .btn-home:hover { background: rgba(124,111,239,.25); }
 
     /* ── HERO ── */
@@ -123,7 +80,7 @@
       width: 100%; max-width: 960px; margin: 0 auto;
     }
     .hero-breadcrumb { font-size: .78rem; color: var(--text-3); margin-bottom: 12px; }
-    .hero-breadcrumb a { color: #6649f5; text-decoration: none; }
+    .hero-breadcrumb a { color: var(--purple-link); text-decoration: none; }
     .hero-breadcrumb a:hover { text-decoration: underline; }
     .hero-title {
       font-family: 'Syne', sans-serif; font-size: 2rem; font-weight: 800;
@@ -307,7 +264,7 @@
     .btn-profile {
       display: block; padding: 8px 16px;
       background: rgba(124,111,239,.1); border: 1px solid rgba(124,111,239,.28);
-      border-radius: 20px; color: #6649f5; text-decoration: none;
+      border-radius: 20px; color: var(--purple-link); text-decoration: none;
       font-size: .82rem; font-weight: 700; transition: all .2s;
     }
     .btn-profile:hover { background: rgba(124,111,239,.2); }
@@ -397,7 +354,8 @@
   <a href="bibliotheque.html" class="univ-d-item"><div class="univ-d-icon">📚</div>Ma bibliothèque</a>
   <a href="upload-manga.html" class="univ-d-item" id="drawerPublier" style="display:none;"><div class="univ-d-icon">📤</div>Publier un manga</a>
   <a href="auth.html" class="univ-d-item" id="drawerConnexion"><div class="univ-d-icon">🔑</div>Connexion / Inscription</a>
-  <button class="univ-d-item" id="drawerLogout" style="display:none;" onclick="doLogout()"><div class="univ-d-icon">🚪</div><span style="color:#da380f;">Déconnexion</span></button>
+  <a href="parametres.html" class="univ-d-item" id="drawerParametres" style="display:none;"><div class="univ-d-icon">⚙️</div>Paramètres</a>
+  <button class="univ-d-item" id="drawerLogout" style="display:none;" onclick="doLogout()"><div class="univ-d-icon">🚪</div><span style="color:var(--danger-link);">Déconnexion</span></button>
 </div>
 
 <!-- LOADING -->
@@ -451,7 +409,7 @@
           <div class="buy-price-sub">Accès à vie · Téléchargement inclus</div>
           <div class="buy-stock" id="buyStockMobile" style="display:none;"></div>
           <button class="btn-buy" id="buyBtnMobile" onclick="handleBuy()">Acheter</button>
-          <div class="buy-guarantee">🔒 Paiement sécurisé</div>
+          <div class="buy-guarantee" id="buyGuaranteeMobile">🔒 Paiement sécurisé</div>
         </div>
 
         <!-- Description -->
@@ -485,7 +443,7 @@
           <div class="buy-price-sub">Accès à vie · Téléchargement inclus</div>
           <div class="buy-stock" id="buyStockDesktop" style="display:none;"></div>
           <button class="btn-buy" id="buyBtnDesktop" onclick="handleBuy()">Acheter</button>
-          <div class="buy-guarantee">🔒 Paiement sécurisé</div>
+          <div class="buy-guarantee" id="buyGuaranteeDesktop">🔒 Paiement sécurisé</div>
         </div>
 
         <!-- Créateur -->
@@ -495,6 +453,7 @@
           <div class="creator-role">✏️ Créateur</div>
           <div class="creator-bio" id="creatorBio"></div>
           <a href="#" class="btn-profile" id="creatorProfileLink">Voir le profil →</a>
+          <button class="btn-profile" id="btnPartagerPack" style="width:100%;margin-top:8px;border:none;cursor:pointer;font-family:inherit;">🔗 Partager ce pack</button>
         </div>
 
         <!-- Infos pack -->
@@ -540,6 +499,7 @@
 <div id="inkriseBottomNav" data-active="tutoriels"></div>
 <script src="assets/inkrise-nav.js"></script>
 
+<script src="assets/supabase.js"></script>
 <script>
 const SUPABASE_URL = 'https://bsdcpwtimsgxcnaamwip.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJzZGNwd3RpbXNneGNuYWFtd2lwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAzMTQ1MDIsImV4cCI6MjA5NTg5MDUwMn0.uMcfUsnlULHNqS_87xzUWRUB8tEaCCNQglrWwN2fb44';
@@ -805,6 +765,14 @@ function renderPack(pack) {
     btn.textContent = buyLabel;
     if (isFree) btn.classList.add('free-dl');
   });
+  /* Rien n'est payé sur un pack gratuit : promettre un « paiement sécurisé »
+     sous un bouton « Télécharger gratuitement » n'a pas de sens. */
+  ['buyGuaranteeMobile', 'buyGuaranteeDesktop'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (isFree) el.style.display = 'none';
+    else el.textContent = '🔒 Paiement sécurisé — Orange Money, MTN MoMo, Wave, carte';
+  });
 
   // Ventes réelles / édition limitée
   const ventes = Number(pack.ventes) || 0;
@@ -847,6 +815,16 @@ function renderPack(pack) {
     document.getElementById('creatorProfileLink').href = `auteur.html?id=${pack.auteur_id}`;
     loadCreatorProfile(pack.auteur_id);
   }
+
+  const btnPartagerPack = document.getElementById('btnPartagerPack');
+  if (btnPartagerPack) btnPartagerPack.addEventListener('click', () => {
+    inkrisePartager({
+      titre: `${pack.titre || 'Pack tutoriel'} — Inkrise`,
+      texte: pack.auteur_nom ? `Le pack « ${pack.titre} » de ${pack.auteur_nom} sur Inkrise.`
+                             : 'Un pack de dessin manga sur Inkrise.',
+      url: window.location.origin + '/pack.html?id=' + encodeURIComponent(pack.id)
+    });
+  });
 
   // Date
   if (pack.created_at) {

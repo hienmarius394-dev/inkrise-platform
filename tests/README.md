@@ -31,14 +31,32 @@ INKRISE_CHROME=/chemin/vers/chrome npm test
 | `communaute` | Temps réel : arrivée de contenu distant sans effacer la saisie en cours, lecture qui ne saute pas, écho différé et non perdu, repli périodique |
 | `confirmation` | Boîte de confirmation partagée : action destructrice, saisie exigée pour supprimer un compte, Échap, focus rendu |
 | `connexion` | Retour à la page voulue après connexion, et refus des destinations extérieures |
+| `theme` | Thème clair/sombre/auto : réglage système suivi, choix mémorisé, script de thème synchrone en `<head>` (invariant anti-flash), et aucune zone restée claire sur 20 pages en sombre |
+| `partage` | Feuille de partage native et ses replis ; `api/og.js` réellement exécuté — vrais titres, échappement, brouillon non divulgué, renvoi en cas de panne |
+| `communaute-fil` | Fil des créateurs suivis et onglet Découvrir sans `?id=` : filtrage, classement par activité, quatre états vides, non-régression du mur d'un créateur |
+| `avis-parametres` | Notes et avis sur les mangas (affichage, saisie, refus de noter sa propre œuvre), recommandations, page Paramètres, export RGPD, et effet réel du filtre 18+ sur les requêtes |
+| `push` | Le service worker face à un push complet, vide ou illisible ; et la page Paramètres selon que la clé VAPID est configurée ou non |
 
-## Deux outils de diagnostic (hors suites)
+## Trois outils de diagnostic (hors suites)
 
 ```bash
+node tests/outil-invisible.js   # traque les défauts SILENCIEUX : liens morts,
+                                # fonctions disparues, ids en double, contenu
+                                # rogné sans erreur, colonnes absentes du
+                                # schéma, buckets inconnus, pages orphelines
 node tests/outil-contraste.js   # relève tout texte sous le seuil de lisibilité
-node tests/outil-chasse.js      # parcourt les 21 pages : erreurs JS, textes
+INKRISE_THEME=sombre \
+  node tests/outil-contraste.js   # le même relevé, en thème sombre
+node tests/outil-chasse.js      # parcourt les pages : erreurs JS, textes
                                 # cassés, débordements, cibles tactiles trop
                                 # petites, champs sans étiquette
+
+`outil-invisible.js` mérite un mot : chacun de ses contrôles vient d'un vrai
+bug rencontré pendant l'audit — un qui ne plantait rien, n'affichait aucune
+erreur, et passait donc sous le radar de tout le reste. Une redirection vers
+une page supprimée, un `getElementById` sur un élément retiré, du contenu
+rogné que `overflow-x: clip` cachait. Il a été éprouvé en y injectant
+délibérément un défaut de chaque famille : les six sont ressortis.
 ```
 
 ## Écrire une nouvelle suite

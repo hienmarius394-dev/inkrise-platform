@@ -8,8 +8,13 @@
   <link rel="icon" type="image/svg+xml" href="/assets/favicon.svg" />
   <link rel="manifest" href="/manifest.webmanifest" />
   <meta name="theme-color" content="#7c5cfc" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://bsdcpwtimsgxcnaamwip.supabase.co" />
   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="assets/inkrise-theme.css" />
+  <script src="assets/inkrise-theme.js"></script>
+  <script src="assets/inkrise-config.js"></script>
 <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -18,7 +23,7 @@
         radial-gradient(640px 420px at 6% -6%, rgba(124,92,252,0.16), transparent 60%),
         radial-gradient(560px 400px at 100% 6%, rgba(255,95,168,0.13), transparent 60%),
         #faf9fd;
-      color: #16132a;
+      color: var(--text);
       min-height: 100vh;
       display: flex; align-items: center; justify-content: center;
       text-align: center; padding: 24px;
@@ -37,7 +42,7 @@
       margin-bottom: 12px;
     }
     h1 { font-family: 'Syne', sans-serif; font-size: 1.3rem; margin-bottom: 10px; }
-    p { color: #777194; font-size: 0.92rem; line-height: 1.6; margin-bottom: 28px; }
+    p { color: var(--text-3); font-size: 0.92rem; line-height: 1.6; margin-bottom: 28px; }
     .btn {
       display: inline-block; background: linear-gradient(135deg, #7c5cfc, #ff5fa8);
       color: #fff; text-decoration: none; font-weight: 700; font-size: 0.9rem;
