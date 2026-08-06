@@ -22,6 +22,7 @@
 <link rel="stylesheet" href="assets/inkrise-theme.css" />
 <script src="assets/inkrise-theme.js"></script>
   <script src="assets/inkrise-reseau.js"></script>
+  <script src="assets/inkrise-veille.js"></script>
 <script src="assets/inkrise-config.js"></script>
 <style>
 /* Nav, menu latéral et barre du bas : voir assets/inkrise-theme.css */
@@ -286,7 +287,16 @@ async function enregistrer(champs) {
           '<option value="scroll"' + (profil.pref_mode_lecture === 'scroll' ? ' selected' : '') + '>Vertical (webtoon)</option>' +
           '<option value="pages"' + (profil.pref_mode_lecture === 'pages' ? ' selected' : '') + '>Horizontal (page par page)</option>' +
         '</select>' +
-      '</div>') +
+      '</div>' +
+      /* Réglage propre à l'appareil, gardé dans le navigateur comme le
+         thème : on peut vouloir l'écran allumé sur sa tablette et pas sur
+         son téléphone. Masqué là où le navigateur ne sait pas le faire —
+         un interrupteur sans effet vaut moins que rien. */
+      (window.inkriseVeille && inkriseVeille.supporte()
+        ? ligne('prefEcran', 'Garder l\'écran allumé pendant la lecture',
+                'L\'écran ne s\'éteindra pas tant que tu lis. Ce réglage ne vaut que pour cet appareil.',
+                inkriseVeille.actif())
+        : '')) +
 
     carte('🔔 Notifications',
       ligne('prefChap', 'Nouveaux chapitres',
@@ -332,6 +342,9 @@ async function enregistrer(champs) {
 
   /* ── Lecture ── */
   brancherInterrupteur('prefAdulte', v => enregistrer({ pref_masquer_adulte: v }));
+  /* Réglage d'appareil : rien à envoyer au serveur, donc rien qui puisse
+     échouer — on renvoie true pour que l'interrupteur reste tel que cliqué. */
+  brancherInterrupteur('prefEcran', v => { inkriseVeille.definir(v); return true; });
   document.getElementById('prefMode').addEventListener('change', e =>
     enregistrer({ pref_mode_lecture: e.target.value || null }));
 

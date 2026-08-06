@@ -67,14 +67,16 @@ Inkrise = plateforme pour artistes manga/webtoon :
    et ne mène nulle part.
 2. **Pages par genre** — les 20 genres ne sont qu'un `<select>` : pas d'URL
    partageable ni indexable.
-3. **Confort du lecteur** — plein écran, zoom, maintien de l'écran allumé,
-   double page sur tablette, signets.
+3. **Confort du lecteur** — plein écran, zoom, double page sur tablette,
+   signets. *(Maintien de l'écran allumé : ✅ livré.)*
 4. **Modération** — `admin.html` ne permet que de cocher « traité » : ni
    masquage, ni suppression, ni lien vers un commentaire signalé.
 5. **Profil de lecteur** — chapitres lus, temps de lecture, genres favoris.
    Aujourd'hui un profil ne parle que de création.
-6. **Prix en FCFA à l'affichage** — le public paie en Mobile Money ; la
-   conversion se fait déjà côté serveur, seul l'affichage reste en euros.
+~~6. **Prix en FCFA à l'affichage**~~ — **écarté**. Inkrise s'adresse à un
+   public international, pas seulement ouest-africain : l'affichage reste
+   en euros. La conversion vers le XOF continue de se faire côté serveur au
+   moment du paiement, pour ceux qui règlent en Mobile Money.
 7. **Connexion Google** — le CSS `.or-divider` d'`auth.html` est prêt.
 8. **Case « J'accepte les CGU »** à l'inscription.
 9. **Comptage des vues côté serveur** — aujourd'hui déclaratif depuis le

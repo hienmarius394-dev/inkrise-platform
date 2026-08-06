@@ -23,6 +23,7 @@
   <link rel="stylesheet" href="assets/inkrise-theme.css" />
   <script src="assets/inkrise-theme.js"></script>
   <script src="assets/inkrise-reseau.js"></script>
+  <script src="assets/inkrise-veille.js"></script>
   <script src="assets/inkrise-config.js"></script>
 <style>
 /* Nav, menu latéral et barre du bas : voir assets/inkrise-theme.css */
@@ -1075,6 +1076,10 @@ async function loadChapter() {
     showPlaceholder();
   } else {
     renderPages();
+    /* En lecture verticale on fait défiler sans jamais toucher l'écran :
+       le téléphone s'éteignait en plein chapitre. Demandé seulement quand
+       il y a vraiment quelque chose à lire. */
+    if (window.inkriseVeille) inkriseVeille.acquerir();
   }
 
   updateChapNav();
