@@ -38,11 +38,6 @@ body {
 .legal-wrap li { margin-bottom: 6px; }
 .legal-wrap a { color: var(--purple-link); }
 .legal-wrap strong { color: var(--text); }
-.legal-todo {
-  background: rgba(245,166,35,0.1); border: 1px solid rgba(245,166,35,0.35);
-  border-radius: 10px; padding: 3px 8px; font-size: .82rem; font-weight: 700;
-  color: #9a6600; white-space: nowrap;
-}
 .legal-note {
   background: #fff; border: 1px solid var(--border); border-left: 3px solid var(--purple);
   border-radius: 10px; padding: 14px 16px; margin: 18px 0; font-size: .9rem;

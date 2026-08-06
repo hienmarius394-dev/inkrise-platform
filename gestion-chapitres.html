@@ -475,7 +475,7 @@
   <div class="univ-d-sec">Explorer</div>
   <a href="index.html" class="univ-d-item"><div class="univ-d-icon">🏠</div>Accueil</a>
   <a href="recherche.html" class="univ-d-item"><div class="univ-d-icon">📖</div>Manga &amp; BD</a>
-  <a href="tutoriels.html" class="univ-d-item"><div class="univ-d-icon">🎓</div>Tutoriels <span class="univ-d-badge teal">GRATUIT</span></a>
+  <a href="tutoriels.html" class="univ-d-item"><div class="univ-d-icon">🎓</div>Tutoriels</a>
   <a href="espace-createur.html" class="univ-d-item"><div class="univ-d-icon">🎨</div>Espace Créateur <span class="univ-d-badge teal">GRATUIT</span></a>
   <a href="communaute.html" class="univ-d-item"><div class="univ-d-icon">👥</div>Communauté</a>
   <div class="univ-d-divider"></div>
@@ -740,17 +740,36 @@ async function init() {
   const { data: profile } = await sb.from('profiles').select('username, avatar_url').eq('id', currentUser.id).single();
   const name = profile?.username || currentUser.email.split('@')[0];
   authorName = name;
+
+  /* Cette page exige déjà une session (redirection plus haut), mais seul
+     l'avatar en était informé : le menu latéral proposait encore
+     « Connexion / Inscription » et n'offrait ni profil, ni paramètres, ni
+     déconnexion. La cloche de notifications restait masquée elle aussi. */
   const avatarBtnEl = document.getElementById('navAvatar');
-    if (avatarBtnEl) {
-      avatarBtnEl.style.display = 'flex';
-      if (profile?.avatar_url) {
-        avatarBtnEl.innerHTML = '<img src="' + profile.avatar_url + '" style="width:32px;height:32px;border-radius:50%;object-fit:cover;" alt="" />';
-      } else {
-        avatarBtnEl.textContent = name[0].toUpperCase();
-      }
+  if (avatarBtnEl) {
+    avatarBtnEl.classList.add('show');
+    if (profile?.avatar_url) {
+      avatarBtnEl.innerHTML = '<img src="' + profile.avatar_url + '" style="width:32px;height:32px;border-radius:50%;object-fit:cover;" alt="" />';
+    } else {
+      avatarBtnEl.textContent = name[0].toUpperCase();
     }
-    const btnConnexionEl = document.getElementById('navConnexion');
-    if (btnConnexionEl) btnConnexionEl.style.display = 'none';
+  }
+  const btnConnexionEl = document.getElementById('navConnexion');
+  if (btnConnexionEl) btnConnexionEl.style.display = 'none';
+  document.getElementById('navNotifLink').classList.add('show');
+  document.getElementById('drawerConnexion').style.display = 'none';
+  document.getElementById('drawerProfil').style.display = 'flex';
+  document.getElementById('drawerPublier').style.display = 'flex';
+  document.getElementById('drawerLogout').style.display = 'flex';
+
+  const { count: nonLues } = await sb.from('notifications')
+    .select('id', { count: 'exact', head: true })
+    .eq('user_id', currentUser.id).eq('lu', false);
+  if (nonLues > 0) {
+    const dot = document.getElementById('navNotifDot');
+    dot.textContent = nonLues > 9 ? '9+' : nonLues;
+    dot.classList.add('show');
+  }
 
   await loadManga();
   await loadChapitres();
