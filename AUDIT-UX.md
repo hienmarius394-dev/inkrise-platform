@@ -366,7 +366,7 @@ hors-ligne. Bon socle. Absents :
 
 ### 2.9 ✅ ~~La modération est une liste, pas un outil~~ — **livré** (§7.5)
 
-### 2.10 🟡 Le profil d'un lecteur ne parle que de création **[vérifié — capture base vide]**
+### 2.10 ✅ ~~Le profil d'un lecteur ne parle que de création~~ — **livré** (§7.9)
 
 Un compte sans manga voit « 0 MANGAS · 0 VUES · 0 CHAPITRES · 0 ABONNÉS » puis
 une fusée « Publie ton premier manga ». Rien sur ce qu'il *lit*. Manquent :
@@ -960,6 +960,34 @@ nouveaux.
 
 ---
 
+## 7.9 Profil de lecteur — quatre zéros et six onglets sur la publication
+
+Quelqu'un qui vient **lire** arrivait sur son profil et y trouvait
+« 0 Mangas · 0 Vues · 0 Chapitres · 0 Abonnés », puis six onglets qui
+parlent tous de publier. Rien de ce qu'il fait réellement n'était visible.
+
+Un onglet **« 📖 Ma lecture »**, placé en premier, montre maintenant :
+œuvres commencées, terminées, avis donnés, genres les plus lus (classés,
+et cliquables vers le catalogue filtré), et la reprise des lectures en
+cours avec leur position.
+
+**Aucune colonne ajoutée.** Tout se reconstitue depuis ce que la base
+contient déjà : la bibliothèque garde la position de lecture de chaque
+œuvre, les avis et les genres sont là. C'était un problème d'affichage,
+pas de données — et ça tombait bien, deux blocs SQL restaient en attente.
+
+**Un refus d'inventer :** une entrée de bibliothèque sans nombre total de
+chapitres ne permet d'affirmer aucune progression. Elle reste listée, avec
+sa position, mais **sans jauge** — dessiner une barre à partir d'un total
+inconnu aurait été un chiffre fabriqué. La suite le vérifie explicitement.
+
+**Ce que le test a corrigé, côté outil :** `count: 'exact', head: true`
+envoie une requête **HEAD**, pas un GET. Mon double la traitait comme une
+écriture et répondait sans en-tête `Content-Range` — le compteur d'avis
+restait à zéro alors que la page marchait.
+
+---
+
 ## Annexe — méthode
 
 ```bash
@@ -974,6 +1002,7 @@ npm test -- confort            # 21/21 — plein écran et zoom
 npm test -- moderation         # 24/24 — masquer, rétablir, classer
 npm test -- vues               # 12/12 — lectures comptées, y compris sans compte
 npm test -- decouverte         # 17/17 — créateurs et genres accessibles
+npm test -- lecture            # 18/18 — profil de lecteur
 node tests/outil-chasse.js     # 21 pages × 2 états
 URLS=… MODES=… node tests/_txt.js   # texte visible de chaque page, à relire
 ```
