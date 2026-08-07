@@ -82,8 +82,11 @@ Inkrise = plateforme pour artistes manga/webtoon :
    public international, pas seulement ouest-africain : l'affichage reste
    en euros. La conversion vers le XOF continue de se faire côté serveur au
    moment du paiement, pour ceux qui règlent en Mobile Money.
-7. **Connexion Google** — le CSS `.or-divider` d'`auth.html` est prêt.
-8. **Case « J'accepte les CGU »** à l'inscription.
+~~7. **Connexion Google**~~ — ✅ livré, en veille : le bouton n'apparaît
+   qu'une fois `INKRISE_GOOGLE` activé dans `assets/inkrise-config.js`,
+   après configuration du fournisseur côté Supabase.
+~~8. **Case « J'accepte les CGU »**~~ — ✅ livré : case jamais
+   pré-cochée, liens vers les conditions et la confidentialité.
 ~~9. **Comptage des vues côté serveur**~~ — ✅ livré : les compteurs ne
    s'écrivent plus à la main (un auteur pouvait mettre ses vues à 999 999),
    et les lecteurs déconnectés sont enfin comptés.
