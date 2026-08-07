@@ -83,6 +83,9 @@
   --success-link: #007a66;
   --orange-link:  #b33f14;
   --amber-link:   #8a5a00;
+  /* Turquoise de TEXTE : `--teal` (#0fb8a6) est une teinte de pastille,
+     à 2,19:1 sur son propre fond pâle. */
+  --teal-link:    #06695e;
 
   /* Fonds translucides de la nav et de la barre du bas, et voile violet
      de l'onglet actif — nommés pour que le thème sombre les reprenne. */
@@ -180,6 +183,7 @@
      par `var(--amber-link)` ne change donc RIEN au thème sombre, et ne
      corrige que le thème clair, où l'ambre vif tombait à 1,8:1. */
   --amber-link:   #f7b955;
+  --teal-link:    #2fd0bd;   /* identique à --teal en sombre : rien ne change */
 
   /* Variables propres à certaines pages (auth, profil…) : sans ces
      reprises, leurs valeurs claires resteraient posées sur fond sombre. */

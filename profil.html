@@ -70,6 +70,7 @@
     }
     .cover-edit-btn {
       position: absolute; top: 14px; right: 14px; z-index: 5; cursor: pointer;
+      display: inline-flex; align-items: center; min-height: 36px;
       background: rgba(0,0,0,0.45); backdrop-filter: blur(6px); color: #fff;
       font-size: 0.75rem; font-weight: 700; padding: 7px 13px; border-radius: 100px;
       border: 1px solid rgba(255,255,255,0.2); transition: background .2s;
@@ -588,11 +589,17 @@
       to   { opacity: 1; transform: translateY(0); }
     }
     .modal-close {
-      position: absolute; top: 18px; right: 20px;
+      position: absolute; top: 14px; right: 14px;
+      /* Dimensionné par sa seule police, ce bouton faisait 22px de côté :
+         sous le seuil de 32px, et c'est la sortie de secours de la
+         fenêtre. */
+      width: 36px; height: 36px;
+      display: flex; align-items: center; justify-content: center;
       background: none; border: none; color: var(--muted);
-      font-size: 1.4rem; cursor: pointer;
-      transition: color .2s;
+      font-size: 1.4rem; cursor: pointer; line-height: 1;
+      border-radius: 9px; transition: color .2s, background .2s;
     }
+    .modal-close:hover { background: var(--surface2); }
     .modal-close:hover { color: var(--text); }
     .modal-title {
       font-family: 'Bebas Neue', sans-serif;
@@ -674,10 +681,13 @@
     }
     .pack-image-tile img { width: 100%; height: 100%; object-fit: cover; display: block; }
     .pack-image-del {
-      position: absolute; top: 3px; right: 3px;
-      width: 22px; height: 22px; border-radius: 50%;
+      position: absolute; top: 2px; right: 2px;
+      /* 22px de côté : sous le seuil de 32px. Sur une vignette de 72px, un
+         bouton qu'on rate une fois sur deux au doigt. */
+      width: 32px; height: 32px; border-radius: 50%;
       background: rgba(0,0,0,0.66); color: #fff; border: none;
-      font-size: 0.66rem; cursor: pointer; line-height: 1;
+      font-size: 0.72rem; cursor: pointer; line-height: 1;
+      display: flex; align-items: center; justify-content: center;
     }
     .pack-form-actions { display: flex; gap: 10px; margin-top: 24px; }
     .pack-form-actions button { flex: 1; margin-top: 0; }
@@ -817,6 +827,7 @@
 .creator-info-name { font-weight: 800; font-size: 0.92rem; margin-bottom: 2px; }
 .creator-info-since { font-size: 0.75rem; color: var(--muted); }
 .btn-unfollow {
+  display: inline-flex; align-items: center; min-height: 36px;
   background: none; border: 1px solid var(--border); color: var(--muted);
   font-size: 0.78rem; font-weight: 700; padding: 6px 14px; border-radius: 8px;
   cursor: pointer; transition: all .2s; white-space: nowrap; font-family: 'Nunito', sans-serif;
@@ -836,8 +847,9 @@
 .notif-msg { font-size: 0.88rem; font-weight: 600; margin-bottom: 4px; line-height: 1.4; }
 .notif-date { font-size: 0.73rem; color: var(--muted); }
 .btn-read {
+  display: inline-flex; align-items: center; min-height: 34px;
   background: none; border: 1px solid var(--border); color: var(--muted);
-  font-size: 0.72rem; font-weight: 700; padding: 4px 10px; border-radius: 6px;
+  font-size: 0.72rem; font-weight: 700; padding: 4px 12px; border-radius: 6px;
   cursor: pointer; transition: all .2s; white-space: nowrap; font-family: 'Nunito', sans-serif; flex-shrink: 0;
 }
 .btn-read:hover { border-color: var(--accent2); color: var(--accent2); }
@@ -1163,7 +1175,7 @@
         <label>Plan actuel</label>
         <span>
           <span id="displayPlan" style="color:var(--purple-link); font-weight:800;">Membre</span>
-          <button type="button" id="btnSwitchRole" style="display:none; margin-left:10px; background:none; border:none; cursor:pointer; font-size:0.78rem; font-weight:700; color:var(--muted); text-decoration:underline; font-family:'Nunito',sans-serif;"></button>
+          <button type="button" id="btnSwitchRole" style="display:none; align-items:center; min-height:32px; padding:0 6px; margin-left:6px; background:none; border:none; cursor:pointer; font-size:0.78rem; font-weight:700; color:var(--muted); text-decoration:underline; font-family:'Nunito',sans-serif;"></button>
         </span>
       </div>
       <div class="info-row info-row-social" style="align-items:flex-start;">
@@ -1709,7 +1721,9 @@
     // Changement de rôle dans les deux sens, à tout moment
     const switchBtn = document.getElementById('btnSwitchRole');
     if (switchBtn) {
-      switchBtn.style.display = 'inline';
+      /* `inline` lui donnait la hauteur d'une ligne — 17px. C'est le
+         bouton qui change ton rôle sur le site : il doit se taper. */
+      switchBtn.style.display = 'inline-flex';
       switchBtn.textContent = userProfile?.is_creator ? 'Repasser en lecteur' : 'Devenir créateur';
       switchBtn.onclick = () => {
         if (userProfile?.is_creator) switchToReader();

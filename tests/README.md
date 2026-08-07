@@ -26,12 +26,12 @@ INKRISE_CHROME=/chemin/vers/chrome npm test
 |---|---|
 | `lecteur` | Écrans d'avant-lecture (âge, sens de lecture), modes vertical et horizontal, glissement du doigt dans le bon sens, bandeau de pages, repli si `age_recommande` manque au schéma |
 | `createur` | Sens de lecture et classification corrigeables après publication, boutons d'aperçu, réglage de largeur en lecture verticale |
-| `accessibilite` | Réordonnancement des chapitres au doigt et au clavier, cartes de sélection du contenu, menu latéral (état annoncé, focus, Échap) |
+| `accessibilite` | Réordonnancement des chapitres au doigt et au clavier, cartes de sélection du contenu, menu latéral (état annoncé, focus, Échap), et aucun `<button>` sous 32px sur cinq pages **tout déplié** (onglets, modales, volets) |
 | `recherche` | Filtres genre/format/statut, tri, pagination « Voir plus », état vide dû aux filtres, contraste du texte réellement affiché |
 | `communaute` | Temps réel : arrivée de contenu distant sans effacer la saisie en cours, lecture qui ne saute pas, écho différé et non perdu, repli périodique |
 | `confirmation` | Boîte de confirmation partagée : action destructrice, saisie exigée pour supprimer un compte, Échap, focus rendu |
 | `connexion` | Retour à la page voulue après connexion, et refus des destinations extérieures |
-| `theme` | Thème clair/sombre/auto : réglage système suivi, choix mémorisé, script de thème synchrone en `<head>` (invariant anti-flash), et aucune zone restée claire sur 20 pages en sombre |
+| `theme` | Thème clair/sombre/auto : réglage système suivi, choix mémorisé, script de thème synchrone en `<head>` (invariant anti-flash), et aucune zone restée claire sur 20 pages en sombre — session simulée, `lecteur.html` inclus, et tout déplié |
 | `partage` | Feuille de partage native et ses replis ; `api/og.js` réellement exécuté — vrais titres, échappement, brouillon non divulgué, renvoi en cas de panne |
 | `communaute-fil` | Fil des créateurs suivis et onglet Découvrir sans `?id=` : filtrage, classement par activité, quatre états vides, non-régression du mur d'un créateur |
 | `avis-parametres` | Notes et avis sur les mangas (affichage, saisie, refus de noter sa propre œuvre), recommandations, page Paramètres, export RGPD, et effet réel du filtre 18+ sur les requêtes |
@@ -78,6 +78,19 @@ node tests/outil-chasse.js      # parcourt les pages : erreurs JS, textes
 URLS=… MODES=auth,anon \
   node tests/_txt.js            # texte visible de chaque page, à relire
 ```
+
+**Ce qui est REPLIÉ n'est jamais mesuré.** Les sondes écartent ce qui est
+en `display:none` — à raison. Mais personne n'ouvrait rien avant de
+mesurer : `profil.html` a sept onglets dont un seul est affiché, et chaque
+page cache ses modales. `outil-invisible`, `outil-chasse`,
+`outil-contraste` et la suite `theme` déplient donc tout avant de sonder.
+
+**La sonde de contraste abandonnait sous un dégradé.** Elle faisait
+`break` dès qu'elle croisait une image de fond en remontant la chaîne —
+or le `body` de l'accueil porte un dégradé radial, donc aucun texte
+d'`index.html` n'était mesuré. Elle calcule désormais le rapport en
+supposant le dégradé tout noir, puis tout blanc, et ne signale que si les
+deux échouent : aucun faux positif, aucun angle mort.
 
 Un mot sur les POLICES, depuis qu'elles sont auto-hébergées : les suites
 neutralisaient `fonts.googleapis.com` pour ne pas dépendre du réseau, donc

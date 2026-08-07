@@ -246,7 +246,7 @@
 
     /* Mini-lien auteur compact (avatar + "Voir le profil") — dans la barre d'actions */
     .btn-author-mini {
-      display: inline-flex; align-items: center; gap: 8px;
+      display: inline-flex; align-items: center; gap: 8px; min-height: 36px;
       background: transparent; border: 1px solid var(--border);
       color: var(--muted); padding: 6px 16px 6px 6px; border-radius: 100px;
       font-family: 'DM Sans', sans-serif; font-size: 0.86rem; font-weight: 600;
@@ -314,6 +314,9 @@
     /* Genres */
     .genres-list { display: flex; flex-wrap: wrap; gap: 8px; }
     .genre-tag {
+      /* Même raison que les pastilles de genre de la recherche : ce sont
+         des liens qu'on tape, pas de la décoration. */
+      display: inline-flex; align-items: center; min-height: 36px;
       font-size: 0.78rem; font-weight: 600;
       padding: 5px 12px; border-radius: 20px;
       background: var(--surface2); border: 1px solid var(--border);
@@ -362,6 +365,9 @@
       background: rgba(124,111,239,0.25); border-color: var(--purple);
     }
     .chap-dl-btn {
+      /* 28px de haut : sous le seuil de 32px pour un doigt, alors que
+         c'est le bouton qui rend un chapitre lisible hors-ligne. */
+      display: inline-flex; align-items: center; min-height: 36px;
       font-size: 0.74rem; font-weight: 700; color: var(--text-2);
       background: var(--bg); border: 1px solid var(--border);
       padding: 5px 10px; border-radius: 7px; white-space: nowrap;

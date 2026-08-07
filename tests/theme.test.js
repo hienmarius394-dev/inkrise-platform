@@ -15,6 +15,23 @@ const BASE = 'http://localhost:' + PORT;
 const results=[]; const check=(n,p,d='')=>{results.push({n,p,d});
   console.log(`${p?'  ✅':'  ❌'} ${n}${d?' — '+d:''}`);};
 
+/* Tout ce qui est REPLIÉ n'est pas mesuré : `display:none` fait sortir de
+   la sonde. Or `profil.html` a sept onglets dont un seul est affiché, et
+   chaque page cache ses modales au repos. On dépliait donc un septième
+   du profil en croyant l'avoir vu en entier — une carte blanche laissée
+   dans l'onglet « Mon compte » passait inaperçue. */
+const DEPLIER = () => {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.add('active'));
+  document.querySelectorAll('.modal-overlay, .crop-overlay, .confirm-overlay')
+    .forEach(m => m.classList.add('open'));
+  const d = document.getElementById('univDrawer');
+  if (d) d.classList.add('open');
+  /* Les sous-vues masquées en style direct (Suivis / Abonnés, sections
+     de formations…) : on les rouvre aussi. */
+  document.querySelectorAll('[id^="view"], [id^="formations"], [id^="section-"]')
+    .forEach(e => { if (e.style.display === 'none') e.style.display = 'block'; });
+};
+
 /* Toute page dont le fond est clair alors que le thème est sombre.
    On ignore les dégradés (couvertures, bannières) et le trop transparent. */
 const ILOTS = () => {
@@ -44,7 +61,10 @@ const ILOTS = () => {
   return out;
 };
 
+/* `lecteur.html` manquait à cette liste — la page centrale d'un site de
+   lecture de mangas. Six de ses panneaux étaient restés en blanc figé. */
 const PAGES = ['index.html','recherche.html','manga.html?id=1','bibliotheque.html','profil.html',
+  'lecteur.html?manga_id=1&chapitre=10',
   'auteur.html?id=u1','communaute.html?id=u1','communaute.html','tutoriels.html','pack.html?id=1','espace-createur.html',
   'upload-manga.html','gestion-chapitres.html?manga_id=1','auth.html','404.html','admin.html',
   'cgu.html','confidentialite.html','mentions-legales.html','creators-remuneration.html'];
@@ -54,6 +74,40 @@ async function prepare(ctx) {
   await ctx.route('**/auth/v1/**',r=>r.fulfill({status:401,body:'{}'}));
   await ctx.route('**/rest/v1/**',r=>r.fulfill({status:200,contentType:'application/json',
     headers:{'Content-Range':'0-0/0','Access-Control-Expose-Headers':'Content-Range'},body:'[]'}));
+  await ctx.route('**/storage/v1/**',r=>r.fulfill({status:200,contentType:'application/json',body:'[]'}));
+}
+
+/* Le balayage des zones claires tournait DÉCONNECTÉ : sept des vingt
+   pages renvoient alors vers auth.html, qui était donc mesurée sept fois
+   pendant que le compteur annonçait « les 20 pages sont entièrement
+   sombres ». Le même angle mort que celui relevé sur l'outil de
+   contraste — et il faut le refermer ici aussi. */
+const U = { id:'u1', email:'m@x.fr', aud:'authenticated',
+            user_metadata:{ username:'Marius' } };
+const PROFIL = { id:'u1', username:'Marius', bio:'Dessinateur', avatar_url:null,
+                 is_creator:true, created_at:'2026-01-05T10:00:00Z' };
+
+async function prepareConnecte(ctx) {
+  await ctx.addInitScript(u=>localStorage.setItem('sb-bsdcpwtimsgxcnaamwip-auth-token',
+    JSON.stringify({access_token:'t',refresh_token:'r',token_type:'bearer',
+      expires_at:Math.floor(Date.now()/1000)+9999,expires_in:9999,user:u})), U);
+  await ctx.route('https://fonts.googleapis.com/**',r=>r.fulfill({status:200,contentType:'text/css',body:''}));
+  await ctx.route('**/auth/v1/**',r=>r.fulfill({status:200,contentType:'application/json',
+    body:JSON.stringify(U)}));
+  await ctx.route('**/rest/v1/**',r=>{
+    const req=r.request(), u=decodeURIComponent(req.url());
+    const seul=(req.headers()['accept']||'').includes('vnd.pgrst.object');
+    if (u.includes('/profiles')) return r.fulfill({status:200,contentType:'application/json',
+      headers:{'Content-Range':'0-0/1','Access-Control-Expose-Headers':'Content-Range'},
+      body:JSON.stringify(seul?PROFIL:[PROFIL])});
+    if (u.includes('/mangas')) return r.fulfill({status:200,contentType:'application/json',
+      body:JSON.stringify(seul ? { id:1, titre:'Darkworld', type:'manga', sens_lecture:'rl',
+        age_recommande:'tout_public', commentaires_actifs:true, auteur_id:'u1' } : [])});
+    if (u.includes('/chapitres')) return r.fulfill({status:200,contentType:'application/json',
+      body:JSON.stringify([{ id:10, numero:1, titre:'Ouverture', manga_id:1 }])});
+    return r.fulfill({status:200,contentType:'application/json',
+      headers:{'Content-Range':'0-0/0','Access-Control-Expose-Headers':'Content-Range'},body:'[]'});
+  });
   await ctx.route('**/storage/v1/**',r=>r.fulfill({status:200,contentType:'application/json',body:'[]'}));
 }
 
@@ -161,22 +215,40 @@ console.log('\n▶ Basculeur du menu latéral');
 // ── 4. Aucune zone restée claire ──
 console.log('\n▶ Aucune zone claire au milieu d\'une page sombre');
 {
+  /* `auth.html` ne s'affiche QUE déconnectée : avec une session elle
+     renvoie vers l'accueil. Elle a donc son propre contexte. */
   const ctx=await b.newContext({viewport:{width:390,height:844},hasTouch:true,isMobile:true});
   await ctx.addInitScript(()=>{ try{localStorage.setItem('inkrise_theme','sombre');}catch(e){} });
-  await prepare(ctx);
-  let fautives = 0;
+  await prepareConnecte(ctx);
+  const ctxAnon=await b.newContext({viewport:{width:390,height:844},hasTouch:true,isMobile:true});
+  await ctxAnon.addInitScript(()=>{ try{localStorage.setItem('inkrise_theme','sombre');}catch(e){} });
+  await prepare(ctxAnon);
+
+  let fautives = 0, detournees = [];
   for (const pg of PAGES) {
-    const p=await ctx.newPage();
+    const p = await (pg.startsWith('auth.html') ? ctxAnon : ctx).newPage();
     try {
       await p.goto(BASE+'/'+pg,{waitUntil:'load',timeout:20000});
       await p.waitForTimeout(900);
+      /* Sans ce contrôle, une page qui redirige est mesurée sous le nom
+         d'une autre — et le compteur annonce des pages jamais vues. */
+      if (!p.url().includes('/' + pg.split('?')[0])) {
+        detournees.push(pg + ' → ' + p.url().split('/').pop().slice(0, 32));
+        await p.close(); continue;
+      }
+      await p.evaluate(DEPLIER);
+      await p.waitForTimeout(200);
       const ilots = await p.evaluate(ILOTS);
       if (ilots.length) { fautives++; console.log('     ↳ '+pg+' : '+[...new Set(ilots)].join(', ')); }
     } catch(e) { fautives++; console.log('     ↳ '+pg+' : '+e.message.slice(0,50)); }
     await p.close();
   }
-  check(`les ${PAGES.length} pages sont entièrement sombres`, fautives===0, fautives+' page(s) fautive(s)');
-  await ctx.close();
+  if (detournees.length) console.log('     ⚠️  non mesurées : ' + detournees.join(' · '));
+  check(`les ${PAGES.length - detournees.length} pages atteintes sont entièrement sombres`,
+    fautives===0, fautives+' page(s) fautive(s)');
+  check('  et une seule page échappe à la mesure (la redirection connue)',
+    detournees.length <= 1, detournees.join(' · ') || 'aucune');
+  await ctx.close(); await ctxAnon.close();
 }
 
 await b.close(); server.close();

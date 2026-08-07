@@ -303,7 +303,25 @@ for (const largeur of [390, 1280]) {
     try {
       await p.goto('http://localhost:8141/'+u,{waitUntil:'load',timeout:20000});
       await p.waitForTimeout(1500);
+      /* Première passe : la page telle qu'elle s'ouvre. */
       (await p.evaluate(SONDE)).forEach(x => noter(x.g, u + (largeur===1280?' (bureau)':''), x.d));
+      /* Seconde passe, TOUT DÉPLIÉ. `display:none` fait sortir de la
+         sonde : sans cela, les six onglets repliés du profil, chaque
+         modale et chaque volet ne sont jamais examinés — ils peuvent
+         déborder, avoir des identifiants en double ou des cibles
+         minuscules sans que rien ne le dise. */
+      await p.evaluate(() => {
+        document.querySelectorAll('.tab-panel').forEach(e => e.classList.add('active'));
+        document.querySelectorAll('.modal-overlay, .crop-overlay, .confirm-overlay')
+          .forEach(e => e.classList.add('open'));
+        const d = document.getElementById('univDrawer');
+        if (d) d.classList.add('open');
+        document.querySelectorAll('[id^="view"], [id^="formations"], [id^="section-"]')
+          .forEach(e => { if (e.style.display === 'none') e.style.display = 'block'; });
+      });
+      await p.waitForTimeout(400);
+      (await p.evaluate(SONDE)).forEach(x =>
+        noter(x.g, u + (largeur===1280?' (bureau)':'') + ' [déplié]', x.d));
     } catch(e) { noter('page-plantee', u, e.message.slice(0,60)); }
     await p.close();
   }

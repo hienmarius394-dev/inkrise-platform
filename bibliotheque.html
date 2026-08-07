@@ -69,7 +69,7 @@ body { background: var(--ink); color: var(--text); font-family: 'DM Sans', sans-
 
 .loading{text-align:center;padding:40px;color:var(--text-3);font-size:.85rem;}
 .error-state{text-align:center;padding:40px;color:var(--danger);font-size:.85rem;}
-.lib-remove{position:absolute;top:6px;right:6px;width:26px;height:26px;border-radius:50%;background:rgba(0,0,0,.55);color:#fff;border:none;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;z-index:3;}
+.lib-remove{position:absolute;top:4px;right:4px;width:34px;height:34px;border-radius:50%;background:rgba(0,0,0,.55);color:#fff;border:none;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;z-index:3;}
 .lib-remove:hover{background:var(--danger);}
 #toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:var(--text);color:#fff;padding:10px 18px;border-radius:10px;font-size:.82rem;font-weight:600;opacity:0;pointer-events:none;transition:opacity .25s;z-index:300;}
 #toast.show{opacity:1;}
@@ -339,7 +339,7 @@ async function loadLibrary(){
             <div class="lib-meta">${auteur} · ${progress}</div>
           </div>
         </a>
-        <a href="${continueUrl}" class="lib-continue" style="display:block;position:static;margin:0 10px 10px;">▶ Reprendre</a>
+        <a href="${continueUrl}" class="lib-continue" style="display:flex;align-items:center;justify-content:center;min-height:36px;position:static;margin:0 10px 10px;">▶ Reprendre</a>
       </div>`;
   }
   html += '</div>';

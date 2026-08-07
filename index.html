@@ -119,7 +119,7 @@ h1,h2,h3,.logo { font-family: 'Syne', sans-serif; }
     .univ-d-icon { width: 36px; height: 36px; border-radius: 11px; background: linear-gradient(135deg, rgba(124,92,252,0.14), rgba(255,95,168,0.14)); display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
     .univ-d-badge { font-size: .65rem; font-weight: 800; padding: 2px 7px; border-radius: 6px; margin-left: auto; }
     .univ-d-badge.orange { background: rgba(255,122,69,.14); color: var(--orange-link); }
-    .univ-d-badge.teal { background: rgba(15,184,166,.14); color: var(--teal); }
+    .univ-d-badge.teal { background: rgba(15,184,166,.14); color: var(--teal-link); }
     .univ-d-divider { height: 1px; background: var(--glass-border); margin: 8px 16px; }
 
     /* ── BOTTOM NAV (dock flottant verre) ── */
@@ -311,7 +311,7 @@ h1,h2,h3,.logo { font-family: 'Syne', sans-serif; }
 }
 .modal-overlay.open { display: flex; }
 .modal {
-  background: rgba(255,255,255,0.92); border: 1px solid var(--glass-border); border-radius: var(--radius-xl);
+  background: var(--carte-forte); border: 1px solid var(--glass-border); border-radius: var(--radius-xl);
   padding: 28px; width: 100%; max-width: 720px; max-height: 90vh; overflow-y: auto;
   position: relative; animation: modalIn 0.25s ease; backdrop-filter: blur(14px) saturate(160%);
   box-shadow: var(--shadow-lg);
@@ -319,7 +319,7 @@ h1,h2,h3,.logo { font-family: 'Syne', sans-serif; }
 @keyframes modalIn { from{opacity:0;transform:translateY(14px) scale(0.97)}to{opacity:1;transform:translateY(0) scale(1)} }
 .modal-close {
   position: absolute; top: 12px; right: 12px; background: rgba(20,18,40,0.06); border: 1px solid var(--glass-border);
-  border-radius: 8px; width: 28px; height: 28px; display: flex; align-items: center;
+  border-radius: 8px; width: 36px; height: 36px; display: flex; align-items: center;
   justify-content: center; cursor: pointer; color: var(--text-2); font-size: 15px;
 }
 .modal-tag { font-size: 11px; font-weight: 700; color: var(--purple-link); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 6px; display: block; }
@@ -336,7 +336,7 @@ h1,h2,h3,.logo { font-family: 'Syne', sans-serif; }
 .plan-features { list-style: none; margin-bottom: 16px; }
 .plan-features li { font-size: 12px; color: var(--text-2); padding: 5px 0; border-bottom: 1px solid var(--glass-border); display: flex; align-items: center; gap: 6px; }
 .plan-features li:last-child { border-bottom: none; }
-.plan-features li::before { content: '✓'; color: var(--teal); font-weight: 800; font-size: 11px; flex-shrink: 0; }
+.plan-features li::before { content: '✓'; color: var(--teal-link); font-weight: 800; font-size: 11px; flex-shrink: 0; }
 .btn-plan { width: 100%; font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 800; padding: 11px; border-radius: var(--radius); cursor: pointer; transition: all 0.2s; border: 1.5px solid var(--glass-border); background: #fff; color: var(--text); }
 .btn-plan:hover { background: var(--bg-3); }
 .btn-plan.featured { background: linear-gradient(135deg, var(--purple), var(--pink)); border-color: transparent; color: #fff; box-shadow: var(--glow-purple); }
@@ -818,7 +818,7 @@ async function loadDerniers() {
         <div class="manga-card-synopsis">${escapeHtml(m.synopsis || 'Aucune description.')}</div>
         <div class="manga-card-footer">
           <span class="manga-card-genre">${TYPE_LABELS[m.type]||'Manga'}</span>
-          <span class="manga-card-likes" style="color:var(--teal);">NEW</span>
+          <span class="manga-card-likes" style="color:var(--teal-link);">NEW</span>
         </div>
       </div>
     </a>`

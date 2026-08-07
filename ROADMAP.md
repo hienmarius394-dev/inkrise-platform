@@ -42,7 +42,7 @@ Inkrise = plateforme pour artistes manga/webtoon :
   `covers`, `pages`, `community`).
 - **Serveur** : `api/og.js` (aperçus de lien, Vercel) et
   `supabase/functions/` (paiement CinetPay, envoi des notifications push).
-- **Tests** : 24 suites Playwright, 555 vérifications, plus six outils de
+- **Tests** : 24 suites Playwright, 559 vérifications, plus six outils de
   diagnostic (contraste, défauts silencieux, RLS sur PostgreSQL réel,
   échappement, pannes, chasse aux zones cliquables). Voir `tests/README.md`.
 
@@ -136,3 +136,31 @@ Inkrise = plateforme pour artistes manga/webtoon :
     les cartes « verre dépoli » figées en blanc, les variantes de texte
     déjà prévues par le thème à la place des teintes de fond, et deux
     aplats assez sombres pour porter du texte blanc.
+
+13. **Deux autres angles morts refermés** — même leçon, deux tours plus
+    loin. (a) Les sondes écartent ce qui est en `display:none`, et
+    personne ne dépliait rien avant de mesurer : on examinait **un onglet
+    sur sept** du profil, et aucune modale. (b) La sonde de contraste
+    **abandonnait dès qu'elle croisait un dégradé** en remontant la chaîne
+    des fonds — or le `body` de l'accueil en porte un, donc **pas un seul
+    texte de la page la plus vue du site n'avait jamais été mesuré**. Elle
+    calcule désormais le rapport sous les deux extrêmes (tout noir, tout
+    blanc) et ne signale que si les deux échouent.
+
+    Ce que ça a sorti : la modale « Deviens créateur » de l'accueil,
+    **blanche sur blanc à 1,05:1** en thème sombre ; et **six panneaux du
+    lecteur** figés en blanc — barre du haut, barre du bas, volet des
+    chapitres, écran de fin, commentaires, bandeau des planches. Le mode
+    sombre du lecteur, cœur du site, était cassé en six endroits. Au
+    passage : `lecteur.html` ne figurait pas dans la liste de pages du
+    test de thème.
+
+14. **Cibles tactiles** — le rapport « 71 cibles trop petites » traînait
+    sans suite. Ramené à **45** en corrigeant les commandes réellement
+    concernées (boutons de fermeture de modale à 28 px, pastilles de
+    genre, téléchargement hors-ligne, ✕ de la bibliothèque, et le bouton
+    qui change ton rôle, haut de **17 px** parce qu'affiché en `inline`).
+    Les 45 restantes sont des liens de **texte en ligne** — pied de page,
+    logo, « Voir tout → » : les agrandir voudrait dire réécrire la mise en
+    page. Décision assumée. Le constat est devenu un garde-fou dans
+    `accessibilite.test.js`.

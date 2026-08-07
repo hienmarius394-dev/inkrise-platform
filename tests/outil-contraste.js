@@ -25,10 +25,22 @@ const PROBE = () => {
     if (fg[3] !== undefined && fg[3] < .5) continue;
     if (st.webkitTextFillColor === 'rgba(0, 0, 0, 0)') continue;  // texte en dégradé
 
-    let bg = null, stack = [], n = el, gradient = false;
+    /* DÉGRADÉS. La sonde abandonnait dès qu'elle en croisait un en
+       remontant la chaîne — et le `body` de l'accueil porte un dégradé
+       radial décoratif. Résultat : PAS UN SEUL texte de la page la plus
+       vue du site n'était mesuré, et une modale blanche en thème sombre y
+       a survécu à tout l'audit.
+
+       On ne peut pas connaître la couleur exacte sous un dégradé. Mais on
+       peut être rigoureux autrement : calculer le rapport en supposant le
+       dégradé TOUT NOIR, puis TOUT BLANC, et ne signaler que si les deux
+       échouent. Un texte qui passe sous l'un des deux extrêmes est
+       peut-être lisible ; un texte qui échoue sous les deux l'est nulle
+       part. Aucun faux positif possible. */
+    let bg = null, stack = [], n = el, sousDegrade = false;
     while (n && n !== document.documentElement) {
       const s2 = getComputedStyle(n);
-      if (s2.backgroundImage && s2.backgroundImage !== 'none') { gradient = true; break; }
+      if (s2.backgroundImage && s2.backgroundImage !== 'none') { sousDegrade = true; break; }
       const c = s2.backgroundColor.match(/[\d.]+/g);
       if (c) {
         const a = c[3] === undefined ? 1 : +c[3];
@@ -37,14 +49,33 @@ const PROBE = () => {
       }
       n = n.parentElement;
     }
-    if (gradient) continue;
-    if (!bg) bg = [255,255,255];
-    for (let i = stack.length-1; i >= 0; i--) {
-      const [c2,a] = stack[i];
-      bg = bg.map((v,k) => c2[k]*a + v*(1-a));
+    const composer = (fond) => {
+      let b2 = fond.slice();
+      for (let i = stack.length-1; i >= 0; i--) {
+        const [c2,a] = stack[i];
+        b2 = b2.map((v,k) => c2[k]*a + v*(1-a));
+      }
+      return b2;
+    };
+    const L1 = lum(fg.slice(0,3));
+    const rapport = fond => {
+      const L2 = lum(fond);
+      return (Math.max(L1,L2)+.05)/(Math.min(L1,L2)+.05);
+    };
+
+    let ratio, bgAffiche;
+    if (bg) {
+      bgAffiche = composer(bg); ratio = rapport(bgAffiche);
+    } else if (sousDegrade) {
+      /* Sous un dégradé de couleur inconnue : les deux extrêmes. */
+      const surNoir = composer([0,0,0]), surBlanc = composer([255,255,255]);
+      const rN = rapport(surNoir), rB = rapport(surBlanc);
+      ratio = Math.max(rN, rB);           // on retient le cas le plus favorable
+      bgAffiche = rN >= rB ? surNoir : surBlanc;
+    } else {
+      bgAffiche = composer([255,255,255]); ratio = rapport(bgAffiche);
     }
-    const L1 = lum(fg.slice(0,3)), L2 = lum(bg);
-    const ratio = (Math.max(L1,L2)+.05)/(Math.min(L1,L2)+.05);
+    bg = bgAffiche;
     const fs2 = parseFloat(st.fontSize);
     const big = fs2 >= 24 || (fs2 >= 18.66 && +st.fontWeight >= 700);
     const need = big ? 3 : 4.5;
