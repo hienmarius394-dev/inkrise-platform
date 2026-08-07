@@ -362,6 +362,28 @@ function semer() {
   cas('se déclarer administrateur', TIERS,
       `UPDATE profiles SET is_admin=true WHERE id='${TIERS}';`, 'refusé', 'grave');
 
+  /* ══ Longueur des textes écrits par les gens ══
+     Le `maxlength` du formulaire ne protège que la saisie : une requête
+     directe le contourne. Un pseudo de soixante caractères sans espaces
+     étirait la page du profil de 311px et celle de l'auteur de 980px. Le
+     CSS le coupe désormais, mais la borne doit exister ici aussi. */
+  console.log('\n▶ Un pseudo à rallonge est refusé par la base');
+  cas('un pseudo de 24 caractères passe', LECTEUR,
+      `UPDATE profiles SET username='${'a'.repeat(24)}' WHERE id='${LECTEUR}';`,
+      'permis', 'moyen');
+  cas('un pseudo de 25 caractères est refusé', LECTEUR,
+      `UPDATE profiles SET username='${'b'.repeat(25)}' WHERE id='${LECTEUR}';`,
+      'refusé', 'moyen');
+  cas('  et un de soixante aussi', LECTEUR,
+      `UPDATE profiles SET username='${'c'.repeat(60)}' WHERE id='${LECTEUR}';`,
+      'refusé', 'moyen');
+  cas('une bio de plus de 500 caractères est refusée', LECTEUR,
+      `UPDATE profiles SET bio='${'d'.repeat(501)}' WHERE id='${LECTEUR}';`,
+      'refusé', 'moyen');
+  cas('un titre de manga de plus de 80 caractères est refusé', AUTEUR,
+      `UPDATE mangas SET titre='${'e'.repeat(81)}' WHERE auteur_id='${AUTEUR}';`,
+      'refusé', 'moyen');
+
   /* ══ Les notifications viennent-elles bien des déclencheurs ? ══
      Fermer la politique ne suffit pas : si les gestes correspondants ne
      produisent plus rien, on a troqué une faille contre un silence. */

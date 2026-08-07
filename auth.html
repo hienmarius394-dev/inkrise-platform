@@ -487,8 +487,13 @@ body::after {
       </div>
       <div class="field">
         <label for="signupUsername">Nom d'utilisateur</label>
+        <!-- Aucune limite jusqu'ici : un pseudo de soixante caractères
+             étirait la page du profil de 311px et celle de l'auteur de
+             980px. Le CSS le coupe désormais, mais mieux vaut ne pas en
+             arriver là. La vraie garantie est côté base (CHECK), celle-ci
+             ne fait qu'éviter la saisie. -->
         <input type="text" id="signupUsername" placeholder="ton_pseudo" autocomplete="username"
-               oninput="checkUsername()" aria-describedby="usernameHint" />
+               maxlength="24" oninput="checkUsername()" aria-describedby="usernameHint" />
         <div id="usernameHint" role="status" aria-live="polite"
              style="display:none;font-size:12px;margin-top:6px;"></div>
       </div>

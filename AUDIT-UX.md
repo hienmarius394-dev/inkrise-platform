@@ -1378,6 +1378,76 @@ pages, **tout déplié**. Éprouvé en rétrécissant le bouton ✕ : trois
 
 ---
 
+## 7.17 Personne n'est obligé d'écrire court
+
+Trois pistes suivies, deux qui ont payé.
+
+### 320 px — l'iPhone SE et les Android d'entrée de gamme
+
+C'est à **390 px** qu'on avait trouvé le bouton de menu hors de l'écran
+(§7.15). La marge y était donc déjà nulle — or beaucoup de téléphones
+sont plus étroits. La sonde balaie désormais **320, 390 et 1280**.
+
+Résultat immédiat : sur `upload-manga.html` — la page où tes créateurs
+publient — le titre du chapitre et le bouton de fichier sortaient de
+l'écran de 6 px. Piège classique de flexbox : `flex: 1` **sans**
+`min-width: 0` ne rétrécit pas sous la largeur minimale de son contenu.
+
+### Les textes longs — 108 débordements
+
+`outil-injection` empoisonne chaque champ avec du **balisage**. Personne
+n'avait jamais essayé la **longueur**. Or rien, nulle part, n'obligeait
+qui que ce soit à écrire court : `username` était un `TEXT` sans borne,
+sans `maxlength` au formulaire ni contrainte en base.
+
+`INKRISE_LONG=1` rejoue tout le balayage avec des textes longs **et sans
+espaces** — le pire cas pour une mise en page. Verdict : **108
+débordements**. Un pseudo de soixante caractères étirait la page du
+profil de **311 px** et celle d'un auteur de **980 px**. La page entière
+partait avec.
+
+**Une ligne a réglé 102 d'entre eux :**
+
+```css
+body { overflow-wrap: anywhere; }
+```
+
+`anywhere` plutôt que `break-word` : les deux coupent un mot trop long,
+mais **seul `anywhere` réduit aussi la largeur minimale de l'élément**.
+Sans cela, un enfant de flexbox refuse de rétrécir sous son plus long
+mot, et c'est la page entière qui déborde. La propriété s'hérite : une
+seule déclaration couvre le site.
+
+Les six derniers venaient de `gestion-chapitres.html`, et méritent un
+mot. Sous 600 px, son en-tête passe en `flex-direction: column` avec
+`align-items: flex-start`. **En colonne, la largeur devient l'axe
+transverse** : `flex-start` fait alors prendre aux enfants la largeur de
+leur *contenu*, et `min-width: 0` n'y peut rien puisque la contrainte a
+changé d'axe. `align-items: stretch` les garde à la largeur du
+conteneur, le texte restant aligné à gauche.
+
+### Et la borne, elle, doit vivre en base
+
+Le CSS coupe désormais les mots, mais rien n'empêchait d'écrire cinq
+mille caractères. Les titres avaient déjà `maxlength="80"` ; **le pseudo
+— le champ le plus affiché du site — n'avait aucune limite**, ni à
+l'inscription ni à l'édition du profil.
+
+`maxlength` ne protège que la saisie : une requête directe le contourne.
+D'où quatre contraintes `CHECK` sur `profiles.username` (2–24),
+`profiles.bio` (500), `mangas.titre` (80) et `packs_tutoriels.titre`
+(80).
+
+Elles sont posées **`NOT VALID`** : la contrainte s'applique à toute
+écriture future mais ne relit pas les lignes déjà en place. Sans cela un
+pseudo existant trop long ferait échouer la commande — et le tronquer
+risquerait de créer un doublon, puisque `username` est `UNIQUE`.
+
+Le refus est prouvé, pas supposé : cinq cas de plus dans `outil-rls.js`,
+sur un vrai PostgreSQL. 24 caractères passent, 25 sont refusés.
+
+---
+
 ## Annexe — méthode
 
 ```bash
@@ -1385,8 +1455,10 @@ npm test                       # 559/559 ✅  (24 suites)
 node tests/outil-contraste.js  # 21 pages RÉELLEMENT atteintes, session simulée
 INKRISE_THEME=sombre \
   node tests/outil-contraste.js   # le même relevé, en thème sombre
-node tests/outil-invisible.js  # 0 défaut silencieux
-node tests/outil-rls.js        # 60/60 — PostgreSQL réel, schéma chargé
+node tests/outil-invisible.js  # 0 défaut silencieux — 320, 390 et 1280px
+INKRISE_LONG=1 \
+  node tests/outil-invisible.js   # le même, avec des textes longs et insécables
+node tests/outil-rls.js        # 65/65 — PostgreSQL réel, schéma chargé
 node tests/outil-injection.js  # 0 contenu utilisateur hors de son cadre
 node tests/outil-panne.js      # 0 page muette sur 42 combinaisons
 npm test -- veille             # 16/16 — écran maintenu allumé
