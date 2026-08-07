@@ -359,10 +359,11 @@ hors-ligne. Bon socle. Absents :
 - ~~plein écran (`requestFullscreen` : 0 occurrence)~~ **✅ livré** (§7.4),
 - ~~zoom / pincement~~ **✅ livré** (§7.4),
 - ~~`wakeLock` — l'écran s'éteint pendant une lecture longue en mode vertical~~ **✅ livré** (§7.3),
+- ~~double page sur tablette et ordinateur~~ **✅ livré** (§7.11),
+- ~~défilement automatique pour le webtoon~~ **écarté**, avec raisons (§7.11),
 - ajustement de la luminosité,
-- double page sur tablette et ordinateur,
-- signets sur une page précise,
-- défilement automatique pour le webtoon.
+- signets sur une page précise — la reprise de lecture couvre déjà
+  l'essentiel du besoin, et un vrai signet demanderait une table de plus.
 
 ### 2.9 ✅ ~~La modération est une liste, pas un outil~~ — **livré** (§7.5)
 
@@ -1017,19 +1018,84 @@ site.
 
 ---
 
+## 7.11 Lecteur — deux planches à la fois, et un défilement automatique écarté
+
+Sur un écran de 1280 px, une planche seule au milieu laissait les deux
+tiers de la largeur vides. Or un manga papier se lit **par paires** : la
+mise en page des auteurs est souvent pensée pour la double page, et la
+lire planche par planche coupe des cases qui se répondent d'une page à
+l'autre.
+
+Trois pièges, chacun tenu par une vérification :
+
+**Le sens de lecture.** En manga japonais (`sens_lecture = 'rl'`), la
+planche de gauche vient *après* celle de droite. L'ordre logique ne
+change pas — la planche 1 reste la planche 1 — c'est l'ordre *visuel*
+qui s'inverse. Le CSS s'en charge (`flex-direction: row-reverse`) sans
+toucher au DOM. Le test ne se fie donc pas à l'ordre des éléments : il
+trie les images par leur `getBoundingClientRect().left` réel, seul juge
+de ce qu'on voit vraiment.
+
+**Le pas.** Avancer d'une planche en mode double décale la paire d'un
+cran : on relit à chaque fois la moitié de ce qu'on vient de voir. Un
+`pas()` qui vaut 2 en double et 1 sinon, appliqué aussi à la désactivation
+du bouton « suivant ».
+
+**Le zoom.** Le pincement livré la veille agrandissait `#pageImg`. Avec
+deux images, transformer chacune de son côté séparerait la paire au fur
+et à mesure de l'agrandissement. La transformation s'applique désormais
+au conteneur `#pageZoom` ; les deux planches n'ont aucune transformation
+propre, et le test le vérifie en lisant leur matrice calculée.
+
+Trois garde-fous complètent l'ensemble : sous 900 px la double page se
+désactive d'elle-même (et le bouton disparaît), y compris **en cours de
+lecture** si l'on tourne la tablette ; un chapitre à nombre impair de
+planches montre la dernière seule plutôt que de casser une image ou de
+rendre la fin inatteignable ; et en lecture verticale, où la notion de
+paire n'a aucun sens, le bouton n'existe pas.
+
+**Défilement automatique — écarté.** Il figurait au backlog ; à
+l'examen, il ne tient pas :
+
+- le bouton d'arrêt vivrait dans la barre du bas, **qui se masque
+  justement pendant le défilement** — on ne peut pas arrêter ce qu'on ne
+  voit plus ;
+- il lutte en permanence contre le lecteur : la moindre impulsion du
+  doigt le combat au lieu de le suspendre ;
+- **aucune vitesse n'est bonne** : une planche de dialogue et une double
+  page muette ne se lisent pas au même rythme, et un réglage de vitesse
+  est un aveu que le réglage automatique a échoué ;
+- il encombre une barre qui compte déjà six commandes ;
+- combiné à l'écran maintenu allumé (§7.3), il vide la batterie d'un
+  téléphone qui continuerait de défiler dans une poche.
+
+Ce que l'on voulait vraiment — ne pas avoir à toucher l'écran toutes les
+trois secondes — est déjà couvert par le mode vertical, où l'on fait
+défiler d'un geste continu.
+
+**Ce que le test a corrigé chez lui :** aucun échec au premier passage,
+ce qui est en soi suspect. Les trois défauts que la suite prétend
+attraper ont donc été injectés un par un dans `lecteur.html` — pas de 1,
+`row-reverse` retiré, seuil de largeur abaissé à 100 px. Ils ont fait
+tomber respectivement 3, 1 et 4 vérifications. Une suite qui n'a jamais
+échoué n'a rien prouvé.
+
+---
+
 ## Annexe — méthode
 
 ```bash
-npm test                       # 347/347 ✅  (14 suites)
+npm test                       # 500/500 ✅  (22 suites)
 node tests/outil-contraste.js  # 0 couple sous le seuil, clair et sombre
 node tests/outil-invisible.js  # 0 défaut silencieux
-node tests/outil-rls.js        # 41/41 — PostgreSQL réel, schéma chargé
+node tests/outil-rls.js        # 60/60 — PostgreSQL réel, schéma chargé
 node tests/outil-injection.js  # 0 contenu utilisateur hors de son cadre
 node tests/outil-panne.js      # 0 page muette sur 42 combinaisons
 npm test -- veille             # 16/16 — écran maintenu allumé
 npm test -- confort            # 21/21 — plein écran et zoom
-npm test -- moderation         # 24/24 — masquer, rétablir, classer
-npm test -- vues               # 12/12 — lectures comptées, y compris sans compte
+npm test -- double-page        # 23/23 — paires, sens de lecture, repli
+npm test -- moderation         # 29/29 — masquer, rétablir, classer
+npm test -- vues               # 15/15 — lectures comptées, y compris sans compte
 npm test -- decouverte         # 17/17 — créateurs et genres accessibles
 npm test -- lecture            # 18/18 — profil de lecteur
 npm test -- inscription        # 14/14 — consentement CGU, crochet Google

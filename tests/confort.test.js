@@ -60,13 +60,15 @@ async function ouvrir(b, { sansPleinEcran = false } = {}) {
   return { ctx, p };
 }
 
-/* Facteur d'échelle réellement appliqué, lu dans la matrice calculée. */
+/* Facteur d'échelle réellement appliqué, lu dans la matrice calculée.
+   La transformation porte sur le CONTENEUR (#pageZoom) et non sur l'image :
+   en double page, agrandir une seule des deux moitiés séparerait la paire. */
 const echelle = p => p.evaluate(() => {
-  const m = new DOMMatrixReadOnly(getComputedStyle(document.getElementById('pageImg')).transform);
+  const m = new DOMMatrixReadOnly(getComputedStyle(document.getElementById('pageZoom')).transform);
   return Math.round(m.a * 1000) / 1000;
 });
 const deplacement = p => p.evaluate(() => {
-  const m = new DOMMatrixReadOnly(getComputedStyle(document.getElementById('pageImg')).transform);
+  const m = new DOMMatrixReadOnly(getComputedStyle(document.getElementById('pageZoom')).transform);
   return { x: Math.round(m.e), y: Math.round(m.f) };
 });
 
@@ -171,7 +173,7 @@ console.log('\n▶ La planche ne peut pas sortir de l\'écran');
   const { ctx, p } = await ouvrir(b);
   p.on('pageerror',e=>errors.push(e.message));
   await tapDouble(p);
-  const large = await p.evaluate(()=>document.getElementById('pageImg').clientWidth);
+  const large = await p.evaluate(()=>document.getElementById('pageZoom').clientWidth);
   await p.evaluate(async () => {
     const el = document.getElementById('pagesViewer');
     const r = el.getBoundingClientRect();

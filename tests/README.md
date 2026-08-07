@@ -36,8 +36,18 @@ INKRISE_CHROME=/chemin/vers/chrome npm test
 | `communaute-fil` | Fil des créateurs suivis et onglet Découvrir sans `?id=` : filtrage, classement par activité, quatre états vides, non-régression du mur d'un créateur |
 | `avis-parametres` | Notes et avis sur les mangas (affichage, saisie, refus de noter sa propre œuvre), recommandations, page Paramètres, export RGPD, et effet réel du filtre 18+ sur les requêtes |
 | `push` | Le service worker face à un push complet, vide ou illisible ; et la page Paramètres selon que la clé VAPID est configurée ou non |
+| `pack` | Page d'un pack tutoriel : nom d'auteur réel, mention « paiement sécurisé » retirée quand rien n'est à payer, pas de formulaire d'avis sur son propre pack |
+| `formations` | Onglet Formations du profil : créations et achats séparés, chemin direct vers l'édition d'un pack |
+| `veille` | Écran maintenu allumé : quand le verrou est demandé, quand il ne l'est pas, et sa reprise au retour d'arrière-plan |
+| `confort` | Plein écran et zoom au pincement — la transformation réellement appliquée, pas la présence du code |
+| `double-page` | Deux planches côte à côte : sens de lecture (position mesurée à l'écran), pas de deux, zoom sur la paire entière, repli sous 900 px, nombre impair de planches |
+| `moderation` | `admin.html` : ce qu'elle montre du contenu signalé, ce qu'elle envoie, ce qu'elle fait des réponses |
+| `vues` | Comptage des lectures : ce que le navigateur envoie, quand, et son repli si la fonction serveur n'est pas encore déployée |
+| `decouverte` | Rangée de créateurs qui mène quelque part, genres visibles et cliquables, adresses partageables |
+| `lecture` | Onglet « Ma lecture » du profil : œuvres commencées et terminées, avis donnés, genres les plus lus, reprise |
+| `inscription` | Case CGU jamais pré-cochée et bloquante, bouton Google affiché seulement si le fournisseur est configuré |
 
-## Cinq outils de diagnostic (hors suites)
+## Six outils de diagnostic (hors suites)
 
 ```bash
 node tests/outil-invisible.js   # traque les défauts SILENCIEUX : liens morts,
