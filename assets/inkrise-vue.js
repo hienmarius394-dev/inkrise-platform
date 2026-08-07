@@ -35,18 +35,41 @@
     }
   }
 
+  /* Le site est déployé dès la fusion, alors que la mise à jour de la base
+     attend qu'on la lance à la main. Entre les deux, `enregistrer_vue`
+     n'existe pas encore — PostgREST répond alors PGRST202. Plutôt que de
+     ne plus rien compter du tout pendant cette fenêtre, on retombe sur
+     l'ancien chemin, qui reste valide : il ne compte que les personnes
+     connectées, mais c'est exactement ce que faisait le site avant. */
+  const FONCTION_ABSENTE = e =>
+    !!e && (e.code === 'PGRST202' ||
+            /find the function|does not exist/i.test(e.message || ''));
+
+  async function reserve(sb, mangaId) {
+    try {
+      const { data: { session } } = await sb.auth.getSession();
+      if (!session) return;                       // l'ancien chemin exigeait un compte
+      await sb.from('vues').upsert(
+        { manga_id: Number(mangaId), user_id: session.user.id },
+        { onConflict: 'manga_id,user_id', ignoreDuplicates: true }
+      );
+    } catch (e) { /* sans effet sur la lecture */ }
+  }
+
   /* Volontairement silencieuse : un compteur de vues n'a aucune raison
      d'interrompre une lecture. Le serveur écarte de lui-même l'auteur qui
      relit son œuvre et les empreintes fantaisistes. */
   async function compter(sb, mangaId) {
     if (!sb || !mangaId) return;
     try {
-      await sb.rpc('enregistrer_vue', {
+      const { error } = await sb.rpc('enregistrer_vue', {
         p_manga_id: Number(mangaId),
         p_empreinte: empreinte()
       });
+      if (FONCTION_ABSENTE(error)) await reserve(sb, mangaId);
     } catch (e) { /* sans effet sur la lecture */ }
   }
 
-  window.inkriseVue = { compter: compter, empreinte: empreinte };
+  window.inkriseVue = { compter: compter, empreinte: empreinte,
+                        fonctionAbsente: FONCTION_ABSENTE };
 })();

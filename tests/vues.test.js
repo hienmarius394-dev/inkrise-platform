@@ -143,6 +143,54 @@ console.log('\n▶ Le lecteur compte aussi, mais pas hors ligne');
   await ctx.close();
 }
 
+console.log('\n▶ Base pas encore à jour : on retombe sur l\'ancien chemin');
+{
+  /* Le site est déployé dès la fusion, la base est mise à jour à la main :
+     entre les deux, la fonction n'existe pas. Ne plus rien compter du tout
+     serait pire qu'avant. */
+  const ctx = await b.newContext({viewport:{width:390,height:844}});
+  const ecritures = [];
+  await ctx.addInitScript(u=>localStorage.setItem('sb-bsdcpwtimsgxcnaamwip-auth-token',
+    JSON.stringify({access_token:'t',refresh_token:'r',token_type:'bearer',
+      expires_at:Math.floor(Date.now()/1000)+9999,expires_in:9999,user:u})), U);
+  await ctx.route('https://fonts.googleapis.com/**',r=>r.fulfill({status:200,contentType:'text/css',body:''}));
+  await ctx.route('**/auth/v1/**',r=>r.fulfill({status:200,contentType:'application/json',
+    body:JSON.stringify({...U,aud:'authenticated'})}));
+  await ctx.route('**/rest/v1/**',r=>{
+    const req=r.request(), u=decodeURIComponent(req.url());
+    if (u.includes('/rpc/enregistrer_vue'))
+      return r.fulfill({status:404,contentType:'application/json',
+        body:JSON.stringify({code:'PGRST202',message:'Could not find the function'})});
+    if (u.includes('/vues') && req.method()==='POST') {
+      ecritures.push(JSON.parse(req.postData()||'{}'));
+      return r.fulfill({status:201,contentType:'application/json',body:'[]'});
+    }
+    if (req.method()!=='GET') return r.fulfill({status:200,contentType:'application/json',body:'[]'});
+    if (u.includes('/mangas')) {
+      const seul=(req.headers()['accept']||'').includes('vnd.pgrst.object');
+      return r.fulfill({status:200,contentType:'application/json',
+        body:JSON.stringify(seul?MANGA:[MANGA])});
+    }
+    if (u.includes('/chapitres')) return r.fulfill({status:200,contentType:'application/json',
+      body:JSON.stringify([{id:10,numero:1,titre:'Ch 1',manga_id:1,created_at:'2026-06-01T10:00:00Z'}])});
+    return r.fulfill({status:200,contentType:'application/json',body:'[]'});
+  });
+  await ctx.route('**/storage/v1/**',r=>r.fulfill({status:200,contentType:'application/json',body:'[]'}));
+  const p = await ctx.newPage();
+  const erreursPage = [];
+  p.on('pageerror', e => erreursPage.push(e.message));
+  await p.goto(BASE + '/manga.html?id=1');
+  await p.waitForTimeout(2600);
+  check('fonction absente : la lecture est comptée par l\'ancien chemin',
+    ecritures.length === 1, JSON.stringify(ecritures));
+  check('  au nom du lecteur connecté',
+    ecritures[0] && ecritures[0].user_id === 'u1', JSON.stringify(ecritures[0]));
+  check('  et la page ne s\'en trouve pas cassée',
+    /Darkworld/.test(await p.locator('body').innerText()) && erreursPage.length === 0,
+    erreursPage[0] || '');
+  await ctx.close();
+}
+
 console.log('\n▶ Un compteur ne casse jamais une lecture');
 {
   const ctx = await b.newContext({viewport:{width:390,height:844}});
