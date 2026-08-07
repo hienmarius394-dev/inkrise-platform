@@ -231,6 +231,22 @@
     .manga-feed-tag { font-size: 0.62rem; font-weight: 600; padding: 3px 9px; border-radius: 20px; background: var(--surface2); color: var(--muted); }
 
     /* ── CREATORS LIST ── */
+    /* Rangée de genres : les vingt genres n'existaient que dans un menu
+       déroulant replié — personne ne les voyait, et rien n'invitait à en
+       explorer un. */
+    .genres-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 22px; }
+    .genre-chip {
+      font-size: .8rem; font-weight: 700; padding: 6px 14px; border-radius: 20px;
+      background: var(--surface); border: 1px solid var(--border);
+      color: var(--muted); text-decoration: none; transition: all .2s;
+    }
+    .genre-chip:hover, .genre-chip:focus-visible {
+      border-color: var(--purple); color: var(--purple-link);
+      background: rgba(124,92,252,.07);
+    }
+    .genre-chip[aria-current="page"] {
+      background: rgba(124,92,252,.07); border-color: var(--purple); color: var(--purple-link);
+    }
     .creators-list { display: flex; flex-direction: column; gap: 12px; }
     .creator-card {
       display: flex; align-items: center; gap: 16px;
@@ -442,6 +458,9 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDrawer(
 // ── SEARCH LOGIC ──
 const params = new URLSearchParams(window.location.search);
 const query  = params.get('q') || '';
+/* `?vue=createurs` donne enfin une destination au « Voir tout → » de la
+   rangée de créateurs de l'accueil, qui ne menait nulle part. */
+const vue    = params.get('vue') || '';
 
 function escapeHtml(s) {
   return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -665,15 +684,81 @@ async function chargerPreferenceAdulte() {
   } catch (e) { /* réglage indisponible : on n'invente pas de filtre */ }
 }
 
+/* Vue « tous les créateurs » : une page à part entière, avec sa propre
+   adresse. Seuls ceux qui ont publié quelque chose y figurent — un profil
+   créateur vide n'a rien à montrer. */
+async function afficherCreateurs() {
+  const wrap = document.getElementById('mainContent');
+  document.getElementById('heroTitle').innerHTML = '🧑‍🎨 Les créateurs';
+  document.title = 'Les créateurs — Inkrise';
+  document.getElementById('filtersBar').style.display = 'none';
+  wrap.innerHTML = '<div class="page-loading"><div class="loading-ring"></div>' +
+    '<span>Chargement des créateurs…</span></div>';
+
+  const [mangasRes, packsRes] = await Promise.all([
+    sb.from('mangas').select('auteur_id').neq('statut', 'brouillon'),
+    sb.from('packs_tutoriels').select('auteur_id'),
+  ]);
+  if (mangasRes.error && packsRes.error) {
+    console.error('Créateurs :', mangasRes.error || packsRes.error);
+    wrap.innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div>' +
+      '<div class="empty-title">Chargement impossible</div>' +
+      '<div class="empty-sub">Le serveur n\'a pas répondu. Vérifie ta connexion et réessaie.</div></div>';
+    return;
+  }
+  const ids = [...new Set([...(mangasRes.data || []), ...(packsRes.data || [])]
+    .map(x => x.auteur_id).filter(Boolean))];
+  if (!ids.length) {
+    wrap.innerHTML = '<div class="empty-state"><div class="empty-icon">🧑‍🎨</div>' +
+      '<div class="empty-title">Aucun créateur pour l\'instant</div>' +
+      '<div class="empty-sub">Publie une œuvre et tu seras le premier.</div>' +
+      '<a href="upload-manga.html" class="btn-reset-filters" style="margin-top:14px;display:inline-block;">Publier un manga</a></div>';
+    return;
+  }
+  const { data: profils } = await sb.from('profiles')
+    .select('*').in('id', ids).order('created_at', { ascending: true });
+  const liste = profils || [];
+  wrap.innerHTML =
+    '<div class="section-block"><div class="section-header">' +
+      '<div class="section-title">🧑‍🎨 Créateurs</div>' +
+      '<span class="section-count">' + liste.length +
+        (liste.length > 1 ? ' créateurs' : ' créateur') + '</span>' +
+    '</div><div class="creators-list">' + renderCreators(liste) + '</div></div>';
+}
+
+/* Les genres ne vivaient que dans un menu déroulant replié : aucun visiteur
+   ne tombait dessus par hasard. */
+function rangeeGenres() {
+  const actuel = filters.genre;
+  const lien = (libelle, valeur) => {
+    const p = new URLSearchParams();
+    if (query) p.set('q', query);
+    if (valeur) p.set('genre', valeur);
+    return '<a class="genre-chip" href="recherche.html' +
+      (p.toString() ? '?' + p.toString() : '') + '"' +
+      (valeur === actuel ? ' aria-current="page"' : '') + '>' + escapeHtml(libelle) + '</a>';
+  };
+  return '<nav class="genres-bar" aria-label="Parcourir par genre">' +
+    lien('Tous', '') + GENRES.map(g => lien(g, g)).join('') + '</nav>';
+}
+
+function titreCatalogue(browseAll, total) {
+  const compte = typeof total === 'number'
+    ? ` <span style="color:var(--muted);font-size:.85rem;font-weight:600;">(${total})</span>` : '';
+  if (!browseAll) return `Résultats pour <em>« ${escapeHtml(query)} »</em>${compte}`;
+  return (filters.genre ? `📖 ${escapeHtml(filters.genre)}` : '📖 Tous les mangas') + compte;
+}
+
 async function doSearchPage() {
   const wrap = document.getElementById('mainContent');
+  if (vue === 'createurs') { await afficherCreateurs(); return; }
   const browseAll = !query;
   await chargerPreferenceAdulte();
   initFilters();
 
   if (browseAll) {
-    document.getElementById('heroTitle').innerHTML = `📖 Tous les mangas`;
-    document.title = 'Mangas — Inkrise';
+    document.getElementById('heroTitle').innerHTML = titreCatalogue(true);
+    document.title = (filters.genre ? filters.genre + ' — ' : '') + 'Mangas — Inkrise';
   } else {
     document.getElementById('heroTitle').innerHTML = `Résultats pour <em>« ${escapeHtml(query)} »</em>`;
     document.getElementById('heroSearchInput').value = query;
@@ -772,12 +857,13 @@ async function doSearchPage() {
       </div>`;
   }
 
+  /* Le titre est posé deux fois : avant le chargement, puis une fois le
+     total connu. La deuxième écrasait la première et faisait disparaître
+     le nom du genre parcouru — d'où une seule fonction pour les deux. */
   const total = mangaList.length + profilList.length + packList.length;
-  document.getElementById('heroTitle').innerHTML = browseAll
-    ? `📖 Tous les mangas <span style="color:var(--muted);font-size:.85rem;font-weight:600;">(${total})</span>`
-    : `Résultats pour <em>« ${escapeHtml(query)} »</em> <span style="color:var(--muted);font-size:.85rem;font-weight:600;">(${total})</span>`;
+  document.getElementById('heroTitle').innerHTML = titreCatalogue(browseAll, total);
 
-  wrap.innerHTML = html;
+  wrap.innerHTML = rangeeGenres() + html;
   updateCount();
   const more = document.getElementById('btnLoadMore');
   if (more) more.addEventListener('click', () => loadMoreMangas(more));

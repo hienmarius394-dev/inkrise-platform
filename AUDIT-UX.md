@@ -302,10 +302,13 @@ travail, c'est le frein le plus direct.
 - **Aucun commentaire sur la fiche manga** : `manga.html` n'a que Synopsis /
   Genres / Chapitres. Les commentaires (`from('commentaires')`) n'existent que
   dans le lecteur, par chapitre — donc invisibles pour qui n'a pas encore lu.
-- **Aucune page par genre** : les 20 genres ne sont qu'un `<select>`. Pas
-  d'URL `/genre/action`, donc rien à partager ni à indexer.
-- **Aucune page « tous les créateurs »** : la rangée d'avatars de l'accueil est
-  limitée à 12 et ne mène nulle part.
+- ~~**Aucune page par genre**~~ **✅ livré** (§7.7) : rangée de genres visible
+  sans dérouler de menu, chacun à une adresse partageable
+  (`recherche.html?genre=Action`), et les genres d'une fiche manga sont
+  devenus des liens.
+- ~~**Aucune page « tous les créateurs »**~~ **✅ livré** (§7.7) :
+  `recherche.html?vue=createurs`, atteinte depuis le « Voir tout → » de
+  l'accueil.
 
 ### 2.5 🟠 Le premier écran d'un site jeune est décourageant **[vérifié — capture avec base vide]**
 
@@ -898,6 +901,38 @@ personne. Ajoutée à la politique de confidentialité.
 
 ---
 
+## 7.7 Découverte — deux culs-de-sac rouverts
+
+Sans SQL, volontairement : deux blocs restaient à exécuter côté base, il
+n'était pas raisonnable d'en ajouter un troisième.
+
+**La rangée de créateurs de l'accueil ne menait nulle part.** Elle
+s'arrête à douze ; au treizième, plus personne n'était visible depuis la
+page d'accueil. Elle a maintenant un « Voir tout → » vers
+`recherche.html?vue=createurs`, qui liste ceux ayant réellement publié —
+un profil créateur vide n'a rien à montrer.
+
+**Les vingt genres n'existaient que dans un menu déroulant replié.**
+Personne ne tombait dessus par hasard, et une fiche manga affichait
+« Action » sans qu'on puisse cliquer. Deux changements :
+
+- une rangée de genres en tête du catalogue, chacun à une adresse
+  partageable et indexable (`recherche.html?genre=Action`) ;
+- les genres d'une fiche manga sont devenus des liens vers cette même
+  adresse.
+
+Un détail de mise en œuvre : sur les **cartes** de résultat, les genres
+restent de simples étiquettes. La carte entière est déjà un lien, et un
+lien dans un lien est du HTML invalide que le navigateur défait
+silencieusement. La suite le vérifie (`a a` doit rester à zéro).
+
+**Ce que le test a trouvé :** le titre de page est posé deux fois — avant
+le chargement, puis une fois le total connu. La seconde écrasait la
+première et effaçait le nom du genre parcouru. Les deux passent désormais
+par la même fonction, pour que ça ne redérive pas.
+
+---
+
 ## Annexe — méthode
 
 ```bash
@@ -911,6 +946,7 @@ npm test -- veille             # 16/16 — écran maintenu allumé
 npm test -- confort            # 21/21 — plein écran et zoom
 npm test -- moderation         # 24/24 — masquer, rétablir, classer
 npm test -- vues               # 12/12 — lectures comptées, y compris sans compte
+npm test -- decouverte         # 17/17 — créateurs et genres accessibles
 node tests/outil-chasse.js     # 21 pages × 2 états
 URLS=… MODES=… node tests/_txt.js   # texte visible de chaque page, à relire
 ```

@@ -317,7 +317,11 @@
       font-size: 0.78rem; font-weight: 600;
       padding: 5px 12px; border-radius: 20px;
       background: var(--surface2); border: 1px solid var(--border);
-      color: var(--muted);
+      color: var(--muted); text-decoration: none; transition: all .2s;
+    }
+    .genre-tag:hover, .genre-tag:focus-visible {
+      border-color: var(--purple); color: var(--purple-link);
+      background: rgba(124,92,252,.07);
     }
 
     /* ── CHAPITRES LIST ── */
@@ -892,9 +896,15 @@ function renderManga() {
   if (manga.genres && manga.genres.length > 0) {
     document.getElementById('genresCard').style.display = 'block';
     const list = document.getElementById('genresList');
+    /* Les genres étaient de simples étiquettes : on lisait « Action » sans
+       pouvoir en voir d'autres. Chacun mène maintenant au catalogue filtré,
+       à une adresse partageable. */
     manga.genres.forEach(g => {
-      const tag = document.createElement('span');
-      tag.className = 'genre-tag'; tag.textContent = g;
+      const tag = document.createElement('a');
+      tag.className = 'genre-tag';
+      tag.href = 'recherche.html?genre=' + encodeURIComponent(g);
+      tag.textContent = g;
+      tag.title = 'Voir tous les mangas « ' + g + ' »';
       list.appendChild(tag);
     });
   }
