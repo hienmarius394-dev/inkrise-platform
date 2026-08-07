@@ -63,10 +63,12 @@ Inkrise = plateforme pour artistes manga/webtoon :
 
 ## Backlog
 
-1. **Page « tous les créateurs »** — la rangée de l'accueil est limitée à 12
-   et ne mène nulle part.
-2. **Pages par genre** — les 20 genres ne sont qu'un `<select>` : pas d'URL
-   partageable ni indexable.
+~~1. **Page « tous les créateurs »**~~ — ✅ livré :
+   `recherche.html?vue=createurs`, atteinte depuis le « Voir tout → » de
+   l'accueil.
+~~2. **Pages par genre**~~ — ✅ livré : rangée de genres visible sans
+   dérouler de menu, adresses partageables (`recherche.html?genre=Action`),
+   et genres cliquables sur les fiches manga.
 3. **Confort du lecteur** — double page sur tablette, signets, défilement
    automatique pour le webtoon. *(Écran maintenu allumé, plein écran et
    zoom : ✅ livrés.)*
