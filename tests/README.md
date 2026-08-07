@@ -46,6 +46,7 @@ INKRISE_CHROME=/chemin/vers/chrome npm test
 | `decouverte` | Rangée de créateurs qui mène quelque part, genres visibles et cliquables, adresses partageables |
 | `lecture` | Onglet « Ma lecture » du profil : œuvres commencées et terminées, avis donnés, genres les plus lus, reprise |
 | `inscription` | Case CGU jamais pré-cochée et bloquante, bouton Google affiché seulement si le fournisseur est configuré |
+| `polices` | Aucune des 21 pages n'appelle un domaine Google ; les quatre familles sont réellement dessinées (largeur mesurée contre la fonte système) ; texte lisible si les fichiers ne répondent plus ; liste de préchargement du service worker vérifiée fichier par fichier |
 
 ## Six outils de diagnostic (hors suites)
 
@@ -63,7 +64,11 @@ node tests/outil-injection.js   # empoisonne chaque champ texte servi par
 node tests/outil-panne.js       # rejoue trois pannes (500, session expirée,
                                 # réseau coupé) et vérifie que chaque page
                                 # le dit à l'utilisateur
-node tests/outil-contraste.js   # relève tout texte sous le seuil de lisibilité
+node tests/outil-contraste.js   # relève tout texte sous le seuil de lisibilité.
+                                # Tourne AVEC une session : sans elle, les sept
+                                # pages protégées redirigent vers auth.html, qu'il
+                                # mesurait sept fois en croyant voir sept pages.
+                                # Il annonce désormais toute page non atteinte.
 INKRISE_THEME=sombre \
   node tests/outil-contraste.js   # le même relevé, en thème sombre
 node tests/outil-chasse.js      # parcourt les pages : erreurs JS, textes

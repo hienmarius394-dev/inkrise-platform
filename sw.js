@@ -9,7 +9,7 @@
    - planches téléchargées (cache "inkrise-pages", rempli par
      assets/inkrise-offline.js) : cache d'abord — lecture hors-ligne
    - tout le reste (API Supabase, autres origines) : jamais intercepté */
-const CACHE = 'inkrise-v10';
+const CACHE = 'inkrise-v11';
 const PAGES_CACHE = 'inkrise-pages';
 
 // Toute la « coquille » de l'app est mise en cache dès l'installation
@@ -26,9 +26,15 @@ const PRECACHE = [
   'creators-remuneration.html',
   'assets/inkrise-theme.css', 'assets/inkrise-theme.js', 'assets/inkrise-config.js', 'assets/supabase.js', 'assets/inkrise-nav.js', 'assets/inkrise-offline.js',
   'assets/inkrise-reseau.js', 'assets/inkrise-veille.js', 'assets/inkrise-vue.js',
-  'assets/inkrise-img.js', 'assets/legal.css',
+  'assets/inkrise-img.js', 'assets/legal.css', 'assets/inkrise-fonts.css',
   'assets/favicon.svg', 'assets/icon-192.png', 'assets/icon-512.png',
-  'manifest.webmanifest'
+  'manifest.webmanifest',
+  // Polices : seuls les fichiers « latin » sont préchargés. Ils couvrent
+  // la totalité de l'interface ; les variantes latin-ext ne servent qu'aux
+  // pseudos écrits avec des caractères d'Europe centrale, et le navigateur
+  // ne les réclame que dans ce cas — inutile de les embarquer d'office.
+  'assets/fonts/syne-latin.woff2', 'assets/fonts/dmsans-latin.woff2',
+  'assets/fonts/nunito-latin.woff2', 'assets/fonts/bebasneue-latin.woff2'
 ];
 
 self.addEventListener('install', (e) => {
@@ -111,10 +117,11 @@ self.addEventListener('fetch', (e) => {
     return;
   }
 
-  // Dépendances externes indispensables (librairie Supabase, polices Google) :
-  // cache-first pour qu'elles soient présentes hors-ligne. Sans ça,
-  // window.supabase n'existe pas et toutes les pages cassent hors connexion.
-  const EXT_HOSTS = ['cdn.jsdelivr.net', 'fonts.googleapis.com', 'fonts.gstatic.com'];
+  // Dernière dépendance externe : la librairie Supabase. Cache-first, sans
+  // quoi window.supabase n'existe pas et toutes les pages cassent hors
+  // connexion. (Les polices étaient ici aussi ; elles sont désormais
+  // servies par Inkrise et passent par la règle « assets » plus bas.)
+  const EXT_HOSTS = ['cdn.jsdelivr.net'];
   if (EXT_HOSTS.indexOf(url.hostname) !== -1) {
     e.respondWith(
       caches.open(CACHE).then(cache =>

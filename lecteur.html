@@ -15,10 +15,10 @@
   <meta property="og:description" content="Lecteur de mangas Inkrise." />
   <meta property="og:image" content="https://inkrise-platform.vercel.app/assets/hero-manga.jpg" />
   <meta name="twitter:card" content="summary_large_image" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="preconnect" href="https://bsdcpwtimsgxcnaamwip.supabase.co" />
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" href="assets/fonts/syne-latin.woff2" crossorigin />
+  <link rel="preload" as="font" type="font/woff2" href="assets/fonts/dmsans-latin.woff2" crossorigin />
+  <link rel="stylesheet" href="assets/inkrise-fonts.css" />
   <script src="assets/inkrise-offline.js"></script>
   <link rel="stylesheet" href="assets/inkrise-theme.css" />
   <script src="assets/inkrise-theme.js"></script>
@@ -349,11 +349,11 @@
     .sidebar-chap-item.current {
       background: rgba(124,111,239,0.15);
       border-color: rgba(124,111,239,0.3);
-      color: var(--purple2);
+      color: var(--purple-link);
     }
     .sidebar-chap-num {
       font-family: 'Syne', sans-serif; font-size: 0.68rem;
-      color: var(--purple2); display: block; margin-bottom: 2px;
+      color: var(--purple-link); display: block; margin-bottom: 2px;
     }
 
     /* ── END OF CHAPTER ── */
@@ -393,7 +393,7 @@
       display: inline-flex; align-items: center; gap: 6px;
       transition: all .25s; border: none;
     }
-    .btn-end.primary { background: var(--purple); color: #fff; }
+    .btn-end.primary { background: var(--purple-plein); color: #fff; }
     .btn-end.primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(124,111,239,0.4); }
     .btn-end.secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
     .btn-end.secondary:hover { border-color: var(--border); background: var(--surface); }
@@ -450,11 +450,11 @@
     .comment-textarea{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:.9rem;padding:12px;resize:vertical;min-height:80px;outline:none;transition:border-color .2s;}
     .comment-textarea:focus{border-color:var(--purple);}
     .comment-form-footer{display:flex;justify-content:flex-end;margin-top:10px;}
-    .btn-comment-submit{background:var(--purple);color:#fff;border:none;border-radius:8px;padding:9px 20px;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:700;cursor:pointer;transition:all .2s;}
+    .btn-comment-submit{background:var(--purple-plein);color:#fff;border:none;border-radius:8px;padding:9px 20px;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:700;cursor:pointer;transition:all .2s;}
     .btn-comment-submit:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(124,111,239,.4);}
     .btn-comment-submit:disabled{opacity:.5;cursor:not-allowed;transform:none;}
     .comment-login-prompt{text-align:center;padding:16px;background:var(--surface);border:1px solid var(--border);border-radius:12px;margin-bottom:24px;color:var(--muted);font-size:.9rem;}
-    .comment-login-prompt a{color:var(--purple2);text-decoration:none;font-weight:600;}
+    .comment-login-prompt a{color:var(--purple-link);text-decoration:none;font-weight:600;}
     .comment-login-prompt a:hover{text-decoration:underline;}
     .comments-list{display:flex;flex-direction:column;gap:16px;}
     .comment-item{display:flex;gap:12px;}
@@ -471,7 +471,7 @@
     .btn-like{display:flex;align-items:center;gap:4px;background:none;border:none;color:var(--muted);font-size:.78rem;cursor:pointer;padding:3px 8px;border-radius:6px;transition:all .2s;font-family:'DM Sans',sans-serif;}
     .btn-like:hover,.btn-like.liked{color:#e05;background:rgba(238,0,85,.08);}
     .btn-reply-action{background:none;border:none;color:var(--muted);font-size:.78rem;cursor:pointer;padding:3px 8px;border-radius:6px;transition:all .2s;font-family:'DM Sans',sans-serif;font-weight:600;}
-    .btn-reply-action:hover{color:var(--purple2);background:rgba(165,148,249,.08);}
+    .btn-reply-action:hover{color:var(--purple-link);background:rgba(165,148,249,.08);}
     .comment-replies{margin-top:12px;padding-left:20px;border-left:2px solid var(--border);display:flex;flex-direction:column;gap:12px;}
     .reply-form{margin-top:10px;display:none;gap:8px;}
     .reply-form.open{display:flex;}

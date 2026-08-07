@@ -14,10 +14,10 @@
   <meta property="og:description" content="Lis ce manga gratuitement sur Inkrise, la plateforme des créateurs de mangas et webtoons." />
   <meta property="og:image" content="https://inkrise-platform.vercel.app/assets/hero-manga.jpg" />
   <meta name="twitter:card" content="summary_large_image" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="preconnect" href="https://bsdcpwtimsgxcnaamwip.supabase.co" />
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" href="assets/fonts/syne-latin.woff2" crossorigin />
+  <link rel="preload" as="font" type="font/woff2" href="assets/fonts/dmsans-latin.woff2" crossorigin />
+  <link rel="stylesheet" href="assets/inkrise-fonts.css" />
   <link rel="stylesheet" href="assets/inkrise-theme.css" />
   <script src="assets/inkrise-theme.js"></script>
   <script src="assets/inkrise-reseau.js"></script>
@@ -108,10 +108,10 @@
       font-size: 0.72rem; font-weight: 700; padding: 3px 10px; border-radius: 20px;
       text-transform: uppercase; letter-spacing: 0.5px;
     }
-    .badge-statut-cours  { background: rgba(61,220,132,0.15); color: var(--green); border: 1px solid rgba(61,220,132,0.25); }
-    .badge-statut-fini   { background: rgba(124,111,239,0.15); color: var(--purple2); border: 1px solid rgba(124,111,239,0.25); }
-    .badge-statut-pause  { background: rgba(245,166,35,0.15); color: var(--amber); border: 1px solid rgba(245,166,35,0.25); }
-    .badge-adult { background: rgba(240,82,42,0.15); color: var(--accent); border: 1px solid rgba(240,82,42,0.25); }
+    .badge-statut-cours  { background: rgba(61,220,132,0.15); color: var(--success-link); border: 1px solid rgba(61,220,132,0.25); }
+    .badge-statut-fini   { background: rgba(124,111,239,0.15); color: var(--purple-link); border: 1px solid rgba(124,111,239,0.25); }
+    .badge-statut-pause  { background: rgba(245,166,35,0.15); color: var(--amber-link); border: 1px solid rgba(245,166,35,0.25); }
+    .badge-adult { background: rgba(240,82,42,0.15); color: var(--purple-link); border: 1px solid rgba(240,82,42,0.25); }
 
     .hero-title {
       font-family: 'Syne', sans-serif;
@@ -123,7 +123,7 @@
       font-size: 0.88rem; color: var(--muted); margin-bottom: 16px;
       display: flex; align-items: center; gap: 6px;
     }
-    .hero-author a { color: var(--purple2); text-decoration: none; font-weight: 600; }
+    .hero-author a { color: var(--purple-link); text-decoration: none; font-weight: 600; }
     .hero-author a:hover { text-decoration: underline; }
 
     .hero-stats {
@@ -175,7 +175,7 @@
     }
     .btn-subscribe:hover, .btn-subscribe.active {
       background: rgba(124,111,239,0.15);
-      border-color: var(--purple); color: var(--purple2);
+      border-color: var(--purple); color: var(--purple-link);
     }
     .btn-subscribe.active { background: rgba(124,111,239,0.2); }
 
@@ -187,7 +187,7 @@
       cursor: pointer; transition: all .25s;
     }
     .btn-like:hover, .btn-like.liked {
-          border-color: var(--accent); color: var(--accent);
+          border-color: var(--accent); color: var(--purple-link);
           background: rgba(240,82,42,0.1);
         }
 
@@ -199,7 +199,7 @@
           cursor: pointer; transition: all .25s;
         }
         .btn-library:hover, .btn-library.in-library {
-          border-color: var(--purple); color: var(--purple2);
+          border-color: var(--purple); color: var(--purple-link);
           background: rgba(124,111,239,0.12);
         }
         .btn-library.in-library { background: rgba(124,111,239,0.2); }
@@ -214,7 +214,7 @@
       cursor: pointer; transition: all .25s;
     }
     .btn-follow.visible { display: inline-flex; }
-    .btn-follow:hover, .btn-follow.following { border-color: var(--green); color: var(--green); background: rgba(61,220,132,0.1); }
+    .btn-follow:hover, .btn-follow.following { border-color: var(--green); color: var(--success-link); background: rgba(61,220,132,0.1); }
     .btn-follow.following { background: rgba(61,220,132,0.15); }
 
     /* Notif bell */
@@ -238,7 +238,7 @@
       display: none;
       align-items: center; gap: 6px;
       background: rgba(245,166,35,0.1); border: 1px solid rgba(245,166,35,0.3);
-      color: var(--amber); padding: 12px 18px; border-radius: 12px;
+      color: var(--amber-link); padding: 12px 18px; border-radius: 12px;
       font-family: 'DM Sans', sans-serif; font-size: 0.88rem; font-weight: 700;
       cursor: pointer; text-decoration: none; transition: all .2s;
     }
@@ -252,7 +252,7 @@
       font-family: 'DM Sans', sans-serif; font-size: 0.86rem; font-weight: 600;
       cursor: pointer; text-decoration: none; transition: all .2s;
     }
-    .btn-author-mini:hover { border-color: var(--purple); color: var(--purple2); background: rgba(124,111,239,0.08); }
+    .btn-author-mini:hover { border-color: var(--purple); color: var(--purple-link); background: rgba(124,111,239,0.08); }
     .author-mini-avatar {
       width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
       background: linear-gradient(135deg, var(--purple), var(--pink));
@@ -305,7 +305,7 @@
       -webkit-box-orient: vertical; overflow: hidden;
     }
     .btn-more {
-      background: none; border: none; color: var(--purple2);
+      background: none; border: none; color: var(--purple-link);
       font-size: 0.82rem; font-weight: 700; cursor: pointer;
       padding: 6px 0; margin-top: 8px;
       font-family: 'DM Sans', sans-serif;
@@ -343,7 +343,7 @@
 
     .chap-num-badge {
       font-family: 'Syne', sans-serif; font-size: 0.72rem; font-weight: 700;
-      color: var(--purple2); background: rgba(124,111,239,0.12);
+      color: var(--purple-link); background: rgba(124,111,239,0.12);
       padding: 3px 9px; border-radius: 6px; white-space: nowrap; flex-shrink: 0;
     }
     .chap-info { flex: 1; min-width: 0; }
@@ -353,7 +353,7 @@
     }
     .chap-date-small { font-size: 0.73rem; color: var(--muted); margin-top: 2px; }
     .chap-read-btn {
-      font-size: 0.78rem; font-weight: 700; color: var(--purple2);
+      font-size: 0.78rem; font-weight: 700; color: var(--purple-link);
       background: rgba(124,111,239,0.1); border: 1px solid rgba(124,111,239,0.2);
       padding: 5px 12px; border-radius: 7px; white-space: nowrap;
       transition: all .2s; flex-shrink: 0;
@@ -368,9 +368,9 @@
       cursor: pointer; flex-shrink: 0; font-family: 'DM Sans', sans-serif;
       transition: all .2s;
     }
-    .chap-dl-btn:hover { border-color: var(--purple2); color: var(--purple); }
+    .chap-dl-btn:hover { border-color: var(--purple2); color: var(--purple-link); }
     .chap-dl-btn.downloaded {
-      color: var(--green); border-color: rgba(61,220,132,0.4);
+      color: var(--success-link); border-color: rgba(61,220,132,0.4);
       background: rgba(61,220,132,0.1);
     }
     .chap-dl-btn:disabled { opacity: .7; cursor: default; }
@@ -459,9 +459,9 @@
       box-shadow: 0 8px 28px rgba(0,0,0,0.3);
     }
     .toast.show    { transform: translateY(0); opacity: 1; }
-    .toast.success { border-color: var(--green);  color: var(--green); }
-    .toast.error   { border-color: var(--accent); color: var(--accent); }
-    .toast.info    { border-color: var(--purple); color: var(--purple2); }
+    .toast.success { border-color: var(--green);  color: var(--success-link); }
+    .toast.error   { border-color: var(--accent); color: var(--purple-link); }
+    .toast.info    { border-color: var(--purple); color: var(--purple-link); }
 
     @media (max-width: 600px) {
       .hero-title { font-size: 1.6rem; }
@@ -952,7 +952,7 @@ let mesAvis = null;   // l'avis de la personne connectée, s'il existe
 
 function etoiles(note, taille) {
   const n = Math.round(Number(note) || 0);
-  return '<span style="color:var(--amber);letter-spacing:2px;font-size:' + (taille || '1rem') + ';" ' +
+  return '<span style="color:var(--amber-link);letter-spacing:2px;font-size:' + (taille || '1rem') + ';" ' +
          'aria-label="' + n + ' sur 5">' + '★'.repeat(n) + '☆'.repeat(5 - n) + '</span>';
 }
 
@@ -976,7 +976,7 @@ async function chargerAvis() {
     const moy = tous.reduce((s, a) => s + a.note, 0) / tous.length;
     resume.innerHTML =
       '<div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;">' +
-        '<div style="font-family:\'Syne\',sans-serif;font-size:2.4rem;font-weight:800;color:var(--amber);line-height:1;">' +
+        '<div style="font-family:\'Syne\',sans-serif;font-size:2.4rem;font-weight:800;color:var(--amber-link);line-height:1;">' +
           moy.toFixed(1) + '</div>' +
         '<div>' + etoiles(moy, '1.1rem') +
           '<div style="font-size:.8rem;color:var(--muted);margin-top:3px;">' +
@@ -1148,7 +1148,7 @@ async function chargerRecommandations() {
         ? '<img src="' + escHtml(m.couverture_url) + '" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover;" />'
         : '<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:1.8rem;">📖</div>';
       const note = (m.nb_avis > 0 && m.note_moyenne)
-        ? '<div style="font-size:.72rem;color:var(--amber);font-weight:700;margin-top:2px;">★ ' +
+        ? '<div style="font-size:.72rem;color:var(--amber-link);font-weight:700;margin-top:2px;">★ ' +
           Number(m.note_moyenne).toFixed(1) + '</div>' : '';
       return '<a href="manga.html?id=' + encodeURIComponent(m.id) + '" ' +
         'style="flex:0 0 108px;text-decoration:none;color:inherit;">' +
@@ -1188,7 +1188,7 @@ function renderChapitres() {
       <div class="chap-num-badge">Ch. ${chap.numero}</div>
       <div class="chap-info">
         <div class="chap-name">${escHtml(chap.titre) || `Chapitre ${chap.numero}`}</div>
-        <div class="chap-date-small">${date}${isNew ? ' · <span style="color:var(--purple2);font-weight:700;">Nouveau</span>' : ''}</div>
+        <div class="chap-date-small">${date}${isNew ? ' · <span style="color:var(--purple-link);font-weight:700;">Nouveau</span>' : ''}</div>
       </div>
       <button class="chap-dl-btn" title="${isDownloaded ? 'Téléchargé — appuie pour supprimer' : 'Télécharger pour lire hors-ligne'}">${isDownloaded ? '✅ Hors-ligne' : '📥 Télécharger'}</button>
       <div class="chap-read-btn">Lire →</div>

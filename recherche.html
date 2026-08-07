@@ -14,10 +14,10 @@
   <meta property="og:description" content="Explore le catalogue Inkrise : mangas, webtoons et BD publiés par la communauté." />
   <meta property="og:image" content="https://inkrise-platform.vercel.app/assets/hero-manga.jpg" />
   <meta name="twitter:card" content="summary_large_image" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="preconnect" href="https://bsdcpwtimsgxcnaamwip.supabase.co" />
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" href="assets/fonts/syne-latin.woff2" crossorigin />
+  <link rel="preload" as="font" type="font/woff2" href="assets/fonts/dmsans-latin.woff2" crossorigin />
+  <link rel="stylesheet" href="assets/inkrise-fonts.css" />
   <link rel="stylesheet" href="assets/inkrise-theme.css" />
   <script src="assets/inkrise-theme.js"></script>
   <script src="assets/inkrise-reseau.js"></script>
@@ -58,7 +58,7 @@
       font-family: 'Syne', sans-serif; font-size: 1.5rem; font-weight: 800;
       text-align: center; color: var(--text);
     }
-    .search-hero-title em { font-style: normal; color: var(--purple2); }
+    .search-hero-title em { font-style: normal; color: var(--purple-link); }
     .search-bar-large {
       display: flex; align-items: center; gap: 0;
       background: rgba(0,0,0,0.04); border: 1px solid rgba(0,0,0,0.1);
@@ -110,7 +110,7 @@
       cursor: pointer; font-family: 'DM Sans', sans-serif; min-height: 40px;
       transition: all .2s;
     }
-    .btn-reset-filters:hover { border-color: var(--purple); color: var(--purple); }
+    .btn-reset-filters:hover { border-color: var(--purple); color: var(--purple-link); }
     .filters-count {
       margin-left: auto; font-size: .82rem; color: var(--text-2); font-weight: 600;
       align-self: center; padding-bottom: 2px;
@@ -177,10 +177,10 @@
     .manga-card-title { font-weight: 700; font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 6px; }
     .manga-card-meta { display: flex; flex-wrap: wrap; gap: 4px; }
     .manga-statut { font-size: 0.68rem; font-weight: 700; padding: 2px 7px; border-radius: 6px; }
-    .manga-statut-en_cours { background: rgba(61,220,132,0.15); color: var(--green); }
-    .manga-statut-termine  { background: rgba(124,111,239,0.15); color: var(--purple2); }
+    .manga-statut-en_cours { background: rgba(61,220,132,0.15); color: var(--success-link); }
+    .manga-statut-termine  { background: rgba(124,111,239,0.15); color: var(--purple-link); }
     .manga-statut-pause,
-    .manga-statut-hiatus   { background: rgba(245,166,35,0.15); color: var(--amber); }
+    .manga-statut-hiatus   { background: rgba(245,166,35,0.15); color: var(--amber-link); }
     .manga-genre { font-size: 0.68rem; font-weight: 600; padding: 2px 7px; border-radius: 6px; background: var(--surface2); color: var(--muted); }
 
     /* ── MANGA FEED (grille compacte, plusieurs résultats visibles d'un coup) ── */
@@ -276,7 +276,7 @@
     .badge-creator {
       display: inline-flex; align-items: center; gap: 4px;
       background: rgba(124,111,239,0.15); border: 1px solid rgba(124,111,239,0.3);
-      color: var(--purple2); font-size: 0.65rem; font-weight: 800;
+      color: var(--purple-link); font-size: 0.65rem; font-weight: 800;
       padding: 2px 8px; border-radius: 20px;
       text-transform: uppercase; letter-spacing: 0.5px;
     }
@@ -511,7 +511,7 @@ function renderMangas(mangas) {
         <div class="manga-feed-title-row">
           <div class="manga-feed-title">${escapeHtml(m.titre || 'Sans titre')}</div>
           <div class="manga-feed-likes">${m.nb_avis > 0 && m.note_moyenne
-            ? `<span style="color:var(--amber);font-weight:700;">★ ${Number(m.note_moyenne).toFixed(1)}</span> · ` : ''}👁 ${m.vues || 0}</div>
+            ? `<span style="color:var(--amber-link);font-weight:700;">★ ${Number(m.note_moyenne).toFixed(1)}</span> · ` : ''}👁 ${m.vues || 0}</div>
         </div>
         <div class="manga-feed-synopsis">${synopsis}</div>
         <div class="manga-feed-tags">

@@ -1082,11 +1082,124 @@ tomber respectivement 3, 1 et 4 vérifications. Une suite qui n'a jamais
 
 ---
 
+## 7.12 Polices — deux allers-retours chez Google avant le premier mot
+
+Chaque page allait chercher ses polices chez Google : une requête vers
+`fonts.googleapis.com` pour obtenir la feuille de style, **puis** une
+seconde vers `fonts.gstatic.com` pour les fichiers eux-mêmes — deux
+connexions à un tiers, DNS et poignée de main TLS compris, avant que le
+premier mot ne soit dessiné dans la bonne fonte. Et l'adresse IP de
+chaque visiteur transmise à Google sans lui demander son avis, ce que le
+RGPD ne permet pas (le tribunal de Munich l'a jugé explicitement en 2022).
+
+Les quatre familles — Syne, DM Sans, Nunito, Bebas Neue — sont désormais
+dans `assets/fonts/`, déclarées par une seule feuille
+`assets/inkrise-fonts.css`.
+
+**Ce n'est pas plus lourd, c'est plus léger.** Google Fonts renvoie
+aujourd'hui des **versions variables** : un seul fichier couvre toute la
+plage de graisses d'une famille. Là où Syne 400→800 aurait demandé cinq
+fichiers, il en faut un. Total : huit fichiers, 200 Ko sur le disque,
+dont le navigateur ne réclame en pratique que la moitié — les variantes
+`latin-ext` ne partent que si la page contient vraiment un caractère qui
+les exige, ce dont `unicode-range` se charge.
+
+Le grec, le cyrillique et le vietnamien ne sont pas embarqués : un pseudo
+écrit dans ces alphabets s'affiche dans la police système — lisible,
+simplement pas dans la fonte de la maison. C'est un choix, pas un oubli ;
+les rajouter est mécanique (voir `assets/fonts/README.md`).
+
+Trois conséquences en plus de la vitesse : le service worker précharge
+les polices, donc elles survivent au hors-ligne ; les deux `preconnect`
+vers Google disparaissent de vingt et une pages ; et `sw.js` n'a plus
+qu'une seule dépendance externe, la librairie Supabase.
+
+**Relevé en passant :** `profil.html` déclarait `'Bebas Neue', cursive`.
+Si la police ne se charge pas, `cursive` donne une anglaise ou un Comic
+Sans — alors que Bebas Neue est une linéale condensée. Le repli est
+devenu `sans-serif`.
+
+**Ce que le test a corrigé chez lui :** la suite regardait quelles polices
+chaque page charge réellement, et déclarait Bebas Neue manquante sur
+`profil.html`. Elle avait tort : sans session, `profil.html` renvoie vers
+la connexion, donc rien n'y est jamais écrit en Bebas et la police reste
+légitimement `unloaded`. Les quatre familles sont désormais demandées
+explicitement puis mesurées à la largeur du texte rendu. Second défaut du
+test : `document.fonts.load()` **rejette** quand le fichier est
+introuvable — un nom erroné faisait planter la suite au lieu de la faire
+rougir.
+
+---
+
+## 7.13 L'outil de contraste mesurait `auth.html` sept fois
+
+C'est le plus gênant de tout l'audit, parce que ce n'est pas un défaut du
+site : c'est un défaut de la **mesure** qui a servi à déclarer le site
+sain. `node tests/outil-contraste.js` s'exécutait **déconnecté**. Or sept
+pages sur vingt et une — profil, bibliothèque, paramètres, espace
+créateur, upload, gestion des chapitres, admin — redirigent aussitôt vers
+`auth.html` quand il n'y a pas de session.
+
+L'outil mesurait donc `auth.html` sept fois de suite en croyant mesurer
+sept pages, et annonçait fièrement « 0 couple sous le seuil, sur 21
+pages ». Trois autres pages étaient visitées sans le paramètre qui les
+fait vivre (`manga.html` sans `?id=`, `lecteur.html` sans chapitre), donc
+mesurées à vide.
+
+Corrigé : session simulée, paramètres d'URL par page, `auth.html` mesurée
+dans son propre contexte déconnecté — et surtout **un contrôle qui dit
+tout haut quand une page n'a pas été atteinte**, au lieu de la compter
+comme mesurée. C'est la ligne qui manquait.
+
+Une fois l'outil réparé, il a relevé **seize couples fautifs en thème
+sombre et dix-sept en thème clair**, dont trois causes de fond :
+
+**Les cartes « verre dépoli » figées en blanc.** `background:
+rgba(255,255,255,0.6)` était écrit en dur dans `profil.html`,
+`upload-manga.html` et `gestion-chapitres.html`. Joli en thème clair ; en
+thème sombre, cela posait une carte **gris clair** sous du texte clair —
+2,32:1 pour « Tes genres », 1,43:1 pour « Supprimer mon compte ». Deux
+variables, `--carte` et `--carte-forte`, remplacent les quatorze
+déclarations.
+
+**Des couleurs de FOND employées comme couleur de TEXTE.** `--purple2`
+(`#a594f9`) est un violet pâle prévu pour des aplats et des dégradés ; il
+servait de couleur de texte cinquante fois, sur fond blanc, à 1,8–2,6:1.
+Même chose pour `--green` en « GRATUIT » et `--amber` sur les étoiles de
+notation. Le thème avait déjà les variantes prévues pour ça
+(`--purple-link`, `--success-link`) : elles valent exactement la teinte de
+fond **en thème sombre**, donc la bascule ne change rien au sombre et ne
+corrige que le clair. Il manquait `--amber-link`, ajoutée.
+
+*Conséquence visible, assumée :* en thème clair, les étoiles de notation
+passent d'un ambre vif à un ambre foncé. L'ambre vif était à 1,8:1 —
+décoratif, pas lisible.
+
+**Des aplats de marque trop clairs sous du texte blanc.** `--purple` est
+volontairement remonté en clarté dans le thème sombre pour rester lisible
+*en texte* ; posé *en fond* sous du blanc, il tombe à 2,96:1. D'où
+`--purple-plein` et `--danger-plein`, deux aplats assez sombres pour
+porter du blanc dans les deux thèmes.
+
+Reste, aux deux thèmes confondus, **un seul couple fautif** — sur
+`espace-createur.html`, que la fusion des tableaux de bord fait
+disparaître (§7.14).
+
+**Ce que le test a corrigé chez lui, deuxième fois :** j'ai ajouté
+`--purple-plein` au thème sombre en oubliant le thème clair. Le bouton
+« Publier » s'est retrouvé sans fond du tout — texte blanc sur fond de
+page, 1,12:1. L'outil réparé l'a signalé au passage suivant. C'est
+exactement ce qu'on lui demande.
+
+---
+
 ## Annexe — méthode
 
 ```bash
-npm test                       # 500/500 ✅  (22 suites)
-node tests/outil-contraste.js  # 0 couple sous le seuil, clair et sombre
+npm test                       # 519/519 ✅  (23 suites)
+node tests/outil-contraste.js  # 21 pages RÉELLEMENT atteintes, session simulée
+INKRISE_THEME=sombre \
+  node tests/outil-contraste.js   # le même relevé, en thème sombre
 node tests/outil-invisible.js  # 0 défaut silencieux
 node tests/outil-rls.js        # 60/60 — PostgreSQL réel, schéma chargé
 node tests/outil-injection.js  # 0 contenu utilisateur hors de son cadre
@@ -1094,6 +1207,7 @@ node tests/outil-panne.js      # 0 page muette sur 42 combinaisons
 npm test -- veille             # 16/16 — écran maintenu allumé
 npm test -- confort            # 21/21 — plein écran et zoom
 npm test -- double-page        # 23/23 — paires, sens de lecture, repli
+npm test -- polices            # 19/19 — polices auto-hébergées, 0 appel à Google
 npm test -- moderation         # 29/29 — masquer, rétablir, classer
 npm test -- vues               # 15/15 — lectures comptées, y compris sans compte
 npm test -- decouverte         # 17/17 — créateurs et genres accessibles

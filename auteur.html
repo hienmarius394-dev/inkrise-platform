@@ -14,10 +14,10 @@
   <meta property="og:description" content="Découvre ce créateur sur Inkrise : ses mangas, ses formations et sa communauté." />
   <meta property="og:image" content="https://inkrise-platform.vercel.app/assets/hero-manga.jpg" />
   <meta name="twitter:card" content="summary_large_image" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="preconnect" href="https://bsdcpwtimsgxcnaamwip.supabase.co" />
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" href="assets/fonts/syne-latin.woff2" crossorigin />
+  <link rel="preload" as="font" type="font/woff2" href="assets/fonts/dmsans-latin.woff2" crossorigin />
+  <link rel="stylesheet" href="assets/inkrise-fonts.css" />
   <link rel="stylesheet" href="assets/inkrise-theme.css" />
   <script src="assets/inkrise-theme.js"></script>
   <script src="assets/inkrise-reseau.js"></script>
@@ -108,7 +108,7 @@
     .badge-creator {
       display: none; align-items: center; gap: 5px;
       background: rgba(124,111,239,0.15); border: 1px solid rgba(124,111,239,0.3);
-      color: var(--purple2); font-size: 0.7rem; font-weight: 800;
+      color: var(--purple-link); font-size: 0.7rem; font-weight: 800;
       padding: 3px 10px; border-radius: 20px;
       text-transform: uppercase; letter-spacing: 0.5px;
     }
@@ -145,7 +145,7 @@
       font-family: 'DM Sans', sans-serif; font-size: 0.8rem; font-weight: 700;
       text-decoration: none; transition: all .2s;
     }
-    .author-social-link:hover { background: rgba(124,111,239,0.18); border-color: var(--purple); color: var(--purple2); }
+    .author-social-link:hover { background: rgba(124,111,239,0.18); border-color: var(--purple); color: var(--purple-link); }
     .author-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
     .btn-follow-author {
       display: none; align-items: center; gap: 7px;
@@ -155,8 +155,8 @@
       cursor: pointer; transition: all .25s;
     }
     .btn-follow-author.show { display: inline-flex; }
-    .btn-follow-author:hover { background: rgba(124,111,239,0.15); border-color: var(--purple); color: var(--purple2); }
-    .btn-follow-author.following { background: rgba(61,220,132,0.1); border-color: var(--green); color: var(--green); }
+    .btn-follow-author:hover { background: rgba(124,111,239,0.15); border-color: var(--purple); color: var(--purple-link); }
+    .btn-follow-author.following { background: rgba(61,220,132,0.1); border-color: var(--green); color: var(--success-link); }
     .btn-follow-author:disabled { opacity: 0.6; cursor: not-allowed; }
 
     /* ── MAIN WRAP ── */
@@ -217,10 +217,10 @@
     .manga-statut {
       font-size: 0.68rem; font-weight: 700; padding: 2px 7px; border-radius: 6px;
     }
-    .manga-statut-en_cours { background: rgba(61,220,132,0.15); color: var(--green); }
-    .manga-statut-termine  { background: rgba(124,111,239,0.15); color: var(--purple2); }
+    .manga-statut-en_cours { background: rgba(61,220,132,0.15); color: var(--success-link); }
+    .manga-statut-termine  { background: rgba(124,111,239,0.15); color: var(--purple-link); }
     .manga-statut-pause,
-    .manga-statut-hiatus   { background: rgba(245,166,35,0.15); color: var(--amber); }
+    .manga-statut-hiatus   { background: rgba(245,166,35,0.15); color: var(--amber-link); }
     .manga-genre {
       font-size: 0.68rem; font-weight: 600; padding: 2px 7px; border-radius: 6px;
       background: var(--surface2); color: var(--muted);
@@ -244,9 +244,9 @@
       max-width: 280px;
     }
     .toast.show    { transform: translateY(0); opacity: 1; }
-    .toast.success { border-color: var(--green);  color: var(--green); }
+    .toast.success { border-color: var(--green);  color: var(--success-link); }
     .toast.error   { border-color: #ff3d71; color: #ff3d71; }
-    .toast.info    { border-color: var(--purple); color: var(--purple2); }
+    .toast.info    { border-color: var(--purple); color: var(--purple-link); }
   </style>
 </head>
 <body>

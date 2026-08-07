@@ -4,7 +4,7 @@ const { chromium } = require('playwright');
 const http = require('http'); const fs = require('fs'); const path = require('path');
 const ROOT = path.join(__dirname, '..');
 const { CHROME } = require('./_chrome');
-const MIME = { '.html':'text/html','.js':'text/javascript','.css':'text/css','.svg':'image/svg+xml' };
+const MIME = {'.woff2':'font/woff2', '.html':'text/html','.js':'text/javascript','.css':'text/css','.svg':'image/svg+xml' };
 const server = http.createServer((req,res)=>{
   const p = path.join(ROOT, decodeURIComponent(req.url.split('?')[0]));
   if(!fs.existsSync(p)||fs.statSync(p).isDirectory()){res.writeHead(404);return res.end('404');}
@@ -68,17 +68,79 @@ const BASE = 'http://localhost:' + (Number(process.env.PORT) || 8108);
     await ctx.addInitScript(t => { try { localStorage.setItem('inkrise_theme', t); } catch (e) {} },
                             process.env.INKRISE_THEME);
   }
+  /* SESSION SIMULÉE. Sans elle, sept pages sur vingt et une — profil,
+     bibliothèque, paramètres, espace créateur, upload, gestion des
+     chapitres, admin — renvoient aussitôt vers auth.html. L'outil mesurait
+     donc auth.html sept fois en croyant mesurer sept pages, et annonçait
+     « 21 pages » en n'en ayant vraiment vu que quatorze. Les cartes de
+     profil, précisément, n'ont jamais été relevées. */
+  const U = { id:'u1', email:'m@x.fr', aud:'authenticated',
+              user_metadata:{ username:'Marius' } };
+  await ctx.addInitScript(u => localStorage.setItem('sb-bsdcpwtimsgxcnaamwip-auth-token',
+    JSON.stringify({ access_token:'t', refresh_token:'r', token_type:'bearer',
+      expires_at: Math.floor(Date.now()/1000)+9999, expires_in:9999, user:u })), U);
   await ctx.route('https://fonts.googleapis.com/**', r => r.fulfill({status:200,contentType:'text/css',body:''}));
-  await ctx.route('**/auth/v1/**', r => r.fulfill({status:401, body:'{}'}));
-  await ctx.route('**/rest/v1/**', r => r.fulfill({status:200,contentType:'application/json',body:'[]'}));
+  await ctx.route('**/auth/v1/**', r => r.fulfill({status:200,contentType:'application/json',
+    body: JSON.stringify(U)}));
+  await ctx.route('**/rest/v1/**', r => {
+    const req = r.request();
+    /* Un profil complet : sans lui, la page s'arrête sur un écran de
+       chargement et les cartes ne sont jamais peintes. */
+    if (decodeURIComponent(req.url()).includes('/profiles'))
+      return r.fulfill({status:200,contentType:'application/json',
+        headers:{'Content-Range':'0-0/1','Access-Control-Expose-Headers':'Content-Range'},
+        body: JSON.stringify((req.headers()['accept']||'').includes('vnd.pgrst.object')
+          ? { id:'u1', username:'Marius', bio:'Dessinateur', avatar_url:null,
+              is_creator:true, created_at:'2026-01-05T10:00:00Z' }
+          : [{ id:'u1', username:'Marius', bio:'Dessinateur', avatar_url:null,
+              is_creator:true, created_at:'2026-01-05T10:00:00Z' }])});
+    /* Sans manga ni chapitre, le lecteur renvoie vers la fiche : il
+       faut de quoi lire pour mesurer ses couleurs. */
+    const u = decodeURIComponent(req.url());
+    if (u.includes('/mangas')) return r.fulfill({status:200,contentType:'application/json',
+      body: JSON.stringify({ id:1, titre:'Darkworld', type:'manga', sens_lecture:'rl',
+        age_recommande:'tout_public', commentaires_actifs:true, auteur_id:'u1' })});
+    if (u.includes('/chapitres')) return r.fulfill({status:200,contentType:'application/json',
+      body: JSON.stringify([{ id:10, numero:1, titre:'Ouverture', manga_id:1 }])});
+    return r.fulfill({status:200,contentType:'application/json',
+      headers:{'Content-Range':'0-0/0','Access-Control-Expose-Headers':'Content-Range'},body:'[]'});
+  });
   await ctx.route('**/storage/v1/**', r => r.fulfill({status:200,contentType:'application/json',body:'[]'}));
-  const page = await ctx.newPage();
+  const pageConnectee = await ctx.newPage();
+
+  /* Certaines pages ont besoin d'un paramètre pour afficher autre chose
+     qu'une redirection vers l'accueil. */
+  const PARAMS = {
+    'lecteur.html': '?manga_id=1&chapitre=10',
+    'gestion-chapitres.html': '?manga_id=1',
+    'manga.html': '?id=1', 'pack.html': '?id=1',
+    'auteur.html': '?id=u1', 'recherche.html': '?q=a',
+  };
+  /* Et auth.html ne s'affiche QUE déconnecté : avec une session elle
+     renvoie vers l'accueil. On la mesure donc dans son propre contexte. */
+  const SANS_SESSION = new Set(['auth.html']);
+
+  const ctxAnon = await browser.newContext({ viewport:{width:1280,height:1000} });
+  if (process.env.INKRISE_THEME) {
+    await ctxAnon.addInitScript(t => { try { localStorage.setItem('inkrise_theme', t); } catch (e) {} },
+                                process.env.INKRISE_THEME);
+  }
+  await ctxAnon.route('https://fonts.googleapis.com/**', r => r.fulfill({status:200,contentType:'text/css',body:''}));
+  await ctxAnon.route('**/auth/v1/**', r => r.fulfill({status:401, body:'{}'}));
+  await ctxAnon.route('**/rest/v1/**', r => r.fulfill({status:200,contentType:'application/json',body:'[]'}));
+  await ctxAnon.route('**/storage/v1/**', r => r.fulfill({status:200,contentType:'application/json',body:'[]'}));
+  const pageAnon = await ctxAnon.newPage();
 
   const files = fs.readdirSync(ROOT).filter(f => f.endsWith('.html')).sort();
   const groups = new Map();
+  const detournees = [];
   for (const f of files) {
-    await page.goto(BASE + '/' + f, { waitUntil:'load' }).catch(()=>{});
-    await page.waitForTimeout(500);
+    const page = SANS_SESSION.has(f) ? pageAnon : pageConnectee;
+    await page.goto(BASE + '/' + f + (PARAMS[f] || ''), { waitUntil:'load' }).catch(()=>{});
+    await page.waitForTimeout(900);
+    /* On vérifie qu'on est BIEN sur la page demandée. Une redirection
+       silencieuse fausserait tout le relevé — c'était le défaut. */
+    if (!page.url().includes('/' + f)) detournees.push(f + ' → ' + page.url().split('/').pop());
     // Le menu latéral est masqué au repos : on l'ouvre pour le mesurer aussi
     await page.evaluate(() => {
       const d = document.getElementById('univDrawer');
@@ -97,7 +159,11 @@ const BASE = 'http://localhost:' + (Number(process.env.PORT) || 8108);
   await browser.close(); server.close();
 
   const sorted = [...groups.values()].sort((a,b) => a.ratio - b.ratio);
-  console.log(`\n${sorted.length} couples couleur/fond sous le seuil, sur ${files.length} pages\n`);
+  if (detournees.length) {
+    console.log(`\n⚠️  ${detournees.length} page(s) n'ont pas été mesurées — redirection :`);
+    detournees.forEach(d => console.log('   ' + d));
+  }
+  console.log(`\n${sorted.length} couples couleur/fond sous le seuil, sur ${files.length - detournees.length} pages réellement atteintes\n`);
   for (const g of sorted) {
     console.log(`${String(g.ratio).padStart(5)}:1 (min ${g.need})  texte ${g.fg} sur ${g.bg}`);
     console.log(`          ${g.pages.size} page(s) : ${[...g.pages].slice(0,6).join(', ')}${g.pages.size>6?'…':''}`);

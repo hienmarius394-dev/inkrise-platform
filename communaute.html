@@ -14,10 +14,10 @@
 <meta property="og:description" content="Rejoins la communauté Inkrise : posts, sondages et échanges avec les créateurs de mangas." />
 <meta property="og:image" content="https://inkrise-platform.vercel.app/assets/hero-manga.jpg" />
 <meta name="twitter:card" content="summary_large_image" />
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link rel="preconnect" href="https://bsdcpwtimsgxcnaamwip.supabase.co" />
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="preload" as="font" type="font/woff2" href="assets/fonts/syne-latin.woff2" crossorigin />
+<link rel="preload" as="font" type="font/woff2" href="assets/fonts/dmsans-latin.woff2" crossorigin />
+<link rel="stylesheet" href="assets/inkrise-fonts.css" />
 <link rel="stylesheet" href="assets/inkrise-theme.css" />
 <script src="assets/inkrise-theme.js"></script>
   <script src="assets/inkrise-reseau.js"></script>
@@ -42,7 +42,7 @@ body {
   padding-bottom: 80px;
   line-height: 1.5;
 }
-a { color: var(--purple); text-decoration: none; }
+a { color: var(--purple-link); text-decoration: none; }
 img { max-width: 100%; display: block; }
 
 /* ── STANDARD NAV (universel) ── */
@@ -84,7 +84,7 @@ img { max-width: 100%; display: block; }
 .creator-username { font-size: 1.15rem; font-weight: 700; }
 .creator-badge {
   font-size: 0.7rem; background: rgba(124,111,239,0.15);
-  color: var(--purple); padding: 2px 10px; border-radius: 20px;
+  color: var(--purple-link); padding: 2px 10px; border-radius: 20px;
   font-weight: 600;
 }
 .creator-premium {
@@ -245,7 +245,7 @@ img { max-width: 100%; display: block; }
 .post-card-date { color: var(--text-muted); font-size: 0.7rem; margin-left: auto; }
 .post-card-badge {
   font-size: 0.65rem; padding: 2px 8px; border-radius: 20px;
-  background: rgba(124,111,239,0.12); color: var(--purple); font-weight: 600;
+  background: rgba(124,111,239,0.12); color: var(--purple-link); font-weight: 600;
   margin-left: 6px;
 }
 .post-card-content {
@@ -268,7 +268,7 @@ img { max-width: 100%; display: block; }
   cursor: pointer; transition: all 0.2s;
 }
 .reaction-btn:hover { background: var(--surface2); border-color: var(--text-muted); }
-.reaction-btn.active { background: rgba(124,111,239,0.12); border-color: var(--purple); color: var(--purple); }
+.reaction-btn.active { background: rgba(124,111,239,0.12); border-color: var(--purple); color: var(--purple-link); }
 .reaction-emoji { font-size: 1rem; line-height: 1; }
 .reaction-count { font-size: 0.75rem; font-weight: 600; }
 
@@ -339,7 +339,7 @@ img { max-width: 100%; display: block; }
   background: transparent; border: none; color: var(--text-muted);
   font-size: 0.7rem; cursor: pointer; padding: 2px 0;
 }
-.comment-reply-btn:hover { color: var(--purple); }
+.comment-reply-btn:hover { color: var(--purple-link); }
 .comment-image { max-width: 160px; border-radius: var(--radius-sm); margin-top: 4px; }
 .comment.reply { margin-left: 36px; padding-left: 8px; border-left: 2px solid var(--border); }
 .comments-empty { color: var(--text-muted); font-size: 0.8rem; text-align: center; padding: 12px 0; }

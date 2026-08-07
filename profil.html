@@ -15,10 +15,10 @@
   <meta property="og:description" content="Ton profil Inkrise." />
   <meta property="og:image" content="https://inkrise-platform.vercel.app/assets/hero-manga.jpg" />
   <meta name="twitter:card" content="summary_large_image" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="preconnect" href="https://bsdcpwtimsgxcnaamwip.supabase.co" />
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500;600;700&family=Bebas+Neue&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" href="assets/fonts/syne-latin.woff2" crossorigin />
+  <link rel="preload" as="font" type="font/woff2" href="assets/fonts/dmsans-latin.woff2" crossorigin />
+  <link rel="stylesheet" href="assets/inkrise-fonts.css" />
   <link rel="stylesheet" href="assets/inkrise-theme.css" />
   <script src="assets/inkrise-theme.js"></script>
   <script src="assets/inkrise-reseau.js"></script>
@@ -120,7 +120,7 @@
     /* Infos profil */
     .profile-info { flex: 1; min-width: 0; }
     .profile-username {
-      font-family: 'Bebas Neue', cursive;
+      font-family: 'Bebas Neue', sans-serif;
       font-size: 2.4rem;
       letter-spacing: 2px;
       line-height: 1;
@@ -130,7 +130,7 @@
       display: inline-flex; align-items: center; gap: 6px;
       background: rgba(155,89,245,0.15);
       border: 1px solid rgba(155,89,245,0.3);
-      color: var(--purple);
+      color: var(--purple-link);
       font-size: 0.78rem; font-weight: 800;
       padding: 3px 12px; border-radius: 20px;
       text-transform: uppercase; letter-spacing: 1px;
@@ -143,7 +143,7 @@
     }
     .stat-item { text-align: center; }
     .stat-num {
-      font-family: 'Bebas Neue', cursive;
+      font-family: 'Bebas Neue', sans-serif;
       font-size: 1.5rem; color: var(--text); line-height: 1;
     }
     .stat-label { font-size: 0.72rem; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
@@ -158,8 +158,8 @@
     }
     .stat-item.clickable:hover { background: rgba(124,92,252,0.2); }
     .stat-item.clickable:active { transform: scale(0.96); }
-    .stat-item.clickable .stat-num { color: var(--purple); }
-    .stat-item.clickable .stat-label { color: var(--purple); }
+    .stat-item.clickable .stat-num { color: var(--purple-link); }
+    .stat-item.clickable .stat-label { color: var(--purple-link); }
 
     /* ── TABS PROFIL ── */
     .profile-tabs {
@@ -184,7 +184,7 @@
       flex-shrink: 0;
     }
     .ptab:hover { color: var(--text); }
-    .ptab.active { color: var(--accent); border-bottom-color: var(--accent); }
+    .ptab.active { color: var(--purple-link); border-bottom-color: var(--accent); }
 
     /* Sous-onglets Suivis / Abonnés : une seule liste affichée à la fois */
     .follow-subtabs { display: flex; gap: 10px; margin-bottom: 20px; }
@@ -215,7 +215,7 @@
       margin-bottom: 20px;
     }
     .section-title {
-      font-family: 'Bebas Neue', cursive;
+      font-family: 'Bebas Neue', sans-serif;
       font-size: 1.6rem; letter-spacing: 1.5px;
       position: relative;
     }
@@ -286,7 +286,7 @@
       gap: 18px;
     }
     .manga-card {
-      background: rgba(255,255,255,0.6);
+      background: var(--carte);
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
       border-radius: 12px;
@@ -364,7 +364,7 @@
     .stat-card {
       position: relative;
       overflow: hidden;
-      background: rgba(255,255,255,0.6);
+      background: var(--carte);
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
       border: 1px solid rgba(124,92,252,0.1);
@@ -381,12 +381,12 @@
     .stat-card:hover { transform: translateY(-3px); box-shadow: 0 10px 28px rgba(124,92,252,0.14); }
     .stat-card-label { font-size: 0.75rem; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; }
     .stat-card-num {
-      font-family: 'Bebas Neue', cursive;
+      font-family: 'Bebas Neue', sans-serif;
       font-size: 2.4rem;
       line-height: 1;
     }
-    .stat-card-num.orange { color: var(--accent); }
-    .stat-card-num.purple { color: var(--purple); }
+    .stat-card-num.orange { color: var(--purple-link); }
+    .stat-card-num.purple { color: var(--purple-link); }
     .stat-card-num.gold { color: var(--gold); }
     .stat-card-num.green { color: #4ade80; }
     .stat-card.c-orange { --stat-accent: linear-gradient(90deg, var(--accent), #ff8a5c); --stat-accent-soft: rgba(255,107,53,0.12); }
@@ -468,7 +468,7 @@
 
     /* Infos panel */
     .info-card {
-      background: rgba(255,255,255,0.6);
+      background: var(--carte);
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
       border: 1px solid rgba(124,92,252,0.1);
@@ -538,7 +538,7 @@
       cursor: pointer; margin-top: 4px; font-family: 'Nunito', sans-serif;
       transition: all .2s; align-self: flex-start;
     }
-    .btn-add-link:hover { border-color: var(--purple); color: var(--purple); }
+    .btn-add-link:hover { border-color: var(--purple); color: var(--purple-link); }
     /* Sur mobile, le label + select + input + bouton ne tiennent pas sur une
        ligne : on empile le label au-dessus de la liste de liens */
     @media (max-width: 600px) {
@@ -556,7 +556,7 @@
       font-size: 0.78rem; font-weight: 700;
       text-decoration: none; transition: all .2s;
     }
-    .profile-social-link:hover { background: rgba(124,92,252,0.2); border-color: var(--purple); color: var(--purple); }
+    .profile-social-link:hover { background: rgba(124,92,252,0.2); border-color: var(--purple); color: var(--purple-link); }
 
     /* ── MODAL PLANS ── */
     .modal-overlay {
@@ -595,7 +595,7 @@
     }
     .modal-close:hover { color: var(--text); }
     .modal-title {
-      font-family: 'Bebas Neue', cursive;
+      font-family: 'Bebas Neue', sans-serif;
       font-size: 2rem; letter-spacing: 2px; text-align: center;
       margin-bottom: 6px;
     }
@@ -647,7 +647,7 @@
       text-transform: uppercase; letter-spacing: 1px;
     }
     .plan-icon { font-size: 2.2rem; margin-bottom: 12px; }
-    .plan-name { font-family: 'Bebas Neue', cursive; font-size: 1.5rem; letter-spacing: 1px; margin-bottom: 6px; }
+    .plan-name { font-family: 'Bebas Neue', sans-serif; font-size: 1.5rem; letter-spacing: 1px; margin-bottom: 6px; }
     .plan-price {
       font-size: 1.8rem; font-weight: 900;
       margin-bottom: 4px;
@@ -718,7 +718,7 @@
   
 /* Créateurs suivis */
 .creator-item {
-  background: rgba(255,255,255,0.6); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  background: var(--carte); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
   border: 1px solid rgba(124,92,252,0.1); box-shadow: 0 4px 20px rgba(124,92,252,0.06);
   border-radius: 12px; padding: 14px 18px;
   display: flex; align-items: center; gap: 14px; margin-bottom: 10px;
@@ -741,7 +741,7 @@
 .btn-unfollow:hover { border-color: var(--danger-link); color: var(--danger-link); }
 /* Notifications */
 .notif-item {
-  background: rgba(255,255,255,0.6); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  background: var(--carte); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
   border: 1px solid rgba(124,92,252,0.1); box-shadow: 0 4px 20px rgba(124,92,252,0.06);
   border-radius: 12px; padding: 14px 18px;
   display: flex; align-items: flex-start; gap: 12px; margin-bottom: 8px;
@@ -1073,7 +1073,7 @@
       <div class="info-row">
         <label>Plan actuel</label>
         <span>
-          <span id="displayPlan" style="color:var(--purple); font-weight:800;">Membre</span>
+          <span id="displayPlan" style="color:var(--purple-link); font-weight:800;">Membre</span>
           <button type="button" id="btnSwitchRole" style="display:none; margin-left:10px; background:none; border:none; cursor:pointer; font-size:0.78rem; font-weight:700; color:var(--muted); text-decoration:underline; font-family:'Nunito',sans-serif;"></button>
         </span>
       </div>
@@ -1087,7 +1087,7 @@
       <button class="btn-save" id="btnSave">💾 Sauvegarder</button>
 
       <div style="margin-top:28px; padding-top:18px; border-top:1px solid rgba(0,0,0,.07);">
-        <button type="button" id="btnDeleteAccount" style="background:none; border:1.5px solid rgba(239,68,68,.4); color:#ef4444; font-weight:700; font-size:.82rem; padding:9px 16px; border-radius:10px; cursor:pointer; font-family:'Nunito',sans-serif;">🗑️ Supprimer mon compte</button>
+        <button type="button" id="btnDeleteAccount" style="background:none; border:1.5px solid rgba(239,68,68,.4); color:var(--danger-link); font-weight:700; font-size:.82rem; padding:9px 16px; border-radius:10px; cursor:pointer; font-family:'Nunito',sans-serif;">🗑️ Supprimer mon compte</button>
         <div style="font-size:.73rem; color:var(--muted); margin-top:7px; line-height:1.5;">Suppression définitive : profil, mangas, packs, commentaires et abonnements.</div>
       </div>
     </div>
@@ -1640,7 +1640,7 @@
             </div>
           </div>
           <div style="padding:0 12px 12px; display:flex; gap:8px;">
-            <a href="gestion-chapitres.html?manga_id=${m.id}" onclick="event.stopPropagation()" style="flex:1;text-align:center;font-size:0.75rem;font-weight:700;padding:7px 0;border-radius:8px;background:rgba(124,111,239,0.15);color:var(--purple2);border:1px solid rgba(124,111,239,0.25);text-decoration:none;transition:all .2s;" onmouseover="this.style.background='rgba(124,111,239,0.28)'" onmouseout="this.style.background='rgba(124,111,239,0.15)'">📄 Chapitres</a>
+            <a href="gestion-chapitres.html?manga_id=${m.id}" onclick="event.stopPropagation()" style="flex:1;text-align:center;font-size:0.75rem;font-weight:700;padding:7px 0;border-radius:8px;background:rgba(124,111,239,0.15);color:var(--purple-link);border:1px solid rgba(124,111,239,0.25);text-decoration:none;transition:all .2s;" onmouseover="this.style.background='rgba(124,111,239,0.28)'" onmouseout="this.style.background='rgba(124,111,239,0.15)'">📄 Chapitres</a>
             <a href="manga.html?id=${m.id}" onclick="event.stopPropagation()" style="flex:1;text-align:center;font-size:0.75rem;font-weight:700;padding:7px 0;border-radius:8px;background:rgba(0,0,0,0.06);color:var(--text-3);border:1px solid rgba(0,0,0,0.1);text-decoration:none;transition:all .2s;" onmouseover="this.style.background='rgba(0,0,0,0.1)'" onmouseout="this.style.background='rgba(0,0,0,0.06)'">👁 Voir</a>
           </div>
         `;

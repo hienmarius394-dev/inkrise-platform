@@ -15,10 +15,10 @@
   <meta property="og:description" content="Publie ton manga sur Inkrise." />
   <meta property="og:image" content="https://inkrise-platform.vercel.app/assets/hero-manga.jpg" />
   <meta name="twitter:card" content="summary_large_image" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="preconnect" href="https://bsdcpwtimsgxcnaamwip.supabase.co" />
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" href="assets/fonts/syne-latin.woff2" crossorigin />
+  <link rel="preload" as="font" type="font/woff2" href="assets/fonts/dmsans-latin.woff2" crossorigin />
+  <link rel="stylesheet" href="assets/inkrise-fonts.css" />
   <link rel="stylesheet" href="assets/inkrise-theme.css" />
   <script src="assets/inkrise-theme.js"></script>
   <script src="assets/inkrise-reseau.js"></script>
@@ -74,7 +74,7 @@
     .steps-bar {
       display: flex; align-items: center; gap: 0;
       margin-bottom: 40px;
-      background: rgba(255,255,255,0.6);
+      background: var(--carte);
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
       border: 1px solid rgba(124,92,252,0.1);
@@ -92,8 +92,8 @@
       cursor: pointer;
     }
     .step-item:last-child { border-right: none; }
-    .step-item.active { color: var(--purple2); background: rgba(124,111,239,0.08); }
-    .step-item.done   { color: var(--green); }
+    .step-item.active { color: var(--purple-link); background: rgba(124,111,239,0.08); }
+    .step-item.done   { color: var(--success-link); }
     .step-num {
       width: 24px; height: 24px; border-radius: 50%;
       background: var(--surface3);
@@ -106,7 +106,7 @@
 
     /* ── CARDS ── */
     .card {
-      background: rgba(255,255,255,0.6);
+      background: var(--carte);
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
       border: 1px solid rgba(124,92,252,0.1);
@@ -164,13 +164,13 @@
       flex-shrink: 0; width: 42px; height: 42px; border-radius: 9px;
       display: flex; align-items: center; justify-content: center;
       font-family: 'Syne', sans-serif; font-weight: 900; font-size: 1rem;
-      color: #fff; line-height: 1;
+      color: #14121a; line-height: 1;
     }
     .choice-badge.tp   { background: #3ddc84; font-size: .82rem; }
     .choice-badge.a12  { background: #f5a623; }
     .choice-badge.a16  { background: #ff6b35; }
     .choice-badge.a18  { background: #ff3d71; }
-    .choice-badge.dir  { background: linear-gradient(135deg, var(--purple), var(--purple2)); font-size: 1.15rem; }
+    .choice-badge.dir  { background: linear-gradient(135deg, var(--purple), var(--purple2)); font-size: 1.15rem;  color: #fff; }
 
     .choice-body { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
     .choice-title { font-size: 0.85rem; font-weight: 700; color: var(--text); }
@@ -182,7 +182,7 @@
       color: var(--muted); letter-spacing: 0.5px;
       text-transform: uppercase; margin-bottom: 8px;
     }
-    label .required { color: var(--accent); margin-left: 3px; }
+    label .required { color: var(--purple-link); margin-left: 3px; }
 
     input[type="text"],
     input[type="url"],
@@ -213,7 +213,7 @@
       margin-top: 5px;
     }
     .char-count { font-size: 0.75rem; color: var(--muted); }
-    .char-count.warn { color: var(--accent); }
+    .char-count.warn { color: var(--purple-link); }
 
     /* ── COVER UPLOAD ── */
     .cover-drop {
@@ -291,7 +291,7 @@
     .genre-chip.selected {
       background: rgba(124,111,239,0.2);
       border-color: var(--purple);
-      color: var(--purple2);
+      color: var(--purple-link);
     }
 
     /* ── CHAPITRES ── */
@@ -310,7 +310,7 @@
     .chapitre-num {
       font-family: 'Syne', sans-serif;
       font-size: 0.75rem; font-weight: 700;
-      color: var(--purple2);
+      color: var(--purple-link);
       background: rgba(124,111,239,0.12);
       padding: 4px 10px; border-radius: 6px;
       white-space: nowrap; flex-shrink: 0;
@@ -338,8 +338,8 @@
       font-family: 'DM Sans', sans-serif;
       white-space: nowrap;
     }
-    .chapitre-file-btn:hover { border-color: var(--purple); color: var(--purple2); }
-    .chapitre-file-btn.has-files { border-color: var(--green); color: var(--green); }
+    .chapitre-file-btn:hover { border-color: var(--purple); color: var(--purple-link); }
+    .chapitre-file-btn.has-files { border-color: var(--green); color: var(--success-link); }
 
     .chapitre-remove {
       background: none; border: none;
@@ -347,14 +347,14 @@
       font-size: 1.1rem; padding: 4px;
       transition: color .2s; flex-shrink: 0;
     }
-    .chapitre-remove:hover { color: var(--accent); }
+    .chapitre-remove:hover { color: var(--purple-link); }
 
     .btn-add-chapitre {
       display: flex; align-items: center; justify-content: center; gap: 8px;
       width: 100%; padding: 13px;
       border: 2px dashed var(--border2);
       border-radius: 12px;
-      background: transparent; color: var(--purple2);
+      background: transparent; color: var(--purple-link);
       font-size: 0.88rem; font-weight: 700;
       cursor: pointer; transition: all .25s;
       font-family: 'DM Sans', sans-serif;
@@ -437,7 +437,7 @@
     }
     .progress-overlay.show { display: flex; }
     .progress-box {
-      background: rgba(255,255,255,0.85);
+      background: var(--carte-forte);
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
       border: 1px solid rgba(124,92,252,0.1);
@@ -456,7 +456,7 @@
       font-family: 'Syne', sans-serif;
       font-size: 1.2rem; font-weight: 700; margin-bottom: 8px;
     }
-    .progress-sub { color: var(--muted); font-size: 0.88rem; margin-bottom: 24px; }
+    .progress-sub { color: var(--text-2); font-size: 0.88rem; margin-bottom: 24px; }
     .progress-bar-wrap {
       background: var(--surface2); border-radius: 10px;
       height: 8px; overflow: hidden;
@@ -467,7 +467,7 @@
       transition: width .4s ease;
       width: 0%;
     }
-    .progress-step { font-size: 0.78rem; color: var(--muted); margin-top: 10px; }
+    .progress-step { font-size: 0.78rem; color: var(--text-2); margin-top: 10px; }
 
     /* ── SUCCESS ── */
     .success-box { display: none; text-align: center; padding: 48px 32px; }
@@ -511,7 +511,7 @@
     /* Toast */
     .toast {
       position: fixed; bottom: 24px; right: 24px;
-      background: rgba(255,255,255,0.85);
+      background: var(--carte-forte);
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
       border: 1px solid rgba(124,92,252,0.1);
@@ -524,9 +524,9 @@
       box-shadow: 0 8px 32px rgba(0,0,0,0.3);
     }
     .toast.show   { transform: translateY(0); opacity: 1; }
-    .toast.success { border-color: var(--green);  color: var(--green); }
-    .toast.error   { border-color: var(--accent); color: var(--accent); }
-    .toast.info    { border-color: var(--purple); color: var(--purple2); }
+    .toast.success { border-color: var(--green);  color: var(--success-link); }
+    .toast.error   { border-color: var(--accent); color: var(--purple-link); }
+    .toast.info    { border-color: var(--purple); color: var(--purple-link); }
 
     /* Divider */
     .divider {
@@ -539,7 +539,7 @@
       display: inline-flex; align-items: center; gap: 5px;
       background: rgba(61,220,132,0.1);
       border: 1px solid rgba(61,220,132,0.25);
-      color: var(--green); font-size: 0.75rem; font-weight: 700;
+      color: var(--success-link); font-size: 0.75rem; font-weight: 700;
       padding: 3px 10px; border-radius: 20px;
       text-transform: uppercase; letter-spacing: 0.5px;
     }
@@ -756,7 +756,7 @@
     <div id="formatHint" style="margin-top:16px; padding:14px 18px; border-radius:12px; background:rgba(124,111,239,0.07); border:1px solid rgba(124,111,239,0.2); display:flex; align-items:flex-start; gap:12px;">
       <span style="font-size:1.3rem; flex-shrink:0;" id="formatIcon">📖</span>
       <div>
-        <div style="font-size:0.82rem; font-weight:700; color:var(--purple2); margin-bottom:4px;" id="formatTitle">Manga japonais</div>
+        <div style="font-size:0.82rem; font-weight:700; color:var(--purple-link); margin-bottom:4px;" id="formatTitle">Manga japonais</div>
         <div style="font-size:0.78rem; color:var(--muted); line-height:1.6;" id="formatDesc">Pages verticales • Lecture droite → gauche • Format recommandé : <strong style="color:var(--text);">800 × 1200 px</strong> • Un badge <strong style="color:var(--text);">"MANGA"</strong> sera affiché sur ta couverture.</div>
       </div>
     </div>
