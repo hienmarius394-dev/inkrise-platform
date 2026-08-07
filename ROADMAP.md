@@ -1,6 +1,6 @@
 # INKRISE — Roadmap & état des lieux
 
-> Mis à jour le 2026-08-05, après l'audit complet et ses trois sprints.
+> Mis à jour le 2026-08-07, après l'audit complet et ses sprints.
 > Le détail des constats et des preuves est dans **`AUDIT-UX.md`**.
 
 ## ⚠️ Important : SQL à exécuter
@@ -40,7 +40,9 @@ Inkrise = plateforme pour artistes manga/webtoon :
   `covers`, `pages`, `community`).
 - **Serveur** : `api/og.js` (aperçus de lien, Vercel) et
   `supabase/functions/` (paiement CinetPay, envoi des notifications push).
-- **Tests** : 12 suites Playwright, ~291 vérifications. Voir `tests/README.md`.
+- **Tests** : 22 suites Playwright, 500 vérifications, plus six outils de
+  diagnostic (contraste, défauts silencieux, RLS sur PostgreSQL réel,
+  échappement, pannes, chasse aux zones cliquables). Voir `tests/README.md`.
 
 ## Livré lors de l'audit (3 sprints)
 
@@ -69,9 +71,21 @@ Inkrise = plateforme pour artistes manga/webtoon :
 ~~2. **Pages par genre**~~ — ✅ livré : rangée de genres visible sans
    dérouler de menu, adresses partageables (`recherche.html?genre=Action`),
    et genres cliquables sur les fiches manga.
-3. **Confort du lecteur** — double page sur tablette, signets, défilement
-   automatique pour le webtoon. *(Écran maintenu allumé, plein écran et
-   zoom : ✅ livrés.)*
+~~3. **Confort du lecteur**~~ — ✅ livré pour l'essentiel : écran maintenu
+   allumé, plein écran, zoom au pincement, et **double page** sur tablette
+   et ordinateur (sens de lecture respecté, pas de deux, repli automatique
+   sous 900 px). Restent volontairement de côté :
+   - **défilement automatique** — **écarté** : son bouton d'arrêt vivrait
+     dans la barre du bas, qui se masque justement pendant le défilement ;
+     il lutte contre le lecteur au moindre geste ; aucune vitesse ne
+     convient à la fois à une planche de dialogue et à une double page
+     muette ; et combiné à l'écran maintenu allumé il vide la batterie
+     d'un téléphone resté dans une poche. Le mode vertical couvre déjà le
+     besoin réel.
+   - **signets** — la reprise de lecture couvre déjà le cas courant ; un
+     vrai signet demanderait une table supplémentaire.
+   - **luminosité** — le navigateur ne donne pas la main dessus ; un voile
+     sombre par-dessus les planches fausserait les couleurs des auteurs.
 ~~4. **Modération**~~ — ✅ livré : masquer / rétablir / classer sans suite,
    aperçu du contenu incriminé, regroupement des plaintes, lien vers le
    commentaire dans son chapitre.

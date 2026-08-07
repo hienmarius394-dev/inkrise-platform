@@ -197,17 +197,29 @@
       max-width: 800px;
       width: 100%;
     }
-    .page-img {
-      width: 100%; display: block;
-      border-radius: 14px;
-      box-shadow: 0 24px 70px -12px rgba(35,20,90,0.35), 0 2px 10px rgba(35,20,90,0.10);
-      animation: fadeInPage .25s ease;
+    /* Sur un écran large, une planche seule au milieu gaspille les deux
+       tiers de la largeur — alors qu'un manga se lit par paires. */
+    .page-img-wrap.double { max-width: 1500px; }
+    /* Conteneur des planches : c'est LUI qu'on agrandit et déplace, pour
+       que les deux moitiés d'une double page restent solidaires. */
+    .page-zoom {
+      display: flex; align-items: flex-start; gap: 6px;
       /* Le zoom part du centre : c'est ce que suppose le calcul des bornes
          de déplacement (voir borner()). */
       transform-origin: center center;
       /* Sans ça, le navigateur intercepte le pincement pour zoomer la page
-         entière — barres comprises — au lieu de la seule planche. */
+         entière — barres comprises — au lieu des seules planches. */
       touch-action: none;
+    }
+    /* Sens japonais : la planche de DROITE se lit en premier. L'ordre
+       visuel s'inverse, l'ordre logique reste le même. */
+    .page-zoom.sens-rl { flex-direction: row-reverse; }
+    .page-img {
+      width: 100%; display: block;
+      flex: 1 1 0; min-width: 0;
+      border-radius: 14px;
+      box-shadow: 0 24px 70px -12px rgba(35,20,90,0.35), 0 2px 10px rgba(35,20,90,0.10);
+      animation: fadeInPage .25s ease;
     }
     @keyframes fadeInPage { from { opacity:0; transform:scale(.98); } to { opacity:1; transform:scale(1); } }
 
@@ -687,6 +699,11 @@
       <button class="mode-btn" id="btnModePage" onclick="setMode('pages')" aria-pressed="false"
               title="Lecture horizontale (page par page)" aria-label="Lecture horizontale">↔<span class="mode-label"> Horizontal</span></button>
     </div>
+    <!-- Double page : n'a de sens qu'en lecture page par page et sur un
+         écran assez large pour deux planches lisibles. -->
+    <button class="nav-btn" id="btnDouble" style="display:none;"
+            title="Afficher deux planches à la fois" aria-label="Afficher deux planches à la fois"
+            aria-pressed="false">▤</button>
     <!-- Plein écran : masqué tant qu'on ne sait pas si le navigateur sait
          le faire (iPhone ne le propose que sur les vidéos). -->
     <button class="nav-btn" id="btnPleinEcran" style="display:none;"
@@ -718,7 +735,12 @@
   <!-- MODE PAGES -->
   <div class="pages-viewer hidden" id="pagesViewer">
     <div class="page-img-wrap" id="pageImgWrap">
-      <img class="page-img" id="pageImg" src="" alt="Page" style="display:none;" />
+      <!-- Les deux planches vivent dans un même conteneur : le zoom
+           s'applique à l'ensemble, sinon agrandir séparerait la paire. -->
+      <div class="page-zoom" id="pageZoom">
+        <img class="page-img" id="pageImg" src="" alt="Page" style="display:none;" />
+        <img class="page-img" id="pageImg2" src="" alt="Page suivante" style="display:none;" />
+      </div>
       <div class="page-placeholder" id="pagePlaceholder" style="display:none;">
         <div class="page-placeholder-icon">🖼️</div>
         <p id="placeholderText">Page en cours de chargement…</p>
@@ -1184,13 +1206,30 @@ function showPage(idx) {
   };
   newImg.src = pages[idx];
 
+  /* Seconde planche. Elle n'apparaît que si elle existe : sur la dernière
+     page d'un chapitre impair, une moitié vide vaut mieux qu'une image
+     cassée. */
+  const img2 = document.getElementById('pageImg2');
+  if (doublePage && idx + 1 < pages.length) {
+    const suivante = new Image();
+    suivante.onload = () => { img2.src = suivante.src; img2.style.display = 'block'; };
+    suivante.onerror = () => { img2.style.display = 'none'; };
+    suivante.src = pages[idx + 1];
+  } else {
+    img2.style.display = 'none';
+    img2.removeAttribute('src');
+  }
+
   // Update UI
-  document.getElementById('pageNum').textContent = idx + 1;
+  /* Deux planches à l'écran, donc « 3–4 sur 20 » : afficher « 3 » seul
+     laisserait croire qu'on n'en voit qu'une. */
+  const double = doublePage && idx + 1 < pages.length;
+  document.getElementById('pageNum').textContent = double ? (idx + 1) + '–' + (idx + 2) : idx + 1;
   document.getElementById('pageTotalLabel').textContent = `sur ${pages.length}`;
   const pct = pages.length > 1 ? ((idx) / (pages.length - 1)) * 100 : 100;
   document.getElementById('progressFill').style.width = pct + '%';
   document.getElementById('btnPrevPage').disabled = idx === 0;
-  document.getElementById('btnNextPage').disabled = idx === pages.length - 1;
+  document.getElementById('btnNextPage').disabled = idx + pas() >= pages.length;
   updatePageStrip();
 
   // Sauvegarde de la progression (debounce)
@@ -1281,15 +1320,21 @@ function applyReadingDirection() {
 }
 
 // ── NAVIGATION PAGES ──
+/* En double page, on avance de deux : sinon la paire glisserait d'un cran
+   à chaque fois et on relirait la moitié de ce qu'on vient de voir. */
+function pas() { return doublePage ? 2 : 1; }
+
 function prevPage() {
   if (currentPage > 0) {
-    showPage(currentPage - 1);
+    showPage(Math.max(0, currentPage - pas()));
   }
 }
 
 function nextPage() {
-  if (currentPage < pages.length - 1) {
-    showPage(currentPage + 1);
+  /* La paire affichée couvre currentPage ET la suivante : le chapitre est
+     donc fini dès que les deux sont vues, pas seulement la première. */
+  if (currentPage + pas() < pages.length) {
+    showPage(currentPage + pas());
   } else {
     // Fin du chapitre
     showEndScreen();
@@ -1338,6 +1383,9 @@ function setMode(mode, reload = true) {
   document.getElementById('progressWrap').style.display = isPages ? 'block' : 'none';
   document.getElementById('pagesViewer').classList.toggle('horizontal', isPages);
   document.getElementById('pageStrip').classList.toggle('show', isPages && pages.length > 1);
+  /* Le bouton double page n'a de sens qu'en lecture page par page : en
+     vertical il resterait affiché sans rien faire. */
+  majDoublePage();
 
   // Le mode choisi suit le lecteur d'un chapitre à l'autre
   try { localStorage.setItem('inkrise_read_mode', mode); } catch (e) {}
@@ -1395,7 +1443,9 @@ const ZOOM_MAX = 3, ZOOM_DOUBLE_TAP = 2.4;
 let zoom = 1, panX = 0, panY = 0, glisseDx = 0;
 
 function appliquerTransform(animer) {
-  const img = document.getElementById('pageImg');
+  /* Le conteneur, pas l'image : en double page, agrandir une seule des
+     deux moitiés séparerait la paire. */
+  const img = document.getElementById('pageZoom');
   if (!img) return;
   img.style.transition = animer ? 'transform .18s ease-out' : '';
   img.style.transform =
@@ -1410,7 +1460,7 @@ function appliquerTransform(animer) {
 /* Empêche de faire sortir la planche de l'écran : au-delà, on ne voit
    plus que du vide et on ne sait plus revenir. */
 function borner() {
-  const img = document.getElementById('pageImg');
+  const img = document.getElementById('pageZoom');
   if (!img) return;
   /* `getBoundingClientRect()` inclut déjà le zoom ET le déplacement en
      cours : s'en servir ferait dépendre la borne de la position, et le
@@ -1518,6 +1568,64 @@ function bindSwipe() {
     reglerZoom(zoom * (e.deltaY < 0 ? 1.12 : 1 / 1.12), false);
   }, { passive: false });
 }
+
+// ── DOUBLE PAGE ──
+/* Sur un écran large, une planche seule au milieu laisse les deux tiers de
+   la largeur vides — alors qu'un manga se lit naturellement par paires.
+
+   Deux garde-fous : la double page n'a de sens qu'en lecture page par page
+   (en vertical, on fait défiler), et seulement sur un écran assez large
+   pour que deux planches restent lisibles. En dessous, le bouton
+   disparaît plutôt que de proposer un affichage illisible. */
+const LARGEUR_DOUBLE = 900;
+let doublePage = false;
+
+function doublePossible() {
+  return readMode === 'pages' && window.innerWidth >= LARGEUR_DOUBLE;
+}
+function doubleVoulu() {
+  try { return localStorage.getItem('inkrise_double_page') === '1'; }
+  catch (e) { return false; }
+}
+function doubleActif() { return doublePossible() && doubleVoulu(); }
+
+function peindreDouble() {
+  const b = document.getElementById('btnDouble');
+  if (!b) return;
+  b.style.display = doublePossible() ? 'flex' : 'none';
+  b.setAttribute('aria-pressed', String(doublePage));
+  const t = doublePage ? 'Revenir à une planche à la fois' : 'Afficher deux planches à la fois';
+  b.title = t; b.setAttribute('aria-label', t);
+}
+
+/* Recalcule l'état et réaffiche. Appelé au changement de mode, de taille
+   d'écran, et à l'ouverture d'un chapitre. */
+function majDoublePage() {
+  const avant = doublePage;
+  doublePage = doubleActif();
+  const wrap = document.getElementById('pageImgWrap');
+  if (wrap) wrap.classList.toggle('double', doublePage);
+  const zone = document.getElementById('pageZoom');
+  /* L'inversion visuelle ne vaut que quand il y a deux planches à
+     ordonner : en simple, elle n'aurait aucun effet mais brouillerait la
+     lecture du code. */
+  if (zone) zone.classList.toggle('sens-rl', doublePage && manga?.sens_lecture !== 'lr');
+  peindreDouble();
+  if (avant !== doublePage && pages.length) showPage(currentPage);
+}
+
+function basculerDouble() {
+  try { localStorage.setItem('inkrise_double_page', doubleVoulu() ? '0' : '1'); } catch (e) {}
+  majDoublePage();
+}
+
+/* Une fenêtre qu'on rétrécit doit revenir d'elle-même à une planche : sinon
+   on se retrouve avec deux moitiés illisibles sans comprendre pourquoi. */
+let minuteurTaille = null;
+window.addEventListener('resize', () => {
+  clearTimeout(minuteurTaille);
+  minuteurTaille = setTimeout(majDoublePage, 150);
+});
 
 // ── PLEIN ÉCRAN ──
 /* Lire une planche sur un écran de téléphone, c'est se battre pour chaque
@@ -1641,6 +1749,8 @@ function bindEvents() {
   // Glissement tactile pour tourner les pages, pincement pour agrandir
   bindSwipe();
   brancherPleinEcran();
+  document.getElementById('btnDouble').addEventListener('click', basculerDouble);
+  majDoublePage();
 
   // Le sélecteur de mode vit dans la topbar, qui s'efface au défilement :
   // on le signale une fois pour que le lecteur sache qu'il existe.
