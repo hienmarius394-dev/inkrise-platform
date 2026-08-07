@@ -22,17 +22,27 @@ await ctx.route('**/rest/v1/**',r=>r.fulfill({status:200,contentType:'applicatio
 await ctx.route('**/storage/v1/**',r=>r.fulfill({status:200,contentType:'application/json',body:'[]'}));
 
 console.log('\n▶ Une page réservée transmet la destination');
-for (const [page, raison] of [['upload-manga.html','createur'],['gestion-chapitres.html?manga_id=1','createur'],
-                              ['profil.html','connexion'],['espace-createur.html','createur']]) {
+/* `espace-createur.html` n'est plus une page : elle redirige vers l'onglet
+   Formations du profil (les deux tableaux de bord ont fusionné). La
+   destination attendue n'est donc plus son propre nom — mais la chaîne
+   doit continuer de mener quelque part, et de dire POURQUOI on demande
+   une connexion. */
+for (const [page, raison, attendu] of [
+      ['upload-manga.html','createur','upload-manga.html'],
+      ['gestion-chapitres.html?manga_id=1','createur','gestion-chapitres.html'],
+      ['profil.html','connexion','profil.html'],
+      ['espace-createur.html','createur','profil.html?tab=formations']]) {
   const p=await ctx.newPage();
   p.on('pageerror',e=>errors.push(page+': '+e.message));
   p.goto(BASE + '/'+page).catch(()=>{});
   await p.waitForFunction(()=>location.pathname.endsWith('auth.html'),{timeout:12000}).catch(()=>{});
   const u=new URL(p.url());
-  const attendu = page.split('?')[0];
   check(`${page.split('?')[0]} → renvoie vers la connexion en gardant la destination`,
         u.pathname.endsWith('auth.html') && (u.searchParams.get('next')||'').startsWith(attendu),
         'next=' + u.searchParams.get('next'));
+  check(`  et dit pourquoi (raison=${raison})`,
+        u.searchParams.get('raison') === raison,
+        'raison=' + u.searchParams.get('raison'));
   if (page.includes('gestion-chapitres')) {
     check('les paramètres de la page sont conservés',
           (u.searchParams.get('next')||'').includes('manga_id=1'),

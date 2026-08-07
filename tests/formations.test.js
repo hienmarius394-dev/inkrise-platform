@@ -77,46 +77,53 @@ console.log('\n▶ Chemin direct vers l\'édition');
   await p.goto(BASE+'/profil.html'); await p.waitForTimeout(2000);
   await p.locator('.ptab[data-tab=formations]').click(); await p.waitForTimeout(1200);
 
-  const gerer = p.locator('#formationsGrilleCreees a[href*="edit="]');
-  check('un bouton « Gérer » sur le pack créé', await gerer.count()===1);
-  check('  il vise le bon pack', await gerer.getAttribute('href')==='espace-createur.html?edit=7',
-    await gerer.getAttribute('href'));
-  check('aucun bouton « Gérer » sur un pack acheté',
-    await p.locator('#formationsGrilleAchetees a[href*="edit="]').count()===0);
+  /* L'édition ne mène plus à une seconde page : elle s'ouvre ici même,
+     depuis que les deux tableaux de bord ont fusionné. */
+  const gerer = p.locator('#formationsGrilleCreees [data-modifier]');
+  check('un bouton « Modifier » sur le pack créé', await gerer.count()===1);
+  check('  il vise le bon pack', await gerer.getAttribute('data-modifier')==='7',
+    await gerer.getAttribute('data-modifier'));
+  check('aucun bouton « Modifier » sur un pack acheté',
+    await p.locator('#formationsGrilleAchetees [data-modifier]').count()===0);
 
-  // Le lien doit réellement ouvrir le formulaire d'édition, pas juste la page
   await gerer.click();
-  await p.waitForTimeout(2500);
-  check('le clic mène à l\'espace créateur', /espace-createur\.html\?edit=7/.test(p.url()), p.url());
-  const modale = p.locator('#modal-overlay');
-  check('  et ouvre directement le formulaire du pack', await modale.isVisible());
+  await p.waitForTimeout(1400);
+  check('le clic ouvre le formulaire SANS quitter le profil',
+    /profil\.html/.test(p.url()) && await p.locator('#packModal.open').count()===1, p.url());
   check('  pré-rempli avec le bon titre',
-    await p.locator('#f-titre').inputValue()==='Encrage avancé',
-    await p.locator('#f-titre').inputValue());
+    await p.locator('#packTitre').inputValue()==='Encrage avancé',
+    await p.locator('#packTitre').inputValue());
   await ctx.close();
 }
 
-console.log('\n▶ Rien de créé : pas de section vide');
+console.log('\n▶ Rien de créé, mais on est créateur : la porte reste ouverte');
 {
+  /* Cette section RESTAIT masquée quand on n'avait rien publié — ce qui
+     était sans conséquence tant que la création vivait ailleurs. Depuis
+     la fusion, le bouton « Nouveau pack » est dedans : la masquer
+     enfermerait tout créateur débutant. */
   const { ctx, p } = await ouvrir(b, { packsCrees:[], achats:[ACHETE] });
   p.on('pageerror',e=>errors.push(e.message));
   await p.goto(BASE+'/profil.html'); await p.waitForTimeout(2000);
   await p.locator('.ptab[data-tab=formations]').click(); await p.waitForTimeout(1200);
-  check('« Mes créations » reste masquée', !(await p.locator('#formationsCreees').isVisible()));
+  check('« Mes créations » reste accessible', await p.locator('#formationsCreees').isVisible());
+  check('  avec le bouton pour publier la première',
+    await p.locator('#btnNouveauPack').isVisible());
+  check('  et une ligne qui dit qu\'il n\'y a rien encore',
+    await p.locator('#formationsCreeesVide').isVisible());
   check('« Mes achats » est affichée', await p.locator('#formationsAchetees').isVisible());
   await ctx.close();
 }
 
-console.log('\n▶ L\'espace créateur ne se fait plus passer pour un tableau de bord');
+console.log('\n▶ L\'espace créateur n\'existe plus qu\'en redirection');
 {
   const { ctx, p } = await ouvrir(b, { packsCrees:[MIEN], achats:[] });
   p.on('pageerror',e=>errors.push(e.message));
-  await p.goto(BASE+'/espace-createur.html'); await p.waitForTimeout(2200);
-  const t = await p.evaluate(()=>document.body.innerText);
-  check('plus de « Bienvenue » qui double l\'accueil du profil', !/Bienvenue,/.test(t));
-  check('un retour vers le profil est proposé',
-    await p.locator('#hero a[href="profil.html"]').count()===1);
-  check('la gestion des packs fonctionne toujours', /Encrage avancé/.test(t));
+  await p.goto(BASE+'/espace-createur.html'); await p.waitForTimeout(2400);
+  check('on arrive sur le profil, onglet Formations',
+    /profil\.html\?tab=formations/.test(p.url()), p.url());
+  check('la gestion des packs fonctionne toujours',
+    /Encrage avancé/.test(await p.evaluate(()=>document.body.innerText)));
   await ctx.close();
 }
 

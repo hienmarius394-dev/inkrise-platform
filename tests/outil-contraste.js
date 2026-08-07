@@ -140,13 +140,24 @@ const BASE = 'http://localhost:' + (Number(process.env.PORT) || 8108);
     await page.waitForTimeout(900);
     /* On vérifie qu'on est BIEN sur la page demandée. Une redirection
        silencieuse fausserait tout le relevé — c'était le défaut. */
-    if (!page.url().includes('/' + f)) detournees.push(f + ' → ' + page.url().split('/').pop());
-    // Le menu latéral est masqué au repos : on l'ouvre pour le mesurer aussi
+    if (!page.url().includes('/' + f)) {
+      /* On la signale ET on passe : la mesurer quand même attribuerait à
+         cette page les couleurs d'une autre. */
+      detournees.push(f + ' → ' + page.url().split('/').pop().slice(0, 40));
+      continue;
+    }
+    /* Le menu latéral et les MODALES sont masqués au repos. Tant qu'on ne
+       les ouvre pas, tout un pan d'interface — formulaires de pack, offres
+       créateur, recadrage, boîtes de confirmation — n'est jamais mesuré.
+       C'est exactement l'angle mort qui laissait passer les pages
+       protégées : ce qui ne s'affiche pas ne se contrôle pas. */
     await page.evaluate(() => {
       const d = document.getElementById('univDrawer');
       if (d) d.classList.add('open');
+      document.querySelectorAll('.modal-overlay, .crop-overlay, .confirm-overlay')
+        .forEach(m => m.classList.add('open'));
     });
-    await page.waitForTimeout(150);
+    await page.waitForTimeout(250);
     let rows = [];
     try { rows = await page.evaluate(PROBE); } catch (e) {}
     for (const r of rows) {

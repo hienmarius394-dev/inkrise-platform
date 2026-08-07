@@ -229,6 +229,12 @@
 .univ-nav-lk.active { color: var(--purple-link); background: var(--purple-voile); }
 .univ-nav-search { display: flex; align-items: center; background: var(--surface); border: 1px solid var(--border); border-radius: 18px; overflow: hidden; max-width: 200px; flex-shrink: 0; }
 @media (max-width: 480px) { .univ-nav-search { max-width: 110px; } }
+/* Sous 681px, la barre du BAS porte déjà un bouton de recherche : garder
+   en plus ce champ dans la barre du haut poussait le bouton de menu hors
+   de l'écran (386→426px sur un écran de 390). Personne ne l'avait vu parce
+   que les tests neutralisaient Google Fonts : tout était mesuré en fonte
+   système, où le logo Syne fait 88px au lieu de 142. */
+@media (max-width: 680px) { .univ-nav-search { display: none; } }
 .univ-nav-si { background: none; border: none; outline: none; color: var(--text); font-size: .8rem; padding: 7px 10px; width: 100%; font-family: 'DM Sans', sans-serif; }
 .univ-nav-si::placeholder { color: var(--text-3); }
 .univ-nav-sb { background: none; border: none; cursor: pointer; padding: 6px 8px; font-size: 13px; color: var(--text-3); flex-shrink: 0; }
