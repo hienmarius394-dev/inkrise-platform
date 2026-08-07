@@ -46,6 +46,7 @@ INKRISE_CHROME=/chemin/vers/chrome npm test
 | `decouverte` | Rangée de créateurs qui mène quelque part, genres visibles et cliquables, adresses partageables |
 | `lecture` | Onglet « Ma lecture » du profil : œuvres commencées et terminées, avis donnés, genres les plus lus, reprise |
 | `inscription` | Case CGU jamais pré-cochée et bloquante, bouton Google affiché seulement si le fournisseur est configuré |
+| `fusion-createur` | Un seul tableau de bord : créer, modifier et supprimer un pack depuis le profil, anciennes adresses redirigées, et le bouton « Nouveau pack » atteignable quand on n'a encore rien publié |
 | `polices` | Aucune des 21 pages n'appelle un domaine Google ; les quatre familles sont réellement dessinées (largeur mesurée contre la fonte système) ; texte lisible si les fichiers ne répondent plus ; liste de préchargement du service worker vérifiée fichier par fichier |
 
 ## Six outils de diagnostic (hors suites)
@@ -77,6 +78,14 @@ node tests/outil-chasse.js      # parcourt les pages : erreurs JS, textes
 URLS=… MODES=auth,anon \
   node tests/_txt.js            # texte visible de chaque page, à relire
 ```
+
+Un mot sur les POLICES, depuis qu'elles sont auto-hébergées : les suites
+neutralisaient `fonts.googleapis.com` pour ne pas dépendre du réseau, donc
+aucune police web ne se chargeait et **toutes les mesures de mise en page
+étaient prises en fonte système**. Les fichiers étant désormais servis par
+Inkrise, elles se chargent pour de bon. C'est ainsi qu'est apparu un bouton
+de menu à peu près entièrement hors de l'écran sur mobile (§7.15 de
+l'audit) : le logo en Syne fait 142 px là où Arial en faisait 88.
 
 `outil-invisible.js` mérite un mot : chacun de ses contrôles vient d'un vrai
 bug rencontré pendant l'audit — un qui ne plantait rien, n'affichait aucune

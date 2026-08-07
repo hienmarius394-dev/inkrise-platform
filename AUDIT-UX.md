@@ -1193,10 +1193,107 @@ exactement ce qu'on lui demande.
 
 ---
 
+## 7.14 Deux tableaux de bord pour une seule personne
+
+`profil.html` montrait les formations sans permettre de les modifier.
+`espace-createur.html` permettait de les modifier sans montrer le reste.
+Pour changer un prix, il fallait passer de l'un à l'autre — et le bouton
+« Gérer » du profil était un lien vers l'autre page.
+
+Tout tient désormais dans l'onglet **Formations** du profil : créer,
+modifier, supprimer, avec le nombre d'acheteurs par pack. La page
+`espace-createur.html` reste, réduite à une redirection de cinquante
+lignes : des liens extérieurs, des favoris et une redirection de
+`vercel.json` y menaient, et `?edit=7` — l'adresse d'édition directe
+appelée depuis `pack.html` — est reconduite telle quelle.
+
+**Trois briques existaient en double**, et une seule survit de chacune :
+
+- l'**outil de recadrage** (~90 lignes, mêmes noms de fonctions, mêmes
+  identifiants `#cropImg`/`#cropZoom` dans les deux pages). Celui du
+  profil était déjà paramétré (`aspect`, `outW`, `outH`, `shape`) pour
+  l'avatar et la couverture ; il sert maintenant aussi aux couvertures de
+  pack en 16/9 ;
+- la **boîte de confirmation**, remplacée par `inkriseConfirm` — la boîte
+  partagée du site, qui nomme la formation concernée au lieu d'un
+  « Supprimer ? » anonyme ;
+- le **bandeau de message**, déjà présent sur le profil.
+
+**Le piège de la fusion.** Le bouton « ＋ Nouveau pack » vit dans la
+section « Mes créations » — laquelle, jusqu'ici, se masquait quand on
+n'avait rien publié. C'était sans conséquence tant que la création vivait
+ailleurs ; une fois le bouton dedans, cela **enfermait tout créateur
+débutant**, sans aucun moyen de publier son premier pack. La section
+s'affiche donc désormais dès qu'on est créateur, avec une ligne qui dit
+qu'il n'y a rien encore. Un simple lecteur, lui, ne la voit pas.
+
+**Deux détails redressés en chemin.** Le message d'accueil de la
+connexion (« 🎨 Connecte-toi pour accéder à tes outils de création »)
+était perdu depuis que l'adresse d'arrivée avait changé : il est
+reconstitué à partir de `?tab=formations`. Et « Ouvrir mon espace 🎨 »,
+devenu un lien vers la page elle-même, rechargeait tout pour changer
+d'onglet — c'est maintenant une bascule.
+
+**Ce que les outils ont trouvé sur mon propre travail :**
+
+- `outil-injection` a relevé une **sortie d'attribut** dans la carte de
+  pack que je venais d'écrire. `escFormation` passait par
+  `textContent → innerHTML`, qui neutralise `& < >` mais **laisse passer
+  les guillemets** : sans danger dans du texte, mais je m'en servais pour
+  remplir `aria-label="…"`. Un titre de pack contenant un guillemet en
+  sortait. La fonction est alignée sur les douze autres échappements du
+  site — ce qui corrige du même coup le `src="…"` des couvertures, qui
+  avait le même défaut avant la fusion.
+- `outil-invisible` a signalé la barre du haut, et c'est le plus
+  intéressant : voir §7.15.
+
+---
+
+## 7.15 Le site n'avait jamais été mesuré avec ses vraies polices
+
+En auto-hébergeant les polices (§7.12), quelque chose d'inattendu s'est
+produit : `outil-invisible` a soudain relevé quatre débordements sur
+quatorze pages, là où il n'en voyait aucun la veille.
+
+La raison n'est pas une régression. **Toutes les suites neutralisaient
+`fonts.googleapis.com`** en renvoyant une feuille vide — nécessaire pour
+ne pas dépendre du réseau. Conséquence jamais tirée : aucune police web
+ne se chargeait, et **chaque mesure de mise en page depuis le début de
+l'audit avait été prise en fonte système**. Maintenant que les fichiers
+sont servis par Inkrise, ils se chargent pour de bon, et les suites
+mesurent enfin ce que voient les vraies personnes.
+
+Ce qu'elles ont vu, sur un écran de 390 px :
+
+| | logo Syne | bouton de menu |
+|---|---|---|
+| en fonte système (ce que les tests voyaient) | 88 px | 332→372, visible |
+| avec la vraie police (ce que voient les gens) | **142 px** | **386→426** |
+
+L'écran s'arrête à 390. Le bouton d'ouverture du menu était donc à peu
+près **entièrement hors de l'écran, sur tous les téléphones**, depuis
+toujours — 4 pixels visibles sur 40. Syne est une linéale d'affichage
+large ; en Arial le logo tenait, en Syne il pousse tout le reste dehors.
+
+Correction : sous 681 px, le champ de recherche de la barre du haut est
+masqué. Ce n'est pas une perte — **la barre du bas porte déjà un bouton
+de recherche** à ces largeurs, et c'est exactement le seuil où les liens
+de navigation du haut disparaissent déjà. Le bouton de menu revient à
+268→308.
+
+**Ce que le correctif a corrigé chez lui :** posée juste après la règle
+des liens, la règle `@media` se trouvait **avant** la déclaration de base
+`.univ-nav-search { display: flex }` — à spécificité égale, c'est la
+dernière qui gagne, donc la mienne était ignorée. Le symptôme n'a reculé
+que sur deux pages (celles où `index.html` redéclare son propre bloc) et
+persistait sur les douze autres. Déplacée après, elle s'applique partout.
+
+---
+
 ## Annexe — méthode
 
 ```bash
-npm test                       # 519/519 ✅  (23 suites)
+npm test                       # 555/555 ✅  (24 suites)
 node tests/outil-contraste.js  # 21 pages RÉELLEMENT atteintes, session simulée
 INKRISE_THEME=sombre \
   node tests/outil-contraste.js   # le même relevé, en thème sombre
@@ -1208,6 +1305,7 @@ npm test -- veille             # 16/16 — écran maintenu allumé
 npm test -- confort            # 21/21 — plein écran et zoom
 npm test -- double-page        # 23/23 — paires, sens de lecture, repli
 npm test -- polices            # 19/19 — polices auto-hébergées, 0 appel à Google
+npm test -- fusion-createur    # 34/34 — un seul tableau de bord
 npm test -- moderation         # 29/29 — masquer, rétablir, classer
 npm test -- vues               # 15/15 — lectures comptées, y compris sans compte
 npm test -- decouverte         # 17/17 — créateurs et genres accessibles

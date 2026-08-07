@@ -351,7 +351,7 @@ body::after {
     <a href="index.html" class="univ-nav-lk">Accueil</a>
     <a href="recherche.html" class="univ-nav-lk">Mangas</a>
     <a href="tutoriels.html" class="univ-nav-lk">Tutoriels</a>
-    <a href="espace-createur.html" class="univ-nav-lk">Espace Créateur</a>
+    <a href="profil.html?tab=formations" class="univ-nav-lk">Espace Créateur</a>
   </div>
   <div class="univ-nav-search">
     <input type="text" id="navSearchInput" class="univ-nav-si" placeholder="Rechercher…" onkeydown="if(event.key==='Enter')doSearch()" />
@@ -376,7 +376,7 @@ body::after {
   <a href="index.html" class="univ-d-item"><div class="univ-d-icon">🏠</div>Accueil</a>
   <a href="recherche.html" class="univ-d-item"><div class="univ-d-icon">📖</div>Manga &amp; BD</a>
   <a href="tutoriels.html" class="univ-d-item"><div class="univ-d-icon">🎓</div>Tutoriels</a>
-  <a href="espace-createur.html" class="univ-d-item"><div class="univ-d-icon">🎨</div>Espace Créateur <span class="univ-d-badge teal">GRATUIT</span></a>
+  <a href="profil.html?tab=formations" class="univ-d-item"><div class="univ-d-icon">🎨</div>Espace Créateur <span class="univ-d-badge teal">GRATUIT</span></a>
   <a href="communaute.html" class="univ-d-item"><div class="univ-d-icon">👥</div>Communauté</a>
   <div class="univ-d-divider"></div>
   <div class="univ-d-sec">Mon compte</div>
@@ -562,7 +562,7 @@ const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
    retrouvait sur la connexion sans explication, puis atterrissait sur
    l'accueil : son intention de départ était perdue en route. */
 const PAGES_AUTORISEES = ['index.html','profil.html','upload-manga.html',
-  'espace-createur.html','gestion-chapitres.html','bibliotheque.html','communaute.html',
+  'profil.html?tab=formations','gestion-chapitres.html','bibliotheque.html','communaute.html',
   'manga.html','pack.html','tutoriels.html','recherche.html','auteur.html','lecteur.html'];
 
 function destinationApresConnexion(defaut) {

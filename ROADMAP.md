@@ -30,7 +30,8 @@ Inkrise = plateforme pour artistes manga/webtoon :
 
 ## Architecture
 
-- **Frontend** : 21 pages HTML autonomes (vanilla JS + CSS en ligne),
+- **Frontend** : 20 pages HTML autonomes (vanilla JS + CSS en ligne) —
+  `espace-createur.html` n'est plus qu'une redirection vers le profil —
   déployées sur Vercel. Socle partagé dans `assets/` :
   `inkrise-theme.css` (couleurs, thème sombre), `inkrise-theme.js` (choix
   du thème, en `<head>`), `inkrise-config.js` (clés publiques),
@@ -41,7 +42,7 @@ Inkrise = plateforme pour artistes manga/webtoon :
   `covers`, `pages`, `community`).
 - **Serveur** : `api/og.js` (aperçus de lien, Vercel) et
   `supabase/functions/` (paiement CinetPay, envoi des notifications push).
-- **Tests** : 23 suites Playwright, 519 vérifications, plus six outils de
+- **Tests** : 24 suites Playwright, 555 vérifications, plus six outils de
   diagnostic (contraste, défauts silencieux, RLS sur PostgreSQL réel,
   échappement, pannes, chasse aux zones cliquables). Voir `tests/README.md`.
 
@@ -105,8 +106,15 @@ Inkrise = plateforme pour artistes manga/webtoon :
 ~~9. **Comptage des vues côté serveur**~~ — ✅ livré : les compteurs ne
    s'écrivent plus à la main (un auteur pouvait mettre ses vues à 999 999),
    et les lecteurs déconnectés sont enfin comptés.
-10. **Fusionner `espace-createur.html` dans `profil.html`** — deux tableaux
-    de bord pour la même personne.
+~~10. **Fusionner `espace-createur.html` dans `profil.html`**~~ — ✅ livré.
+    Le profil montrait les formations sans permettre de les modifier ;
+    l'espace créateur permettait de les modifier sans montrer le reste.
+    Tout tient maintenant dans l'onglet **Formations** : créer, modifier,
+    supprimer, avec le nombre d'acheteurs par pack. `espace-createur.html`
+    subsiste en redirection de cinquante lignes (les favoris, les liens
+    extérieurs et `?edit=7` continuent de fonctionner). Trois briques qui
+    existaient en double disparaissent : l'outil de recadrage, la boîte de
+    confirmation et le bandeau de message.
 ~~11. **Polices auto-hébergées**~~ — ✅ livré : les quatre familles (Syne,
     DM Sans, Nunito, Bebas Neue) sont servies depuis `assets/fonts/`. Plus
     aucun appel à `fonts.googleapis.com` ni `fonts.gstatic.com` sur les 21

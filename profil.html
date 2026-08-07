@@ -619,6 +619,89 @@
     .crop-actions { display: flex; gap: 10px; margin-top: 20px; }
     .crop-actions button { flex: 1; }
 
+    /* ── FORMULAIRE DE PACK (venu d'espace-createur.html) ──
+       Ce formulaire vivait sur une seconde page qui était, pour la même
+       personne, un second tableau de bord. Il tient ici, dans l'onglet
+       Formations, avec le recadrage, la confirmation et le bandeau de
+       la page — trois choses qui existaient en double. */
+    .pack-form-group { margin-bottom: 18px; }
+    .pack-form-label {
+      display: block; font-size: 0.78rem; font-weight: 700;
+      color: var(--muted); margin-bottom: 7px;
+      text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .pack-form-input, .pack-form-textarea, .pack-form-select {
+      width: 100%; background: var(--surface2);
+      border: 1px solid var(--border); border-radius: 10px;
+      padding: 11px 14px; color: var(--text);
+      font-size: 0.9rem; font-family: 'Nunito', sans-serif;
+      outline: none; transition: border-color .2s;
+    }
+    .pack-form-input:focus, .pack-form-textarea:focus, .pack-form-select:focus { border-color: var(--purple); }
+    .pack-form-textarea { min-height: 92px; resize: vertical; line-height: 1.5; }
+    /* Le texte d'invite doit rester lisible : à --muted il se confondait
+       avec une valeur réellement saisie. */
+    .pack-form-input::placeholder, .pack-form-textarea::placeholder { color: var(--text-3); opacity: 1; }
+    .pack-form-hint { font-size: 0.74rem; color: var(--muted); margin-top: 5px; line-height: 1.45; }
+    .pack-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    @media (max-width: 560px) { .pack-form-row { grid-template-columns: 1fr; } }
+
+    .pack-cover-picker {
+      position: relative; width: 100%; aspect-ratio: 16/9;
+      border-radius: 12px; overflow: hidden; cursor: pointer;
+      border: 1px dashed var(--border); background: var(--surface2);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .pack-cover-picker:hover { border-color: var(--purple); }
+    .pack-cover-picker img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .pack-cover-empty {
+      display: flex; flex-direction: column; align-items: center; gap: 6px;
+      color: var(--muted); font-size: 0.82rem; font-weight: 700;
+    }
+    .pack-cover-edit {
+      position: absolute; right: 10px; bottom: 10px;
+      background: rgba(0,0,0,0.62); color: #fff;
+      font-size: 0.74rem; font-weight: 700;
+      padding: 6px 12px; border-radius: 20px;
+    }
+    .pack-images-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+      gap: 8px; margin-top: 10px;
+    }
+    .pack-image-tile {
+      position: relative; aspect-ratio: 1; border-radius: 10px;
+      overflow: hidden; border: 1px solid var(--border);
+    }
+    .pack-image-tile img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .pack-image-del {
+      position: absolute; top: 3px; right: 3px;
+      width: 22px; height: 22px; border-radius: 50%;
+      background: rgba(0,0,0,0.66); color: #fff; border: none;
+      font-size: 0.66rem; cursor: pointer; line-height: 1;
+    }
+    .pack-form-actions { display: flex; gap: 10px; margin-top: 24px; }
+    .pack-form-actions button { flex: 1; margin-top: 0; }
+    .btn-ghost {
+      background: var(--surface2); color: var(--text);
+      border: 1px solid var(--border); border-radius: 9px;
+      padding: 10px 22px; font-weight: 800; font-size: 0.88rem;
+      cursor: pointer; font-family: 'Nunito', sans-serif;
+    }
+    .btn-ghost:hover { border-color: var(--purple); }
+
+    /* Cartes de packs gérables, dans l'onglet Formations */
+    .pack-card-actions { display: flex; gap: 6px; margin: 0 10px 10px; }
+    .pack-card-actions button {
+      flex: 1; padding: 9px; border-radius: 9px;
+      background: var(--surface); border: 1px solid var(--border);
+      color: var(--text); font-size: .8rem; font-weight: 700;
+      cursor: pointer; font-family: 'Nunito', sans-serif;
+    }
+    .pack-card-actions button:hover { border-color: var(--purple); }
+    .pack-card-actions button.danger { flex: 0 0 42px; color: var(--danger-link); }
+    .pack-card-actions button.danger:hover { border-color: var(--danger-link); }
+    .pack-buyers { font-size: .72rem; color: var(--muted); padding: 0 10px 8px; }
+
     .plans-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -798,7 +881,7 @@
     <a href="index.html" class="univ-nav-lk">Accueil</a>
     <a href="recherche.html" class="univ-nav-lk">Mangas</a>
     <a href="tutoriels.html" class="univ-nav-lk">Tutoriels</a>
-    <a href="espace-createur.html" class="univ-nav-lk">Espace Créateur</a>
+    <a href="profil.html?tab=formations" class="univ-nav-lk">Espace Créateur</a>
   </div>
   <div class="univ-nav-search">
     <input type="text" id="navSearchInput" class="univ-nav-si" placeholder="Rechercher…" onkeydown="if(event.key==='Enter')doSearch()" />
@@ -823,7 +906,7 @@
   <a href="index.html" class="univ-d-item"><div class="univ-d-icon">🏠</div>Accueil</a>
   <a href="recherche.html" class="univ-d-item"><div class="univ-d-icon">📖</div>Manga & BD</a>
   <a href="tutoriels.html" class="univ-d-item"><div class="univ-d-icon">🎓</div>Tutoriels</a>
-  <a href="espace-createur.html" class="univ-d-item"><div class="univ-d-icon">🎨</div>Espace Créateur <span class="univ-d-badge teal">GRATUIT</span></a>
+  <a href="profil.html?tab=formations" class="univ-d-item"><div class="univ-d-icon">🎨</div>Espace Créateur <span class="univ-d-badge teal">GRATUIT</span></a>
   <a href="communaute.html" class="univ-d-item"><div class="univ-d-icon">👥</div>Communauté</a>
   <div class="univ-d-divider"></div>
   <div class="univ-d-sec">Mon compte</div>
@@ -972,12 +1055,18 @@
       <span></span><span></span><span></span>
     </div>
 
+    <!-- Visible dès qu'on est créateur, MÊME sans aucun pack : sinon le
+         bouton « Nouveau pack » vivrait dans une section masquée et un
+         créateur débutant n'aurait aucun moyen d'en créer un. -->
     <div id="formationsCreees" style="display:none;">
       <div class="section-header" style="margin-top:4px;">
         <div class="section-title" style="font-size:.92rem;">✏️ Mes créations</div>
-        <a href="espace-createur.html" class="btn-upload" style="text-decoration:none;">＋ Nouveau pack</a>
+        <button type="button" class="btn-upload" id="btnNouveauPack">＋ Nouveau pack</button>
       </div>
       <div class="manga-grid" id="formationsGrilleCreees"></div>
+      <p id="formationsCreeesVide" class="pack-form-hint" style="display:none;margin:2px 0 4px;">
+        Tu n'as pas encore publié de formation. « ＋ Nouveau pack » ouvre le formulaire.
+      </p>
     </div>
 
     <div id="formationsAchetees" style="display:none;">
@@ -1096,7 +1185,7 @@
           <h3>🎨 Espace Créateur</h3>
           <div style="display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;">
             <div style="font-size:0.88rem; color:var(--muted);" id="planUpsellText">Crée et vends tes packs de dessin, ebooks et tutoriels — gratuitement.</div>
-            <a class="btn-creator" id="btnOpenPlans2" href="espace-createur.html" style="text-decoration:none;">Ouvrir mon espace 🎨</a>
+            <button type="button" class="btn-creator" id="btnOpenPlans2">Ouvrir mes formations 🎨</button>
           </div>
         </div>
   </div>
@@ -1148,7 +1237,100 @@
 
 </div>
 
-<!-- ── MODAL RECADRAGE (couverture / avatar) ── -->
+<!-- ── MODAL PACK TUTORIEL (création et édition) ──
+     Venue d'espace-createur.html. Elle réutilise le recadrage, la boîte de
+     confirmation et le bandeau de cette page : trois briques qui existaient
+     en double, une par tableau de bord. -->
+<div class="modal-overlay" id="packModal">
+  <div class="modal" style="max-width:640px;">
+    <button class="modal-close" id="packModalClose" aria-label="Fermer">✕</button>
+    <div class="modal-title" id="packModalTitle" style="font-size:1.6rem;">Nouveau pack</div>
+    <div class="modal-sub" id="packModalSub">Tes formations sont vendues sur Inkrise, sans abonnement.</div>
+
+    <form id="packForm" novalidate>
+      <input type="hidden" id="packEditId" value="" />
+
+      <div class="pack-form-group">
+        <label class="pack-form-label" for="packTitre">Titre</label>
+        <input class="pack-form-input" type="text" id="packTitre" required
+               placeholder="Ex : Dessiner les visages manga" />
+      </div>
+
+      <div class="pack-form-group">
+        <label class="pack-form-label" for="packDesc">Description</label>
+        <textarea class="pack-form-textarea" id="packDesc"
+                  placeholder="Décris ta formation en quelques phrases…"></textarea>
+      </div>
+
+      <div class="pack-form-row">
+        <div class="pack-form-group">
+          <label class="pack-form-label" for="packPrix">Prix (€)</label>
+          <input class="pack-form-input" type="number" id="packPrix" min="0" step="0.5" value="2.00" required />
+          <div class="pack-form-hint">0 pour une formation gratuite.</div>
+        </div>
+        <div class="pack-form-group">
+          <label class="pack-form-label" for="packLimite">Limite de ventes</label>
+          <input class="pack-form-input" type="number" id="packLimite" min="1" step="1" placeholder="Ex : 20" />
+          <div class="pack-form-hint">Laisse vide pour ne pas limiter.</div>
+        </div>
+      </div>
+
+      <div class="pack-form-group">
+        <label class="pack-form-label" for="packCoverFile">Couverture</label>
+        <div class="pack-cover-picker" id="packCoverPicker" role="button" tabindex="0"
+             aria-label="Choisir une couverture">
+          <img id="packCoverPreview" src="" alt="" style="display:none;" />
+          <div class="pack-cover-empty" id="packCoverEmpty">
+            <span style="font-size:1.6rem;">🖼️</span>
+            <span>Ajouter une couverture</span>
+          </div>
+          <div class="pack-cover-edit" id="packCoverEdit" style="display:none;">📷 Changer</div>
+        </div>
+        <input type="file" id="packCoverFile" accept="image/*" style="display:none;" />
+        <input type="hidden" id="packCoverUrl" />
+        <div class="pack-form-hint" id="packCoverStatus"></div>
+      </div>
+
+      <div class="pack-form-group">
+        <label class="pack-form-label" for="packVideo">Vidéo (optionnel)</label>
+        <input class="pack-form-input" type="url" id="packVideo" placeholder="URL YouTube ou Vimeo…" />
+      </div>
+
+      <div class="pack-form-group">
+        <span class="pack-form-label">Images du pack</span>
+        <div class="pack-images-grid" id="packImagesGrid"></div>
+        <button type="button" class="btn-ghost" id="btnPackImages" style="margin-top:10px;">📷 Ajouter des images</button>
+        <input type="file" id="packImagesInput" accept="image/*" multiple style="display:none;" />
+        <div class="pack-form-hint" id="packImagesStatus"></div>
+      </div>
+
+      <div class="pack-form-group">
+        <label class="pack-form-label" for="packObjectifs">Ce qu'on y apprend</label>
+        <textarea class="pack-form-textarea" id="packObjectifs"
+                  placeholder="Une ligne par objectif :&#10;Maîtriser les proportions du visage&#10;Dessiner des expressions vivantes"></textarea>
+      </div>
+
+      <div class="pack-form-group">
+        <label class="pack-form-label" for="packNiveau">Niveau</label>
+        <select class="pack-form-select" id="packNiveau">
+          <option>Tous niveaux</option>
+          <option>Débutant</option>
+          <option>Intermédiaire</option>
+          <option>Avancé</option>
+        </select>
+      </div>
+
+      <div id="packFormMsg" class="pack-form-hint" role="status" aria-live="polite"></div>
+
+      <div class="pack-form-actions">
+        <button type="button" class="btn-ghost" id="packFormCancel">Annuler</button>
+        <button type="submit" class="btn-save" id="packFormSubmit">Créer la formation</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ── MODAL RECADRAGE (couverture / avatar / couverture de pack) ── -->
 <div class="modal-overlay" id="cropModal">
   <div class="modal" style="max-width:460px;">
     <button class="modal-close" id="cropModalClose">✕</button>
@@ -1258,11 +1440,21 @@
     }).join('');
   }
 
+  /* Quelqu'un qui arrivait par `espace-createur.html` voyait à la
+     connexion « 🎨 Connecte-toi pour accéder à tes outils de création ».
+     Cette page redirigeant désormais ici, on garde ce message quand
+     l'adresse vise bien les outils de création — sinon on retombe sur
+     l'accueil générique. */
+  function raisonConnexion() {
+    const q = new URLSearchParams(location.search);
+    return (q.get('tab') === 'formations' || q.get('edit')) ? 'createur' : 'connexion';
+  }
+
   // ── INIT ──
   async function init() {
     const { data: { session } } = await sb.auth.getSession();
     if (!session) {
-      window.location.href = 'auth.html?next=' + encodeURIComponent(location.pathname.split('/').pop() + location.search) + '&raison=connexion';
+      window.location.href = 'auth.html?next=' + encodeURIComponent(location.pathname.split('/').pop() + location.search) + '&raison=' + raisonConnexion();
       return;
     }
     currentUser = session.user;
@@ -1276,6 +1468,19 @@
     loadAbonnes();
     await loadNotifications();
     if (window.location.hash === '#notifications') activateNotifTab();
+
+    /* `?tab=` et `?edit=` : l'ancien espace créateur y menait par ses
+       propres adresses (`espace-createur.html?edit=7`, appelé depuis
+       `pack.html`). Elles redirigent ici, et doivent donc encore ouvrir
+       le bon onglet et le bon formulaire. */
+    const params = new URLSearchParams(location.search);
+    const onglet = params.get('tab');
+    if (onglet && document.getElementById('tab-' + onglet)) goToTab(onglet);
+    const aEditer = parseInt(params.get('edit'), 10);
+    if (Number.isFinite(aEditer)) {
+      goToTab('formations');
+      await ouvrirPack(aEditer);
+    }
 
     /* La cloche pointe vers profil.html#notifications : quand on est déjà
        sur cette page, le navigateur change juste le hash sans recharger,
@@ -1565,7 +1770,7 @@
   // ── DEVENIR CRÉATEUR (gratuit, une seule fois) ──
   async function choosePlan(plan) {
     const { data } = await sb.auth.getSession();
-    if (!data.session) { window.location.href = 'auth.html?next=' + encodeURIComponent(location.pathname.split('/').pop() + location.search) + '&raison=connexion'; return; }
+    if (!data.session) { window.location.href = 'auth.html?next=' + encodeURIComponent(location.pathname.split('/').pop() + location.search) + '&raison=' + raisonConnexion(); return; }
     const updates = { is_creator: true };
     const { error } = await sb.from('profiles').update(updates).eq('id', data.session.user.id);
     if (error) { showToast('Erreur : ' + error.message, 'error'); return; }
@@ -1576,9 +1781,16 @@
     setTimeout(() => window.location.reload(), 900);
   }
 
+  /* Ces deux boutons menaient à l'espace créateur, une autre page. Depuis
+     la fusion, la destination est un onglet de CETTE page : y « naviguer »
+     rechargerait tout pour rien. */
   document.querySelector('.btn-plan.free')?.addEventListener('click', () => {
     if (!userProfile?.is_creator) choosePlan('gratuit');
-    else window.location.href = 'espace-createur.html';
+    else { closePlans(); goToTab('formations'); }
+  });
+  document.getElementById('btnOpenPlans2')?.addEventListener('click', () => {
+    if (!userProfile?.is_creator) choosePlan('gratuit');
+    else goToTab('formations');
   });
 
   // ── CHARGER MANGAS ──
@@ -1788,15 +2000,26 @@
   }
 
   // ── MES FORMATIONS (achetées + créées) ──
+  /* `textContent → innerHTML` neutralise & < > mais LAISSE PASSER les
+     guillemets : sans danger dans du texte, mais cette fonction sert aussi
+     à remplir des attributs (`src="…"`, `aria-label="…"`). Un titre de pack
+     contenant un guillemet sortait alors de son attribut. Aligné sur les
+     douze autres échappements du site. */
   function escFormation(str) {
-    const d = document.createElement('div');
-    d.textContent = String(str ?? '');
-    return d.innerHTML;
+    return String(str ?? '').replace(/[&<>"']/g,
+      c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
   }
+  /* Deux listes bien distinctes : ce que j'ai PUBLIÉ (modifiable ici même)
+     et ce que j'ai ACHETÉ. Elles étaient mélangées dans une seule grille,
+     et l'édition vivait sur une autre page. */
+  let mesPacks = [];
+
   async function loadFormations() {
     const loadingEl = document.getElementById('formationsLoading');
     const gridEl = document.getElementById('formationsGrid');
     const emptyEl = document.getElementById('formationsEmpty');
+    const secC = document.getElementById('formationsCreees');
+    const secA = document.getElementById('formationsAchetees');
     loadingEl.style.display = 'flex';
 
     const [{ data: achats }, { data: crees }] = await Promise.all([
@@ -1810,64 +2033,297 @@
     const packs = Array.from(byId.values());
 
     loadingEl.style.display = 'none';
-
-    if (!packs.length) {
-      gridEl.style.display = 'none';
-      document.getElementById('formationsCreees').style.display = 'none';
-      document.getElementById('formationsAchetees').style.display = 'none';
-      emptyEl.style.display = 'block';
-      return;
-    }
-    gridEl.style.display = 'grid';
-    emptyEl.style.display = 'none';
-
-    /* Créations et achats étaient mélangés dans une seule grille : on
-       ne savait pas d'un coup d'œil ce qu'on pouvait modifier, et rien
-       ne menait à l'édition. Deux sections, et un bouton « Gérer » qui
-       ouvre directement le pack concerné dans l'espace créateur. */
-    const mesCreations = packs.filter(p => p.auteur_id === currentUser.id);
-    const mesAchats    = packs.filter(p => p.auteur_id !== currentUser.id);
-
-    const carte = (p, gerable) => {
-      const cover = p.image_url
-        ? '<img class="manga-cover" src="' + escFormation(p.image_url) + '" alt="" loading="lazy" />'
-        : '<div class="manga-cover-placeholder">🎓</div>';
-      const prix = Number(p.prix);
-      const etiquette = !prix || isNaN(prix) ? 'Gratuit'
-        : (prix % 1 === 0 ? prix : prix.toFixed(2)) + ' €';
-      return '<div class="manga-card" style="display:flex;flex-direction:column;">' +
-        '<a href="pack.html?id=' + p.id + '" style="text-decoration:none;color:inherit;display:block;">' +
-          cover +
-          '<div class="manga-info">' +
-            '<div class="manga-title">' + escFormation(p.titre || 'Sans titre') + '</div>' +
-            '<div class="manga-meta"><span>' + (gerable ? etiquette : '🎓 Achetée') + '</span></div>' +
-          '</div>' +
-        '</a>' +
-        (gerable
-          ? '<a href="espace-createur.html?edit=' + p.id + '" ' +
-            'style="display:block;margin:0 10px 10px;padding:9px;border-radius:9px;text-align:center;' +
-            'background:var(--surface);border:1px solid var(--border);color:var(--text);' +
-            'font-size:.8rem;font-weight:700;text-decoration:none;">✏️ Gérer</a>'
-          : '') +
-      '</div>';
-    };
-
-    const secC = document.getElementById('formationsCreees');
-    const secA = document.getElementById('formationsAchetees');
     gridEl.style.display = 'none';
 
-    if (mesCreations.length) {
-      secC.style.display = 'block';
-      document.getElementById('formationsGrilleCreees').innerHTML =
-        mesCreations.map(p => carte(p, true)).join('');
-    } else { secC.style.display = 'none'; }
+    const mesCreations = packs.filter(p => p.auteur_id === currentUser.id);
+    const mesAchats    = packs.filter(p => p.auteur_id !== currentUser.id);
+    mesPacks = mesCreations;
 
-    if (mesAchats.length) {
-      secA.style.display = 'block';
-      document.getElementById('formationsGrilleAchetees').innerHTML =
-        mesAchats.map(p => carte(p, false)).join('');
-    } else { secA.style.display = 'none'; }
+    /* Combien d'acheteurs par pack — l'information qui justifiait à elle
+       seule d'ouvrir l'ancien espace créateur. */
+    const acheteurs = {};
+    if (mesCreations.length) {
+      const { data: ventes } = await sb.from('achats_packs')
+        .select('pack_id').in('pack_id', mesCreations.map(p => p.id));
+      (ventes || []).forEach(v => { acheteurs[v.pack_id] = (acheteurs[v.pack_id] || 0) + 1; });
+    }
+
+    /* La section « Mes créations » s'affiche dès qu'on est créateur, MÊME
+       sans aucun pack : sinon le bouton « Nouveau pack » serait enfermé
+       dans une section masquée et il n'y aurait aucun moyen d'en créer un. */
+    const estCreateur = !!(userProfile && userProfile.is_creator);
+    const rienDuTout = !packs.length && !estCreateur;
+    emptyEl.style.display = rienDuTout ? 'block' : 'none';
+
+    secC.style.display = (estCreateur || mesCreations.length) ? 'block' : 'none';
+    document.getElementById('formationsCreeesVide').style.display =
+      mesCreations.length ? 'none' : 'block';
+    document.getElementById('formationsGrilleCreees').innerHTML =
+      mesCreations.map(p => carteFormation(p, true, acheteurs[p.id] || 0)).join('');
+    brancherActionsPack();
+
+    secA.style.display = mesAchats.length ? 'block' : 'none';
+    document.getElementById('formationsGrilleAchetees').innerHTML =
+      mesAchats.map(p => carteFormation(p, false, 0)).join('');
   }
+
+  function carteFormation(p, gerable, acheteurs) {
+    const cover = p.image_url
+      ? '<img class="manga-cover" src="' + escFormation(p.image_url) + '" alt="" loading="lazy" />'
+      : '<div class="manga-cover-placeholder">🎓</div>';
+    const prix = Number(p.prix);
+    const etiquette = !prix || isNaN(prix) ? 'Gratuit'
+      : (prix % 1 === 0 ? prix : prix.toFixed(2)) + ' €';
+    return '<div class="manga-card" style="display:flex;flex-direction:column;">' +
+      '<a href="pack.html?id=' + p.id + '" style="text-decoration:none;color:inherit;display:block;">' +
+        cover +
+        '<div class="manga-info">' +
+          '<div class="manga-title">' + escFormation(p.titre || 'Sans titre') + '</div>' +
+          '<div class="manga-meta"><span>' + (gerable ? etiquette : '🎓 Achetée') + '</span></div>' +
+        '</div>' +
+      '</a>' +
+      (gerable
+        ? '<div class="pack-buyers">👥 ' + acheteurs + ' acheteur' + (acheteurs !== 1 ? 's' : '') +
+            (p.limite_ventes ? ' · 🎯 limité à ' + Number(p.limite_ventes) : '') + '</div>' +
+          '<div class="pack-card-actions">' +
+            '<button type="button" data-modifier="' + p.id + '">✏️ Modifier</button>' +
+            '<button type="button" class="danger" data-supprimer="' + p.id + '" ' +
+              'aria-label="Supprimer ' + escFormation(p.titre || 'cette formation') + '">🗑️</button>' +
+          '</div>'
+        : '') +
+    '</div>';
+  }
+
+  /* Les boutons sont posés par innerHTML : on les rebranche à chaque
+     rendu, plutôt que d'écrire des onclick= qui obligeraient à exposer
+     les fonctions sur window et à échapper l'identifiant deux fois. */
+  function brancherActionsPack() {
+    document.querySelectorAll('#formationsGrilleCreees [data-modifier]').forEach(b =>
+      b.addEventListener('click', () => ouvrirPack(Number(b.dataset.modifier))));
+    document.querySelectorAll('#formationsGrilleCreees [data-supprimer]').forEach(b =>
+      b.addEventListener('click', () => supprimerPack(Number(b.dataset.supprimer))));
+  }
+
+  /* ── FORMULAIRE DE PACK ─────────────────────────────────────────── */
+  let packImages = [];
+
+  function rendrePackImages() {
+    const grid = document.getElementById('packImagesGrid');
+    grid.innerHTML = packImages.map((u, i) =>
+      '<div class="pack-image-tile">' +
+        '<img src="' + escFormation(u) + '" alt="" />' +
+        '<button type="button" class="pack-image-del" data-i="' + i + '" ' +
+          'aria-label="Retirer l\'image ' + (i + 1) + '">✕</button>' +
+      '</div>').join('');
+    grid.querySelectorAll('.pack-image-del').forEach(b => b.addEventListener('click', () => {
+      packImages.splice(Number(b.dataset.i), 1);
+      rendrePackImages();
+    }));
+    document.getElementById('packImagesStatus').textContent =
+      packImages.length ? packImages.length + ' image(s)' : '';
+  }
+
+  function apercuCouverture(url) {
+    const img = document.getElementById('packCoverPreview');
+    const vide = document.getElementById('packCoverEmpty');
+    const edit = document.getElementById('packCoverEdit');
+    if (url) { img.src = url; img.style.display = ''; vide.style.display = 'none'; edit.style.display = ''; }
+    else { img.removeAttribute('src'); img.style.display = 'none'; vide.style.display = 'flex'; edit.style.display = 'none'; }
+  }
+
+  function ouvrirModalePack() {
+    document.getElementById('packFormMsg').textContent = '';
+    document.getElementById('packModal').classList.add('open');
+    document.getElementById('packTitre').focus();
+  }
+  function fermerModalePack() {
+    document.getElementById('packModal').classList.remove('open');
+  }
+
+  function nouveauPack() {
+    document.getElementById('packModalTitle').textContent = 'Nouveau pack';
+    document.getElementById('packFormSubmit').textContent = 'Créer la formation';
+    document.getElementById('packForm').reset();
+    document.getElementById('packEditId').value = '';
+    document.getElementById('packPrix').value = '2.00';
+    document.getElementById('packCoverUrl').value = '';
+    document.getElementById('packCoverStatus').textContent = '';
+    apercuCouverture(null);
+    packImages = []; rendrePackImages();
+    ouvrirModalePack();
+  }
+
+  async function ouvrirPack(packId) {
+    /* On relit la ligne : la carte n'a que ce que la grille affichait, pas
+       les objectifs ni les images. */
+    const { data: pack } = await sb.from('packs_tutoriels').select('*').eq('id', packId).single();
+    if (!pack) { showToast('Formation introuvable', 'error'); return; }
+    document.getElementById('packModalTitle').textContent = 'Modifier la formation';
+    document.getElementById('packFormSubmit').textContent = 'Enregistrer';
+    document.getElementById('packEditId').value = pack.id;
+    document.getElementById('packTitre').value = pack.titre || '';
+    document.getElementById('packDesc').value = pack.description || '';
+    document.getElementById('packPrix').value = pack.prix != null ? pack.prix : '2.00';
+    document.getElementById('packLimite').value = pack.limite_ventes || '';
+    document.getElementById('packVideo').value = pack.contenu_url || '';
+    document.getElementById('packObjectifs').value =
+      Array.isArray(pack.objectifs) ? pack.objectifs.join('\n') : '';
+    document.getElementById('packNiveau').value = pack.niveau || 'Tous niveaux';
+    document.getElementById('packCoverUrl').value = pack.image_url || '';
+    document.getElementById('packCoverStatus').textContent = '';
+    apercuCouverture(pack.image_url || null);
+    packImages = Array.isArray(pack.images) ? pack.images.filter(Boolean) : [];
+    rendrePackImages();
+    ouvrirModalePack();
+  }
+
+  /* Colonnes possiblement absentes du schéma (objectifs, niveau, images,
+     limite_ventes) : on retente sans elles plutôt que d'échouer. */
+  function colonnesSures(row, cles) {
+    const slim = {};
+    cles.forEach(k => { if (row[k] !== undefined) slim[k] = row[k]; });
+    return slim;
+  }
+
+  async function supprimerPack(packId) {
+    const pack = mesPacks.find(p => p.id === packId);
+    const ok = await inkriseConfirm({
+      title: 'Supprimer cette formation ?',
+      message: '« ' + (pack && pack.titre ? pack.titre : 'Cette formation') + ' » sera retirée ' +
+               'définitivement. Les personnes qui l\'ont déjà achetée perdront l\'accès.',
+      confirmLabel: 'Supprimer', danger: true,
+    });
+    if (!ok) return;
+    /* `.eq('auteur_id', …)` en plus de l'identifiant : la politique RLS le
+       fait déjà, mais une suppression qui ne touche aucune ligne renvoie
+       `error: null` — on veut donc que la requête soit exacte. */
+    const { error } = await sb.from('packs_tutoriels').delete()
+      .eq('id', packId).eq('auteur_id', currentUser.id);
+    if (error) { showToast('Suppression impossible : ' + error.message, 'error'); return; }
+    showToast('Formation supprimée', 'success');
+    await loadFormations();
+  }
+
+  document.getElementById('btnNouveauPack').addEventListener('click', nouveauPack);
+  document.getElementById('packModalClose').addEventListener('click', fermerModalePack);
+  document.getElementById('packFormCancel').addEventListener('click', fermerModalePack);
+  document.getElementById('packModal').addEventListener('click', function (e) {
+    if (e.target === this) fermerModalePack();
+  });
+
+  // Le sélecteur de couverture est une div : il lui faut le clavier aussi.
+  const picker = document.getElementById('packCoverPicker');
+  picker.addEventListener('click', () => document.getElementById('packCoverFile').click());
+  picker.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); picker.click(); }
+  });
+
+  /* Recadrage : c'est l'outil DÉJÀ présent sur cette page pour l'avatar et
+     la couverture de profil, avec d'autres proportions. L'ancien espace
+     créateur en embarquait une seconde copie, quasi identique. */
+  document.getElementById('packCoverFile').addEventListener('change', async function () {
+    const file = this.files[0];
+    this.value = '';
+    if (!file) return;
+    const recadree = await openCropModal(file, {
+      aspect: '16/9', outW: 1600, outH: 900, shape: 'rect',
+      title: 'Recadrer la couverture',
+    });
+    if (!recadree) return;
+    const statut = document.getElementById('packCoverStatus');
+    statut.textContent = '⏳ Envoi en cours…';
+    try {
+      const chemin = 'packs/' + currentUser.id + '_' + Date.now() + '.jpg';
+      const { error } = await sb.storage.from('covers').upload(chemin, recadree, { upsert: true });
+      if (error) throw error;
+      const { data: pub } = sb.storage.from('covers').getPublicUrl(chemin);
+      if (!pub || !pub.publicUrl) throw new Error('adresse publique introuvable');
+      document.getElementById('packCoverUrl').value = pub.publicUrl;
+      apercuCouverture(pub.publicUrl);
+      statut.textContent = '✅ Couverture ajoutée';
+    } catch (err) {
+      statut.textContent = 'Envoi impossible : ' + (err.message || 'erreur inconnue');
+    }
+  });
+
+  document.getElementById('btnPackImages').addEventListener('click',
+    () => document.getElementById('packImagesInput').click());
+  document.getElementById('packImagesInput').addEventListener('change', async function () {
+    const fichiers = Array.from(this.files || []);
+    this.value = '';
+    if (!fichiers.length) return;
+    const statut = document.getElementById('packImagesStatus');
+    for (let i = 0; i < fichiers.length; i++) {
+      const f = fichiers[i];
+      if (f.size > 8 * 1024 * 1024) { showToast('« ' + f.name + ' » dépasse 8 Mo, ignorée', 'error'); continue; }
+      statut.textContent = '⏳ ' + (i + 1) + '/' + fichiers.length + '…';
+      const ext = (f.name.split('.').pop() || 'jpg').toLowerCase();
+      const chemin = 'pack-contenus/' + currentUser.id + '_' + Date.now() + '_' + i + '.' + ext;
+      const { error } = await sb.storage.from('covers').upload(chemin, f, { upsert: true });
+      if (!error) {
+        const { data: pub } = sb.storage.from('covers').getPublicUrl(chemin);
+        if (pub && pub.publicUrl) packImages.push(pub.publicUrl);
+      }
+    }
+    rendrePackImages();
+  });
+
+  document.getElementById('packForm').addEventListener('submit', async function (e) {
+    e.preventDefault();
+    const msg = document.getElementById('packFormMsg');
+    const bouton = document.getElementById('packFormSubmit');
+    const editId = document.getElementById('packEditId').value;
+
+    const titre = document.getElementById('packTitre').value.trim();
+    if (!titre) { msg.textContent = 'Il faut au moins un titre.'; document.getElementById('packTitre').focus(); return; }
+
+    const limiteBrute = parseInt(document.getElementById('packLimite').value, 10);
+    const row = {
+      titre,
+      description: document.getElementById('packDesc').value.trim(),
+      prix: parseFloat(document.getElementById('packPrix').value) || 0,
+      image_url: document.getElementById('packCoverUrl').value.trim() || null,
+      contenu_url: document.getElementById('packVideo').value.trim() || null,
+      objectifs: document.getElementById('packObjectifs').value.split('\n').map(s => s.trim()).filter(Boolean),
+      niveau: document.getElementById('packNiveau').value || 'Tous niveaux',
+      limite_ventes: Number.isFinite(limiteBrute) && limiteBrute > 0 ? limiteBrute : null,
+      images: packImages,
+    };
+
+    const libelle = bouton.textContent;
+    bouton.disabled = true; bouton.textContent = '⏳ Envoi…';
+    msg.textContent = '';
+    try {
+      if (editId) {
+        let { error } = await sb.from('packs_tutoriels').update(row)
+          .eq('id', editId).eq('auteur_id', currentUser.id);
+        if (error && /column|schema cache/i.test(error.message || '')) {
+          ({ error } = await sb.from('packs_tutoriels')
+            .update(colonnesSures(row, ['titre', 'description', 'prix', 'image_url', 'contenu_url']))
+            .eq('id', editId).eq('auteur_id', currentUser.id));
+        }
+        if (error) throw error;
+        showToast('Formation mise à jour', 'success');
+      } else {
+        const creation = { ...row, auteur_id: currentUser.id,
+                           auteur_nom: userProfile && userProfile.username };
+        let { error } = await sb.from('packs_tutoriels').insert(creation);
+        if (error && /column|schema cache/i.test(error.message || '')) {
+          ({ error } = await sb.from('packs_tutoriels').insert(colonnesSures(creation,
+            ['titre', 'description', 'prix', 'image_url', 'contenu_url', 'auteur_id', 'auteur_nom'])));
+        }
+        if (error) throw error;
+        showToast('Formation créée 🎉', 'success');
+      }
+      fermerModalePack();
+      await loadFormations();
+    } catch (err) {
+      msg.textContent = 'Enregistrement impossible : ' + (err.message || 'erreur inconnue');
+    } finally {
+      bouton.disabled = false; bouton.textContent = libelle;
+    }
+  });
+
 
   // ── TABS ──
   document.querySelectorAll('.ptab').forEach(btn => {

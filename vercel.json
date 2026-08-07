@@ -25,7 +25,7 @@
   "redirects": [
     {
       "source": "/premium.html",
-      "destination": "/espace-createur.html",
+      "destination": "/profil.html?tab=formations",
       "permanent": true
     }
   ],
