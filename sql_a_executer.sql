@@ -871,6 +871,7 @@ GRANT EXECUTE ON FUNCTION public.delete_my_account() TO authenticated;
 
 GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO service_role;
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO service_role;
+
 GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO anon, authenticated;
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated;
 -- ═══════════════════════════════════════════════════════════════════
@@ -1418,6 +1419,43 @@ BEGIN
 END; $$;
 REVOKE ALL ON FUNCTION public.enregistrer_vue(BIGINT, TEXT) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.enregistrer_vue(BIGINT, TEXT) TO anon, authenticated;
+
+
+-- ═══════════════════════════════════════════════════════════════════════
+-- LONGUEUR DES TEXTES ÉCRITS PAR LES GENS
+-- ═══════════════════════════════════════════════════════════════════════
+-- `username` était un TEXT sans aucune borne. Un pseudo de soixante
+-- caractères sans espaces étirait la page du profil de 311 px et celle de
+-- l'auteur de 980 px — le CSS le coupe désormais, mais rien n'empêchait
+-- d'en écrire cinq mille.
+--
+-- Le `maxlength` du formulaire ne protège que la saisie : on le contourne
+-- en une requête directe. La borne doit donc vivre ici.
+--
+-- NOT VALID : la contrainte s'applique à TOUTE écriture future, mais ne
+-- relit pas les lignes déjà en place. Sans cela, un pseudo existant trop
+-- long ferait échouer la commande — et le tronquer risquerait de créer un
+-- doublon, puisque `username` est UNIQUE.
+
+ALTER TABLE public.profiles DROP CONSTRAINT IF EXISTS profiles_username_longueur;
+ALTER TABLE public.profiles
+  ADD CONSTRAINT profiles_username_longueur
+  CHECK (username IS NULL OR char_length(username) BETWEEN 2 AND 24) NOT VALID;
+
+ALTER TABLE public.profiles DROP CONSTRAINT IF EXISTS profiles_bio_longueur;
+ALTER TABLE public.profiles
+  ADD CONSTRAINT profiles_bio_longueur
+  CHECK (bio IS NULL OR char_length(bio) <= 500) NOT VALID;
+
+ALTER TABLE public.mangas DROP CONSTRAINT IF EXISTS mangas_titre_longueur;
+ALTER TABLE public.mangas
+  ADD CONSTRAINT mangas_titre_longueur
+  CHECK (titre IS NULL OR char_length(titre) <= 80) NOT VALID;
+
+ALTER TABLE public.packs_tutoriels DROP CONSTRAINT IF EXISTS packs_titre_longueur;
+ALTER TABLE public.packs_tutoriels
+  ADD CONSTRAINT packs_titre_longueur
+  CHECK (titre IS NULL OR char_length(titre) <= 80) NOT VALID;
 
 GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO anon, authenticated;
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated;

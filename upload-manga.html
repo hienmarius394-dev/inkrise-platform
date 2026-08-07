@@ -315,9 +315,12 @@
       padding: 4px 10px; border-radius: 6px;
       white-space: nowrap; flex-shrink: 0;
     }
-    .chapitre-inputs { flex: 1; display: flex; gap: 10px; flex-wrap: wrap; }
+    /* `flex: 1` SANS `min-width: 0` ne rétrécit pas sous la largeur
+       minimale de son contenu : sur un écran de 320px, le titre du
+       chapitre et le bouton de fichier sortaient de l'écran de 6px. */
+    .chapitre-inputs { flex: 1; min-width: 0; display: flex; gap: 10px; flex-wrap: wrap; }
     .chapitre-inputs input {
-      flex: 1; min-width: 120px;
+      flex: 1 1 100px; min-width: 0;
       background: var(--surface3);
       border: 1px solid var(--border);
       border-radius: 8px;
@@ -329,7 +332,11 @@
     .chapitre-inputs input:focus { border-color: var(--purple); }
 
     .chapitre-file-btn {
+      /* `white-space: nowrap` plus bas empêche le libellé de se couper :
+         sur 320px il faut donc autoriser le bouton à se rétrécir, sinon
+         c'est l'écran qui déborde. */
       display: inline-flex; align-items: center; gap: 6px;
+      min-width: 0; max-width: 100%; overflow: hidden; text-overflow: ellipsis;
       padding: 8px 14px; border-radius: 8px;
       border: 1px dashed var(--border2);
       background: transparent; color: var(--muted);

@@ -206,6 +206,24 @@
 }
 
 /* ═══════════════════════════════════════════════════════════════════
+   TEXTE ÉCRIT PAR LES GENS
+   ═══════════════════════════════════════════════════════════════════
+
+   Rien n'oblige personne à écrire court. Un pseudo de soixante
+   caractères sans espaces, un titre de manga agglutiné : par défaut, un
+   mot insécable ne se coupe PAS et pousse son conteneur — la page du
+   profil s'élargissait de 311px, celle d'un auteur de 980px, et tout le
+   reste partait avec.
+
+   `anywhere` plutôt que `break-word` : les deux coupent un mot trop
+   long, mais seul `anywhere` réduit aussi la LARGEUR MINIMALE de
+   l'élément. Sans cela un enfant de flexbox refuse de rétrécir sous son
+   plus long mot, et c'est la page entière qui déborde.
+
+   La propriété s'hérite : une seule déclaration couvre tout le site.  */
+body { overflow-wrap: anywhere; }
+
+/* ═══════════════════════════════════════════════════════════════════
    HABILLAGE PARTAGÉ — nav du haut, menu latéral, barre du bas
    ═══════════════════════════════════════════════════════════════════
 

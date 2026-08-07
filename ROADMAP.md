@@ -164,3 +164,19 @@ Inkrise = plateforme pour artistes manga/webtoon :
     logo, « Voir tout → » : les agrandir voudrait dire réécrire la mise en
     page. Décision assumée. Le constat est devenu un garde-fou dans
     `accessibilite.test.js`.
+
+15. **Personne n'est obligé d'écrire court** — l'outil de défauts
+    silencieux balaie désormais **320 px** (iPhone SE) en plus de 390 et
+    1280, et sait rejouer tout le site avec des **textes longs et sans
+    espaces** (`INKRISE_LONG=1`). Verdict : **108 débordements**. Un pseudo
+    de soixante caractères étirait la page du profil de 311 px et celle
+    d'un auteur de 980 px. Une ligne en a réglé 102 —
+    `body { overflow-wrap: anywhere }`, `anywhere` et pas `break-word`
+    parce que seul lui réduit aussi la largeur minimale d'un enfant de
+    flexbox. Les six derniers venaient d'un `align-items: flex-start` en
+    colonne, où la largeur devient l'axe transverse.
+
+    Et la borne manquait aussi en base : `username` était un `TEXT` sans
+    limite, sans `maxlength` au formulaire. ⚠️ **Nouveau SQL à exécuter** —
+    quatre contraintes `CHECK`, posées `NOT VALID` pour ne pas rejeter les
+    lignes existantes.

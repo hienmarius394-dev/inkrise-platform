@@ -56,7 +56,14 @@ node tests/outil-invisible.js   # traque les défauts SILENCIEUX : liens morts,
                                 # fonctions disparues, ids en double, contenu
                                 # rogné sans erreur, colonnes absentes du
                                 # schéma, jointures sans clé étrangère, menu
-                                # en désaccord avec la session, pages orphelines
+                                # en désaccord avec la session, pages orphelines.
+                                # Balaie 320, 390 et 1280px.
+INKRISE_LONG=1 \
+  node tests/outil-invisible.js   # le même, avec des TEXTES LONGS et sans
+                                # espaces — le pire cas pour une mise en page.
+                                # Rien n'oblige personne à écrire court : un
+                                # pseudo de 60 caractères étirait le profil de
+                                # 311px. 108 débordements au premier passage.
 node tests/outil-rls.js         # confronte les politiques RLS aux écritures
                                 # que le site tente vraiment (PostgreSQL réel)
 node tests/outil-injection.js   # empoisonne chaque champ texte servi par
@@ -121,7 +128,7 @@ crier au loup, tous deux corrigés dans l'outil :
   Les vérifications de notification comparent avant / après dans la même
   transaction.
 
-Il se relit dans les deux sens : correctif appliqué, 41/41 ; correctif
+Il se relit dans les deux sens : correctif appliqué, 65/65 ; correctif
 retiré, six écarts ressortent.
 
 `outil-injection.js` ne relit aucun gabarit : il sert des charges utiles à

@@ -1148,7 +1148,7 @@
       <h3>👤 Informations personnelles</h3>
       <div class="info-row">
         <label>Nom d'affichage</label>
-        <input type="text" id="inputUsername" placeholder="Ton nom d'utilisateur" />
+        <input type="text" id="inputUsername" placeholder="Ton nom d'utilisateur" maxlength="24" />
       </div>
       <div class="info-row">
         <label>Bio</label>
@@ -1264,13 +1264,13 @@
 
       <div class="pack-form-group">
         <label class="pack-form-label" for="packTitre">Titre</label>
-        <input class="pack-form-input" type="text" id="packTitre" required
+        <input class="pack-form-input" type="text" id="packTitre" required maxlength="80"
                placeholder="Ex : Dessiner les visages manga" />
       </div>
 
       <div class="pack-form-group">
         <label class="pack-form-label" for="packDesc">Description</label>
-        <textarea class="pack-form-textarea" id="packDesc"
+        <textarea class="pack-form-textarea" id="packDesc" maxlength="600"
                   placeholder="Décris ta formation en quelques phrases…"></textarea>
       </div>
 
