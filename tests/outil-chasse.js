@@ -148,6 +148,18 @@ const BASE = 'http://localhost:' + (Number(process.env.PORT) || 8109);
       try {
         await page.goto(BASE + '/'+p, { waitUntil:'load', timeout:20000 });
         await page.waitForTimeout(1400);
+        /* TOUT DÉPLIER avant de sonder. Les onglets repliés, les modales
+           et les volets sortent de la sonde par `display:none` : cibles
+           tactiles trop petites, champs sans étiquette et textes rognés y
+           passaient inaperçus. */
+        await page.evaluate(() => {
+          document.querySelectorAll('.tab-panel').forEach(e => e.classList.add('active'));
+          document.querySelectorAll('.modal-overlay, .crop-overlay, .confirm-overlay')
+            .forEach(e => e.classList.add('open'));
+          document.querySelectorAll('[id^="view"], [id^="formations"], [id^="section-"]')
+            .forEach(e => { if (e.style.display === 'none') e.style.display = 'block'; });
+        });
+        await page.waitForTimeout(400);
         const rows = await page.evaluate(SONDE);
         rows.forEach(f => add(p, mode, f));
         [...new Set(errs)].forEach(e => add(p, mode, { k:'erreur-js', d:e.slice(0,110), w:'' }));

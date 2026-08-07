@@ -236,6 +236,10 @@
        explorer un. */
     .genres-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 22px; }
     .genre-chip {
+      /* 31px de haut : sous le seuil de 32px pour un doigt. Les pastilles
+         de genre sont des filtres qu'on tape vraiment, pas de la
+         décoration — on les monte à 36px sans changer leur allure. */
+      display: inline-flex; align-items: center; min-height: 36px;
       font-size: .8rem; font-weight: 700; padding: 6px 14px; border-radius: 20px;
       background: var(--surface); border: 1px solid var(--border);
       color: var(--muted); text-decoration: none; transition: all .2s;

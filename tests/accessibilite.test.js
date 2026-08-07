@@ -165,6 +165,72 @@ async function authCtx(browser, opts) {
     await c.close();
   }
 
+  /* ══ 4. Les commandes qu'on TAPE font au moins 32px ══
+     Relevé par outil-chasse, puis figé ici pour qu'il ne revienne pas.
+     Il a fallu DÉPLIER les onglets et les modales pour les voir : ce qui
+     est en `display:none` sort de toute mesure, et c'est ainsi que le
+     bouton ✕ des modales — la sortie de secours d'une fenêtre — est resté
+     à 28×28 sans que rien ne le signale.
+
+     Les liens de TEXTE EN LIGNE sont hors de portée : un lien dans une
+     phrase ou un pied de page a la hauteur de sa ligne, et l'agrandir
+     reviendrait à réécrire la mise en page. Ce sont les BOUTONS et les
+     pastilles cliquables qui doivent tenir sous un doigt. */
+  console.log('\n▶ Les commandes se tapent au doigt (32px minimum)');
+  {
+    const PAGES_TACTILES = ['profil.html', 'manga.html?id=1', 'bibliotheque.html',
+                            'recherche.html', 'index.html'];
+    const c = await authCtx(browser, { viewport:{ width:390, height:844 },
+                                       hasTouch:true, isMobile:true });
+    await c.route('https://fonts.googleapis.com/**', r => r.fulfill({status:200,contentType:'text/css',body:''}));
+    await c.route('**/rest/v1/**', r => {
+      const req = r.request(), u = decodeURIComponent(req.url());
+      const seul = (req.headers()['accept']||'').includes('vnd.pgrst.object');
+      if (u.includes('/profiles')) {
+        const moi = { id:'u1', username:'Createur', bio:'', avatar_url:null,
+                      is_creator:true, created_at:'2026-01-05T10:00:00Z' };
+        return r.fulfill({status:200,contentType:'application/json',
+          headers:{'Content-Range':'0-0/1','Access-Control-Expose-Headers':'Content-Range'},
+          body: JSON.stringify(seul ? moi : [moi])});
+      }
+      return r.fulfill({status:200,contentType:'application/json',
+        headers:{'Content-Range':'0-0/0','Access-Control-Expose-Headers':'Content-Range'},body:'[]'});
+    });
+    await c.route('**/storage/v1/**', r => r.fulfill({status:200,contentType:'application/json',body:'[]'}));
+
+    const trop_petites = [];
+    for (const url of PAGES_TACTILES) {
+      const pg = await c.newPage();
+      pg.on('pageerror', e => errors.push(e.message));
+      await pg.goto(BASE + '/' + url, { waitUntil:'load' }).catch(()=>{});
+      await pg.waitForTimeout(1600);
+      await pg.evaluate(() => {
+        document.querySelectorAll('.tab-panel').forEach(e => e.classList.add('active'));
+        document.querySelectorAll('.modal-overlay, .crop-overlay, .confirm-overlay')
+          .forEach(e => e.classList.add('open'));
+        document.querySelectorAll('[id^="view"], [id^="formations"], [id^="section-"]')
+          .forEach(e => { if (e.style.display === 'none') e.style.display = 'block'; });
+      });
+      await pg.waitForTimeout(350);
+      const petites = await pg.evaluate(() =>
+        [...document.querySelectorAll('button, [role="button"], a.btn-upload, a.btn-creator')]
+          .filter(el => {
+            const st = getComputedStyle(el);
+            if (st.display === 'none' || st.visibility === 'hidden') return false;
+            const r = el.getBoundingClientRect();
+            return r.width > 0 && (r.width < 32 || r.height < 32);
+          })
+          .map(el => { const r = el.getBoundingClientRect();
+            return Math.round(r.width) + '×' + Math.round(r.height) + ' « ' +
+              (el.getAttribute('aria-label') || el.title || el.textContent || '').trim().slice(0,20) + ' »'; }));
+      petites.forEach(x => trop_petites.push(url + ' : ' + x));
+      await pg.close();
+    }
+    check(`aucun bouton sous 32px sur ${PAGES_TACTILES.length} pages, tout déplié`,
+      trop_petites.length === 0, trop_petites.slice(0, 5).join(' · ') || 'aucun');
+    await c.close();
+  }
+
   await browser.close(); server.close();
   console.log('\n' + '═'.repeat(60));
   const ko = results.filter(r => !r.p);

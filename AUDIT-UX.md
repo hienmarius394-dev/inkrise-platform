@@ -1290,10 +1290,98 @@ persistait sur les douze autres. Déplacée après, elle s'applique partout.
 
 ---
 
+## 7.16 Ce qui est replié n'est jamais mesuré
+
+Troisième tour de la même leçon, et la plus productive : **les défauts se
+cachent là où la mesure ne va pas**. Après les pages qui redirigent
+(§7.13) et les polices jamais chargées (§7.15), voici deux angles morts
+de plus — et ils étaient les plus gros.
+
+### `display: none` fait sortir de toute sonde
+
+`profil.html` a **sept onglets dont un seul est affiché**. Chaque page
+cache ses modales au repos. Or toutes les sondes du projet écartent ce
+qui est en `display: none` — à raison, on ne mesure pas ce qu'on ne voit
+pas. Sauf que personne n'ouvrait rien avant de mesurer : on examinait un
+septième du profil en croyant l'avoir vu en entier.
+
+Les trois outils déplient désormais tout — onglets, modales, volets —
+avant de sonder. Ce qui a fait sortir, entre autres, un bouton **✕ de
+28×28 px** : la sortie de secours d'une fenêtre, sous le seuil des 32 px,
+et d'autant plus important depuis que le formulaire de pack vit dans une
+modale (§7.14).
+
+### La sonde de contraste abandonnait sous un dégradé
+
+Plus grave. En remontant la chaîne des fonds pour composer la couleur
+réelle derrière un texte, la sonde faisait `break` dès qu'elle croisait
+une image de fond — impossible de connaître la couleur exacte sous un
+dégradé, donc on renonce.
+
+Or **le `body` de la page d'accueil porte un dégradé radial décoratif**.
+Conséquence : pas un seul texte d'`index.html` n'a jamais été mesuré. La
+page la plus vue du site était intégralement hors de portée de l'outil
+qui certifiait le site lisible.
+
+La correction ne renonce plus : elle calcule le rapport en supposant le
+dégradé **tout noir**, puis **tout blanc**, et ne signale que si les deux
+échouent. Un texte qui passe sous l'un des deux extrêmes est peut-être
+lisible ; un texte qui échoue sous les deux ne l'est nulle part. Aucun
+faux positif possible, et plus aucun angle mort.
+
+### Ce que les deux corrections ont sorti
+
+**Huit couples fautifs de plus en thème sombre**, dont deux séries :
+
+- `index.html` — la modale « Deviens créateur », atteinte par
+  `index.html?premium=1` (la destination de l'ancienne redirection
+  `/premium.html`), était un panneau **blanc à 92 %** portant du texte
+  `#f2f0f7`. Blanc sur blanc, **1,05:1** : rigoureusement illisible.
+- `lecteur.html` — **six panneaux « verre dépoli » figés en blanc** : la
+  barre du haut, la barre du bas, le volet des chapitres, l'écran de fin
+  de chapitre, la section des commentaires et le bandeau des planches.
+  Autrement dit, le mode sombre du **lecteur** — le cœur d'un site de
+  lecture de mangas — était cassé en six endroits.
+
+Et la raison pour laquelle le test de thème ne l'avait pas vu non plus :
+**`lecteur.html` ne figurait pas dans sa liste de pages.** Vingt pages
+énumérées, et pas celle-là.
+
+Aucune variable nouvelle n'a été nécessaire : le thème possédait déjà
+`--nav-fond`, `--bnav-fond` et `--drawer-fond` pour exactement ces rôles.
+Il a fallu ajouter `--teal-link`, dernier survivant du motif « teinte de
+fond employée comme couleur de texte » (2,19:1 sur la pastille
+« GRATUIT »).
+
+### Les cibles tactiles, du constat au garde-fou
+
+`outil-chasse` relevait depuis longtemps « 71 cibles trop petites » sans
+que rien n'en soit fait — un rapport qu'on lit et qu'on oublie. Une fois
+tout déplié, elles sont montées à 78, puis redescendues à **45** après
+correction des commandes réellement concernées : les trois boutons de
+fermeture de modale, les pastilles de genre (31 px), le bouton de
+téléchargement hors-ligne, le ✕ de retrait de la bibliothèque, la
+vignette de suppression d'image du formulaire de pack (22 px — la
+mienne), « Reprendre », « Ne plus suivre », « ✓ Lu » et le bouton qui
+change ton rôle sur le site, qui faisait **17 px de haut** parce qu'il
+était affiché en `inline`.
+
+Les 45 restantes sont des **liens de texte en ligne** : pied de page,
+logo, « Voir tout → » dans un titre de rangée. Un lien dans une phrase a
+la hauteur de sa ligne ; l'agrandir reviendrait à réécrire la mise en
+page pour un gain douteux. C'est une décision, pas un oubli.
+
+Surtout, le constat est devenu un **garde-fou** : `accessibilite.test.js`
+vérifie maintenant qu'aucun `<button>` ne passe sous 32 px sur cinq
+pages, **tout déplié**. Éprouvé en rétrécissant le bouton ✕ : trois
+échecs ressortent.
+
+---
+
 ## Annexe — méthode
 
 ```bash
-npm test                       # 555/555 ✅  (24 suites)
+npm test                       # 559/559 ✅  (24 suites)
 node tests/outil-contraste.js  # 21 pages RÉELLEMENT atteintes, session simulée
 INKRISE_THEME=sombre \
   node tests/outil-contraste.js   # le même relevé, en thème sombre
@@ -1311,7 +1399,7 @@ npm test -- vues               # 15/15 — lectures comptées, y compris sans co
 npm test -- decouverte         # 17/17 — créateurs et genres accessibles
 npm test -- lecture            # 18/18 — profil de lecteur
 npm test -- inscription        # 14/14 — consentement CGU, crochet Google
-node tests/outil-chasse.js     # 21 pages × 2 états
+node tests/outil-chasse.js     # 21 pages × 2 états, TOUT DÉPLIÉ
 URLS=… MODES=… node tests/_txt.js   # texte visible de chaque page, à relire
 ```
 
