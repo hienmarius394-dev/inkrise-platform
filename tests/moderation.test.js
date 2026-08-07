@@ -192,6 +192,51 @@ console.log('\n▶ Les trois vues');
   await ctx.close();
 }
 
+console.log('\n▶ Base pas encore à jour : on le dit franchement');
+{
+  /* Le site est déployé dès la fusion, la base est mise à jour à la main.
+     Entre les deux, « Action impossible, réessaie » serait un mensonge :
+     réessayer n'y changerait rien. */
+  const ctx = await b.newContext({viewport:{width:900,height:900}});
+  await ctx.addInitScript(u=>localStorage.setItem('sb-bsdcpwtimsgxcnaamwip-auth-token',
+    JSON.stringify({access_token:'t',refresh_token:'r',token_type:'bearer',
+      expires_at:Math.floor(Date.now()/1000)+9999,expires_in:9999,user:u})), MODO);
+  await ctx.route('https://fonts.googleapis.com/**',r=>r.fulfill({status:200,contentType:'text/css',body:''}));
+  await ctx.route('**/auth/v1/**',r=>r.fulfill({status:200,contentType:'application/json',
+    body:JSON.stringify({...MODO,aud:'authenticated'})}));
+  await ctx.route('**/rest/v1/**',r=>{
+    const req=r.request(), u=decodeURIComponent(req.url());
+    if (u.includes('/rpc/'))
+      return r.fulfill({status:404,contentType:'application/json',
+        body:JSON.stringify({code:'PGRST202',message:'Could not find the function'})});
+    if (u.includes('/signalements'))
+      return r.fulfill({status:200,contentType:'application/json',body:JSON.stringify(SIGNALEMENTS)});
+    if (u.includes('/profiles')) {
+      const seul=(req.headers()['accept']||'').includes('vnd.pgrst.object');
+      const moi={id:'modo',username:'Modo',is_admin:true};
+      return r.fulfill({status:200,contentType:'application/json',
+        body:JSON.stringify(seul?moi:[moi,{id:'u1',username:'Alice'},{id:'u2',username:'Bob'},{id:'u3',username:'Chloé'}])});
+    }
+    return r.fulfill({status:200,contentType:'application/json',body:'[]'});
+  });
+  await ctx.route('**/storage/v1/**',r=>r.fulfill({status:200,contentType:'application/json',body:'[]'}));
+  const p = await ctx.newPage();
+  p.on('pageerror',e=>errors.push(e.message));
+  await p.goto(BASE+'/admin.html');
+  await p.waitForTimeout(2000);
+  const msg = await p.locator('#message').innerText();
+  check('la vraie cause est nommée', /base/i.test(msg) && /sql_a_executer/.test(msg), msg);
+  check('  et pas un « réessaie » trompeur', !/[Rr]éessaie/.test(msg), msg);
+  check('les signalements restent lisibles', await p.locator('.sig').count() > 0,
+    await p.locator('.sig').count() + ' cartes');
+  check('  mais aucun bouton qui ne marcherait pas',
+    await p.locator('button:has-text("Masquer")').count() === 0);
+  check('  et l\'aperçu explique son absence',
+    /base n'est pas à jour/i.test(await p.locator('.apercu').first().innerText()),
+    await p.locator('.apercu').first().innerText());
+  await ctx.close();
+}
+
 console.log('\n▶ Rien à traiter, et porte fermée');
 {
   const { ctx, p } = await ouvrir(b, { sigs: [] });

@@ -172,12 +172,17 @@ async function charger() {
   /* L'aperçu vient d'une fonction serveur : le contenu masqué reste
      invisible aux requêtes normales, y compris pour la modération qui
      doit pourtant pouvoir le relire avant de rétablir. */
+  let baseAncienne = false;
   await Promise.all(groupes.map(async g => {
-    const { data } = await sb.rpc('apercu_signale', { p_type: g.type, p_id: String(g.id) });
+    const { data, error } = await sb.rpc('apercu_signale', { p_type: g.type, p_id: String(g.id) });
+    if (BASE_PAS_A_JOUR(error)) { baseAncienne = true; g.sansApercu = true; return; }
     const a = Array.isArray(data) ? data[0] : data;
     if (a) { g.extrait = a.extrait; g.auteur = a.auteur; g.masque = a.masque; g.lien = a.lien; }
     else   { g.absent = true; }
   }));
+  /* Le dire une fois, en haut, plutôt que de laisser croire à autant de
+     contenus supprimés qu'il y a de signalements. */
+  if (baseAncienne) dire(MSG_BASE, true);
 
   rendre();
 }
@@ -202,9 +207,11 @@ function rendre() {
     const motifs = [...new Set(g.motifs)].join(', ');
     const nb = g.signaleurs.size;
 
-    const apercu = g.absent
-      ? '<div class="apercu apercu-vide">Contenu supprimé depuis le signalement.</div>'
-      : '<div class="apercu">' + esc(g.extrait || '(vide)') + '</div>';
+    const apercu = g.sansApercu
+      ? '<div class="apercu apercu-vide">Aperçu indisponible tant que la base n\'est pas à jour.</div>'
+      : g.absent
+        ? '<div class="apercu apercu-vide">Contenu supprimé depuis le signalement.</div>'
+        : '<div class="apercu">' + esc(g.extrait || '(vide)') + '</div>';
 
     div.innerHTML =
       '<div class="sig-icon">' + (ICONS[g.type] || '🚩') + '</div>' +
@@ -225,7 +232,7 @@ function rendre() {
       '<div class="sig-actions"></div>';
 
     const actions = div.querySelector('.sig-actions');
-    if (!g.absent) actions.appendChild(
+    if (!g.absent && !g.sansApercu) actions.appendChild(
       bouton(g.masque ? '↩ Rétablir' : '🚫 Masquer', g.masque ? 'primary' : 'danger',
              () => moderer(g, !g.masque)));
     if (g.nouveau) actions.appendChild(bouton('✓ Sans suite', '', () => classer(g)));
@@ -244,10 +251,24 @@ function bouton(libelle, classe, action) {
   return b;
 }
 
+/* La base est mise à jour à la main, alors que le site est déployé dès la
+   fusion : entre les deux, les fonctions de modération n'existent pas
+   encore et PostgREST répond PGRST202. « Action impossible, réessaie »
+   serait un mensonge — réessayer n'y changerait rien. */
+const BASE_PAS_A_JOUR = e =>
+  !!e && (e.code === 'PGRST202' ||
+          /find the function|does not exist/i.test(e.message || ''));
+const MSG_BASE = 'Les outils de modération attendent la mise à jour de la base ' +
+                 '(sql_a_executer.sql à passer dans Supabase).';
+
 async function moderer(g, masquer) {
   const { error } = await sb.rpc('moderer_contenu',
     { p_type: g.type, p_id: String(g.id), p_masquer: masquer });
-  if (error) { console.error(error); dire('Action impossible. Réessaie.', true); return; }
+  if (error) {
+    console.error(error);
+    dire(BASE_PAS_A_JOUR(error) ? MSG_BASE : 'Action impossible. Réessaie.', true);
+    return;
+  }
   dire(masquer ? 'Contenu masqué. Il n\'apparaît plus sur le site.'
                 : 'Contenu rétabli. Il est de nouveau visible.');
   await charger();

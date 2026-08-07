@@ -933,6 +933,33 @@ par la même fonction, pour que ça ne redérive pas.
 
 ---
 
+## 7.8 L'écart entre le déploiement et la base
+
+Vercel déploie dès la fusion ; la mise à jour de la base, elle, attend
+qu'on la lance à la main. Entre les deux, le site appelle des fonctions
+qui n'existent pas encore. J'avais livré la modération et le comptage des
+vues sans traiter cette fenêtre — le site était donc réellement dégradé en
+attendant.
+
+**Ce qui change :** quand une fonction manque, PostgREST répond `PGRST202`.
+C'est reconnaissable, donc traitable.
+
+- **Comptage des vues** : on retombe sur l'ancien chemin, toujours valide.
+  Il ne compte que les personnes connectées — mais c'est exactement ce que
+  le site faisait avant, au lieu de ne plus rien compter du tout.
+- **Modération** : la page dit la vraie cause (« la base attend sa mise à
+  jour ») au lieu d'un « Action impossible, réessaie » mensonger —
+  réessayer n'y changerait rien. Les signalements restent lisibles, et les
+  boutons qui ne marcheraient pas ne s'affichent pas.
+
+**Règle retenue pour la suite** : quand du code dépend d'une mise à jour de
+la base, il doit se dégrader proprement en attendant. Et le fichier SQL
+étant rejouable, la consigne est toujours la même — coller
+`sql_a_executer.sql` en entier, sans avoir à savoir quels blocs sont
+nouveaux.
+
+---
+
 ## Annexe — méthode
 
 ```bash
