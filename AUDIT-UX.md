@@ -988,6 +988,35 @@ restait à zéro alors que la page marchait.
 
 ---
 
+## 7.10 Inscription — un consentement qu'on n'avait jamais demandé
+
+Les CGU affirment « en créant un compte, tu acceptes ces conditions ».
+Sauf que rien, à l'écran, ne le demandait ni ne le montrait : on pouvait
+s'inscrire sans jamais voir passer un lien vers les conditions.
+
+Une case à cocher, **jamais pré-cochée** — un consentement pré-donné n'en
+est pas un — avec les liens vers les conditions et la politique de
+confidentialité, ouverts dans un autre onglet pour ne pas perdre le
+formulaire à demi rempli. Le contrôle est fait en JavaScript et non par
+`required` : le formulaire n'est pas un `<form>`, la validation native du
+navigateur ne se déclencherait jamais.
+
+**Connexion Google** — le CSS `.or-divider` attendait depuis le début.
+Le bouton est là, mais **il ne s'affiche que si `INKRISE_GOOGLE` est
+activé** dans `assets/inkrise-config.js`, une fois le fournisseur
+réellement configuré côté Supabase. Un bouton « Continuer avec Google »
+qui renvoie une erreur de configuration coûte plus cher que pas de bouton
+du tout : la personne croit que le site est cassé, et repart. Même
+principe que la clé VAPID des notifications push.
+
+**Ce que le test a corrigé chez lui :** poser `window.INKRISE_GOOGLE = true`
+avant le chargement de la page ne servait à rien — `inkrise-config.js` se
+charge ensuite et le remet à `false`. Le test sert désormais une config
+réellement modifiée, ce qui est aussi le geste que fera le propriétaire du
+site.
+
+---
+
 ## Annexe — méthode
 
 ```bash
@@ -1003,6 +1032,7 @@ npm test -- moderation         # 24/24 — masquer, rétablir, classer
 npm test -- vues               # 12/12 — lectures comptées, y compris sans compte
 npm test -- decouverte         # 17/17 — créateurs et genres accessibles
 npm test -- lecture            # 18/18 — profil de lecteur
+npm test -- inscription        # 14/14 — consentement CGU, crochet Google
 node tests/outil-chasse.js     # 21 pages × 2 états
 URLS=… MODES=… node tests/_txt.js   # texte visible de chaque page, à relire
 ```

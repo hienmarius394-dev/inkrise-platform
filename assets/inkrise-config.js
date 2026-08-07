@@ -40,6 +40,17 @@
     domaine: ''
   };
 
+  /* ── Connexion Google ───────────────────────────────────────────────
+     Passe à `true` UNE FOIS que le fournisseur Google est activé dans
+     Supabase → Authentication → Providers, avec l'URL de redirection du
+     site enregistrée côté Google Cloud.
+
+     Tant que c'est `false`, le bouton n'apparaît pas. Un bouton
+     « Continuer avec Google » qui renvoie une erreur de configuration
+     coûte plus cher que pas de bouton du tout : la personne croit que le
+     site est cassé, et repart. */
+  window.INKRISE_GOOGLE = false;
+
   /* Chargement différé et non bloquant : la mesure d'audience ne doit
      jamais retarder l'affichage de la page pour la personne qui lit. */
   var a = window.INKRISE_ANALYTICS;
