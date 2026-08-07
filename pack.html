@@ -14,10 +14,10 @@
   <meta property="og:description" content="Pack de dessin et tutoriel manga sur Inkrise — apprends avec les meilleurs créateurs." />
   <meta property="og:image" content="https://inkrise-platform.vercel.app/assets/hero-manga.jpg" />
   <meta name="twitter:card" content="summary_large_image" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="preconnect" href="https://bsdcpwtimsgxcnaamwip.supabase.co" />
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" href="assets/fonts/syne-latin.woff2" crossorigin />
+  <link rel="preload" as="font" type="font/woff2" href="assets/fonts/dmsans-latin.woff2" crossorigin />
+  <link rel="stylesheet" href="assets/inkrise-fonts.css" />
   <link rel="stylesheet" href="assets/inkrise-theme.css" />
   <script src="assets/inkrise-theme.js"></script>
   <script src="assets/inkrise-reseau.js"></script>
@@ -92,19 +92,19 @@
     .hero-edit-btn {
       display: inline-flex; align-items: center; gap: 6px;
       background: rgba(124,92,252,0.12); border: 1px solid rgba(124,92,252,0.35);
-      color: var(--purple); font-size: .82rem; font-weight: 700;
+      color: var(--purple-link); font-size: .82rem; font-weight: 700;
       padding: 7px 15px; border-radius: 100px; text-decoration: none;
       transition: all .2s;
     }
     .hero-edit-btn:hover { background: rgba(124,92,252,0.22); }
     .hero-author { font-size: .88rem; color: var(--text-2); }
-    .hero-author a { color: var(--purple2); text-decoration: none; font-weight: 600; }
+    .hero-author a { color: var(--purple-link); text-decoration: none; font-weight: 600; }
     .hero-author a:hover { text-decoration: underline; }
     .hero-price {
       font-family: 'Syne', sans-serif; font-size: 1.4rem; font-weight: 800;
-      color: var(--orange);
+      color: var(--orange-link);
     }
-    .hero-price.free { color: var(--green); }
+    .hero-price.free { color: var(--success-link); }
 
     /* ── MAIN GRID ── */
     .main-wrap { max-width: 960px; margin: 0 auto; padding: 32px 16px 40px; }
@@ -147,13 +147,13 @@
     }
     .buy-price-display {
       font-family: 'Syne', sans-serif; font-size: 2.2rem; font-weight: 800;
-      color: var(--orange); margin-bottom: 6px;
+      color: var(--orange-link); margin-bottom: 6px;
     }
-    .buy-price-display.free { color: var(--green); }
+    .buy-price-display.free { color: var(--success-link); }
     .buy-price-sub { font-size: .78rem; color: var(--muted); margin-bottom: 20px; }
     .buy-stock {
       font-size: .8rem; font-weight: 700; margin: -10px 0 16px;
-      color: var(--orange);
+      color: var(--orange-link);
     }
     .buy-stock.sold-out { color: var(--danger); }
     .btn-buy.sold-out { opacity: .55; cursor: not-allowed; filter: grayscale(.4); }
@@ -221,20 +221,20 @@
       width: 20px; height: 20px; border-radius: 50%;
       background: rgba(61,220,132,.15); border: 1px solid rgba(61,220,132,.3);
       display: flex; align-items: center; justify-content: center;
-      font-size: .65rem; color: var(--green); flex-shrink: 0; margin-top: 1px;
+      font-size: .65rem; color: var(--success-link); flex-shrink: 0; margin-top: 1px;
     }
 
     /* ── AVIS ── */
     .rating-summary { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; }
-    .rating-big { font-family: 'Syne', sans-serif; font-size: 2.6rem; font-weight: 800; color: var(--amber); line-height: 1; }
-    .rating-stars { font-size: 1.1rem; color: var(--amber); letter-spacing: 2px; }
+    .rating-big { font-family: 'Syne', sans-serif; font-size: 2.6rem; font-weight: 800; color: var(--amber-link); line-height: 1; }
+    .rating-stars { font-size: 1.1rem; color: var(--amber-link); letter-spacing: 2px; }
     .rating-count { font-size: .8rem; color: var(--muted); margin-top: 3px; }
     .avis-list { display: flex; flex-direction: column; gap: 14px; }
     .avis-item { padding: 14px 16px; background: var(--surface2); border-radius: 12px; border: 1px solid var(--border); }
     .avis-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
     .avis-avatar { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, var(--purple), var(--pink)); display: flex; align-items: center; justify-content: center; font-size: .85rem; font-weight: 700; color: #fff; flex-shrink: 0; }
     .avis-name { font-weight: 700; font-size: .88rem; }
-    .avis-stars { font-size: .8rem; color: var(--amber); margin-left: auto; }
+    .avis-stars { font-size: .8rem; color: var(--amber-link); margin-left: auto; }
     .avis-text { font-size: .82rem; color: var(--text-2); line-height: 1.55; }
 
     /* ── SIDEBAR ── */
@@ -300,7 +300,7 @@
     .modal-icon { font-size: 3rem; margin-bottom: 14px; }
     .modal-title { font-family: 'Syne', sans-serif; font-size: 1.3rem; font-weight: 800; margin-bottom: 10px; }
     .modal-sub { font-size: .9rem; color: var(--muted); line-height: 1.6; margin-bottom: 24px; }
-    .modal-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(124,111,239,.12); border: 1px solid rgba(124,111,239,.3); border-radius: 20px; padding: 5px 16px; font-size: .8rem; font-weight: 700; color: var(--purple2); margin-bottom: 24px; }
+    .modal-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(124,111,239,.12); border: 1px solid rgba(124,111,239,.3); border-radius: 20px; padding: 5px 16px; font-size: .8rem; font-weight: 700; color: var(--purple-link); margin-bottom: 24px; }
     .modal-close-btn {
       display: block; width: 100%;
       background: rgba(0,0,0,0.05); border: 1px solid var(--border);
@@ -691,7 +691,7 @@ function renderAvisForm(packId, avis) {
   let selected = mine ? Number(mine.note) : 0;
   el.innerHTML = '<div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:16px;">' +
     '<div style="font-weight:700;font-size:.88rem;margin-bottom:10px;">' + (mine ? 'Modifier ton avis' : 'Laisser un avis') + '</div>' +
-    '<div id="avisStars" style="font-size:1.5rem;color:var(--amber);cursor:pointer;letter-spacing:3px;margin-bottom:10px;"></div>' +
+    '<div id="avisStars" style="font-size:1.5rem;color:var(--amber-link);cursor:pointer;letter-spacing:3px;margin-bottom:10px;"></div>' +
     '<textarea id="avisText" placeholder="Ton commentaire (optionnel)" style="width:100%;min-height:60px;padding:10px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:inherit;font-size:.85rem;resize:vertical;outline:none;margin-bottom:10px;">' + escapeHtml((mine && mine.commentaire) || '') + '</textarea>' +
     '<button id="avisSubmit" class="btn-buy" style="padding:10px;font-size:.9rem;">Publier mon avis</button></div>';
   const starsEl = document.getElementById('avisStars');

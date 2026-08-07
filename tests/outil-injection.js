@@ -21,7 +21,7 @@ const { chromium } = require('playwright');
 const http = require('http'); const fs = require('fs'); const path = require('path');
 const ROOT = path.join(__dirname, '..');
 const { CHROME } = require('./_chrome');
-const MIME = {'.html':'text/html','.js':'text/javascript','.css':'text/css','.svg':'image/svg+xml',
+const MIME = {'.woff2':'font/woff2','.html':'text/html','.js':'text/javascript','.css':'text/css','.svg':'image/svg+xml',
                '.webmanifest':'application/json','.jpg':'image/jpeg','.webp':'image/webp','.png':'image/png'};
 const server = http.createServer((q, r) => {
   const p = path.join(ROOT, decodeURIComponent(q.url.split('?')[0]));

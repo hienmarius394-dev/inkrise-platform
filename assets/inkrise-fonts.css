@@ -1,0 +1,101 @@
+/* Polices Inkrise — servies par Inkrise.
+
+   Avant, chaque page allait chercher ses polices chez Google : une requête
+   vers fonts.googleapis.com pour obtenir la feuille de style, puis une
+   deuxième vers fonts.gstatic.com pour les fichiers eux-mêmes. Deux
+   allers-retours vers un tiers avant que le premier mot ne s'affiche
+   correctement — et l'adresse IP de chaque visiteur transmise à Google,
+   sans consentement, ce que le RGPD ne permet pas (le tribunal de Munich
+   l'a jugé explicitement en 2022).
+
+   Les fichiers sont désormais dans assets/fonts/. Trois conséquences :
+   le navigateur les demande au même serveur que la page (connexion déjà
+   ouverte, donc pas de DNS ni de poignée de main TLS supplémentaires),
+   le service worker peut les garder hors-ligne, et plus aucune donnée ne
+   part chez un tiers.
+
+   VERSIONS VARIABLES : un seul fichier couvre toute la plage de graisses
+   d'une famille. Là où il fallait cinq fichiers pour Syne 400→800, il en
+   faut un. C'est ce qui rend l'auto-hébergement plus léger que ce qu'on
+   chargeait avant, pas plus lourd.
+
+   SOUS-ENSEMBLES : latin et latin-ext seulement. Grâce à `unicode-range`,
+   le navigateur ne télécharge latin-ext que si la page contient vraiment
+   un caractère qui l'exige — un pseudo polonais ou turc, par exemple. Le
+   grec, le cyrillique et le vietnamien ne sont pas embarqués : un pseudo
+   écrit dans ces alphabets s'affichera dans la police système, lisible,
+   simplement pas dans la fonte de la maison.
+
+   Pour mettre à jour une police, voir assets/fonts/README.md. */
+
+/* ─── Syne — titres ─────────────────────────────────────────────── */
+@font-face {
+  font-family: 'Syne';
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url(fonts/syne-latin-ext.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Syne';
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url(fonts/syne-latin.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* ─── DM Sans — texte courant ───────────────────────────────────── */
+@font-face {
+  font-family: 'DM Sans';
+  font-style: normal;
+  font-weight: 300 700;
+  font-display: swap;
+  src: url(fonts/dmsans-latin-ext.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'DM Sans';
+  font-style: normal;
+  font-weight: 300 700;
+  font-display: swap;
+  src: url(fonts/dmsans-latin.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* ─── Nunito — accueil, profil, espace créateur ─────────────────── */
+@font-face {
+  font-family: 'Nunito';
+  font-style: normal;
+  font-weight: 400 900;
+  font-display: swap;
+  src: url(fonts/nunito-latin-ext.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Nunito';
+  font-style: normal;
+  font-weight: 400 900;
+  font-display: swap;
+  src: url(fonts/nunito-latin.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* ─── Bebas Neue — chiffres et titres du profil (une seule graisse) ─ */
+@font-face {
+  font-family: 'Bebas Neue';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(fonts/bebasneue-latin-ext.woff2) format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Bebas Neue';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(fonts/bebasneue-latin.woff2) format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}

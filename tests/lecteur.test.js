@@ -10,7 +10,7 @@ const ROOT = path.join(__dirname, '..');
 const { CHROME } = require('./_chrome');
 const OUT = __dirname;
 
-const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css',
+const MIME = {'.woff2':'font/woff2', '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css',
                '.json': 'application/json', '.svg': 'image/svg+xml', '.png': 'image/png' };
 
 // ── serveur statique ──

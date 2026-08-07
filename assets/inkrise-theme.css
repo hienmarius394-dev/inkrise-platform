@@ -25,6 +25,23 @@
   --surface2: #e5e5ea;
   --surface3: #d8d8dd;
 
+  /* Cartes « verre dépoli » — profil, upload, gestion des chapitres.
+     Elles étaient écrites `rgba(255,255,255,0.6)` en dur dans chaque page :
+     joli en clair, mais en sombre cela posait une carte GRIS CLAIR sous du
+     texte clair, à 2,3:1. Personne ne l'avait vu parce que ces pages
+     redirigent vers la connexion et échappaient à l'outil de contraste. */
+  --carte: rgba(255,255,255,0.6);
+  --carte-forte: rgba(255,255,255,0.85);
+
+  /* Rouge PLEIN, assez sombre pour porter du texte blanc (5,5:1).
+     `--danger` est une teinte vive faite pour du texte ou une pastille :
+     en fond de bouton elle ne tient que 3,4:1 sous du blanc. */
+  --danger-plein: #c8264b;
+
+  /* Violet PLEIN, même rôle : assez sombre pour porter du texte blanc
+     (5,7:1) là où `--purple` plafonne à 4,38:1. */
+  --purple-plein: #6a45e8;
+
   /* Couleurs de marque */
   --purple: #7c5cfc;
   --purple2: #a594f9;
@@ -61,10 +78,11 @@
      en thème sombre. Ces quatre-là sont donc réglées pour le texte, et
      valent exactement ce qui était écrit en dur avant leur création — le
      thème clair est inchangé au pixel près. */
-  --purple-link:  #6649f5;
-  --danger-link:  #da380f;
+  --purple-link:  #5a3ae8;
+  --danger-link:  #b8300c;
   --success-link: #007a66;
   --orange-link:  #b33f14;
+  --amber-link:   #8a5a00;
 
   /* Fonds translucides de la nav et de la barre du bas, et voile violet
      de l'onglet actif — nommés pour que le thème sombre les reprenne. */
@@ -115,6 +133,13 @@
   --glass-strong: rgba(255,255,255,0.09);
   --glass-border: rgba(255,255,255,0.10);
 
+  /* Cartes « verre dépoli » : un voile clair TRÈS discret sur le fond
+     sombre, au lieu du blanc à 60 % qui les rendait illisibles. */
+  --carte: rgba(255,255,255,0.05);
+  --carte-forte: rgba(255,255,255,0.08);
+  --danger-plein: #c8264b;
+  --purple-plein: #6a45e8;
+
   /* Marque — remontée en clarté : le violet clair du thème clair
      descend à 3:1 sur fond sombre et devient illisible en petit texte. */
   --purple: #9b83ff;
@@ -151,6 +176,10 @@
   --danger-link:  #ff9b7d;
   --success-link: #4ade9a;
   --orange-link:  #ffa079;
+  /* Identique à `--amber` en sombre : le remplacement de `color: var(--amber)`
+     par `var(--amber-link)` ne change donc RIEN au thème sombre, et ne
+     corrige que le thème clair, où l'ambre vif tombait à 1,8:1. */
+  --amber-link:   #f7b955;
 
   /* Variables propres à certaines pages (auth, profil…) : sans ces
      reprises, leurs valeurs claires resteraient posées sur fond sombre. */

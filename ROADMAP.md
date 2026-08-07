@@ -35,12 +35,13 @@ Inkrise = plateforme pour artistes manga/webtoon :
   `inkrise-theme.css` (couleurs, thème sombre), `inkrise-theme.js` (choix
   du thème, en `<head>`), `inkrise-config.js` (clés publiques),
   `inkrise-nav.js` (barre du bas, menu, garde-fous, partage),
+  `inkrise-fonts.css` + `fonts/` (les quatre polices, auto-hébergées),
   `inkrise-offline.js`, `inkrise-img.js`.
 - **Backend** : Supabase — Auth, Postgres + RLS, Storage (`avatars`,
   `covers`, `pages`, `community`).
 - **Serveur** : `api/og.js` (aperçus de lien, Vercel) et
   `supabase/functions/` (paiement CinetPay, envoi des notifications push).
-- **Tests** : 22 suites Playwright, 500 vérifications, plus six outils de
+- **Tests** : 23 suites Playwright, 519 vérifications, plus six outils de
   diagnostic (contraste, défauts silencieux, RLS sur PostgreSQL réel,
   échappement, pannes, chasse aux zones cliquables). Voir `tests/README.md`.
 
@@ -106,5 +107,24 @@ Inkrise = plateforme pour artistes manga/webtoon :
    et les lecteurs déconnectés sont enfin comptés.
 10. **Fusionner `espace-createur.html` dans `profil.html`** — deux tableaux
     de bord pour la même personne.
-11. **Polices auto-hébergées** — supprimerait deux allers-retours réseau et
-    la dépendance RGPD à Google Fonts.
+~~11. **Polices auto-hébergées**~~ — ✅ livré : les quatre familles (Syne,
+    DM Sans, Nunito, Bebas Neue) sont servies depuis `assets/fonts/`. Plus
+    aucun appel à `fonts.googleapis.com` ni `fonts.gstatic.com` sur les 21
+    pages, donc plus d'adresse IP transmise à Google — et deux
+    allers-retours réseau en moins avant le premier mot correctement
+    dessiné. Grâce aux **versions variables**, huit fichiers suffisent
+    (200 Ko, dont la moitié n'est téléchargée que si un pseudo l'exige) là
+    où il en aurait fallu seize en graisses fixes. Le service worker les
+    précharge, donc elles tiennent hors-ligne. Voir `assets/fonts/README.md`
+    pour la mise à jour.
+
+12. **Trou de mesure refermé** — `tests/outil-contraste.js` s'exécutait
+    déconnecté : les sept pages protégées redirigeaient vers `auth.html`,
+    qu'il mesurait sept fois en croyant mesurer sept pages. Il annonçait
+    « 0 couple sous le seuil sur 21 pages » en n'en ayant vraiment vu que
+    quatorze. Réparé (session simulée, paramètres d'URL, et un avertissement
+    quand une page n'est pas atteinte), il a relevé **33 couples fautifs**
+    entre les deux thèmes, tous corrigés à la racine : deux variables pour
+    les cartes « verre dépoli » figées en blanc, les variantes de texte
+    déjà prévues par le thème à la place des teintes de fond, et deux
+    aplats assez sombres pour porter du texte blanc.
