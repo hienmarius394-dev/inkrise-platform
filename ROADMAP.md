@@ -75,8 +75,9 @@ Inkrise = plateforme pour artistes manga/webtoon :
 ~~4. **Modération**~~ — ✅ livré : masquer / rétablir / classer sans suite,
    aperçu du contenu incriminé, regroupement des plaintes, lien vers le
    commentaire dans son chapitre.
-5. **Profil de lecteur** — chapitres lus, temps de lecture, genres favoris.
-   Aujourd'hui un profil ne parle que de création.
+~~5. **Profil de lecteur**~~ — ✅ livré : onglet « Ma lecture » (œuvres
+   commencées et terminées, avis donnés, genres les plus lus, reprise des
+   lectures en cours). Sans nouvelle colonne.
 ~~6. **Prix en FCFA à l'affichage**~~ — **écarté**. Inkrise s'adresse à un
    public international, pas seulement ouest-africain : l'affichage reste
    en euros. La conversion vers le XOF continue de se faire côté serveur au

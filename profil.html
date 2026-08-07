@@ -391,6 +391,39 @@
     .stat-card-num.green { color: #4ade80; }
     .stat-card.c-orange { --stat-accent: linear-gradient(90deg, var(--accent), #ff8a5c); --stat-accent-soft: rgba(255,107,53,0.12); }
     .stat-card.c-gold   { --stat-accent: linear-gradient(90deg, var(--gold), #f5a623); --stat-accent-soft: rgba(245,200,66,0.15); }
+
+    /* ── Ma lecture ── */
+    .genres-lus { display: flex; flex-wrap: wrap; gap: 8px; }
+    .genre-lu {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: .8rem; font-weight: 700; padding: 6px 14px; border-radius: 20px;
+      background: var(--surface2); border: 1px solid var(--border);
+      color: var(--muted); text-decoration: none; transition: all .2s;
+    }
+    .genre-lu:hover, .genre-lu:focus-visible {
+      border-color: var(--purple); color: var(--purple-link);
+      background: rgba(124,92,252,.07);
+    }
+    .genre-lu b { color: var(--purple-link); font-weight: 800; }
+    .sec-lien-lecture { font-size: .78rem; font-weight: 700; color: var(--purple-link); text-decoration: none; }
+    .reprise { display: flex; flex-direction: column; gap: 10px; }
+    .reprise-item {
+      display: flex; align-items: center; gap: 14px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 12px 14px;
+      text-decoration: none; color: var(--text); transition: all .2s;
+    }
+    .reprise-item:hover { border-color: rgba(124,92,252,.35); }
+    .reprise-cover {
+      width: 44px; height: 60px; border-radius: 8px; flex-shrink: 0;
+      background: var(--surface2); object-fit: cover;
+      display: flex; align-items: center; justify-content: center; font-size: 1.2rem;
+    }
+    .reprise-info { flex: 1; min-width: 0; }
+    .reprise-titre { font-weight: 800; font-size: .9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .reprise-detail { font-size: .76rem; color: var(--muted); margin-top: 2px; }
+    .reprise-jauge { height: 5px; border-radius: 99px; background: var(--surface2); margin-top: 7px; overflow: hidden; }
+    .reprise-jauge span { display: block; height: 100%; background: linear-gradient(90deg, var(--purple), var(--pink)); }
     .stat-card.c-green  { --stat-accent: linear-gradient(90deg, #4ade80, #22c55e); --stat-accent-soft: rgba(74,222,128,0.15); }
 
     /* Activité : top mangas par vues */
@@ -845,7 +878,8 @@
 
     <!-- Tabs -->
     <div class="profile-tabs">
-      <button class="ptab active" data-tab="mangas">📚 Mes Mangas</button>
+      <button class="ptab active" data-tab="lecture">📖 Ma lecture</button>
+      <button class="ptab" data-tab="mangas">📚 Mes Mangas</button>
       <button class="ptab" data-tab="formations">🎓 Formations</button>
       <button class="ptab" data-tab="stats">📊 Statistiques</button>
       <button class="ptab" data-tab="infos">⚙️ Mon Compte</button>
@@ -859,7 +893,7 @@
 <div class="profile-content">
 
   <!-- TAB : Mes Mangas -->
-  <div class="tab-panel active" id="tab-mangas">
+  <div class="tab-panel" id="tab-mangas">
     <!-- Banner créateur -->
     <div class="creator-banner" id="creatorBanner">
       <div class="creator-banner-icon">🚀</div>
@@ -891,6 +925,48 @@
   </div>
 
   <!-- TAB : Mes Formations -->
+  <!-- TAB : Ma lecture ─────────────────────────────────────────────
+       Le profil ne parlait que de création : un lecteur y voyait quatre
+       zéros et six onglets sur la publication. Tout ce qui suit se
+       reconstitue à partir de ce que la base contient déjà — bibliothèque,
+       avis, abonnements — sans une seule colonne de plus. -->
+  <div class="tab-panel active" id="tab-lecture">
+    <div id="lectureLoading" class="loading-dots"><span></span><span></span><span></span></div>
+    <div id="lectureContenu" style="display:none;">
+      <div class="stats-grid">
+        <div class="stat-card c-orange">
+          <div class="stat-card-label">Œuvres commencées</div>
+          <div class="stat-card-num orange" id="lecCommencees">0</div>
+        </div>
+        <div class="stat-card c-green">
+          <div class="stat-card-label">Terminées</div>
+          <div class="stat-card-num green" id="lecTerminees">0</div>
+        </div>
+        <div class="stat-card c-gold">
+          <div class="stat-card-label">Avis donnés</div>
+          <div class="stat-card-num gold" id="lecAvis">0</div>
+        </div>
+      </div>
+
+      <div class="info-card" id="lecGenresCard" style="display:none;">
+        <div class="chart-card-head"><h3>Tes genres</h3></div>
+        <div class="genres-lus" id="lecGenres"></div>
+      </div>
+
+      <div class="section-header" style="margin-top:22px;">
+        <div class="section-title">En cours de lecture</div>
+        <a href="bibliotheque.html" class="sec-lien-lecture">Ma bibliothèque →</a>
+      </div>
+      <div id="lecEnCours"></div>
+    </div>
+    <div id="lectureVide" class="empty-state" style="display:none;">
+      <div class="empty-icon">📖</div>
+      <h3>Tu n'as encore rien lu</h3>
+      <p>Ouvre un manga : ta progression, tes genres et tes avis apparaîtront ici.</p>
+      <a href="recherche.html" class="btn-upload" style="margin-top:14px;display:inline-block;text-decoration:none;">Découvrir des mangas</a>
+    </div>
+  </div>
+
   <div class="tab-panel" id="tab-formations">
     <div id="formationsLoading" class="loading-dots">
       <span></span><span></span><span></span>
@@ -1193,6 +1269,7 @@
     /* Update nav immediately */
     updateNav(session);
     await loadProfile();
+    await loadLecture();
     await loadMangas();
     loadFormations();
     await loadSuivis();
@@ -1257,6 +1334,87 @@
   });
 
   // ── CHARGER PROFIL ──
+  /* ── Ma lecture ──────────────────────────────────────────────────
+     Rien de nouveau en base : la bibliothèque garde déjà la position de
+     lecture de chaque œuvre, les avis et les abonnements sont là. Il ne
+     manquait qu'un endroit pour les regarder. */
+  async function loadLecture() {
+    const attente = document.getElementById('lectureLoading');
+    const contenu = document.getElementById('lectureContenu');
+    const vide    = document.getElementById('lectureVide');
+
+    const [bibRes, avisRes] = await Promise.all([
+      sb.from('bibliotheque')
+        .select('manga_id, chapitre, total_chapitres, added_at, mangas(titre, couverture_url, genres)')
+        .eq('user_id', currentUser.id).order('added_at', { ascending: false }),
+      sb.from('avis_mangas').select('id', { count: 'exact', head: true }).eq('user_id', currentUser.id),
+    ]);
+
+    attente.style.display = 'none';
+    if (bibRes.error) {
+      console.error('Ma lecture :', bibRes.error);
+      vide.style.display = 'block';
+      vide.querySelector('h3').textContent = 'Chargement impossible';
+      vide.querySelector('p').textContent =
+        'Le serveur n\'a pas répondu. Vérifie ta connexion et réessaie.';
+      return;
+    }
+
+    const lignes = bibRes.data || [];
+    if (!lignes.length) { vide.style.display = 'block'; return; }
+    contenu.style.display = 'block';
+
+    /* Terminée = la position est au dernier chapitre connu. Sans nombre
+       total de chapitres, on ne peut rien affirmer : l'œuvre reste « en
+       cours » plutôt que d'inventer une progression. */
+    const terminee = l => Number(l.total_chapitres) > 0 &&
+                          Number(l.chapitre) >= Number(l.total_chapitres);
+    const finies = lignes.filter(terminee);
+    document.getElementById('lecCommencees').textContent = lignes.length;
+    document.getElementById('lecTerminees').textContent  = finies.length;
+    document.getElementById('lecAvis').textContent       = avisRes.count || 0;
+
+    // Genres les plus lus, déduits des œuvres de la bibliothèque
+    const compte = {};
+    lignes.forEach(l => (l.mangas?.genres || []).forEach(g => {
+      if (g) compte[g] = (compte[g] || 0) + 1;
+    }));
+    const classes = Object.entries(compte).sort((a, b) => b[1] - a[1]).slice(0, 6);
+    if (classes.length) {
+      document.getElementById('lecGenresCard').style.display = 'block';
+      document.getElementById('lecGenres').innerHTML = classes.map(([g, n]) =>
+        '<a class="genre-lu" href="recherche.html?genre=' + encodeURIComponent(g) + '">' +
+        escHtml(g) + ' <b>' + n + '</b></a>').join('');
+    }
+
+    // Reprendre là où on s'est arrêté
+    const enCours = lignes.filter(l => !terminee(l)).slice(0, 5);
+    const zone = document.getElementById('lecEnCours');
+    if (!enCours.length) {
+      zone.innerHTML = '<div style="font-size:.85rem;color:var(--muted);padding:8px 0;">' +
+        'Tout est à jour — tu as terminé tout ce que tu as commencé.</div>';
+      return;
+    }
+    zone.innerHTML = '<div class="reprise">' + enCours.map(l => {
+      const m = l.mangas || {};
+      const total = Number(l.total_chapitres) || 0;
+      const pos   = Number(l.chapitre) || 0;
+      const pct   = total > 0 ? Math.min(100, Math.round(pos / total * 100)) : 0;
+      const cover = m.couverture_url
+        ? '<img class="reprise-cover" src="' + escHtml(m.couverture_url) + '" alt="" loading="lazy" />'
+        : '<div class="reprise-cover">📖</div>';
+      return '<a class="reprise-item" href="manga.html?id=' + encodeURIComponent(l.manga_id) + '">' +
+        cover +
+        '<div class="reprise-info">' +
+          '<div class="reprise-titre">' + escHtml(m.titre || 'Sans titre') + '</div>' +
+          '<div class="reprise-detail">' +
+            (total > 0 ? 'Chapitre ' + pos + ' sur ' + total : 'Chapitre ' + pos) +
+          '</div>' +
+          (total > 0 ? '<div class="reprise-jauge"><span style="width:' + pct + '%"></span></div>' : '') +
+        '</div></a>';
+    }).join('') + '</div>';
+  }
+
   async function loadProfile() {
     const { data: profile } = await sb
       .from('profiles')
