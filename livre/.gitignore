@@ -1,2 +1,5 @@
-# Fichiers générés par les scripts d'export — on ne versionne pas les sorties.
-export/
+# Fichiers intermédiaires générés par les scripts d'export.
+export/*
+# Exception : le PDF composé est le livrable. Il reste versionné pour être
+# téléchargeable depuis GitHub, le conteneur de travail étant éphémère.
+!export/dompter-son-cerveau.pdf

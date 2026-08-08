@@ -37,6 +37,7 @@ CHROMIUM = "/opt/pw-browsers/chromium-1194/chrome-linux/chrome"
 
 TITRE = "Dompter son cerveau"
 SOUS_TITRE = "Le manuel pour arrêter de négocier avec soi-même"
+AUTEUR = "Grindus"
 
 def typo(s: str) -> str:
     """Apostrophe typographique pour les textes qui ne passent pas par Markdown."""
@@ -122,6 +123,15 @@ body {
   padding-top: 4mm;
   max-width: 86mm;
   line-height: 1.9;
+  text-align: left;
+}
+
+.couverture .auteur {
+  font-family: "DejaVu Sans", sans-serif;
+  font-size: 11pt; font-weight: 700;
+  letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--ink);
+  margin-top: 16mm;
   text-align: left;
 }
 
@@ -407,12 +417,14 @@ def doc_liminaire(sommaire_html):
         f'<p class="sous-titre">{SOUS_TITRE}</p>'
         '<div class="accroche">Ton cerveau ne te dit jamais non.<br>'
         'Il négocie.<br>Et tu perds.</div>'
+        f'<div class="auteur">{AUTEUR}</div>'
         '</section>'
     )
     colophon = (
         '<section class="colophon">'
         '<p class="marque">Manuel pratique</p>'
         f'<p>{TITRE} — {SOUS_TITRE}</p>'
+        f'<p>{AUTEUR}</p>'
         '<p>Les affirmations scientifiques de cet ouvrage sont sourcées en annexe D, '
         'et distinguées selon trois registres : validé par la recherche, théorie '
         'débattue, heuristique de terrain.</p>'
@@ -493,7 +505,7 @@ async def principal():
         for page in PdfReader(str(source)).pages:
             ecrivain.add_page(page)
     ecrivain.add_metadata({"/Title": TITRE, "/Subject": SOUS_TITRE,
-                           "/Creator": "Manuel pratique"})
+                           "/Author": AUTEUR, "/Creator": "Manuel pratique"})
     with open(final, "wb") as f:
         ecrivain.write(f)
 
