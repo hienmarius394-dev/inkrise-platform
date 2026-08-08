@@ -55,18 +55,20 @@ dans laquelle la négociation interne n'a plus d'espace pour exister.
 
 | # | Chapitre | Idée-force | Statut |
 |---|----------|-----------|--------|
-| 16 | Transformer un rêve en cible | Un rêve non mesurable est une humeur | ⬜ À écrire |
-| 17 | Construire sa journée non négociable | L'architecture quotidienne complète | ⬜ À écrire |
-| 18 | Le tableau de bord | Mesurer l'exécution, pas les résultats | ⬜ À écrire |
-| 19 | Les 90 premiers jours | Le programme d'installation complet | ⬜ À écrire |
-| 20 | Conclusion — Quand la règle devient toi | | ⬜ À écrire |
+| 16 | Transformer un rêve en cible | Un rêve non mesurable est une humeur | ✅ Rédigé |
+| 17 | Construire sa journée non négociable | L'architecture quotidienne complète | ✅ Rédigé |
+| 18 | Le tableau de bord | Mesurer l'exécution, pas les résultats | ✅ Rédigé |
+| 19 | Les 90 premiers jours | Le programme d'installation complet | ✅ Rédigé |
+| 20 | Conclusion — Quand la règle devient toi | | ✅ Rédigé |
 
 ### Annexes
 
-- A. Les 7 voix : fiche de reconnaissance rapide (une page à imprimer)
-- B. Modèles de contrats non négociables
-- C. Bibliothèque de déclencheurs si-alors prêts à l'emploi
-- D. Sources et lectures
+| # | Annexe | Contenu | Statut |
+|---|--------|---------|--------|
+| A | Les 7 voix | Fiche de reconnaissance + relevé + table d'intervention | ✅ Rédigée |
+| B | Modèles de contrats | Contrat, plancher, clauses de rupture, cascade, identité | ✅ Rédigée |
+| C | Déclencheurs si-alors | Bibliothèque prête à l'emploi, classée par voix | ✅ Rédigée |
+| D | Sources et lectures | Bibliographie du lecteur, par registre de preuve | ✅ Rédigée |
 
 ---
 
@@ -83,17 +85,23 @@ dans laquelle la négociation interne n'a plus d'espace pour exister.
 
 ## Progression
 
-**Parties I, II et III terminées.** Il ne reste que la Partie IV.
+**PREMIER JET COMPLET.** Les quatre parties, la conclusion et les quatre annexes
+sont rédigées. Le livre se tient debout de bout en bout : un lecteur peut le
+lire en entier et installer le système sans rien qui manque.
 
-Le noyau de la méthode tient dans les neuf premiers chapitres : un lecteur qui
-s'arrête au chapitre 9 possède déjà un système fonctionnel. La Partie III ajoute
-de la puissance et de la résistance aux cas non couverts. La Partie IV apportera
-la mise en œuvre — du rêve à la journée, et le programme des 90 jours.
+Le noyau de la méthode tient dans les neuf premiers chapitres. La Partie III
+ajoute de la résistance aux cas non couverts. La Partie IV donne la mise en
+œuvre — du rêve à la journée, le tableau de bord, et le programme des 90 jours.
+
+**Prochaine étape : la passe de coupe.** Règle éditoriale n° 5 — un chapitre
+gagne presque toujours à perdre 20 %. Aucun chapitre n'a encore subi ce second
+passage. C'est le travail qui reste, avec la vérification des sources primaires
+listée dans `recherche/SOURCES.md`.
 
 **Cas traités**, et volontairement dissemblables pour éviter l'archétype unique :
 Goggins (ch. 1, 10, 11, 12, 13), Cuban (ch. 5, 14), Murakami (ch. 10),
 Morrison (ch. 14). Objectif atteint côté diversité — Morrison est le
 contre-exemple décisif : ni temps libre, ni énergie en réserve, et le résultat.
 
-- Chapitres rédigés : **16 / 21**
+- Chapitres rédigés : **21 / 21** + 4 annexes
 - Mots écrits : voir `bash livre/outils/statistiques.sh`
