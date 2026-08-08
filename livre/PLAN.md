@@ -3,7 +3,8 @@
 **Titre de travail :** *Dompter son cerveau*
 **Sous-titre de travail :** *Le manuel pour arrêter de négocier avec soi-même*
 **Format :** manuel pratique / méthode
-**Cible :** 60 000 – 75 000 mots (≈ 250 pages)
+**Cible :** 28 000 – 30 000 mots (≈ 110 pages)
+**Parti pris :** format court et dense. Une information par phrase.
 **Langue :** français
 
 ---
@@ -93,10 +94,15 @@ Le noyau de la méthode tient dans les neuf premiers chapitres. La Partie III
 ajoute de la résistance aux cas non couverts. La Partie IV donne la mise en
 œuvre — du rêve à la journée, le tableau de bord, et le programme des 90 jours.
 
-**Prochaine étape : la passe de coupe.** Règle éditoriale n° 5 — un chapitre
-gagne presque toujours à perdre 20 %. Aucun chapitre n'a encore subi ce second
-passage. C'est le travail qui reste, avec la vérification des sources primaires
-listée dans `recherche/SOURCES.md`.
+**Passe de coupe effectuée.** Le manuscrit est passé de 38 493 à 28 626 mots
+(−26 %), soit environ 110 pages. Décision prise avec l'auteur : format court et
+dense plutôt que 150 pages. Ont été retirés les mises en situation qui
+répétaient, les rappels de chapitres déjà lus, et les « erreurs classiques »
+mineures. Ont été conservés intégralement : mécanismes, protocoles, tableaux,
+chiffres sourcés, exercices.
+
+**Reste à faire :** la vérification des sources primaires listée dans
+`recherche/SOURCES.md`.
 
 **Cas traités**, et volontairement dissemblables pour éviter l'archétype unique :
 Goggins (ch. 1, 10, 11, 12, 13), Cuban (ch. 5, 14), Murakami (ch. 10),

@@ -4,7 +4,7 @@ set -euo pipefail
 
 RACINE="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 MANUSCRIT="$RACINE/manuscrit"
-CIBLE=65000
+CIBLE=30000
 
 if [ ! -d "$MANUSCRIT" ]; then
   echo "Dossier introuvable : $MANUSCRIT" >&2

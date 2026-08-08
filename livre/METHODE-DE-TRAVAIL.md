@@ -88,6 +88,10 @@ Ne pas les rouvrir sans raison — et surtout pas en cours de rédaction.
   personnel en fil rouge. C'est un manuel de méthode. Les exemples viennent de
   cas publics et vérifiables.
 - **Tutoiement**, ton direct, phrases courtes.
+- **Format court et dense — décision de l'auteur.** ~28 000 mots, ~110 pages.
+  Une information par phrase. Pas d'histoires qui servent d'illustration
+  décorative : un cas n'entre que s'il apporte un mécanisme. En cas de doute
+  sur un paragraphe, il saute.
 - **Trois registres explicitement distingués** : validé par la recherche /
   heuristique de terrain / position de l'auteur. Le lecteur doit toujours
   savoir où il est.
