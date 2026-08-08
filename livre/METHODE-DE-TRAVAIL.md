@@ -108,9 +108,9 @@ Ne pas les rouvrir sans raison — et surtout pas en cours de rédaction.
       Ça change le choix des exemples, pas la méthode.
 - [ ] **Voie de publication** — auto-édition (KDP), éditeur classique, ou
       diffusion sur Inkrise. Ça détermine le format d'export final.
-- [ ] **Cas à ajouter** — pour l'instant Goggins et Cuban. Il en faut 4 à 6 au
-      total, et idéalement pas uniquement des hommes américains du même moule :
-      la méthode gagne à être montrée sur des profils différents.
+- [x] ~~**Cas à ajouter**~~ — réglé. Quatre cas volontairement dissemblables :
+      Goggins, Cuban, Murakami, Morrison. Un cinquième reste souhaitable, hors
+      sphère occidentale et hors écriture/sport.
 
 ---
 

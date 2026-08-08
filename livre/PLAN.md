@@ -44,12 +44,12 @@ dans laquelle la négociation interne n'a plus d'espace pour exister.
 
 | # | Chapitre | Idée-force | Statut |
 |---|----------|-----------|--------|
-| 10 | Calluser son esprit | S'exposer volontairement à l'inconfort pour élargir la marge | ⬜ À écrire |
-| 11 | La marge des 40 % | Ce que dit Goggins, ce que dit la physiologie, ce qu'on peut en tirer | ⬜ À écrire |
-| 12 | Le bocal à souvenirs | Utiliser ses preuves passées comme carburant décisionnel | ⬜ À écrire |
-| 13 | Le miroir de responsabilité | Se dire la vérité, à voix haute, tous les jours | ⬜ À écrire |
-| 14 | Surtravailler et sur-préparer | La méthode Cuban : l'avantage se construit avant le match | ⬜ À écrire |
-| 15 | Le protocole de rupture | Que faire le jour où tu craques (et pourquoi c'est prévu) | ⬜ À écrire |
+| 10 | Calluser son esprit | S'exposer volontairement à l'inconfort pour élargir la marge | ✅ Rédigé |
+| 11 | La marge des 40 % | Ce que dit Goggins, ce que dit la physiologie, ce qu'on peut en tirer | ✅ Rédigé |
+| 12 | Le bocal à souvenirs | Utiliser ses preuves passées comme carburant décisionnel | ✅ Rédigé |
+| 13 | Le miroir de responsabilité | Se dire la vérité, à voix haute, tous les jours | ✅ Rédigé |
+| 14 | Surtravailler et sur-préparer | La méthode Cuban : l'avantage se construit avant le match | ✅ Rédigé |
+| 15 | Le protocole de rupture | Que faire le jour où tu craques (et pourquoi c'est prévu) | ✅ Rédigé |
 
 ### PARTIE IV — Du rêve au système
 
@@ -83,10 +83,17 @@ dans laquelle la négociation interne n'a plus d'espace pour exister.
 
 ## Progression
 
-**Parties I et II terminées.** Le socle complet de la méthode est écrit : le
-lecteur qui s'arrête au chapitre 9 possède déjà un système fonctionnel. La
-Partie III ajoute de la puissance, la Partie IV ajoute la mise en œuvre — mais
-le noyau tient dans les neuf premiers chapitres.
+**Parties I, II et III terminées.** Il ne reste que la Partie IV.
 
-- Chapitres rédigés : **10 / 21**
+Le noyau de la méthode tient dans les neuf premiers chapitres : un lecteur qui
+s'arrête au chapitre 9 possède déjà un système fonctionnel. La Partie III ajoute
+de la puissance et de la résistance aux cas non couverts. La Partie IV apportera
+la mise en œuvre — du rêve à la journée, et le programme des 90 jours.
+
+**Cas traités**, et volontairement dissemblables pour éviter l'archétype unique :
+Goggins (ch. 1, 10, 11, 12, 13), Cuban (ch. 5, 14), Murakami (ch. 10),
+Morrison (ch. 14). Objectif atteint côté diversité — Morrison est le
+contre-exemple décisif : ni temps libre, ni énergie en réserve, et le résultat.
+
+- Chapitres rédigés : **16 / 21**
 - Mots écrits : voir `bash livre/outils/statistiques.sh`

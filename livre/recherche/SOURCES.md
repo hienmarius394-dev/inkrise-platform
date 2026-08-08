@@ -180,6 +180,74 @@ contesté. »* (chapitre 2, tel quel).
 
 ---
 
+## A — L'effet « et puis merde » et la violation de l'abstinence
+
+**L'affirmation :** après avoir transgressé une règle qu'on s'est fixée, on ne
+revient pas au milieu — on aggrave largement l'écart initial. Ce n'est pas la
+transgression qui produit l'effondrement, c'est son interprétation, et la
+culpabilité qui suit en est le carburant.
+
+**Les données :**
+- L'**effet « what-the-hell »** a été nommé par Janet Polivy et C. Peter Herman,
+  d'abord observé chez les personnes au régime : une fois le régime rompu,
+  l'individu ne choisit pas l'option intermédiaire (le biscuit allégé), il
+  termine le paquet. C'est décrit comme une menace bien établie pour
+  l'autorégulation.
+- Le **modèle de frontière** (Herman & Polivy, 1984) rend compte du mécanisme :
+  tant que la limite auto-imposée n'est pas franchie, elle régule le
+  comportement ; une fois franchie, elle ne régule plus rien, et le comportement
+  va plus loin qu'il ne serait allé sans règle.
+- L'**effet de violation de l'abstinence** (littérature sur les addictions)
+  décrit le même schéma : après un premier écart, bascule vers une pensée du
+  tout ou rien — l'écart est interprété comme un échec total plutôt que comme un
+  incident temporaire — et la culpabilité, la honte et le désespoir associés
+  augmentent le risque de rechute sévère. Documenté chez des personnes
+  dépendantes à l'alcool, au tabac et à diverses substances.
+
+**Ce que ça implique pour le livre :** c'est le fondement empirique du chapitre
+15 et de la voix n° 7 (le Juge) au chapitre 3. Ça justifie précisément trois
+choix de conception du système :
+1. placer la frontière sur la **répétition** (jamais deux ruptures d'affilée)
+plutôt que sur la perfection, puisque c'est le tout-ou-rien qui casse ;
+2. **interdire le verdict identitaire**, puisque la culpabilité est le carburant ;
+3. **rendre le retour gratuit** (retour au plancher), puisque c'est le coût du
+retour qui décide de l'effondrement.
+
+**Nuance :** l'essentiel de cette littérature porte sur l'alimentation et les
+addictions. La généralisation à l'exécution d'un projet est une extension
+raisonnable et cohérente, mais c'est **une extension** — à formuler comme telle
+dans le manuscrit plutôt que comme un résultat directement transposé.
+
+**Références :**
+- Herman, C. P., & Polivy, J. (1984), modèle de frontière (*boundary model*).
+- Synthèse : *Motivation and emotion — What the hell effect*, Wikiversity.
+  https://en.wikiversity.org/wiki/Motivation_and_emotion/Book/2021/What_the_hell_effect
+- *The Abstinence Violation Effect and Overcoming It*, Psychology Today, 2023.
+  https://www.psychologytoday.com/us/blog/stigma-addiction-and-mental-health/202309/the-abstinence-violation-effect-and-overcoming-it
+- *Abstinence Violation* — synthèse ScienceDirect Topics.
+  https://www.sciencedirect.com/topics/psychology/abstinence-violation
+
+**Chapitres :** 3 (voix n° 7), 15 (central), 9.
+
+---
+
+## Cas documentés — Morrison et Murakami
+
+Voir la fiche détaillée : `cas-morrison-murakami.md`.
+
+**Statut :** faits et citations issus de leurs entretiens au *Paris Review*
+(Morrison, *The Art of Fiction* n° 134 ; Murakami, *The Art of Fiction*, 2004),
+largement reproduits et concordants. **À re-sourcer sur le texte original**
+(numéro, année, pagination) avant publication.
+
+Ces deux cas ne servent pas de preuve — ce sont des illustrations. Le livre le
+dit explicitement au chapitre 14 : *« ces cas ne prouvent pas que la méthode
+fonctionne ; ils montrent à quoi elle ressemble quand elle est poussée loin. »*
+
+**Chapitres :** 10 (Murakami), 14 (Morrison).
+
+---
+
 ## C — La règle des 40 % (Goggins)
 
 **L'affirmation :** quand l'esprit annonce l'épuisement, environ 40 % du
@@ -237,7 +305,11 @@ publication.**
 
 Avant toute publication :
 
-- [ ] Sourcer l'effet *what-the-hell* (chapitre 3, voix n° 7).
+- [x] ~~Sourcer l'effet *what-the-hell*~~ — fait (Polivy & Herman, modèle de
+      frontière 1984, + littérature sur la violation de l'abstinence).
+- [ ] Sourcer Bem (théorie de la perception de soi), référence primaire.
+- [ ] Retrouver les entretiens du *Paris Review* (Morrison n° 134 ; Murakami 2004)
+      sur le texte original.
 - [ ] Retrouver la source primaire datée de chaque citation de Cuban.
 - [ ] Sourcer chaque élément biographique de Goggins avec numéro de page.
 - [ ] Vérifier la dévaluation temporelle (chapitre 2) — affirmation solide, mais
