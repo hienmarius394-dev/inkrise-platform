@@ -157,7 +157,12 @@ console.log('\n▶ À découvrir aussi');
 {
   const { ctx, p } = await ouvrir(b, { user:U });
   p.on('pageerror',e=>errors.push(e.message));
-  await p.goto(BASE+'/manga.html?id=1'); await p.waitForTimeout(2400);
+  await p.goto(BASE+'/manga.html?id=1');
+  /* 2400 ms d'attente fixe suffisaient d'habitude, mais pas quand la
+     machine est chargée par les vingt-trois autres suites : la section
+     arrive après plusieurs requêtes enchaînées. On attend l'événement, pas
+     l'horloge — un test qui vacille ne protège de rien. */
+  await p.locator('#recosCard').waitFor({ state:'visible', timeout:15000 }).catch(()=>{});
   check('la section est affichée', await p.locator('#recosCard').isVisible());
   const liens = await p.locator('#recosListe a').evaluateAll(a=>a.map(x=>x.getAttribute('href')));
   check('elle propose d\'autres œuvres', liens.length>0, liens.join(', '));

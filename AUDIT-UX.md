@@ -1448,10 +1448,97 @@ sur un vrai PostgreSQL. 24 caractères passent, 25 sont refusés.
 
 ---
 
+## 7.18 Au clavier — et un bouton de conversion rendu inerte par une décoration
+
+Le défaut silencieux par excellence : rien ne plante, rien ne rougit, ça
+marche simplement mal pour qui n'utilise pas de souris. Trois choses ont
+été mesurées, aucune ne se lit dans le code.
+
+### Le focus se voit-il ?
+
+On focalise chaque commande et on compare son style calculé à son style
+au repos. Si rien ne change — ni contour, ni ombre, ni bordure, ni fond —
+la personne qui tabule ne sait pas où elle est. Verdict : **le champ de
+recherche du bandeau** n'avait aucune règle de focus, seulement un
+`outline: none`. Sur toutes les pages. Idem pour le **textarea de la bio**
+du profil, dont la règle voisine ne visait que les `input`.
+
+L'anneau se pose sur la **pilule** qui entoure le champ (`:focus-within`),
+pas sur l'input nu : c'est le conteneur qui porte la forme visible.
+
+### Les fenêtres se ferment-elles ?
+
+**Aucune modale de `profil.html` ne réagissait à Échap** — ni le
+formulaire de pack que je venais d'écrire, ni le recadrage. On ne pouvait
+sortir qu'en visant un ✕ à la souris : une impasse. Et le **dialogue de
+signalement** d'`assets/inkrise-nav.js` — présent sur chaque page qui
+propose de signaler un manga, un commentaire, un post ou un pack — n'avait
+ni Échap, ni piège à focus, ni retour du focus. La boîte de confirmation
+juste au-dessus de lui, dans le même fichier, faisait déjà tout cela
+correctement : il était le seul à ne pas suivre.
+
+Ajouté partout : Échap ferme, le focus reste **piégé** dans la fenêtre
+(sinon la tabulation s'échappe dans la page derrière, qu'un voile rend
+invisible), et il revient sur le bouton qui l'avait ouverte.
+
+### Le clic atteint-il sa cible ?
+
+Le plus grave, et trouvé par accident : le clic sur **« Devenir Créateur
+✨ » expirait**. Le bouton mesure 186×44, il est visible, `display: block`
+— et pourtant `document.elementFromPoint` en son centre ne le renvoyait
+pas.
+
+La cause : `.creator-banner::before`, **un halo décoratif de 200×200 px**
+calé en haut à droite de la bannière, sans `pointer-events: none`. Le
+bouton se trouve à droite. Le clic partait donc dans la décoration.
+
+**Le bouton qui transforme un lecteur en créateur — la conversion
+principale du site — était inerte sur ordinateur.** Une décoration ne doit
+jamais recevoir de pointeur.
+
+### Ce que la chasse a révélé en passant
+
+`openPlans()` et `openModal()` étaient définies dans `profil.html` et
+appelées de **nulle part**. La modale « DEVIENS CRÉATEUR » qu'elles
+ouvraient — quatorze lignes de balisage, une liste d'avantages, un bouton
+d'activation, et 2,3 Ko de CSS — était **inatteignable** depuis que
+devenir créateur est gratuit et immédiat (§ backlog n°7). Un vestige de
+l'époque des offres payantes, chargé à chaque visite du profil sans
+jamais pouvoir s'afficher. Retiré.
+
+### Ce que le test a corrigé chez lui — quatre fois
+
+C'est le tour où l'outil s'est le plus trompé, et chaque erreur était
+instructive :
+
+1. **Les transitions.** Juste après `.focus()`, une bordure qui s'anime en
+   0,2 s vaut encore son ancienne valeur : le style paraît inchangé. Huit
+   champs accusés à tort. On coupe les animations avant de comparer.
+2. **L'anneau sur un ancêtre.** Ne regarder que l'élément lui-même
+   condamnait un `:focus-within` parfaitement visible. On remonte de deux
+   niveaux.
+3. **`:focus-visible` ne s'applique pas à un focus posé par script** après
+   un clic souris — donc l'anneau que le navigateur dessine tout seul
+   n'apparaissait pas, et quatre boutons étaient accusés. La suite **tabule
+   pour de vrai** désormais.
+4. **`elementFromPoint` seul ne tranche pas.** Sur la barre d'onglets du
+   profil il désignait l'ancêtre alors qu'un vrai clic passe très bien ; et
+   un lien courant sur deux lignes a un rectangle dont le centre tombe
+   *entre* les lignes. Le contrôle a donc quitté `outil-invisible` — trop
+   de bruit sans clic réel — pour vivre dans `outil-clavier`, où chaque
+   fenêtre est ouverte pour de bon.
+
+Et un dernier, ailleurs : `avis-parametres` a vacillé une fois sous la
+charge des vingt-trois autres suites. Elle attendait 2400 ms au chronomètre
+là où il fallait attendre l'événement. Un test qui vacille ne protège de
+rien.
+
+---
+
 ## Annexe — méthode
 
 ```bash
-npm test                       # 559/559 ✅  (24 suites)
+npm test                       # 565/565 ✅  (24 suites)
 node tests/outil-contraste.js  # 21 pages RÉELLEMENT atteintes, session simulée
 INKRISE_THEME=sombre \
   node tests/outil-contraste.js   # le même relevé, en thème sombre
@@ -1461,6 +1548,8 @@ INKRISE_LONG=1 \
 node tests/outil-rls.js        # 65/65 — PostgreSQL réel, schéma chargé
 node tests/outil-injection.js  # 0 contenu utilisateur hors de son cadre
 node tests/outil-panne.js      # 0 page muette sur 42 combinaisons
+node tests/outil-clavier.js    # focus visible, Échap, piège à focus, retour
+                               # du focus, et clic non intercepté
 npm test -- veille             # 16/16 — écran maintenu allumé
 npm test -- confort            # 21/21 — plein écran et zoom
 npm test -- double-page        # 23/23 — paires, sens de lecture, repli

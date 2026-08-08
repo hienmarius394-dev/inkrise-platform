@@ -258,6 +258,7 @@ body { overflow-wrap: anywhere; }
    système, où le logo Syne fait 88px au lieu de 142. */
 @media (max-width: 680px) { .univ-nav-search { display: none; } }
 .univ-nav-si { background: none; border: none; outline: none; color: var(--text); font-size: .8rem; padding: 7px 10px; width: 100%; font-family: 'DM Sans', sans-serif; }
+.univ-nav-search:focus-within { border-color: var(--purple); box-shadow: 0 0 0 3px var(--purple-voile); }
 .univ-nav-si::placeholder { color: var(--text-3); }
 .univ-nav-sb { background: none; border: none; cursor: pointer; padding: 6px 8px; font-size: 13px; color: var(--text-3); flex-shrink: 0; }
 .univ-nav-sb:hover { color: var(--purple-link); }

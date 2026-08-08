@@ -249,6 +249,11 @@
       width: 200px; height: 200px;
       border-radius: 50%;
       background: radial-gradient(circle, rgba(155,89,245,0.15) 0%, transparent 70%);
+      /* SANS ceci, ce halo purement décoratif — 200×200px calé en haut à
+         droite — recouvrait « Devenir Créateur ✨ » et avalait le clic.
+         Le bouton qui transforme un lecteur en créateur était inerte sur
+         ordinateur. Une décoration ne doit jamais recevoir de pointeur. */
+      pointer-events: none;
     }
     .creator-banner-icon {
       font-size: 3rem; flex-shrink: 0;
@@ -495,7 +500,7 @@
       outline: none; transition: border-color .2s;
     }
     .info-row span { overflow-wrap: anywhere; }
-    .info-row input:focus { border-color: var(--purple); }
+    .info-row input:focus, .info-row textarea:focus { border-color: var(--purple); box-shadow: 0 0 0 3px var(--purple-voile); }
     .btn-save {
       background: linear-gradient(135deg, var(--purple), var(--pink));
       color: #fff; border: none;
@@ -559,7 +564,7 @@
     }
     .profile-social-link:hover { background: rgba(124,92,252,0.2); border-color: var(--purple); color: var(--purple-link); }
 
-    /* ── MODAL PLANS ── */
+    /* ── MODALES ── */
     .modal-overlay {
       position: fixed; inset: 0;
       background: rgba(0,0,0,0.75);
@@ -712,59 +717,6 @@
     .pack-card-actions button.danger:hover { border-color: var(--danger-link); }
     .pack-buyers { font-size: .72rem; color: var(--muted); padding: 0 10px 8px; }
 
-    .plans-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 16px;
-    }
-    @media (max-width: 640px) { .plans-grid { grid-template-columns: 1fr; } }
-
-    .plan-card {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 24px 20px;
-      text-align: center;
-      transition: all .25s;
-      position: relative;
-    }
-    .plan-card.featured {
-      border-color: var(--purple);
-      background: linear-gradient(180deg, rgba(155,89,245,0.08), var(--bg));
-    }
-    .plan-badge {
-      position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
-      background: linear-gradient(135deg, var(--purple), var(--pink));
-      color: #fff; font-size: 0.7rem; font-weight: 800;
-      padding: 3px 14px; border-radius: 20px;
-      text-transform: uppercase; letter-spacing: 1px;
-    }
-    .plan-icon { font-size: 2.2rem; margin-bottom: 12px; }
-    .plan-name { font-family: 'Bebas Neue', sans-serif; font-size: 1.5rem; letter-spacing: 1px; margin-bottom: 6px; }
-    .plan-price {
-      font-size: 1.8rem; font-weight: 900;
-      margin-bottom: 4px;
-    }
-    .plan-price span { font-size: 0.85rem; font-weight: 600; color: var(--muted); }
-    .plan-desc { font-size: 0.78rem; color: var(--muted); margin-bottom: 18px; line-height: 1.5; }
-    .plan-features { list-style: none; text-align: left; margin-bottom: 22px; display: flex; flex-direction: column; gap: 8px; }
-    .plan-features li { font-size: 0.8rem; display: flex; align-items: flex-start; gap: 8px; }
-    .plan-features li::before { content: '✓'; color: #4ade80; font-weight: 900; flex-shrink: 0; margin-top: 1px; }
-    .plan-features li.no::before { content: '✗'; color: var(--muted); }
-    .btn-plan {
-      width: 100%;
-      padding: 11px 0; border-radius: 10px;
-      font-weight: 800; font-size: 0.88rem;
-      cursor: pointer; border: none;
-      font-family: 'Nunito', sans-serif;
-      transition: all .25s;
-    }
-    .btn-plan.free { background: var(--surface2); color: var(--muted); cursor: default; }
-    .btn-plan.premium {
-      background: linear-gradient(135deg, var(--purple), var(--pink));
-      color: #fff;
-    }
-    .btn-plan.premium:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(155,89,245,0.4); }
 
     /* ── LOADING ── */
     .loading-dots {
@@ -1363,20 +1315,11 @@
 </div>
 
 <!-- ── MODAL CRÉATEUR ── -->
-<div class="modal-overlay" id="plansModal">
-  <div class="modal" style="max-width:440px;text-align:center;">
-    <button class="modal-close" id="modalClose">✕</button>
-    <div class="modal-title">DEVIENS CRÉATEUR</div>
-    <div class="modal-sub">C'est gratuit, pour toujours. Publie tes mangas et vends tes packs de dessin sur Inkrise.</div>
-    <ul class="plan-features" style="text-align:left;max-width:280px;margin:0 auto 24px;">
-      <li>Mangas illimités</li>
-      <li>Packs de dessin illimités</li>
-      <li>Communauté personnelle</li>
-      <li>Statistiques</li>
-    </ul>
-    <button class="btn-plan free" style="max-width:280px;margin:0 auto;">✨ Activer mon espace créateur</button>
-  </div>
-</div>
+<!-- La modale « DEVIENS CRÉATEUR » vivait ici. `openPlans()` et
+     `openModal()` étaient définies mais appelées de NULLE PART : plus rien
+     ne pouvait l'ouvrir depuis que devenir créateur est gratuit et
+     immédiat. Un vestige de l'époque des offres payantes, chargé par
+     chaque visite du profil sans jamais pouvoir s'afficher. -->
 
 <!-- Toast -->
 <div class="toast" id="toast"></div>
@@ -1730,19 +1673,6 @@
         else choosePlan('gratuit');
       };
     }
-    // Bouton "Gratuit" de la modal : activable seulement si pas encore créateur
-    const freeBtn = document.querySelector('.btn-plan.free');
-    if (freeBtn) {
-      if (userProfile?.is_creator) {
-        freeBtn.textContent = 'Plan actuel';
-        freeBtn.disabled = true;
-        freeBtn.style.cursor = 'default';
-      } else {
-        freeBtn.textContent = 'Commencer gratuit';
-        freeBtn.disabled = false;
-        freeBtn.style.cursor = 'pointer';
-      }
-    }
   }
 
   // ── SUPPRESSION DE COMPTE (définitive) ──
@@ -1798,10 +1728,6 @@
   /* Ces deux boutons menaient à l'espace créateur, une autre page. Depuis
      la fusion, la destination est un onglet de CETTE page : y « naviguer »
      rechargerait tout pour rien. */
-  document.querySelector('.btn-plan.free')?.addEventListener('click', () => {
-    if (!userProfile?.is_creator) choosePlan('gratuit');
-    else { closePlans(); goToTab('formations'); }
-  });
   document.getElementById('btnOpenPlans2')?.addEventListener('click', () => {
     if (!userProfile?.is_creator) choosePlan('gratuit');
     else goToTab('formations');
@@ -2225,6 +2151,49 @@
     if (e.target === this) fermerModalePack();
   });
 
+  /* ÉCHAP FERME LA FENÊTRE OUVERTE — les trois de cette page.
+     Aucune ne réagissait à la touche : on ne pouvait sortir qu'en visant
+     un ✕ à la souris, ce qui est une impasse pour qui navigue au clavier.
+     La boîte de confirmation partagée (`inkriseConfirm`) le faisait déjà ;
+     les modales propres à la page, non.
+
+     On rend aussi le focus au bouton qui avait ouvert la fenêtre : sinon
+     il repart au début du document et on doit tout retabuler. */
+  let ouvreurModale = null;
+  document.addEventListener('focusin', e => {
+    /* Mémorisé AVANT l'ouverture : au moment du clic, le bouton a encore
+       le focus. On ignore ce qui est déjà dans une fenêtre ouverte. */
+    if (!e.target.closest('.modal-overlay.open')) ouvreurModale = e.target;
+  });
+  document.addEventListener('keydown', e => {
+    const ouverte = document.querySelector('.modal-overlay.open');
+    if (!ouverte) return;
+
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      ouverte.classList.remove('open');
+      /* La modale de recadrage attend une réponse : la refermer sans rien
+         rendre laisserait la promesse en suspens pour toujours. */
+      if (ouverte.id === 'cropModal' && cropState && cropState.resolve) cropState.resolve(null);
+      if (ouvreurModale && document.contains(ouvreurModale)) ouvreurModale.focus();
+      return;
+    }
+
+    /* PIÈGE À FOCUS. Sans lui, la tabulation sort de la fenêtre et se
+       promène dans la page derrière — qu'on ne voit plus, puisqu'un voile
+       la recouvre. Les deux dialogues partagés d'assets/inkrise-nav.js le
+       faisaient déjà ; les modales de cette page, non. */
+    if (e.key !== 'Tab') return;
+    const focusables = [...ouverte.querySelectorAll(
+      'a[href], button:not([disabled]), input:not([type=hidden]):not([disabled]), select:not([disabled]), textarea:not([disabled])')]
+      .filter(el => el.offsetWidth > 0 || el.offsetHeight > 0);
+    if (!focusables.length) return;
+    const premier = focusables[0], dernier = focusables[focusables.length - 1];
+    if (e.shiftKey && document.activeElement === premier) { e.preventDefault(); dernier.focus(); }
+    else if (!e.shiftKey && document.activeElement === dernier) { e.preventDefault(); premier.focus(); }
+    else if (!ouverte.contains(document.activeElement)) { e.preventDefault(); premier.focus(); }
+  });
+
   // Le sélecteur de couverture est une div : il lui faut le clavier aussi.
   const picker = document.getElementById('packCoverPicker');
   picker.addEventListener('click', () => document.getElementById('packCoverFile').click());
@@ -2349,13 +2318,8 @@
     });
   });
 
-  // ── MODAL PLANS ──
-  function openPlans() { document.getElementById('plansModal').classList.add('open'); }
-  function openModal() { openPlans(); }
-  function closePlans() { document.getElementById('plansModal').classList.remove('open'); }
-
-  // "Devenir Créateur" doit être gratuit et immédiat, sans passer par la
-  // modal de plans payants (qui donnait l'impression d'un mur de paiement).
+  // "Devenir Créateur" est gratuit et immédiat : aucun mur de paiement,
+  // donc aucune modale d'offres à ouvrir.
   document.getElementById('btnOpenPlans').addEventListener('click', () => {
     // Déjà créateur : on l'amène à ses publications, sur cette même page.
     if (userProfile?.is_creator) {
@@ -2364,12 +2328,6 @@
       return;
     }
     choosePlan('gratuit');
-  });
-  // "Voir les plans" reste le chemin explicite vers les offres payantes.
-
-  document.getElementById('modalClose').addEventListener('click', closePlans);
-  document.getElementById('plansModal').addEventListener('click', e => {
-    if (e.target === e.currentTarget) closePlans();
   });
 
   // ── SAUVEGARDER PROFIL (nom + bio + avatar) ──
