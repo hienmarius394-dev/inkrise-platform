@@ -40,6 +40,11 @@ if [ "$FORMAT" = "md" ]; then
   exit 0
 fi
 
+if [ "$FORMAT" = "pdf" ]; then
+  python3 "$RACINE/outils/construire-pdf.py"
+  exit $?
+fi
+
 if ! command -v pandoc >/dev/null 2>&1; then
   echo "pandoc n'est pas installé — impossible d'exporter en $FORMAT." >&2
   echo "Installe-le (https://pandoc.org/installing.html), le fichier Markdown reste utilisable." >&2
@@ -48,11 +53,8 @@ fi
 
 case "$FORMAT" in
   pdf)
-    pandoc "$COMPLET" -o "$SORTIE/dompter-son-cerveau.pdf" \
-      --pdf-engine=xelatex \
-      -V documentclass=book -V papersize=a5 \
-      -V geometry:margin=2cm -V fontsize=11pt -V lang=fr
-    echo "PDF : $SORTIE/dompter-son-cerveau.pdf"
+    echo "Le PDF est composé par construire-pdf.py (mise en page de livre)." >&2
+    python3 "$RACINE/outils/construire-pdf.py"
     ;;
   epub)
     pandoc "$COMPLET" -o "$SORTIE/dompter-son-cerveau.epub" --toc --toc-depth=2

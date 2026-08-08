@@ -26,7 +26,7 @@ Dis simplement, en français :
 | Revoir un chapitre | « Relis le chapitre 3, il est trop long, coupe 30 % » |
 | Vérifier un fait | « Vérifie que la citation de Cuban est exacte » |
 | Voir l'avancement | « Où on en est ? » |
-| Exporter | « Sors-moi le manuscrit en PDF » |
+| Exporter en PDF | « Sors-moi le PDF » (`bash livre/outils/export.sh pdf`) |
 | Changer le plan | « Ajoute un chapitre sur le sommeil entre le 9 et le 10 » |
 
 ---
@@ -98,6 +98,11 @@ Ne pas les rouvrir sans raison — et surtout pas en cours de rédaction.
 - **Aucun fait sur une personne réelle sans source.** À défaut : `[À VÉRIFIER]`,
   et ça ne part pas en publication.
 - **Chaque chapitre finit par une action exécutable.** Sinon on réécrit.
+- **Aucune image décorative — décision de l'auteur.** Pas de photos
+  « inspirantes » : un livre qui démontre que la motivation ne produit rien ne
+  peut pas s'illustrer comme un livre de motivation. Les seuls visuels sont des
+  schémas fonctionnels qui expliquent un mécanisme (`outils/diagrammes.py`).
+  Un schéma qui ne fait qu'illustrer joliment est retiré.
 - **La science honnête est un argument de vente.** L'*ego depletion* n'a pas
   survécu aux réplications : on le dit, et on s'en sert. Ne jamais citer une
   étude fragile comme si elle était établie — un lecteur qui vérifie et trouve
@@ -124,5 +129,5 @@ Ne pas les rouvrir sans raison — et surtout pas en cours de rédaction.
 |---|---|
 | `manuscrit/` | Le livre. Un fichier par chapitre, préfixé du numéro. |
 | `recherche/` | Fiches de cas, notes scientifiques, `SOURCES.md`. |
-| `outils/` | Scripts d'export et de statistiques. |
+| `outils/` | Composition du PDF, schémas, statistiques. |
 | `PLAN.md` | L'architecture et l'état d'avancement. La source de vérité. |
