@@ -209,6 +209,15 @@ const SONDE = () => {
     });
   });
 
+  /* COMMANDE RECOUVERTE — la sonde a vécu ici, puis a déménagé.
+     `elementFromPoint` seul ne sait pas trancher : sur la barre d'onglets
+     du profil il désignait l'ancêtre alors qu'un vrai clic passe très
+     bien. Le seul juge fiable est un clic RÉEL, trop lent pour un balayage
+     de 21 pages × 3 largeurs. Le contrôle vit donc dans
+     tests/outil-clavier.js, où chaque fenêtre est ouverte pour de bon —
+     c'est là qu'il a attrapé le halo décoratif qui rendait inerte
+     « Devenir Créateur ✨ ». */
+
   // débordement masqué : élément dont le bord droit sort de l'écran
   document.querySelectorAll('body *').forEach(e => {
     const r = e.getBoundingClientRect();
@@ -325,12 +334,13 @@ for (const largeur of [320, 390, 1280]) {
          modale et chaque volet ne sont jamais examinés — ils peuvent
          déborder, avoir des identifiants en double ou des cibles
          minuscules sans que rien ne le dise. */
+      /* On déplie les ONGLETS et les sous-vues, mais PAS le menu latéral
+         ni les fenêtres : ouverts, ils recouvrent légitimement toute la
+         page et la sonde « commande recouverte » se tairait — or c'est
+         justement dans un onglet replié que vivait le bouton « Devenir
+         Créateur ✨ » rendu inerte par un halo décoratif. */
       await p.evaluate(() => {
         document.querySelectorAll('.tab-panel').forEach(e => e.classList.add('active'));
-        document.querySelectorAll('.modal-overlay, .crop-overlay, .confirm-overlay')
-          .forEach(e => e.classList.add('open'));
-        const d = document.getElementById('univDrawer');
-        if (d) d.classList.add('open');
         document.querySelectorAll('[id^="view"], [id^="formations"], [id^="section-"]')
           .forEach(e => { if (e.style.display === 'none') e.style.display = 'block'; });
       });

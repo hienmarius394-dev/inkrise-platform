@@ -42,9 +42,10 @@ Inkrise = plateforme pour artistes manga/webtoon :
   `covers`, `pages`, `community`).
 - **Serveur** : `api/og.js` (aperçus de lien, Vercel) et
   `supabase/functions/` (paiement CinetPay, envoi des notifications push).
-- **Tests** : 24 suites Playwright, 559 vérifications, plus six outils de
+- **Tests** : 24 suites Playwright, 565 vérifications, plus sept outils de
   diagnostic (contraste, défauts silencieux, RLS sur PostgreSQL réel,
-  échappement, pannes, chasse aux zones cliquables). Voir `tests/README.md`.
+  échappement, pannes, chasse aux zones cliquables, navigation au clavier).
+  Voir `tests/README.md`.
 
 ## Livré lors de l'audit (3 sprints)
 
@@ -164,6 +165,25 @@ Inkrise = plateforme pour artistes manga/webtoon :
     logo, « Voir tout → » : les agrandir voudrait dire réécrire la mise en
     page. Décision assumée. Le constat est devenu un garde-fou dans
     `accessibilite.test.js`.
+
+16. **Navigation au clavier** — nouvel outil `tests/outil-clavier.js`.
+    Trois manques, dont un grave :
+    - **le focus ne se voyait pas** sur le champ de recherche du bandeau
+      (aucune règle de focus, seulement `outline: none`, sur toutes les
+      pages) ni sur le textarea de la bio ;
+    - **aucune modale de `profil.html` ne réagissait à Échap**, et le
+      dialogue de **signalement** partagé n'avait ni Échap, ni piège à
+      focus, ni retour du focus — alors que la boîte de confirmation juste
+      au-dessus de lui, dans le même fichier, faisait tout cela ;
+    - ⚠️ **« Devenir Créateur ✨ » ne recevait pas le clic.** Un halo
+      décoratif de 200×200 px en `::before`, sans `pointer-events: none`,
+      l'interceptait. Le bouton qui transforme un lecteur en créateur — la
+      conversion principale du site — était **inerte sur ordinateur**.
+
+    Relevé en passant : la modale « DEVIENS CRÉATEUR » de `profil.html`
+    était **inatteignable** — `openPlans()` définie, appelée de nulle part
+    depuis que devenir créateur est gratuit et immédiat. Retirée, avec ses
+    2,3 Ko de CSS.
 
 15. **Personne n'est obligé d'écrire court** — l'outil de défauts
     silencieux balaie désormais **320 px** (iPhone SE) en plus de 390 et

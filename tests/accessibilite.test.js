@@ -231,6 +231,123 @@ async function authCtx(browser, opts) {
     await c.close();
   }
 
+  /* ══ 5. Le clavier, de bout en bout ══
+     Trois manques relevés par tests/outil-clavier.js, figés ici :
+     — le focus doit se VOIR (comparaison du style calculé, transitions
+       coupées pour ne pas mesurer une bordure encore en train de bouger) ;
+     — Échap doit fermer toute fenêtre ouverte ;
+     — le bouton qui l'a ouverte doit récupérer le focus.
+     Et le piège découvert au passage : un halo décoratif en `::before`,
+     sans `pointer-events: none`, avalait le clic de « Devenir Créateur ✨ ». */
+  console.log('\n▶ Tout se pilote au clavier');
+  {
+    /* Deux profils, deux contextes : « Devenir Créateur ✨ » n'existe que
+       pour un LECTEUR, et le formulaire de pack que pour un CRÉATEUR. Un
+       seul contexte ne peut pas montrer les deux. */
+    async function profilAvec(createur) {
+      const c = await authCtx(browser, { viewport:{ width:1280, height:1000 } });
+      await c.route('https://fonts.googleapis.com/**', r => r.fulfill({status:200,contentType:'text/css',body:''}));
+      await c.route('**/rest/v1/**', r => {
+        const req = r.request(), u = decodeURIComponent(req.url());
+        const seul = (req.headers()['accept']||'').includes('vnd.pgrst.object');
+        if (u.includes('/profiles')) {
+          const moi = { id:'u1', username:'Createur', bio:'', avatar_url:null,
+                        is_creator:createur, created_at:'2026-01-05T10:00:00Z' };
+          return r.fulfill({status:200,contentType:'application/json',
+            headers:{'Content-Range':'0-0/1','Access-Control-Expose-Headers':'Content-Range'},
+            body: JSON.stringify(seul ? moi : [moi])});
+        }
+        return r.fulfill({status:200,contentType:'application/json',
+          headers:{'Content-Range':'0-0/0','Access-Control-Expose-Headers':'Content-Range'},body:'[]'});
+      });
+      await c.route('**/storage/v1/**', r => r.fulfill({status:200,contentType:'application/json',body:'[]'}));
+      const pg = await c.newPage();
+      pg.on('pageerror', e => errors.push(e.message));
+      await pg.goto(BASE + '/profil.html', { waitUntil:'load' }).catch(()=>{});
+      await pg.waitForTimeout(1800);
+      return { c, pg };
+    }
+
+    // — le clic atteint-il vraiment le bouton ? (vu en LECTEUR) —
+    let { c, pg } = await profilAvec(false);
+    await pg.click('.ptab[data-tab="mangas"]');
+    await pg.waitForTimeout(400);
+    const bloqueur = await pg.evaluate(() => {
+      const e = document.getElementById('btnOpenPlans');
+      if (!e) return 'bouton absent';
+      e.scrollIntoView({ block:'center' });
+      const b = e.getBoundingClientRect(), cy = Math.round(b.top + b.height/2);
+      const touche = [0.5, 0.25, 0.75].some(f => {
+        const t = document.elementFromPoint(Math.round(b.left + b.width*f), cy);
+        return t && (t === e || e.contains(t));
+      });
+      if (touche) return null;
+      const d = document.elementFromPoint(Math.round(b.left + b.width/2), cy);
+      return d ? (d.id || d.className || d.tagName) : 'rien';
+    });
+    check('« Devenir Créateur » reçoit bien le clic', bloqueur === null,
+      bloqueur ? 'recouvert par ' + bloqueur : 'rien ne le recouvre');
+    await c.close();
+
+    // — le reste se joue en CRÉATEUR : le formulaire de pack —
+    ({ c, pg } = await profilAvec(true));
+    await pg.addStyleTag({ content:
+      '*, *::before, *::after { transition: none !important; animation: none !important; }' });
+    await pg.click('.ptab[data-tab="formations"]');
+    await pg.waitForTimeout(400);
+    await pg.click('#btnNouveauPack');
+    await pg.waitForTimeout(400);
+    /* On TABULE réellement au lieu d'appeler `.focus()`. La nuance est
+       décisive : `:focus-visible` — donc l'anneau que le navigateur dessine
+       tout seul — ne s'applique pas à un focus posé par script après un
+       clic souris. Mesurer ainsi accusait à tort quatre boutons qu'un
+       usager au clavier voit parfaitement. */
+    const sig = `(el => { const s = getComputedStyle(el);
+      return [s.outlineStyle,s.outlineWidth,s.outlineColor,s.boxShadow,
+              s.borderColor,s.borderWidth,s.backgroundColor,s.color].join('|'); })`;
+    const sansAnneau = [];
+    const vus = new Set();
+    let evade = false;      // la tabulation est-elle sortie de la fenêtre ?
+    for (let i = 0; i < 30; i++) {
+      await pg.keyboard.press('Tab');
+      const r = await pg.evaluate(([sigSrc]) => {
+        const f = eval(sigSrc);
+        const el = document.activeElement;
+        if (!el || el === document.body) return null;
+        if (!el.closest('#packModal')) return { hors: true };
+        const cle = el.tagName.toLowerCase() + (el.type ? '[' + el.type + ']' : '') + (el.id ? '#' + el.id : '');
+        const avant = f(el);
+        el.blur();
+        const repos = f(el);
+        el.focus({ preventScroll: true });
+        return { cle, change: avant !== repos };
+      }, [sig]);
+      if (r && r.hors) evade = true;
+      if (!r || r.hors) continue;
+      if (vus.has(r.cle)) break;              // on a fait le tour
+      vus.add(r.cle);
+      if (!r.change) sansAnneau.push(r.cle);
+    }
+    check(`  les ${vus.size} commandes du formulaire montrent leur focus`,
+      vus.size > 5 && sansAnneau.length === 0,
+      sansAnneau.join(', ') || 'toutes visibles');
+    /* Sans piège à focus, la tabulation quitte la fenêtre et se promène
+       dans la page derrière — qu'un voile rend invisible. */
+    check('  et la tabulation ne s\'échappe pas de la fenêtre', !evade,
+      evade ? 'le focus est sorti dans la page derrière' : 'elle boucle dedans');
+
+    // — Échap ferme, et rend le focus — (la fenêtre est déjà ouverte)
+    check('  la fenêtre s\'ouvre', await pg.locator('#packModal.open').count() === 1);
+    await pg.keyboard.press('Escape');
+    await pg.waitForTimeout(400);
+    check('  Échap la referme', await pg.locator('#packModal.open').count() === 0);
+    check('  et le focus revient sur le bouton d\'ouverture',
+      await pg.evaluate(() => document.activeElement &&
+        document.activeElement.id === 'btnNouveauPack'),
+      await pg.evaluate(() => document.activeElement ? document.activeElement.id || document.activeElement.tagName : '—'));
+    await c.close();
+  }
+
   await browser.close(); server.close();
   console.log('\n' + '═'.repeat(60));
   const ko = results.filter(r => !r.p);

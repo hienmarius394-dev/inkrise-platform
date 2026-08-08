@@ -326,7 +326,7 @@
           msg.style.color = '#0fb8a6';
           box.querySelectorAll('button').forEach(function (x) { if (x !== close) x.disabled = true; x.style.opacity = '.55'; });
           close.style.opacity = '1'; close.disabled = false;
-          setTimeout(function () { ov.remove(); }, 1600);
+          setTimeout(function () { if (document.contains(ov)) close.click(); }, 1600);
         } catch (e) { msg.textContent = 'Erreur inattendue.'; msg.style.color = '#ef4444'; }
       };
       box.appendChild(b);
@@ -334,11 +334,40 @@
     const close = document.createElement('button');
     close.textContent = 'Annuler';
     close.style.cssText = 'display:block;width:100%;padding:10px;margin-top:4px;border-radius:10px;border:none;background:none;cursor:pointer;font-size:.84rem;font-weight:700;color:var(--text-3);';
-    close.onclick = function () { ov.remove(); };
     box.appendChild(close);
     ov.appendChild(box);
-    ov.addEventListener('click', function (e) { if (e.target === ov) ov.remove(); });
     document.body.appendChild(ov);
+
+    /* ── AU CLAVIER ──
+       Cette fenêtre n'avait ni Échap ni gestion du focus : on l'ouvrait et
+       on ne pouvait en sortir qu'en visant « Annuler » à la souris. La
+       boîte de confirmation juste au-dessus faisait déjà tout cela ; ce
+       dialogue-ci était le seul à ne pas suivre. Il est présent sur toutes
+       les pages qui proposent de signaler — manga, commentaire, post,
+       pack, profil. */
+    box.setAttribute('role', 'dialog');
+    box.setAttribute('aria-modal', 'true');
+    const precedent = document.activeElement;
+    function fermer() {
+      document.removeEventListener('keydown', auClavier, true);
+      ov.remove();
+      if (precedent && precedent.focus && document.contains(precedent)) precedent.focus();
+    }
+    function auClavier(e) {
+      if (e.key === 'Escape') { e.preventDefault(); fermer(); return; }
+      if (e.key !== 'Tab') return;
+      /* Sans piège, la tabulation sort de la fenêtre et se promène dans la
+         page derrière — qu'on ne voit plus. */
+      const focusables = box.querySelectorAll('button:not([disabled])');
+      if (!focusables.length) return;
+      const premier = focusables[0], dernier = focusables[focusables.length - 1];
+      if (e.shiftKey && document.activeElement === premier) { e.preventDefault(); dernier.focus(); }
+      else if (!e.shiftKey && document.activeElement === dernier) { e.preventDefault(); premier.focus(); }
+    }
+    close.onclick = fermer;
+    ov.addEventListener('click', function (e) { if (e.target === ov) fermer(); });
+    document.addEventListener('keydown', auClavier, true);
+    setTimeout(function () { (box.querySelector('button') || close).focus(); }, 40);
   };
 
   /* ── Accessibilité du menu latéral, pour les quinze pages qui en ont un ──
