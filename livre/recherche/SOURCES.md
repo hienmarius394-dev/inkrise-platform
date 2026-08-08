@@ -83,6 +83,75 @@ littérature.
 
 ---
 
+## A — La maîtrise de soi efficace passe par les routines, pas par la résistance
+
+**L'affirmation :** les personnes à forte maîtrise de soi n'obtiennent pas leurs
+résultats en résistant mieux ; elles installent des routines et évitent les
+situations tentantes, de sorte qu'elles ont moins souvent à résister.
+
+**Les données :**
+- **Milyavskaya & Inzlicht (2017)**, protocole quotidien : l'auto-contrôle
+  *effortful* — l'effort de résistance dans l'instant — s'est révélé
+  **systématiquement sans relation avec l'atteinte des objectifs** dans toutes
+  les analyses (analyses bayésiennes convergentes).
+- **de Ridder et al. (2012)**, méta-analyse sur la maîtrise de soi comme trait :
+  la maîtrise de soi efficace opère en **établissant des routines et des
+  habitudes** qui minimisent en amont les problèmes et les sollicitations. Les
+  personnes à forte maîtrise de soi rapportent **résister à des envies moins
+  souvent** que les autres — ce qui suggère qu'elles évitent les situations très
+  tentantes plutôt qu'elles ne les surmontent.
+- Travaux liés (Milyavskaya & Inzlicht) : la motivation « want-to » améliore
+  l'autorégulation **en réduisant la tentation**, et non en augmentant la
+  capacité de contrôle.
+
+**Ce que ça implique pour le livre :** c'est l'ancrage empirique du principe
+central — *on ne gagne pas la négociation, on la supprime.* Ce n'est plus une
+intuition d'auteur, c'est le résumé de la littérature. Ça fonde le chapitre 4
+(dans son ensemble) et tout le chapitre 7 sur l'environnement.
+
+**Nuance :** ces travaux portent sur des corrélats et des mesures
+auto-rapportées au quotidien ; ils montrent que l'effort de résistance n'est pas
+le mécanisme principal, pas que l'effort ne sert jamais à rien. Le chapitre 4 le
+dit explicitement dans « Ce qu'il ne faut pas conclure ».
+
+**Références :**
+- Milyavskaya, M., & Inzlicht, M. (2017). *What's So Great About Self-Control?
+  Examining the Importance of Effortful Self-Control and Temptation in Predicting
+  Real-Life Depletion and Goal Attainment.* Social Psychological and Personality
+  Science. https://journals.sagepub.com/doi/abs/10.1177/1948550616679237
+- de Ridder, D. T. D. et al. (2012), méta-analyse sur le trait de maîtrise de soi.
+- *Saying "No" to Temptation: Want-to Motivation Improves Self-Regulation by
+  Reducing Temptation Rather Than by Increasing Self-Control.*
+  https://carleton.ca/goallab/wp-content/uploads/Saying-No-to-Temptation_Want-to-Motivation-Improves-Self-Regulation-by-Reducing-Temptation-Rather-Than-by-Increasing-Self-Control.pdf
+
+**Chapitres :** 4 (central), 7 (central), 17.
+
+---
+
+## B — La théorie de la perception de soi
+
+**L'affirmation :** nous déduisons largement nos attitudes et nos traits en
+observant notre propre comportement, comme le ferait un observateur extérieur.
+D'où la séquence retenue par le livre : *acte → observation → conclusion sur soi*,
+et non l'inverse.
+
+**Statut :** théorie classique et influente en psychologie sociale (Daryl Bem,
+années 1960-70), toujours enseignée. **Ne pas la présenter comme une loi
+mécanique** : c'est un cadre explicatif, particulièrement pertinent quand les
+attitudes internes sont faibles ou ambiguës — ce qui est précisément le cas d'une
+identité en cours de construction.
+
+**Usage dans le livre :** elle justifie le refus des affirmations positives
+(« se répéter qu'on est écrivain ») au profit de l'accumulation de preuves
+comportementales. C'est le mécanisme central du chapitre 8.
+
+**À faire :** sourcer précisément Bem (référence primaire + une synthèse récente)
+avant publication.
+
+**Chapitres :** 8.
+
+---
+
 ## B — La théorie du gouverneur central
 
 **L'affirmation :** la fatigue ressentie à l'effort ne s'explique pas

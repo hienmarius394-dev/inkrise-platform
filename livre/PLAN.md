@@ -28,17 +28,17 @@ dans laquelle la négociation interne n'a plus d'espace pour exister.
 | 01 | Le moment exact où tu perds | La défaite se joue en 3 secondes, avant toute action | ✅ Rédigé |
 | 02 | Pourquoi ton cerveau négocie (et ce qu'il protège vraiment) | Cerveau prédictif, économie d'énergie, régulation anticipatoire | ✅ Rédigé |
 | 03 | Les sept voix de la négociation | Taxonomie pour reconnaître l'argument avant d'y céder | ✅ Rédigé |
-| 04 | Le mensonge de la volonté | La volonté-batterie n'a pas survécu aux réplications — bonne nouvelle | ⬜ À écrire |
+| 04 | Le mensonge de la volonté | La volonté-batterie n'a pas survécu aux réplications — bonne nouvelle | ✅ Rédigé |
 
 ### PARTIE II — Les quatre leviers (le socle)
 
 | # | Chapitre | Idée-force | Statut |
 |---|----------|-----------|--------|
 | 05 | Levier 1 — La décision unique | Décider une fois, exécuter mille fois. Règle ≠ objectif | ✅ Rédigé |
-| 06 | Levier 2 — Le déclencheur si-alors | Implementation intentions : le levier le mieux validé de la littérature | ⬜ À écrire |
-| 07 | Levier 3 — L'environnement | Supprimer l'option avant qu'elle devienne un choix | ⬜ À écrire |
-| 08 | Levier 4 — L'identité | Passer de « je dois » à « je suis quelqu'un qui » | ⬜ À écrire |
-| 09 | Le plancher, pas le plafond | Le minimum non négociable : la seule négociation autorisée | ⬜ À écrire |
+| 06 | Levier 2 — Le déclencheur si-alors | Implementation intentions : le levier le mieux validé de la littérature | ✅ Rédigé |
+| 07 | Levier 3 — L'environnement | Supprimer l'option avant qu'elle devienne un choix | ✅ Rédigé |
+| 08 | Levier 4 — L'identité | Passer de « je dois » à « je suis quelqu'un qui » | ✅ Rédigé |
+| 09 | Le plancher, pas le plafond | Le minimum non négociable : la seule négociation autorisée | ✅ Rédigé |
 
 ### PARTIE III — Techniques avancées
 
@@ -83,5 +83,10 @@ dans laquelle la négociation interne n'a plus d'espace pour exister.
 
 ## Progression
 
-- Chapitres rédigés : **6 / 21**
+**Parties I et II terminées.** Le socle complet de la méthode est écrit : le
+lecteur qui s'arrête au chapitre 9 possède déjà un système fonctionnel. La
+Partie III ajoute de la puissance, la Partie IV ajoute la mise en œuvre — mais
+le noyau tient dans les neuf premiers chapitres.
+
+- Chapitres rédigés : **10 / 21**
 - Mots écrits : voir `bash livre/outils/statistiques.sh`
