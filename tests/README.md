@@ -26,7 +26,7 @@ INKRISE_CHROME=/chemin/vers/chrome npm test
 |---|---|
 | `lecteur` | Écrans d'avant-lecture (âge, sens de lecture), modes vertical et horizontal, glissement du doigt dans le bon sens, bandeau de pages, repli si `age_recommande` manque au schéma |
 | `createur` | Sens de lecture et classification corrigeables après publication, boutons d'aperçu, réglage de largeur en lecture verticale |
-| `accessibilite` | Réordonnancement des chapitres au doigt et au clavier, cartes de sélection du contenu, menu latéral (état annoncé, focus, Échap), aucun `<button>` sous 32px sur cinq pages **tout déplié**, et le clavier de bout en bout : clic non intercepté, focus visible sur chaque commande (mesuré **en tabulant**, sans quoi `:focus-visible` ne s'applique pas), tabulation piégée dans la fenêtre, Échap, focus rendu |
+| `accessibilite` | Réordonnancement des chapitres au doigt et au clavier, cartes de sélection du contenu, menu latéral (état annoncé, focus, Échap), aucun `<button>` sous 32px sur cinq pages **tout déplié**, et le clavier de bout en bout : clic non intercepté, focus visible sur chaque commande (mesuré **en tabulant**, sans quoi `:focus-visible` ne s'applique pas), tabulation piégée dans la fenêtre, Échap, focus rendu — et le réglage « réduire les animations » réellement respecté, indicateurs de chargement exceptés |
 | `recherche` | Filtres genre/format/statut, tri, pagination « Voir plus », état vide dû aux filtres, contraste du texte réellement affiché |
 | `communaute` | Temps réel : arrivée de contenu distant sans effacer la saisie en cours, lecture qui ne saute pas, écho différé et non perdu, repli périodique |
 | `confirmation` | Boîte de confirmation partagée : action destructrice, saisie exigée pour supprimer un compte, Échap, focus rendu |

@@ -1535,10 +1535,52 @@ rien.
 
 ---
 
+## 7.19 Le réglage « réduire les animations » était ignoré
+
+Les systèmes d'exploitation proposent depuis longtemps de **réduire les
+animations**. Ce n'est pas une coquetterie : pour les troubles
+vestibulaires, un panneau qui surgit ou une page qui glisse jusqu'à une
+ancre provoquent réellement des vertiges et des nausées.
+
+Le site déclarait **30 animations et 183 transitions**, et respectait la
+préférence à **deux endroits, dans une seule page** (`lecteur.html`).
+Mesuré avec le réglage actif : l'accueil gardait 4 animations et 11
+transitions, la fiche manga 17 transitions.
+
+Une règle unique dans `assets/inkrise-theme.css` couvre tout le site.
+
+**Les indicateurs de chargement gardent leur rotation.** Elle dit « ça
+travaille », elle est petite, elle ne traverse pas l'écran : ce n'est pas
+ce que le réglage cherche à éteindre, et un compteur figé ferait croire à
+une panne.
+
+**Ce que le CSS ne peut pas faire.** `scroll-behavior: auto !important`
+n'a **aucun effet** sur `scrollIntoView({ behavior: 'smooth' })` :
+l'argument passé au code l'emporte sur la feuille de style. Or le site en
+compte dix-huit appels — retour en haut d'une liste, saut vers un onglet,
+vers un commentaire. Plutôt que de reprendre chaque appel (et d'en
+oublier au prochain ajout), `assets/inkrise-theme.js` — chargé en `<head>`
+sur les vingt et une pages — **rétrograde le glissement en saut
+instantané** tant que la préférence est active. Un seul endroit, valable
+aussi pour le code écrit demain.
+
+**Ce que le test a corrigé chez lui :** j'avais écrit
+`animation-duration: revert !important` pour rendre aux compteurs leur
+rotation. `revert` rend la valeur du **navigateur** — soit `0s` — et non
+la règle de l'auteur écrite plus haut : les indicateurs se figeaient. Le
+contrôle l'a dit tout de suite. Les durées réelles sont désormais
+redonnées explicitement.
+
+Les deux garde-fous ont été éprouvés en retirant chaque correctif : la
+règle CSS enlevée, cinq animations ressortent ; la rétrogradation du
+défilement enlevée, il glisse de nouveau.
+
+---
+
 ## Annexe — méthode
 
 ```bash
-npm test                       # 565/565 ✅  (24 suites)
+npm test                       # 568/568 ✅  (24 suites)
 node tests/outil-contraste.js  # 21 pages RÉELLEMENT atteintes, session simulée
 INKRISE_THEME=sombre \
   node tests/outil-contraste.js   # le même relevé, en thème sombre

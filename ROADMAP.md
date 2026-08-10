@@ -42,7 +42,7 @@ Inkrise = plateforme pour artistes manga/webtoon :
   `covers`, `pages`, `community`).
 - **Serveur** : `api/og.js` (aperçus de lien, Vercel) et
   `supabase/functions/` (paiement CinetPay, envoi des notifications push).
-- **Tests** : 24 suites Playwright, 565 vérifications, plus sept outils de
+- **Tests** : 24 suites Playwright, 568 vérifications, plus sept outils de
   diagnostic (contraste, défauts silencieux, RLS sur PostgreSQL réel,
   échappement, pannes, chasse aux zones cliquables, navigation au clavier).
   Voir `tests/README.md`.
@@ -184,6 +184,17 @@ Inkrise = plateforme pour artistes manga/webtoon :
     était **inatteignable** — `openPlans()` définie, appelée de nulle part
     depuis que devenir créateur est gratuit et immédiat. Retirée, avec ses
     2,3 Ko de CSS.
+
+17. **Réglage « réduire les animations »** — il était ignoré. 30
+    animations et 183 transitions déclarées, la préférence respectée à
+    deux endroits dans une seule page. Ce n'est pas une coquetterie : pour
+    les troubles vestibulaires, un panneau qui surgit ou une page qui
+    glisse jusqu'à une ancre donnent réellement la nausée. Une règle
+    unique couvre désormais tout le site — les indicateurs de chargement
+    exceptés, leur rotation informe et un compteur figé ferait croire à
+    une panne. Et comme `scroll-behavior: auto !important` ne peut rien
+    contre `scrollIntoView({behavior:'smooth'})`, le glissement est
+    rétrogradé en saut depuis `inkrise-theme.js`, chargé sur les 21 pages.
 
 15. **Personne n'est obligé d'écrire court** — l'outil de défauts
     silencieux balaie désormais **320 px** (iPhone SE) en plus de 390 et
