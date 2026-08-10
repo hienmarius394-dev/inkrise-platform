@@ -49,7 +49,7 @@ INKRISE_CHROME=/chemin/vers/chrome npm test
 | `fusion-createur` | Un seul tableau de bord : créer, modifier et supprimer un pack depuis le profil, anciennes adresses redirigées, et le bouton « Nouveau pack » atteignable quand on n'a encore rien publié |
 | `polices` | Aucune des 21 pages n'appelle un domaine Google ; les quatre familles sont réellement dessinées (largeur mesurée contre la fonte système) ; texte lisible si les fichiers ne répondent plus ; liste de préchargement du service worker vérifiée fichier par fichier |
 
-## Sept outils de diagnostic (hors suites)
+## Huit outils de diagnostic (hors suites)
 
 ```bash
 node tests/outil-invisible.js   # traque les défauts SILENCIEUX : liens morts,
@@ -86,6 +86,14 @@ node tests/outil-clavier.js      # le focus se VOIT-il (style calculé comparé
                                 # et le clic atteint sa cible — un halo
                                 # décoratif rendait « Devenir Créateur »
                                 # inerte sans le moindre message
+node tests/outil-semantique.js  # ce qu'ENTEND un lecteur d'écran : un titre
+                                # principal et un seul, pas de niveau sauté, un
+                                # repère « contenu principal », et le NOM
+                                # ACCESSIBLE de chaque commande — lu dans
+                                # `ariaSnapshot()`, pas dans le texte : un
+                                # <button> étiqueté par un <label for> est
+                                # parfaitement nommé, ma première version
+                                # accusait quatre interrupteurs à tort
 node tests/outil-chasse.js      # parcourt les pages : erreurs JS, textes
                                 # cassés, débordements, cibles tactiles trop
                                 # petites, champs sans étiquette

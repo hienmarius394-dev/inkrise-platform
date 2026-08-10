@@ -606,6 +606,7 @@
   </style>
 </head>
 <body>
+<h1 class="sr-uniquement">Lecture du chapitre</h1>
 
 <!-- NAV -->
 <nav class="univ-nav">
@@ -618,13 +619,13 @@
   </div>
   <div class="univ-nav-search">
     <input type="text" id="navSearchInput" class="univ-nav-si" placeholder="Rechercher…" onkeydown="if(event.key==='Enter')doSearch()" />
-    <button class="univ-nav-sb" onclick="doSearch()">🔍</button>
+    <button class="univ-nav-sb" onclick="doSearch()" aria-label="Lancer la recherche"><span aria-hidden="true">🔍</span></button>
   </div>
   <div class="nav-right">
     <a href="auth.html" class="nav-connexion-btn" id="navConnexion">Connexion</a>
     <a href="profil.html" class="nav-avatar-btn" id="navAvatar">?</a>
-    <a href="profil.html#notifications" class="nav-notif-link" id="navNotifLink" title="Notifications">🔔<span class="nav-notif-dot" id="navNotifDot"></span></a>
-    <button class="univ-nav-hbg" onclick="openDrawer()">☰</button>
+    <a href="profil.html#notifications" class="nav-notif-link" id="navNotifLink" title="Notifications" aria-label="Notifications">🔔<span class="nav-notif-dot" id="navNotifDot"></span></a>
+    <button class="univ-nav-hbg" onclick="openDrawer()" aria-label="Ouvrir le menu"><span aria-hidden="true">☰</span></button>
   </div>
 </nav>
 
@@ -633,7 +634,7 @@
 <div class="univ-drawer" id="univDrawer">
   <div class="univ-d-hdr">
     <a href="index.html" class="univ-d-logo">INKRISE</a>
-    <button class="univ-d-close" onclick="closeDrawer()">✕</button>
+    <button class="univ-d-close" onclick="closeDrawer()" aria-label="Fermer le menu"><span aria-hidden="true">✕</span></button>
   </div>
   <div class="univ-d-sec">Explorer</div>
   <a href="index.html" class="univ-d-item"><div class="univ-d-icon">🏠</div>Accueil</a>
@@ -711,9 +712,9 @@
             aria-pressed="false">⛶</button>
     <!-- Chapitre nav -->
     <div class="chap-nav">
-      <button class="nav-btn" id="btnPrevChap" title="Chapitre précédent">‹</button>
+      <button class="nav-btn" id="btnPrevChap" title="Chapitre précédent" aria-label="Chapitre précédent"><span aria-hidden="true">‹</span></button>
       <select class="chap-select" id="chapSelect"></select>
-      <button class="nav-btn" id="btnNextChap" title="Chapitre suivant">›</button>
+      <button class="nav-btn" id="btnNextChap" title="Chapitre suivant" aria-label="Chapitre suivant"><span aria-hidden="true">›</span></button>
     </div>
   </div>
 </div>
@@ -724,7 +725,7 @@
 </div>
 
 <!-- READER -->
-<div class="reader-wrap">
+<div class="reader-wrap" role="main">
 
   <!-- Loading -->
   <div class="reader-loading" id="readerLoading">
@@ -789,20 +790,20 @@
 <div class="bottombar" id="bottombar">
   <button class="page-nav-btn" id="btnPrevPage" onclick="prevPage()">← Précédente</button>
   <div class="scroll-width-ctrl">
-    <button class="scroll-width-btn" onclick="adjustScrollWidth(-10)" title="Réduire la taille des pages">−</button>
+    <button class="scroll-width-btn" onclick="adjustScrollWidth(-10)" title="Réduire la taille des pages" aria-label="Réduire la taille des pages"><span aria-hidden="true">−</span></button>
   </div>
   <div class="page-indicator">
     <span id="pageNum">1</span>
     <span id="pageTotalLabel">sur 0</span>
   </div>
   <div class="scroll-width-ctrl">
-    <button class="scroll-width-btn" onclick="adjustScrollWidth(10)" title="Agrandir la taille des pages">+</button>
+    <button class="scroll-width-btn" onclick="adjustScrollWidth(10)" title="Agrandir la taille des pages" aria-label="Agrandir la taille des pages"><span aria-hidden="true">+</span></button>
   </div>
   <button class="page-nav-btn primary" id="btnNextPage" onclick="nextPage()">Suivante →</button>
 </div>
 
 <!-- Sidebar chapitres -->
-<button class="sidebar-toggle" id="sidebarToggle" title="Liste des chapitres">☰</button>
+<button class="sidebar-toggle" id="sidebarToggle" title="Liste des chapitres" aria-label="Liste des chapitres"><span aria-hidden="true">☰</span></button>
 <div class="chap-sidebar" id="chapSidebar">
   <h3>Chapitres</h3>
   <div id="sidebarChapList"></div>

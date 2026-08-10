@@ -483,7 +483,7 @@
       padding: 24px 28px;
       margin-bottom: 20px;
     }
-    .info-card h3 { font-size: 1rem; font-weight: 800; margin-bottom: 18px; color: var(--text); }
+    .info-card h2 { font-size: 1rem; font-weight: 800; margin-bottom: 18px; color: var(--text); }
     .info-row {
       display: flex; align-items: center;
       padding: 12px 0;
@@ -837,6 +837,7 @@
   </style>
 </head>
 <body>
+<h1 class="sr-uniquement">Mon profil</h1>
 
 <!-- ── NAV ── -->
 <nav class="univ-nav">
@@ -849,13 +850,13 @@
   </div>
   <div class="univ-nav-search">
     <input type="text" id="navSearchInput" class="univ-nav-si" placeholder="Rechercher…" onkeydown="if(event.key==='Enter')doSearch()" />
-    <button class="univ-nav-sb" onclick="doSearch()">🔍</button>
+    <button class="univ-nav-sb" onclick="doSearch()" aria-label="Lancer la recherche"><span aria-hidden="true">🔍</span></button>
   </div>
   <div class="nav-right">
     <a href="auth.html" class="nav-connexion-btn" id="navConnexion">Connexion</a>
     <a href="profil.html" class="nav-avatar-btn" id="navAvatar">?</a>
-    <a href="profil.html#notifications" class="nav-notif-link" id="navNotifLink" title="Notifications">🔔<span class="nav-notif-dot" id="navNotifDot"></span></a>
-    <button class="univ-nav-hbg" onclick="openDrawer()">☰</button>
+    <a href="profil.html#notifications" class="nav-notif-link" id="navNotifLink" title="Notifications" aria-label="Notifications">🔔<span class="nav-notif-dot" id="navNotifDot"></span></a>
+    <button class="univ-nav-hbg" onclick="openDrawer()" aria-label="Ouvrir le menu"><span aria-hidden="true">☰</span></button>
   </div>
 </nav>
 
@@ -864,7 +865,7 @@
 <div class="univ-drawer" id="univDrawer">
   <div class="univ-d-hdr">
     <a href="index.html" class="univ-d-logo">INKRISE</a>
-    <button class="univ-d-close" onclick="closeDrawer()">✕</button>
+    <button class="univ-d-close" onclick="closeDrawer()" aria-label="Fermer le menu"><span aria-hidden="true">✕</span></button>
   </div>
   <div class="univ-d-sec">Explorer</div>
   <a href="index.html" class="univ-d-item"><div class="univ-d-icon">🏠</div>Accueil</a>
@@ -881,6 +882,10 @@
   <a href="parametres.html" class="univ-d-item" id="drawerParametres" style="display:none;"><div class="univ-d-icon">⚙️</div>Paramètres</a>
   <button class="univ-d-item" id="drawerLogout" style="display:none;" onclick="doLogout()"><div class="univ-d-icon">🚪</div><span style="color:var(--danger-link);">Déconnexion</span></button>
 </div>
+
+<!-- Repère « contenu principal » : sans lui, un lecteur d'écran
+     doit retraverser toute la navigation à chaque page. -->
+<main id="contenu">
 
 <!-- ── HERO ── -->
 <div class="profile-hero" id="profileHero">
@@ -945,7 +950,7 @@
     <div class="creator-banner" id="creatorBanner">
       <div class="creator-banner-icon">🚀</div>
       <div class="creator-banner-text">
-        <h3>Publie ton premier manga sur Inkrise !</h3>
+        <h2>Publie ton premier manga sur Inkrise !</h2>
         <p>Deviens créateur et partage ton univers avec notre communauté. Tu gardes 90% de tes ventes de packs.</p>
         <div class="creator-vision-note">🚀 <span>La suite : dès qu'Inkrise aura une vraie communauté, jusqu'à 70% des revenus publicitaires seront aussi reversés aux créateurs actifs.</span></div>
       </div>
@@ -965,7 +970,7 @@
 
     <div id="mangaEmpty" class="empty-state" style="display:none;">
       <div class="empty-icon">📖</div>
-      <h3>Aucun manga publié pour l'instant</h3>
+      <h2>Aucun manga publié pour l'instant</h2>
       <p>Tu n'as pas encore publié de manga.<br>Commence dès maintenant et partage ton univers !</p>
       <button class="btn-upload" onclick="if(userProfile?.is_creator){window.location.href='upload-manga.html'}else{document.getElementById('btnOpenPlans').click()}">Commencer à publier</button>
     </div>
@@ -996,7 +1001,7 @@
       </div>
 
       <div class="info-card" id="lecGenresCard" style="display:none;">
-        <div class="chart-card-head"><h3>Tes genres</h3></div>
+        <div class="chart-card-head"><h2>Tes genres</h2></div>
         <div class="genres-lus" id="lecGenres"></div>
       </div>
 
@@ -1008,8 +1013,8 @@
     </div>
     <div id="lectureVide" class="empty-state" style="display:none;">
       <div class="empty-icon">📖</div>
-      <h3>Tu n'as encore rien lu</h3>
-      <p>Ouvre un manga : ta progression, tes genres et tes avis apparaîtront ici.</p>
+      <h2 data-role="titre">Tu n'as encore rien lu</h2>
+      <p data-role="detail">Ouvre un manga : ta progression, tes genres et tes avis apparaîtront ici.</p>
       <a href="recherche.html" class="btn-upload" style="margin-top:14px;display:inline-block;text-decoration:none;">Découvrir des mangas</a>
     </div>
   </div>
@@ -1045,7 +1050,7 @@
 
     <div id="formationsEmpty" class="empty-state" style="display:none;">
       <div class="empty-icon">🎓</div>
-      <h3>Aucune formation pour l'instant</h3>
+      <h2>Aucune formation pour l'instant</h2>
       <p>Achète ou publie une formation pour la retrouver ici, avec ta progression.</p>
       <a href="tutoriels.html" class="btn-upload" style="text-decoration:none;display:inline-block;margin-top:10px;">Voir les formations</a>
     </div>
@@ -1072,7 +1077,7 @@
     </div>
     <div class="info-card">
       <div class="chart-card-head">
-        <h3>Activité</h3>
+        <h2>Activité</h2>
         <span class="chart-subtitle">Vues — 14 derniers jours</span>
       </div>
       <div class="line-chart-wrap" id="activityChartWrap">
@@ -1082,7 +1087,7 @@
       </div>
     </div>
     <div class="info-card">
-      <h3>Vues par manga</h3>
+      <h2>Vues par manga</h2>
       <div id="statsChartWrap">
         <div style="color:var(--muted); font-size:0.88rem; padding:20px 0; text-align:center;">
           Publie un manga pour voir son activité ici.
@@ -1097,7 +1102,7 @@
       <div class="section-title">Mon Compte</div>
     </div>
     <div class="info-card">
-      <h3>👤 Informations personnelles</h3>
+      <h2>👤 Informations personnelles</h2>
       <div class="info-row">
         <label>Nom d'affichage</label>
         <input type="text" id="inputUsername" placeholder="Ton nom d'utilisateur" maxlength="24" />
@@ -1146,7 +1151,7 @@
     </div>
 
     <div class="info-card">
-          <h3>🎨 Espace Créateur</h3>
+          <h2>🎨 Espace Créateur</h2>
           <div style="display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap;">
             <div style="font-size:0.88rem; color:var(--muted);" id="planUpsellText">Crée et vends tes packs de dessin, ebooks et tutoriels — gratuitement.</div>
             <button type="button" class="btn-creator" id="btnOpenPlans2">Ouvrir mes formations 🎨</button>
@@ -1167,7 +1172,7 @@
       <div id="suivisList" style="display:none; flex-direction:column;"></div>
       <div id="suivisEmpty" class="empty-state" style="display:none;">
         <div class="empty-icon">👥</div>
-        <h3>Tu ne suis aucun créateur</h3>
+        <h2>Tu ne suis aucun créateur</h2>
         <p>Visite la page d'un manga et clique sur "Suivre" pour suivre un créateur.</p>
       </div>
     </div>
@@ -1177,7 +1182,7 @@
       <div id="abonnesList" style="display:none; flex-direction:column;"></div>
       <div id="abonnesEmpty" class="empty-state" style="display:none;">
         <div class="empty-icon">🌱</div>
-        <h3>Pas encore d'abonnés</h3>
+        <h2>Pas encore d'abonnés</h2>
         <p>Publie des mangas et partage ta communauté — tes futurs fans arrivent !</p>
       </div>
     </div>
@@ -1194,7 +1199,7 @@
     <div id="notifList" style="display:none; flex-direction:column;"></div>
     <div id="notifEmpty" class="empty-state" style="display:none;">
       <div class="empty-icon">🔔</div>
-      <h3>Aucune notification</h3>
+      <h2>Aucune notification</h2>
       <p>Tu n'as pas encore de notifications.</p>
     </div>
   </div>
@@ -1514,8 +1519,11 @@
     if (bibRes.error) {
       console.error('Ma lecture :', bibRes.error);
       vide.style.display = 'block';
-      vide.querySelector('h3').textContent = 'Chargement impossible';
-      vide.querySelector('p').textContent =
+      /* Viser la BALISE couplait ce code au niveau de titre : remonter les
+         <h3> en <h2> pour la hiérarchie a suffi à faire disparaître le
+         message d'erreur, sans la moindre trace. On vise un rôle. */
+      vide.querySelector('[data-role="titre"]').textContent = 'Chargement impossible';
+      vide.querySelector('[data-role="detail"]').textContent =
         'Le serveur n\'a pas répondu. Vérifie ta connexion et réessaie.';
       return;
     }
@@ -2881,6 +2889,8 @@ function focusSearch(){
 }
 </script>
 <!-- BOTTOM NAV -->
+</main>
+
 <div id="inkriseBottomNav" data-active="profil"></div>
 <script src="assets/inkrise-nav.js"></script>
 </body>

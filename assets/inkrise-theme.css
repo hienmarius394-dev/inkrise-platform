@@ -224,6 +224,28 @@
 body { overflow-wrap: anywhere; }
 
 /* ═══════════════════════════════════════════════════════════════════
+   TEXTE POUR LES LECTEURS D'ÉCRAN SEULEMENT
+   ═══════════════════════════════════════════════════════════════════
+
+   Huit pages n'avaient AUCUN <h1> — dont l'accueil, la bibliothèque, le
+   profil et la communauté. C'est la première chose qu'annonce un lecteur
+   d'écran, et le repère qui dit « voilà de quoi parle cette page » : sans
+   lui, on atterrit dans le vide.
+
+   Leur maquette n'a pas de grand titre visible, et en ajouter un
+   changerait le dessin. D'où ce titre lu mais non vu. `clip-path` plutôt
+   que `display:none` : ce dernier retirerait l'élément de l'arbre
+   d'accessibilité, donc du seul endroit où il sert. */
+.sr-uniquement {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  margin: -1px; padding: 0; border: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
    MOUVEMENT RÉDUIT
    ═══════════════════════════════════════════════════════════════════
 
