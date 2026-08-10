@@ -90,6 +90,17 @@ console.log('\n▶ « Paiement sécurisé » seulement s\'il y a un paiement');
   check('pack payant, visiteur : la mention est affichée', await visible(p,'buyGuaranteeMobile'));
   check('  et cite les moyens de paiement',
     /Orange Money/.test(await p.locator('#buyGuaranteeMobile').innerText()));
+  /* Les CGU §6 affirment que « les modalités de remboursement éventuel sont
+     précisées lors de l'achat » : cette promesse-là doit être tenue ici. */
+  {
+    const t = await p.locator('#buyGuaranteeMobile').innerText();
+    check('  la renonciation à la rétractation est dite avant de payer',
+      /rétractation/i.test(t), t.replace(/\s+/g, ' ').slice(0, 70));
+    check('  et une adresse de réclamation est donnée',
+      (await p.locator('#buyGuaranteeMobile a[href^="mailto:"]').count()) >= 1);
+    check('  avec un renvoi aux CGU',
+      (await p.locator('#buyGuaranteeMobile a[href*="cgu.html"]').count()) >= 1);
+  }
   await ctx.close();
 }
 {

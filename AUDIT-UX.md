@@ -1765,10 +1765,40 @@ en réinjectant le défaut qu'ils doivent voir — ils rougissent.
 
 ---
 
+### Fin du passage — les cinq dernières pages
+
+`auth`, `admin`, `404`, `gestion-chapitres` et les pages légales se
+lisent bien. Trois écarts sont ressortis :
+
+- **Un lien de lecture inutilisable renvoyait à l'accueil, sans un mot.**
+  Le cas est banal : une messagerie qui coupe l'adresse au « & » garde
+  `manga_id` et perd `chapitre`. On atterrissait sur la page d'accueil
+  sans comprendre. Or dans ce cas on sait encore de quelle œuvre il
+  s'agit — on amène désormais la personne à sa **liste de chapitres**,
+  c'est exactement ce qu'elle cherchait ; et à la page 404, qui le dit
+  avec des mots, quand l'adresse ne porte plus rien.
+- **Les CGU §6 promettaient une information qui n'existait nulle part :**
+  « les modalités de remboursement éventuel sont précisées lors de
+  l'achat ». Avant de payer, la seule phrase affichée parlait des moyens
+  de paiement. La mention dit maintenant ce que le document annonce —
+  accès immédiat, renonciation à la rétractation qui en découle, et à
+  qui écrire en cas de contenu non conforme.
+- **`creators-remuneration.html` était titrée « Gagne de l'argent avec
+  tes mangas »**, au présent, alors que la page explique juste dessous
+  que le reversement démarrera « dès que la communauté sera assez
+  grande ». Le titre reprend celui de l'onglet — « Comment les créateurs
+  sont payés » — qui est aussi le nom sous lequel les CGU renvoient à
+  cette page.
+
+Les trois contrôles ajoutés ont été éprouvés en rétablissant l'ancien
+comportement : ils rougissent.
+
+---
+
 ## Annexe — méthode
 
 ```bash
-npm test                       # 612/612 ✅  (26 suites)
+npm test                       # 618/618 ✅  (26 suites)
 node tests/outil-contraste.js  # 21 pages RÉELLEMENT atteintes, session simulée
 INKRISE_THEME=sombre \
   node tests/outil-contraste.js   # le même relevé, en thème sombre
