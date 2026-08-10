@@ -959,7 +959,17 @@ async function init() {
   mangaId    = params.get('manga_id');
   chapitreId = params.get('chapitre');
 
-  if (!mangaId || !chapitreId) { window.location.href = 'index.html'; return; }
+  /* Un lien de lecture inutilisable renvoyait à l'accueil, sans un mot :
+     on se retrouvait sur la page d'accueil sans comprendre ce qui venait
+     de se passer. Le cas est banal — une messagerie qui coupe l'adresse au
+     « & » laisse `manga_id` et perd `chapitre`. Or dans ce cas on sait
+     encore de quelle œuvre il s'agit : autant amener la personne à sa
+     liste de chapitres, c'est exactement ce qu'elle cherchait. */
+  if (!chapitreId) {
+    window.location.replace(mangaId ? 'manga.html?id=' + encodeURIComponent(mangaId) : '404.html');
+    return;
+  }
+  if (!mangaId) { window.location.replace('404.html'); return; }
 
   setupNav();
 

@@ -332,6 +332,29 @@ const check = (name, pass, detail = '') => {
         await page.locator('#noPages a[href*="manga.html"]').count() >= 1);
   await ctx.close();
 
+  // ══ Scénario 5 : lien de lecture inutilisable ══
+  /* Une messagerie qui coupe l'adresse au « & » laisse manga_id et perd
+     chapitre. On atterrissait alors sur l'accueil, sans un mot. */
+  console.log('\n▶ Scénario 5 — lien de lecture tronqué ou vide');
+  ctx = await browser.newContext({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
+  await ctx.route('**/auth/v1/**', r => r.fulfill({ status: 401, body: '{}' }));
+  await ctx.route('**/rest/v1/**', r => r.fulfill({ status: 200, contentType: 'application/json', body: '[]' }));
+  page = await ctx.newPage();
+  page.on('pageerror', e => errors.push(e.message));
+
+  await page.goto(BASE + '/lecteur.html?manga_id=7');
+  await page.waitForTimeout(900);
+  check('sans numéro de chapitre, on arrive sur la fiche de l\'œuvre',
+        /manga\.html\?id=7/.test(page.url()), page.url().replace(BASE, ''));
+
+  await page.goto(BASE + '/lecteur.html');
+  await page.waitForTimeout(900);
+  check('sans rien du tout, le lien est annoncé comme mort',
+        /404\.html/.test(page.url()), page.url().replace(BASE, ''));
+  check('  et la page le dit avec des mots',
+        /n'existe pas/i.test(await page.locator('body').innerText()));
+  await ctx.close();
+
   await browser.close();
   server.close();
 
