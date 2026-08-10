@@ -1636,10 +1636,49 @@ quelle que soit la balise.
 
 ---
 
+## 7.21 Après une mise en ligne, les gens voyaient l'ancienne feuille de style
+
+Le service worker ne traitait pas les pages et les assets de la même
+façon :
+
+- les **pages** étaient servies réseau d'abord — donc toujours fraîches ;
+- les **assets** (CSS, JS) étaient servis **depuis le cache**, et
+  rafraîchis en arrière-plan pour la fois d'après.
+
+Conséquence, mesurée et reproduite : au premier chargement suivant une
+mise en ligne, un visiteur qui revient recevait le **nouveau HTML avec
+l'ancienne feuille de style**. Rien ne plantait, rien ne s'affichait en
+rouge — la page était simplement dessinée avec le CSS de la veille.
+
+Ce n'est pas théorique. Cet audit a beaucoup touché au CSS partagé : le
+jour où j'ai ajouté les titres masqués (§7.20), l'ancienne feuille ne
+contenait pas `.sr-uniquement` — donc « Ma bibliothèque », « Mon profil »
+et « Communauté » se seraient affichés **en gros titre** en haut de chaque
+page, pour tous ceux qui revenaient. Un défaut visible, causé par le
+cache, et qu'aucun test ne pouvait voir puisque aucun ne simulait un
+déploiement.
+
+**La correction sépare deux natures de fichier :**
+
+| | Poids | Change | Stratégie |
+|---|---|---|---|
+| CSS et JS de la maison | 87 Ko | à chaque mise en ligne | **réseau d'abord**, cache en secours |
+| polices, images, icônes, librairie Supabase | 1,3 Mo | jamais | cache d'abord, rafraîchi en fond |
+
+Le hors-ligne reste entier : quand le réseau ne répond pas, le cache
+prend le relais — c'est vérifié dans le même test.
+
+`tests/deploiement.test.js` simule un vrai déploiement : il visite le
+site, attend que le service worker prenne le contrôle, change un fichier
+**sur le serveur**, revient, et regarde ce qui est réellement appliqué. Le
+contrôle a été éprouvé en rétablissant l'ancienne stratégie : il rougit.
+
+---
+
 ## Annexe — méthode
 
 ```bash
-npm test                       # 568/568 ✅  (24 suites)
+npm test                       # 573/573 ✅  (25 suites)
 node tests/outil-contraste.js  # 21 pages RÉELLEMENT atteintes, session simulée
 INKRISE_THEME=sombre \
   node tests/outil-contraste.js   # le même relevé, en thème sombre

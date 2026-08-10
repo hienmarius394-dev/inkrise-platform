@@ -1,15 +1,19 @@
 /* Service worker Inkrise — volontairement minimal et sûr.
-   - assets statiques (assets/*) : stale-while-revalidate — on sert le cache
-     tout de suite (rapide + hors-ligne) MAIS on récupère la version réseau
-     en arrière-plan et on met le cache à jour, pour que les mises à jour de
-     JS/CSS arrivent au chargement suivant sans forcer le rechargement
+   - CSS et JS de la maison (assets/inkrise-*.css|js, legal.css) : RÉSEAU
+     D'ABORD, cache en secours. Ils changent à chaque mise en ligne et ne
+     pèsent que 87 Ko en tout ; les servir depuis le cache donnait le
+     nouveau HTML avec l'ancienne feuille de style au premier chargement
+     suivant un déploiement — mesuré par tests/deploiement.test.js
+   - polices, images, icônes et librairie Supabase (1,3 Mo, jamais
+     modifiées) : stale-while-revalidate — on sert le cache tout de suite
+     et on rafraîchit en arrière-plan
    - navigations (pages HTML) : réseau d'abord, cache en secours, indexées
      par chemin (sans query string) pour que lecteur.html?manga_id=…
      fonctionne hors-ligne quelle que soit l'URL exacte
    - planches téléchargées (cache "inkrise-pages", rempli par
      assets/inkrise-offline.js) : cache d'abord — lecture hors-ligne
    - tout le reste (API Supabase, autres origines) : jamais intercepté */
-const CACHE = 'inkrise-v11';
+const CACHE = 'inkrise-v12';
 const PAGES_CACHE = 'inkrise-pages';
 
 // Toute la « coquille » de l'app est mise en cache dès l'installation
@@ -144,7 +148,32 @@ self.addEventListener('fetch', (e) => {
   // aucun sens et masquerait une mise à jour.
   if (url.pathname.startsWith('/api/')) return;
 
-  // Assets statiques : stale-while-revalidate (sert le cache, met à jour en fond)
+  /* ── LE CSS ET LE JS DE LA MAISON : RÉSEAU D'ABORD ──────────────
+     Les PAGES étaient déjà servies réseau d'abord, donc fraîches. Les
+     assets, eux, sortaient du cache. Résultat mesuré : au premier
+     chargement suivant une mise en ligne, on recevait le NOUVEAU HTML
+     avec l'ANCIENNE feuille de style. Rien ne plantait — la page était
+     simplement dessinée avec le CSS de la veille, et une règle ajoutée
+     ce jour-là (un titre masqué, par exemple) s'affichait en grand.
+
+     Ces fichiers-là pèsent 87 Ko en tout et changent à chaque
+     déploiement : on les demande au réseau, avec le cache en secours pour
+     le hors-ligne. Les polices, les images et la librairie Supabase
+     (1,3 Mo, jamais modifiées) gardent le cache d'abord, plus bas. */
+  const maison = url.pathname.includes('/assets/')
+    && /\.(css|js)$/.test(url.pathname)
+    && !url.pathname.endsWith('/supabase.js');
+  if (maison) {
+    e.respondWith(
+      fetch(req, { cache: 'no-cache' }).then(res => {
+        if (res.ok) caches.open(CACHE).then(c => c.put(req, res.clone()));
+        return res;
+      }).catch(() => caches.match(req).then(hit => hit || Response.error()))
+    );
+    return;
+  }
+
+  // Reste des assets (polices, images, librairie) : stale-while-revalidate
   if (url.pathname.includes('/assets/') || url.pathname.endsWith('.webmanifest')) {
     e.respondWith(
       caches.open(CACHE).then(cache =>
