@@ -47,6 +47,7 @@ INKRISE_CHROME=/chemin/vers/chrome npm test
 | `lecture` | Onglet « Ma lecture » du profil : œuvres commencées et terminées, avis donnés, genres les plus lus, reprise |
 | `inscription` | Case CGU jamais pré-cochée et bloquante, bouton Google affiché seulement si le fournisseur est configuré |
 | `fusion-createur` | Un seul tableau de bord : créer, modifier et supprimer un pack depuis le profil, anciennes adresses redirigées, et le bouton « Nouveau pack » atteignable quand on n'a encore rien publié |
+| `deploiement` | Ce que voit quelqu'un qui revient **après une mise en ligne** : le service worker est laissé prendre le contrôle, un fichier change sur le serveur, et on vérifie que la nouvelle feuille de style est bien celle appliquée — sans casser le hors-ligne |
 | `polices` | Aucune des 21 pages n'appelle un domaine Google ; les quatre familles sont réellement dessinées (largeur mesurée contre la fonte système) ; texte lisible si les fichiers ne répondent plus ; liste de préchargement du service worker vérifiée fichier par fichier |
 
 ## Huit outils de diagnostic (hors suites)

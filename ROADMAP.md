@@ -42,7 +42,7 @@ Inkrise = plateforme pour artistes manga/webtoon :
   `covers`, `pages`, `community`).
 - **Serveur** : `api/og.js` (aperçus de lien, Vercel) et
   `supabase/functions/` (paiement CinetPay, envoi des notifications push).
-- **Tests** : 24 suites Playwright, 568 vérifications, plus huit outils de
+- **Tests** : 25 suites Playwright, 573 vérifications, plus huit outils de
   diagnostic (contraste, défauts silencieux, RLS sur PostgreSQL réel,
   échappement, pannes, chasse aux zones cliquables, navigation au clavier,
   structure pour lecteurs d'écran).
@@ -205,6 +205,16 @@ Inkrise = plateforme pour artistes manga/webtoon :
     dont l'accueil, la bibliothèque, le profil et la communauté ; et
     **aucune page** ne portait de repère « contenu principal », donc
     impossible de sauter la navigation.
+
+19. **Contenu périmé après une mise en ligne** — le service worker servait
+    les pages réseau d'abord (fraîches) mais le CSS et le JS **depuis le
+    cache**. Au premier chargement suivant un déploiement, un visiteur qui
+    revenait recevait donc le **nouveau HTML avec l'ancienne feuille de
+    style**. Le jour des titres masqués, cela aurait affiché « Ma
+    bibliothèque » ou « Mon profil » en gros titre sur chaque page.
+    Corrigé en séparant les 87 Ko de CSS/JS maison (réseau d'abord, cache
+    en secours) des 1,3 Mo de polices, images et librairie (cache d'abord).
+    Le hors-ligne reste entier.
 
 15. **Personne n'est obligé d'écrire court** — l'outil de défauts
     silencieux balaie désormais **320 px** (iPhone SE) en plus de 390 et
