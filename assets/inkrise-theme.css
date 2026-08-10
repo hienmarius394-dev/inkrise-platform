@@ -224,6 +224,44 @@
 body { overflow-wrap: anywhere; }
 
 /* ═══════════════════════════════════════════════════════════════════
+   MOUVEMENT RÉDUIT
+   ═══════════════════════════════════════════════════════════════════
+
+   Les systèmes d'exploitation proposent un réglage « réduire les
+   animations », prévu pour les troubles vestibulaires : un défilement qui
+   glisse ou un panneau qui surgit peuvent réellement donner la nausée.
+
+   Le site l'ignorait presque partout : 30 animations et 183 transitions
+   déclarées, et `prefers-reduced-motion` respecté à DEUX endroits, dans
+   une seule page. Avec le réglage actif, l'accueil gardait 4 animations
+   et 11 transitions.
+
+   Les INDICATEURS DE CHARGEMENT gardent leur rotation : elle dit « ça
+   travaille », elle est petite, elle ne traverse pas l'écran — ce n'est
+   pas ce que le réglage cherche à éteindre, et un compteur figé ferait
+   croire à une panne. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
+    scroll-behavior: auto !important;
+  }
+  /* `revert` ne convient PAS ici : il rend la valeur du NAVIGATEUR (0s),
+     pas la règle de l'auteur écrite plus haut. On redonne donc la durée
+     réelle. Si elle change un jour, l'indicateur tournera simplement à
+     une autre vitesse — jamais figé. */
+  .spinner, .loading-ring, .loading-spinner, .comments-spinner {
+    animation-duration: 0.8s !important;
+    animation-delay: 0ms !important;
+  }
+  .loading-dots span {
+    animation-duration: 1.2s !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
    HABILLAGE PARTAGÉ — nav du haut, menu latéral, barre du bas
    ═══════════════════════════════════════════════════════════════════
 

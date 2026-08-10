@@ -69,4 +69,34 @@
     if (mq.addEventListener) mq.addEventListener('change', suivre);
     else if (mq.addListener) mq.addListener(suivre);
   }
+
+  /* ── MOUVEMENT RÉDUIT, CÔTÉ JAVASCRIPT ──
+     La règle CSS `scroll-behavior: auto !important` ne peut RIEN contre
+     `scrollIntoView({ behavior: 'smooth' })` : l'argument passé au code
+     l'emporte sur la feuille de style. Or le site en compte dix-huit
+     appels — retour en haut d'une liste, saut vers un onglet, vers un
+     commentaire…
+
+     Plutôt que de reprendre chaque appel (et d'en oublier au prochain
+     ajout), on rétrograde le glissement en saut instantané tant que la
+     personne a demandé de réduire les animations. Ce fichier est chargé
+     en <head> sur les vingt et une pages : un seul endroit, valable
+     partout, y compris pour le code écrit demain. */
+  if (window.matchMedia && Element.prototype.scrollIntoView) {
+    var sobre = window.matchMedia('(prefers-reduced-motion: reduce)');
+    var natif = Element.prototype.scrollIntoView;
+    Element.prototype.scrollIntoView = function (opts) {
+      if (sobre.matches && opts && typeof opts === 'object' && opts.behavior === 'smooth') {
+        opts = Object.assign({}, opts, { behavior: 'auto' });
+      }
+      return natif.call(this, opts);
+    };
+    var natifFenetre = window.scrollTo;
+    window.scrollTo = function (a, b) {
+      if (sobre.matches && a && typeof a === 'object' && a.behavior === 'smooth') {
+        return natifFenetre.call(window, Object.assign({}, a, { behavior: 'auto' }));
+      }
+      return natifFenetre.apply(window, arguments);
+    };
+  }
 })();

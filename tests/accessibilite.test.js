@@ -348,6 +348,83 @@ async function authCtx(browser, opts) {
     await c.close();
   }
 
+  /* ══ 6. Mouvement réduit ══
+     Les systèmes proposent « réduire les animations », pour les troubles
+     vestibulaires : un panneau qui surgit ou un défilement qui glisse
+     peuvent réellement donner la nausée. Le site l'ignorait presque
+     partout — 30 animations et 183 transitions déclarées, la préférence
+     respectée à DEUX endroits dans une seule page. */
+  console.log('\n▶ Le réglage « réduire les animations » est respecté');
+  {
+    const c = await browser.newContext({ viewport:{ width:1280, height:900 },
+                                         reducedMotion:'reduce' });
+    await c.route('https://fonts.googleapis.com/**', r => r.fulfill({status:200,contentType:'text/css',body:''}));
+    await c.route('**/auth/v1/**', r => r.fulfill({status:401, body:'{}'}));
+    await c.route('**/rest/v1/**', r => r.fulfill({status:200,contentType:'application/json',
+      headers:{'Content-Range':'0-0/0','Access-Control-Expose-Headers':'Content-Range'},body:'[]'}));
+    await c.route('**/storage/v1/**', r => r.fulfill({status:200,contentType:'application/json',body:'[]'}));
+    const pg = await c.newPage();
+    pg.on('pageerror', e => errors.push(e.message));
+
+    const restants = [];
+    for (const url of ['index.html', 'manga.html?id=1', 'recherche.html?q=a', 'tutoriels.html']) {
+      await pg.goto(BASE + '/' + url, { waitUntil:'load' }).catch(()=>{});
+      await pg.waitForTimeout(1100);
+      const n = await pg.evaluate(() => {
+        let anim = 0, trans = 0;
+        for (const e of document.querySelectorAll('body *')) {
+          const st = getComputedStyle(e);
+          /* Les indicateurs de chargement gardent leur rotation : elle
+             informe, elle est petite, et figée elle ferait croire à une
+             panne. Ce n'est pas ce que le réglage cherche à éteindre. */
+          if (e.closest('.spinner, .loading-ring, .loading-spinner, .comments-spinner, .loading-dots')) continue;
+          if (st.animationName !== 'none' && parseFloat(st.animationDuration) > 0.05) anim++;
+          if (parseFloat(st.transitionDuration) > 0.05) trans++;
+        }
+        return { anim, trans };
+      });
+      if (n.anim || n.trans) restants.push(`${url} : ${n.anim} animation(s), ${n.trans} transition(s)`);
+    }
+    check('aucune animation ni transition ne subsiste sur 4 pages',
+      restants.length === 0, restants.join(' · ') || 'tout est instantané');
+
+    /* `scroll-behavior: auto !important` ne peut rien contre un
+       `scrollIntoView({behavior:'smooth'})` : l'argument l'emporte sur la
+       feuille de style. D'où la rétrogradation en JavaScript. */
+    const glisse = await pg.evaluate(() => new Promise(resolve => {
+      const d = document.createElement('div');
+      d.style.cssText = 'height:4000px'; document.body.appendChild(d);
+      const cible = document.createElement('div');
+      cible.style.cssText = 'height:20px'; document.body.appendChild(cible);
+      window.scrollTo(0, 0);
+      cible.scrollIntoView({ behavior:'smooth' });
+      /* Un défilement animé met plusieurs centaines de ms ; un saut est
+         déjà terminé au tour de boucle suivant. */
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        const arrive = window.scrollY > 3000;
+        d.remove(); cible.remove();
+        resolve(arrive);
+      }));
+    }));
+    check('  et le défilement saute au lieu de glisser', glisse === true,
+      glisse ? 'instantané' : 'encore animé');
+
+    /* Le compteur de chargement, lui, doit continuer de tourner. */
+    await pg.goto(BASE + '/index.html', { waitUntil:'load' }).catch(()=>{});
+    const tourne = await pg.evaluate(() => {
+      const d = document.createElement('div');
+      d.className = 'spinner';
+      d.style.cssText = 'position:fixed;left:-999px;width:20px;height:20px;animation:spin 0.8s linear infinite';
+      document.body.appendChild(d);
+      const v = parseFloat(getComputedStyle(d).animationDuration);
+      d.remove();
+      return v;
+    });
+    check('  mais l\'indicateur de chargement continue de tourner',
+      tourne > 0.05, tourne + 's');
+    await c.close();
+  }
+
   await browser.close(); server.close();
   console.log('\n' + '═'.repeat(60));
   const ko = results.filter(r => !r.p);
