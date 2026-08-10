@@ -4,14 +4,14 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Pack tutoriel — Inkrise</title>
-  <meta name="description" content="Pack de dessin et tutoriel manga sur Inkrise — apprends avec les meilleurs créateurs." />
+  <meta name="description" content="Pack de tutoriels de dessin manga — apprends avec les créateurs d'Inkrise." />
   <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
 <link rel="manifest" href="manifest.webmanifest" />
 <meta name="theme-color" content="#7c5cfc" />
   <meta property="og:site_name" content="Inkrise" />
   <meta property="og:type" content="website" />
   <meta property="og:title" content="Pack tutoriel — Inkrise" />
-  <meta property="og:description" content="Pack de dessin et tutoriel manga sur Inkrise — apprends avec les meilleurs créateurs." />
+  <meta property="og:description" content="Pack de tutoriels de dessin manga — apprends avec les créateurs d'Inkrise." />
   <meta property="og:image" content="https://inkrise-platform.vercel.app/assets/hero-manga.jpg" />
   <meta name="twitter:card" content="summary_large_image" />
   <link rel="preconnect" href="https://bsdcpwtimsgxcnaamwip.supabase.co" />
@@ -719,7 +719,7 @@ function renderAvisForm(packId, avis) {
       { pack_id: packId, user_id: currentUser.id, note: selected, commentaire: commentaire || null },
       { onConflict: 'pack_id,user_id' }
     );
-    if (error) { showToast('Erreur : ' + error.message, 'info'); this.disabled = false; return; }
+    if (error) { showToast(inkriseErreur(error, 'Impossible de publier ton avis.'), 'info'); this.disabled = false; return; }
     showToast('Avis publié 🎉');
     // La notification à l'auteur du pack est créée automatiquement par le
     // trigger SQL trg_notify_avis (server-side, fiable)
@@ -785,7 +785,7 @@ function renderPack(pack) {
 
   // Infos : format & niveau
   document.getElementById('infoFormat').textContent = formatFromUrl(pack.contenu_url);
-  document.getElementById('infoNiveau').textContent = pack.niveau || 'Tous niveaux';
+  document.getElementById('infoNiveau').textContent = libelleNiveau(pack.niveau);
 
   // Buy cards
   const buyLabel = isFree ? 'Télécharger gratuitement' : `Acheter — ${priceLabel}`;
@@ -919,14 +919,18 @@ async function startPaiement() {
       body: { pack_id: currentPack.id }
     });
     if (error || !data?.payment_url) {
-      const msg = data?.error || error?.message || 'réessaie dans un instant';
+      /* data.error vient de notre propre fonction : il est déjà écrit en
+         français pour un acheteur. error.message vient de la plomberie
+         Supabase (« Edge Function returned a non-2xx status code ») et
+         n'a rien à faire sous les yeux de quelqu'un. */
+      const msg = data?.error || inkriseErreur(error, 'réessaie dans un instant');
       showToast('Paiement indisponible : ' + msg, 'error');
       btns.forEach(b => { if (b) { b.disabled = false; b.textContent = 'Acheter'; } });
       return;
     }
     window.location.href = data.payment_url; // page de paiement CinetPay
   } catch (e) {
-    showToast('Erreur : ' + (e.message || 'paiement indisponible'), 'error');
+    showToast(inkriseErreur(e, 'Paiement indisponible pour le moment.'), 'error');
     btns.forEach(b => { if (b) { b.disabled = false; b.textContent = 'Acheter'; } });
   }
 }
@@ -948,6 +952,23 @@ async function checkRetourPaiement(txid) {
     await new Promise(r => setTimeout(r, 2500));
   }
   showToast('Paiement en cours de validation — recharge la page dans une minute.', 'info');
+}
+
+/* Le niveau est saisi par le créateur dans une liste déroulante, mais les
+   packs créés avant l'existence de cette liste portent la valeur brute de
+   la base (« debutant », sans accent ni majuscule). On affichait ce
+   « Niveau : debutant » tel quel. On normalise donc à l'affichage, comme
+   manga.html le fait déjà pour le statut. */
+const NIVEAU_LABELS = {
+  'debutant': 'Débutant', 'débutant': 'Débutant',
+  'intermediaire': 'Intermédiaire', 'intermédiaire': 'Intermédiaire',
+  'avance': 'Avancé', 'avancé': 'Avancé',
+  'tous niveaux': 'Tous niveaux', 'tous': 'Tous niveaux'
+};
+function libelleNiveau(valeur) {
+  const brut = String(valeur ?? '').trim();
+  if (!brut) return 'Tous niveaux';
+  return NIVEAU_LABELS[brut.toLowerCase()] || brut;
 }
 
 function formatFromUrl(url) {

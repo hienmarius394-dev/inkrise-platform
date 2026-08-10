@@ -962,7 +962,7 @@ async function init() {
 // Activation gratuite de l'espace créateur (aucun paiement, aucun prix affiché)
 async function becomeCreatorFree() {
   const { error } = await sb.from('profiles').update({ is_creator: true }).eq('id', currentUser.id);
-  if (error) { alert('Erreur : ' + error.message); return; }
+  if (error) { showToast(inkriseErreur(error, "Impossible d'activer l'espace créateur."), 'error'); return; }
   document.getElementById('creatorGate').style.display = 'none';
   document.getElementById('mainForm').style.display = 'block';
   buildGenres();
@@ -1418,7 +1418,7 @@ async function publishManga(draft = false) {
     document.getElementById('progressOverlay').classList.remove('show');
     document.getElementById('btnSubmit').disabled = false;
     console.error(err);
-    showToast('Erreur : ' + (err.message || 'Réessaie'), 'error');
+    showToast(inkriseErreur(err, "Publication impossible. Réessaie dans un instant."), 'error');
   }
 }
 

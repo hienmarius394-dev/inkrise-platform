@@ -243,7 +243,7 @@
 <div class="hero">
   <div class="hero-badge">🎓 Formation manga</div>
   <h1 class="hero-title">Tutoriels</h1>
-  <p class="hero-subtitle">Apprends le dessin manga pas à pas avec les meilleurs créateurs</p>
+  <p class="hero-subtitle">Apprends le dessin manga pas à pas, avec les créateurs d'Inkrise</p>
   <div class="hero-stats">
     <div class="hero-stat">
       <div class="hero-stat-num" id="statTotal">—</div>
@@ -254,8 +254,8 @@
       <div class="hero-stat-label">À partir de</div>
     </div>
     <div class="hero-stat">
-      <div class="hero-stat-num">HD</div>
-      <div class="hero-stat-label">Qualité</div>
+      <div class="hero-stat-num" id="statCreateurs">—</div>
+      <div class="hero-stat-label">Créateurs</div>
     </div>
   </div>
 </div>
@@ -379,6 +379,13 @@ async function loadPacks() {
 
   allPacks = data || [];
   document.getElementById('statTotal').textContent = allPacks.length;
+
+  /* « HD / Qualité » était affiché ici en dur, entre deux chiffres réels
+     dont il empruntait la crédibilité. Rien ne le garantissait : un pack
+     peut être un PDF, un ZIP ou un lien vidéo. Remplacé par un compte
+     vérifiable — le nombre de créateurs qui proposent un pack. */
+  document.getElementById('statCreateurs').textContent =
+    new Set(allPacks.map(p => p.auteur_id).filter(Boolean)).size;
 
   const prixPayants = allPacks.map(p => Number(p.prix)).filter(p => !isNaN(p) && p > 0);
   const minPriceEl = document.getElementById('statMinPrice');

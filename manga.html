@@ -672,7 +672,7 @@
             <span class="val" id="infoDate">—</span>
           </div>
           <div class="info-row-sb">
-            <span class="key">Format pages</span>
+            <span class="key">Sens de lecture</span>
             <span class="val" id="infoFormat">—</span>
           </div>
         </div>
@@ -713,7 +713,6 @@ let isFollowing  = false;
 
 const TYPE_LABELS  = { manga:'Manga', manhwa:'Manhwa', manhua:'Manhua', webtoon:'Webtoon', bd:'BD / Comic', roman:'Roman graphique' };
 const TYPE_CLASSES = { manga:'type-manga', manhwa:'type-manhwa', manhua:'type-manhua', webtoon:'type-webtoon', bd:'type-bd', roman:'type-roman' };
-const TYPE_FORMAT  = { manga:'800 × 1200 px', manhwa:'800 px (scroll)', manhua:'800 × 1200 px', webtoon:'700-800 px (scroll)', bd:'1200 × 900 px', roman:'800 × 1200 px' };
 const STATUT_LABELS = { en_cours:'En cours', termine:'Terminé', pause:'En pause', hiatus:'Hiatus' };
 const STATUT_CLASSES = { en_cours:'badge-statut-cours', termine:'badge-statut-fini', pause:'badge-statut-pause', hiatus:'badge-statut-pause' };
 
@@ -926,7 +925,14 @@ function renderManga() {
   document.getElementById('infoStatut').textContent = STATUT_LABELS[manga.statut] || manga.statut  || '—';
   document.getElementById('infoChaps').textContent  = chapitres.length;
   document.getElementById('infoDate').textContent   = new Date(manga.created_at).toLocaleDateString('fr-FR', { day:'numeric', month:'long', year:'numeric' });
-  document.getElementById('infoFormat').textContent = TYPE_FORMAT[manga.type]     || '—';
+  /* Cette ligne annonçait « Format pages : 800 × 1200 px », une dimension
+     déduite du seul type de l'œuvre et que rien ne mesurait : les planches
+     sont réduites à 1600 px de côté au dépôt, jamais à 800 × 1200. Un
+     chiffre inventé, posé au milieu de faits vrais. Le sens de lecture, lui,
+     est choisi par l'auteur et réellement appliqué par le lecteur — on
+     recopie ici la règle exacte du lecteur pour que l'annonce corresponde. */
+  document.getElementById('infoFormat').textContent =
+    manga.sens_lecture === 'lr' ? 'De gauche à droite' : 'De droite à gauche';
 
   // Bouton gérer (si auteur)
   if (currentUser && manga.auteur_id === currentUser.id) {
@@ -1099,7 +1105,7 @@ function rendreFormulaireAvis(nbAvis) {
       { manga_id: manga.id, user_id: currentUser.id, note: choisie, commentaire: commentaire || null,
         updated_at: new Date().toISOString() },
       { onConflict: 'manga_id,user_id' });
-    if (error) { msg.textContent = 'Erreur : ' + error.message; msg.style.color = 'var(--danger-link)'; return; }
+    if (error) { msg.textContent = inkriseErreur(error, "Impossible d'enregistrer ton avis."); msg.style.color = 'var(--danger-link)'; return; }
     msg.textContent = '✅ Merci pour ton avis !'; msg.style.color = 'var(--success-link)';
     await chargerAvis();
   });
@@ -1315,7 +1321,7 @@ document.getElementById('btnFollow').addEventListener('click', async () => {
       btn.classList.remove('following');
       btn.textContent = `👤 Suivre ${authorN}`;
       showToast('Tu ne suis plus ce créateur', 'info');
-    } else showToast('Erreur: ' + error.message, 'error');
+    } else showToast(inkriseErreur(error, 'Impossible de se désabonner.'), 'error');
   } else {
     const { error } = await sb.from('follows').insert({
       user_id: currentUser.id, followed_id: manga.auteur_id
@@ -1328,7 +1334,7 @@ document.getElementById('btnFollow').addEventListener('click', async () => {
       askNotifPermission(authorN);
       // La notification au créateur est créée automatiquement par le
       // trigger SQL trg_notify_follow (server-side, fiable)
-    } else showToast('Erreur: ' + error.message, 'error');
+    } else showToast(inkriseErreur(error, 'Impossible de suivre ce créateur.'), 'error');
   }
 });
 
@@ -1349,7 +1355,7 @@ document.getElementById('btnLibrary').addEventListener('click', async () => {
       btn.classList.remove('in-library');
       btn.textContent = '📚 Ajouter à la bibliothèque';
       showToast('Retiré de ta bibliothèque', 'info');
-    } else showToast('Erreur: ' + error.message, 'error');
+    } else showToast(inkriseErreur(error, 'Impossible de retirer de ta bibliothèque.'), 'error');
   } else {
     const { error } = await sb
       .from('bibliotheque')
@@ -1359,7 +1365,7 @@ document.getElementById('btnLibrary').addEventListener('click', async () => {
       btn.classList.add('in-library');
       btn.textContent = '📚 Dans ta bibliothèque ✓';
       showToast('✅ Ajouté à ta bibliothèque !', 'success');
-    } else showToast('Erreur: ' + error.message, 'error');
+    } else showToast(inkriseErreur(error, 'Impossible d\'ajouter à ta bibliothèque.'), 'error');
   }
 });
 

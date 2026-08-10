@@ -650,7 +650,7 @@ document.getElementById('btnFollowAuthor').addEventListener('click', async () =>
       document.getElementById('statFollowers').textContent = followerCount;
       showToast('Tu ne suis plus ce créateur', 'info');
     } else {
-      showToast('Erreur : ' + error.message, 'error');
+      showToast(inkriseErreur(error, 'Impossible de se désabonner.'), 'error');
     }
   } else {
     const { error } = await sb.from('follows').insert({ user_id: currentUser.id, followed_id: auteurId });
@@ -663,7 +663,7 @@ document.getElementById('btnFollowAuthor').addEventListener('click', async () =>
       // La notification au créateur est créée automatiquement par le
       // trigger SQL trg_notify_follow (server-side, fiable)
     } else {
-      showToast('Erreur : ' + error.message, 'error');
+      showToast(inkriseErreur(error, 'Impossible de suivre ce créateur.'), 'error');
     }
   }
 

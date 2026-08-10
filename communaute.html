@@ -912,7 +912,7 @@ function etatVide(icone, titre, texte, href, libelle) {
     var isOwnProfile = state.visitor && state.creatorId === (state.visitor.id || state.visitor?.id);
     var errorMsg = err.message === 'PROFILE_NOT_FOUND'
       ? 'Cet espace communauté n\'existe pas. Le créateur n\'a pas de profil public.'
-      : 'Erreur lors du chargement : ' + (err.message || 'erreur inconnue');
+      : inkriseErreur(err, 'Impossible de charger cet espace communauté.');
     app.innerHTML = isOwnProfile
       ? '<div class="empty-state" style="padding:80px 20px;"><div class="empty-state-icon" style="font-size:3.5rem;margin-bottom:16px;">👤</div><div style="font-size:1.15rem;font-weight:700;margin-bottom:10px;">Configure ton profil</div><div style="font-size:0.85rem;color:var(--text-muted);margin-bottom:20px;">Tu dois d\'abord créer ton profil public avant d\'accéder à ton espace communauté.</div><a href="profil.html" style="display:inline-flex;padding:12px 28px;background:#7857fc;color:#fff;border-radius:var(--radius-sm);font-weight:700;text-decoration:none;">⚙️ Aller sur mon profil</a></div>'
       : '<div class="empty-state"><div class="empty-state-icon">😕</div><div class="empty-state-text">Créateur introuvable</div><div style="margin-top:12px;font-size:0.85rem;color:var(--text-muted);">' + errorMsg + '</div><a href="index.html" style="display:inline-flex;margin-top:20px;padding:10px 24px;background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:var(--radius-sm);font-weight:600;text-decoration:none;">🏠 Retour à l\'accueil</a></div>';
@@ -1238,7 +1238,7 @@ function render() {
     html += '<button type="button" class="post-type-chip" data-type="sondage">📊 Sondage</button>';
     html += '<button type="button" class="post-type-chip" data-type="annonce">📣 Annonce</button>';
     html += '</div>';
-    html += '<textarea id="create-post-text" placeholder="Partagez quelque chose avec votre communauté..." maxlength="2000"></textarea>';
+    html += '<textarea id="create-post-text" placeholder="Partage quelque chose avec ta communauté…" maxlength="2000"></textarea>';
     html += '<div class="create-post-actions">';
     html += '<button class="create-post-btn" id="create-post-submit">Publier</button>';
     html += '<label class="create-post-file-label" id="create-post-file-label" style="display:none">📷 Choisir une image</label>';
@@ -1445,7 +1445,7 @@ function renderSondage(post) {
   });
 
   if (hasVoted) {
-    html += '<button class="sondage-vote-btn" data-post="' + post.id + '" disabled>Vous avez voté</button>';
+    html += '<button class="sondage-vote-btn" data-post="' + post.id + '" disabled>Tu as voté</button>';
   } else {
     html += '<button class="sondage-vote-btn" data-post="' + post.id + '" disabled>Voter</button>';
   }
@@ -1469,10 +1469,10 @@ function bindCreatePost() {
 
   /* Choix du type de publication (Texte / Image / Sondage / Annonce) */
   const chipPlaceholders = {
-    post:    'Partagez quelque chose avec votre communauté...',
+    post:    'Partage quelque chose avec ta communauté…',
     image:   'Un mot sur cette image ? (optionnel)',
     sondage: 'Question du sondage...',
-    annonce: '📣 Votre annonce à la communauté...'
+    annonce: '📣 Ton annonce à la communauté…'
   };
   function clearSelectedImage() {
     selectedFile = null;
@@ -1559,7 +1559,7 @@ function bindCreatePost() {
     submitBtn.addEventListener('click', async function() {
       const content = textarea.value.trim();
       const isSondage = postType === 'sondage';
-      if (!content && !selectedFile && !isSondage) { showToast('Écrivez quelque chose ou ajoutez une image', 'error'); return; }
+      if (!content && !selectedFile && !isSondage) { showToast('Écris quelque chose ou ajoute une image', 'error'); return; }
       if (isSondage) {
         const inputs = sondageArea.querySelectorAll('.sondage-opt-input');
         const vals = [];
@@ -1569,7 +1569,7 @@ function bindCreatePost() {
           if (!v) valid = false;
           else vals.push(v);
         });
-        if (!valid || vals.length < 2) { showToast('Remplissez au moins 2 options', 'error'); return; }
+        if (!valid || vals.length < 2) { showToast('Remplis au moins 2 options', 'error'); return; }
       }
 
       submitBtn.disabled = true;
@@ -1639,7 +1639,7 @@ function bindCreatePost() {
         await loadSondageVotes();
         markLocalRefresh(); render();
       } catch (err) {
-        showToast('Erreur: ' + err.message, 'error');
+        showToast(inkriseErreur(err, "Impossible de publier ton post."), 'error');
       } finally {
         submitBtn.disabled = false;
         submitBtn.textContent = 'Publier';
@@ -1659,7 +1659,7 @@ function bindCreatePost() {
         markLocalRefresh(); render();
         showToast(isPinned ? 'Post désépinglé' : 'Post épinglé !', 'success');
       } catch (err) {
-        showToast('Erreur: ' + err.message, 'error');
+        showToast(inkriseErreur(err, "Impossible d'épingler ce post."), 'error');
       }
     });
   });
@@ -1688,7 +1688,7 @@ function bindCreatePost() {
         state.posts = state.posts.filter(p => p.id !== postId);
         markLocalRefresh(); render();
       } catch (err) {
-        showToast('Erreur: ' + err.message, 'error');
+        showToast(inkriseErreur(err, "Impossible de supprimer ce post."), 'error');
       }
     });
   });
@@ -1728,7 +1728,7 @@ function bindReactions() {
           markLocalRefresh(); render();
         }
       } catch (err) {
-        showToast('Erreur réaction: ' + err.message, 'error');
+        showToast(inkriseErreur(err, "Impossible d'enregistrer ta réaction."), 'error');
       }
     });
   });
@@ -1754,7 +1754,7 @@ function bindComments() {
       const content = textarea.value.trim();
       const fileInput = document.querySelector('.comment-file-input[data-post="' + postId + '"]');
       const file = fileInput && fileInput.files[0];
-      if (!content && !file) { showToast('Écrivez un commentaire ou ajoutez une image', 'error'); return; }
+      if (!content && !file) { showToast('Écris un commentaire ou ajoute une image', 'error'); return; }
 
       this.disabled = true;
       this.textContent = 'Envoi...';
@@ -1786,7 +1786,7 @@ function bindComments() {
         await loadPosts();
         markLocalRefresh(); render();
       } catch (err) {
-        showToast('Erreur: ' + err.message, 'error');
+        showToast(inkriseErreur(err, "Impossible d'ajouter ton commentaire."), 'error');
         this.disabled = false;
         this.textContent = 'Envoyer';
       }
@@ -1823,7 +1823,7 @@ function bindComments() {
           markLocalRefresh(); render();
           showToast('Commentaire supprimé', 'success');
         } catch (err) {
-          showToast('Erreur: ' + err.message, 'error');
+          showToast(inkriseErreur(err, "Impossible de supprimer ce commentaire."), 'error');
         }
         return;
       }
@@ -1837,7 +1837,7 @@ function bindComments() {
       slot.setAttribute('data-open', '1');
       slot.innerHTML =
         '<div class="comment-input-actions" style="margin-top:6px">' +
-          '<input type="text" class="reply-input" placeholder="Votre réponse..." maxlength="1000" ' +
+          '<input type="text" class="reply-input" placeholder="Ta réponse…" maxlength="1000" ' +
             'style="flex:1;padding:6px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:0.8rem;outline:none">' +
           '<button class="comment-submit-btn reply-send-btn">Répondre</button>' +
           '<button class="create-post-btn-sm reply-cancel-btn">Annuler</button>' +
@@ -1850,7 +1850,7 @@ function bindComments() {
       const sendBtn = slot.querySelector('.reply-send-btn');
       async function sendReply() {
         const replyText = input.value.trim();
-        if (!replyText) { showToast('Écrivez une réponse', 'error'); return; }
+        if (!replyText) { showToast('Écris une réponse', 'error'); return; }
         sendBtn.disabled = true;
         try {
           const { error } = await sb.from('commentaires_communaute').insert({
@@ -1864,7 +1864,7 @@ function bindComments() {
           await loadPosts();
           markLocalRefresh(); render();
         } catch (err) {
-          showToast('Erreur: ' + err.message, 'error');
+          showToast(inkriseErreur(err, "Impossible d'ajouter ta réponse."), 'error');
           sendBtn.disabled = false;
         }
       }
@@ -1899,12 +1899,12 @@ function bindSondageVote() {
     btn.addEventListener('click', async function() {
       if (!state.visitor) { showToast('Connecte-toi pour voter 🔒', 'error'); setTimeout(() => window.location.href = 'auth.html', 900); return; }
       const optId = parseInt(this.dataset.optid);
-      if (!optId) { showToast('Sélectionnez une option', 'error'); return; }
+      if (!optId) { showToast('Choisis une option', 'error'); return; }
       const postId = parseInt(this.getAttribute('data-post'));
       const postOptions = state.sondageOptions[postId] || [];
       /* Un seul vote par sondage : vérifier l'état local puis la base */
       if (postOptions.some(o => state.myVotes && state.myVotes[o.id])) {
-        showToast('Vous avez déjà voté sur ce sondage', 'error'); return;
+        showToast('Tu as déjà voté sur ce sondage', 'error'); return;
       }
       try {
         const optIds = postOptions.map(o => o.id);
@@ -1912,7 +1912,7 @@ function bindSondageVote() {
           const { data: existing } = await sb.from('sondage_votes')
             .select('id').in('option_id', optIds).eq('user_id', state.visitor.id).limit(1);
           if (existing && existing.length) {
-            showToast('Vous avez déjà voté sur ce sondage', 'error');
+            showToast('Tu as déjà voté sur ce sondage', 'error');
             await loadSondageVotes(); render(); return;
           }
         }
@@ -1925,7 +1925,7 @@ function bindSondageVote() {
         await loadSondageVotes();
         markLocalRefresh(); render();
       } catch (err) {
-        showToast('Erreur: ' + err.message, 'error');
+        showToast(inkriseErreur(err, "Impossible d'enregistrer ton vote."), 'error');
       }
     });
   });

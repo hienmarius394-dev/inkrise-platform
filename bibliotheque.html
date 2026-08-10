@@ -361,7 +361,7 @@ async function removeFromLibrary(mangaId, btn, ev){
       confirmLabel:'Retirer' })) return;
   const { error } = await sb.from('bibliotheque').delete()
     .eq('user_id', currentUserId).eq('manga_id', mangaId);
-  if(error){ showToast('Erreur : ' + error.message); return; }
+  if(error){ showToast(inkriseErreur(error, 'Impossible de retirer ce manga.')); return; }
   const card = btn.closest('.lib-card');
   if(card) card.remove();
   showToast('Retiré de ta bibliothèque');

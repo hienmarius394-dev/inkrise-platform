@@ -35,7 +35,9 @@ Inkrise = plateforme pour artistes manga/webtoon :
   déployées sur Vercel. Socle partagé dans `assets/` :
   `inkrise-theme.css` (couleurs, thème sombre), `inkrise-theme.js` (choix
   du thème, en `<head>`), `inkrise-config.js` (clés publiques),
-  `inkrise-nav.js` (barre du bas, menu, garde-fous, partage),
+  `inkrise-nav.js` (barre du bas, menu, garde-fous, partage, boîte de
+  confirmation, signalement, et `inkriseErreur()` qui traduit les erreurs
+  techniques en français avant qu'elles n'atteignent un écran),
   `inkrise-fonts.css` + `fonts/` (les quatre polices, auto-hébergées),
   `inkrise-offline.js`, `inkrise-img.js`.
 - **Backend** : Supabase — Auth, Postgres + RLS, Storage (`avatars`,

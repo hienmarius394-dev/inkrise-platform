@@ -1675,10 +1675,100 @@ contrôle a été éprouvé en rétablissant l'ancienne stratégie : il rougit.
 
 ---
 
+## 7.22 Ce que lisait quelqu'un quand ça ratait
+
+Cette section vient d'une relecture des **textes affichés**, page par
+page, sans lire le code : on regarde ce qui s'écrit à l'écran et on
+demande si c'est vrai, compréhensible, et écrit dans la voix du site.
+
+### Le message de la base, en anglais, en pleine figure
+
+Vingt-neuf endroits affichaient tel quel le message renvoyé par
+PostgREST :
+
+> `new row violates row-level security policy for table "mangas"`
+> `duplicate key value violates unique constraint "profiles_username_key"`
+> `Edge Function returned a non-2xx status code`
+> `Failed to fetch`
+
+C'est de l'anglais, ça décrit la plomberie interne, et surtout ça ne dit
+jamais quoi faire. Le défaut s'aggravait tout seul : les quatre
+contraintes de longueur ajoutées en §7.17 font qu'une bio trop longue
+répondait désormais `violates check constraint "profiles_bio_len"`.
+
+`auth.html` traduisait déjà ses erreurs à la main — la bonne pratique
+existait, elle n'avait simplement jamais quitté cette page.
+`window.inkriseErreur(error, repli)` la généralise : une table de seize
+familles d'erreurs (contraintes, unicité, droits, session expirée,
+réseau, quotas, fichier trop lourd, fonction absente) rend une phrase
+française qui dit quoi faire. Le détail technique n'est pas perdu, il
+part dans la console — c'est là qu'on en a besoin.
+
+| Avant | Après |
+|---|---|
+| `new row violates row-level security policy…` | Tu n'as pas les droits pour faire ça. Reconnecte-toi, ou vérifie que ce contenu t'appartient. |
+| `duplicate key value violates unique constraint "profiles_username_key"` | Ce pseudo est déjà pris. Choisis-en un autre. |
+| `JWT expired` | Ta session a expiré. Reconnecte-toi pour continuer. |
+| `Edge Function returned a non-2xx status code` | Le service est momentanément indisponible. Réessaie dans un instant. |
+
+Une `alert()` du navigateur traînait encore dans `upload-manga.html` —
+la dernière fenêtre système du site, retirée avec le reste.
+
+### Le site changeait de registre en passant de page en page
+
+Tout Inkrise tutoie, jusque dans les CGU. `communaute.html` vouvoyait :
+« Écrivez une réponse », « Vous avez déjà voté », « Partagez quelque
+chose avec votre communauté ». Douze occurrences, sur la page où l'on
+prend le plus la parole. Corrigées, et tenues par un contrôle statique.
+
+### Des faits inventés au milieu de faits vrais
+
+Trois affirmations ne reposaient sur rien, et empruntaient leur
+crédibilité aux chiffres réels posés à côté :
+
+- **`manga.html` — « Format pages : 800 × 1200 px »**, déduit du seul
+  type de l'œuvre. Rien ne le mesurait : les planches sont réduites à
+  1600 px de côté au dépôt, jamais à 800 × 1200. La ligne annonce
+  désormais le **sens de lecture**, qui est choisi par l'auteur et
+  réellement appliqué par le lecteur — avec la règle recopiée à
+  l'identique de celle du lecteur, pour que l'annonce corresponde au
+  comportement.
+- **`tutoriels.html` — « HD / Qualité »**, en dur, entre deux
+  statistiques calculées. Un pack peut être un PDF, un ZIP ou un lien
+  vidéo : rien ne garantit quoi que ce soit. Remplacé par un compte
+  vérifiable, le nombre de créateurs qui proposent un pack.
+- **`index.html` — « Wave · Orange Money · MTN MoMo · Stripe »**. Stripe
+  n'existe nulle part dans le code ; le seul prestataire branché est
+  CinetPay. Plus grave, la **politique de confidentialité** et les
+  **CGU** nommaient Stripe comme sous-traitant de paiement sans jamais
+  citer CinetPay — un document qui engage, et qui désignait le mauvais
+  destinataire des données bancaires. Les trois pages nomment maintenant
+  le prestataire réel.
+
+### Une valeur brute de la base, affichée telle quelle
+
+`pack.html` écrivait « Niveau : debutant » — sans accent ni majuscule,
+la chaîne exacte stockée en base. `manga.html` et `gestion-chapitres.html`
+passaient déjà leurs valeurs par une table de libellés ; `pack.html`
+était le seul à ne pas le faire.
+
+Le même défaut avait une seconde moitié, invisible : dans le formulaire
+d'édition, `select.value = 'debutant'` ne correspondait à aucune option,
+le champ s'affichait **vide**, et le premier enregistrement suivant
+rétrogradait silencieusement le pack en « Tous niveaux ».
+
+`tests/messages.test.js` (39 contrôles) passe quinze erreurs réelles à la
+table de traduction et vérifie qu'aucun jargon n'en ressort, puis pose
+trois gardes statiques : plus aucun `error.message` affiché, plus aucune
+fenêtre native, plus aucun vouvoiement. Les trois gardes ont été éprouvés
+en réinjectant le défaut qu'ils doivent voir — ils rougissent.
+
+---
+
 ## Annexe — méthode
 
 ```bash
-npm test                       # 573/573 ✅  (25 suites)
+npm test                       # 612/612 ✅  (26 suites)
 node tests/outil-contraste.js  # 21 pages RÉELLEMENT atteintes, session simulée
 INKRISE_THEME=sombre \
   node tests/outil-contraste.js   # le même relevé, en thème sombre
@@ -1702,6 +1792,7 @@ npm test -- vues               # 15/15 — lectures comptées, y compris sans co
 npm test -- decouverte         # 17/17 — créateurs et genres accessibles
 npm test -- lecture            # 18/18 — profil de lecteur
 npm test -- inscription        # 14/14 — consentement CGU, crochet Google
+npm test -- messages           # 39/39 — erreurs traduites, une seule voix
 node tests/outil-chasse.js     # 21 pages × 2 états, TOUT DÉPLIÉ
 URLS=… MODES=… node tests/_txt.js   # texte visible de chaque page, à relire
 ```

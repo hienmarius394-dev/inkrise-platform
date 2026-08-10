@@ -718,7 +718,7 @@ async function uploadPagesToChapitre(chapId, files, startNum) {
     const { error } = await sb.storage.from('pages').upload(pagePath, page, { upsert: true });
     if (error) {
       failed++;
-      if (!firstErrorMsg) firstErrorMsg = error.message;
+      if (!firstErrorMsg) firstErrorMsg = inkriseErreur(error, 'envoi refusé');
       console.warn(`Page ${startNum + p}:`, error.message);
     } else ok++;
   }
@@ -1373,7 +1373,7 @@ async function saveMangaEdits() {
     ({ error } = await sb.from('mangas').update(updates).eq('id', mangaId));
     if (!error) showToast('Manga mis à jour — sens de lecture et âge non enregistrés (base à mettre à jour)', 'info');
   }
-  if (error) { showToast('Erreur : ' + error.message, 'error'); return; }
+  if (error) { showToast(inkriseErreur(error, 'Impossible d\'enregistrer les modifications.'), 'error'); return; }
 
   Object.assign(manga, updates);
   document.getElementById('editMangaModal').classList.remove('open');

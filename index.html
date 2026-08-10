@@ -483,7 +483,11 @@ h1,h2,h3,.logo { font-family: 'Syne', sans-serif; }
 <div class="footer">
   <div class="footer-logo">INK<span>RISE</span></div>
   <div class="footer-text">© 2026 Inkrise — La plateforme des artistes</div>
-  <div class="footer-text" style="margin-top:3px;">Wave · Orange Money · MTN MoMo · Stripe</div>
+  <!-- Cette ligne annonçait « Stripe », qui n'existe nulle part dans le
+       code : le seul prestataire branché est CinetPay, qui couvre le
+       mobile money et la carte. On n'annonce plus que ce qui est réellement
+       en place. -->
+  <div class="footer-text" style="margin-top:3px;">Paiement par Wave · Orange Money · MTN MoMo · Moov · Carte bancaire</div>
   <div class="footer-text" style="margin-top:8px;">
     <a href="creators-remuneration.html" style="color:var(--purple-link);text-decoration:none;">Rémunération créateurs</a> ·
     <a href="mentions-legales.html" style="color:inherit;">Mentions légales</a> ·
@@ -690,7 +694,7 @@ async function choosePlan(plan) {
   const { data } = await supabaseClient.auth.getSession()
   if (!data.session) { window.location.href = 'auth.html'; return }
   const { error } = await supabaseClient.from('profiles').update({ is_creator: true }).eq('id', data.session.user.id)
-  if (error) { showToast('Erreur : ' + error.message); return }
+  if (error) { showToast(inkriseErreur(error, 'Impossible d\'activer l\'espace créateur.')); return }
   showToast('Espace créateur activé 🎉')
   setTimeout(() => window.location.href = 'profil.html', 900)
 }
