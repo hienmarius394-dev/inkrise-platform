@@ -569,13 +569,13 @@
   </div>
   <div class="univ-nav-search">
     <input type="text" id="navSearchInput" class="univ-nav-si" placeholder="Rechercher…" onkeydown="if(event.key==='Enter')doSearch()" />
-    <button class="univ-nav-sb" onclick="doSearch()">🔍</button>
+    <button class="univ-nav-sb" onclick="doSearch()" aria-label="Lancer la recherche"><span aria-hidden="true">🔍</span></button>
   </div>
   <div class="nav-right">
     <a href="auth.html" class="nav-connexion-btn" id="navConnexion">Connexion</a>
     <a href="profil.html" class="nav-avatar-btn" id="navAvatar">?</a>
-    <a href="profil.html#notifications" class="nav-notif-link" id="navNotifLink" title="Notifications">🔔<span class="nav-notif-dot" id="navNotifDot"></span></a>
-    <button class="univ-nav-hbg" onclick="openDrawer()">☰</button>
+    <a href="profil.html#notifications" class="nav-notif-link" id="navNotifLink" title="Notifications" aria-label="Notifications">🔔<span class="nav-notif-dot" id="navNotifDot"></span></a>
+    <button class="univ-nav-hbg" onclick="openDrawer()" aria-label="Ouvrir le menu"><span aria-hidden="true">☰</span></button>
   </div>
 </nav>
 
@@ -584,7 +584,7 @@
 <div class="univ-drawer" id="univDrawer">
   <div class="univ-d-hdr">
     <a href="index.html" class="univ-d-logo">INKRISE</a>
-    <button class="univ-d-close" onclick="closeDrawer()">✕</button>
+    <button class="univ-d-close" onclick="closeDrawer()" aria-label="Fermer le menu"><span aria-hidden="true">✕</span></button>
   </div>
   <div class="univ-d-sec">Explorer</div>
   <a href="index.html" class="univ-d-item"><div class="univ-d-icon">🏠</div>Accueil</a>
@@ -601,6 +601,10 @@
   <a href="parametres.html" class="univ-d-item" id="drawerParametres" style="display:none;"><div class="univ-d-icon">⚙️</div>Paramètres</a>
   <button class="univ-d-item" id="drawerLogout" style="display:none;" onclick="doLogout()"><div class="univ-d-icon">🚪</div><span style="color:var(--danger-link);">Déconnexion</span></button>
 </div>
+
+<!-- Repère « contenu principal » : sans lui, un lecteur d'écran
+     doit retraverser toute la navigation à chaque page. -->
+<main id="contenu">
 
 <!-- GATE CRÉATEUR GRATUIT (affiché si l'utilisateur n'est pas encore créateur) -->
 <div class="page-wrap" id="creatorGate" style="display:none;max-width:480px;margin:60px auto;text-align:center;">
@@ -785,7 +789,7 @@
       </div>
       <div class="cover-preview-wrap" id="coverPreview">
         <img id="coverImg" src="" alt="Preview" draggable="false" />
-        <button class="cover-remove" id="coverRemove" type="button">✕</button>
+        <button class="cover-remove" id="coverRemove" type="button" aria-label="Retirer la couverture"><span aria-hidden="true">✕</span></button>
       </div>
     </div>
     <div class="cover-zoom-row" id="coverZoomRow" style="display:none;">
@@ -834,7 +838,7 @@
         <span>Ton manga apparaît dans les recherches et sur l'accueil</span>
       </div>
       <label class="toggle">
-        <input type="checkbox" id="togglePublic" checked />
+        <input type="checkbox" id="togglePublic" checked aria-label="Publier le manga publiquement" />
         <span class="toggle-slider"></span>
       </label>
     </div>
@@ -845,7 +849,7 @@
         <span>Les lecteurs peuvent commenter tes chapitres</span>
       </div>
       <label class="toggle">
-        <input type="checkbox" id="toggleComments" checked />
+        <input type="checkbox" id="toggleComments" checked aria-label="Autoriser les commentaires" />
         <span class="toggle-slider"></span>
       </label>
     </div>
@@ -1010,7 +1014,7 @@ function addChapitre() {
         📁 Ajouter des pages
       </label>
     </div>
-    <button class="chapitre-remove" data-chap="${id}" title="Supprimer">✕</button>
+    <button class="chapitre-remove" data-chap="${id}" title="Supprimer" aria-label="Retirer ce chapitre de la liste"><span aria-hidden="true">✕</span></button>
   `;
   document.getElementById('chapitresList').appendChild(item);
   updateStepIndicator();
@@ -1451,6 +1455,8 @@ async function doLogout(){ await sb.auth.signOut(); window.location.href='index.
 function openModal(){ window.location.href = 'index.html?premium=1'; }
 </script>
 <!-- BOTTOM NAV -->
+</main>
+
 <div id="inkriseBottomNav" data-active=""></div>
 <script src="assets/inkrise-img.js"></script>
 <script src="assets/inkrise-nav.js"></script>

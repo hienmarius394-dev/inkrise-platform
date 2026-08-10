@@ -450,6 +450,7 @@
 </style>
 </head>
 <body>
+<h1 class="sr-uniquement">Gestion des chapitres</h1>
 
 <nav class="univ-nav">
   <a href="index.html" class="univ-nav-logo">INKRISE</a>
@@ -461,13 +462,13 @@
   </div>
   <div class="univ-nav-search">
     <input type="text" id="navSearchInput" class="univ-nav-si" placeholder="Rechercher…" onkeydown="if(event.key==='Enter')doSearch()" />
-    <button class="univ-nav-sb" onclick="doSearch()">🔍</button>
+    <button class="univ-nav-sb" onclick="doSearch()" aria-label="Lancer la recherche"><span aria-hidden="true">🔍</span></button>
   </div>
   <div class="nav-right">
     <a href="auth.html" class="nav-connexion-btn" id="navConnexion">Connexion</a>
     <a href="profil.html" class="nav-avatar-btn" id="navAvatar">?</a>
-    <a href="profil.html#notifications" class="nav-notif-link" id="navNotifLink" title="Notifications">🔔<span class="nav-notif-dot" id="navNotifDot"></span></a>
-    <button class="univ-nav-hbg" onclick="openDrawer()">☰</button>
+    <a href="profil.html#notifications" class="nav-notif-link" id="navNotifLink" title="Notifications" aria-label="Notifications">🔔<span class="nav-notif-dot" id="navNotifDot"></span></a>
+    <button class="univ-nav-hbg" onclick="openDrawer()" aria-label="Ouvrir le menu"><span aria-hidden="true">☰</span></button>
   </div>
 </nav>
 
@@ -476,7 +477,7 @@
 <div class="univ-drawer" id="univDrawer">
   <div class="univ-d-hdr">
     <a href="index.html" class="univ-d-logo">INKRISE</a>
-    <button class="univ-d-close" onclick="closeDrawer()">✕</button>
+    <button class="univ-d-close" onclick="closeDrawer()" aria-label="Fermer le menu"><span aria-hidden="true">✕</span></button>
   </div>
   <div class="univ-d-sec">Explorer</div>
   <a href="index.html" class="univ-d-item"><div class="univ-d-icon">🏠</div>Accueil</a>
@@ -493,6 +494,10 @@
   <a href="parametres.html" class="univ-d-item" id="drawerParametres" style="display:none;"><div class="univ-d-icon">⚙️</div>Paramètres</a>
   <button class="univ-d-item" id="drawerLogout" style="display:none;" onclick="doLogout()"><div class="univ-d-icon">🚪</div><span style="color:var(--danger-link);">Déconnexion</span></button>
 </div>
+
+<!-- Repère « contenu principal » : sans lui, un lecteur d'écran
+     doit retraverser toute la navigation à chaque page. -->
+<main id="contenu">
 
 <div class="page-wrap">
 
@@ -542,7 +547,7 @@
   <!-- Empty -->
   <div class="empty-state" id="emptyState" style="display:none;">
     <div class="empty-icon">📭</div>
-    <h3>Aucun chapitre pour l'instant</h3>
+    <h2>Aucun chapitre pour l'instant</h2>
     <p>Clique sur "Ajouter un chapitre" pour commencer à publier !</p>
   </div>
 
@@ -881,9 +886,9 @@ function renderChapitres() {
              aria-label="Aperçu du chapitre ${chap.numero}"
              href="lecteur.html?manga_id=${mangaId}&chapitre=${chap.id}"
              target="_blank" rel="noopener">👁️</a>
-          <button class="chap-btn addpages" title="Ajouter des pages" data-id="${chap.id}">📄</button>
-          <button class="chap-btn edit" title="Modifier le titre" data-id="${chap.id}">✏️</button>
-          <button class="chap-btn delete" title="Supprimer" data-id="${chap.id}" data-titre="${escapeHtml(chap.titre || 'Chapitre ' + chap.numero)}">🗑️</button>
+          <button class="chap-btn addpages" title="Ajouter des pages" data-id="${chap.id}" aria-label="Ajouter des pages au chapitre ${chap.numero}"><span aria-hidden="true">📄</span></button>
+          <button class="chap-btn edit" title="Modifier le titre" data-id="${chap.id}" aria-label="Modifier le titre du chapitre ${chap.numero}"><span aria-hidden="true">✏️</span></button>
+          <button class="chap-btn delete" title="Supprimer" data-id="${chap.id}" data-titre="${escapeHtml(chap.titre || 'Chapitre ' + chap.numero)}" aria-label="Supprimer le chapitre ${chap.numero}"><span aria-hidden="true">🗑️</span></button>
         </div>
         <div class="show-edit" style="display:none;gap:6px;">
           <button class="chap-btn save" title="Sauvegarder" data-id="${chap.id}">✅</button>
@@ -1428,6 +1433,8 @@ function focusSearch(){
 function doLogout(){ sb.auth.signOut().then(function(){ window.location.href='index.html'; }); }
 </script>
 <!-- BOTTOM NAV -->
+</main>
+
 <div id="inkriseBottomNav" data-active=""></div>
 <script src="assets/inkrise-img.js"></script>
 <script src="assets/inkrise-nav.js"></script>

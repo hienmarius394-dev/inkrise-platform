@@ -427,6 +427,7 @@ img { max-width: 100%; display: block; }
 </style>
 </head>
 <body>
+<h1 class="sr-uniquement">Communauté</h1>
 
 <!-- TOP NAV -->
 <nav class="univ-nav">
@@ -439,13 +440,13 @@ img { max-width: 100%; display: block; }
   </div>
   <div class="univ-nav-search">
     <input type="text" id="navSearchInput" class="univ-nav-si" placeholder="Rechercher..." onkeydown="if(event.key==='Enter')doSearch()" />
-    <button class="univ-nav-sb" onclick="doSearch()">🔍</button>
+    <button class="univ-nav-sb" onclick="doSearch()" aria-label="Lancer la recherche"><span aria-hidden="true">🔍</span></button>
   </div>
   <div class="nav-right">
     <a href="auth.html" class="nav-connexion-btn" id="navConnexion">Connexion</a>
     <a href="profil.html" class="nav-avatar-btn" id="navAvatar">🧑‍🎨</a>
-    <a href="profil.html#notifications" class="nav-notif-link" id="navNotifLink" title="Notifications">🔔<span class="nav-notif-dot" id="navNotifDot"></span></a>
-    <button class="univ-nav-hbg" onclick="openDrawer()">☰</button>
+    <a href="profil.html#notifications" class="nav-notif-link" id="navNotifLink" title="Notifications" aria-label="Notifications">🔔<span class="nav-notif-dot" id="navNotifDot"></span></a>
+    <button class="univ-nav-hbg" onclick="openDrawer()" aria-label="Ouvrir le menu"><span aria-hidden="true">☰</span></button>
   </div>
 </nav>
 
@@ -456,7 +457,7 @@ img { max-width: 100%; display: block; }
 <div class="univ-drawer" id="univDrawer">
   <div class="univ-d-hdr">
     <a href="index.html" class="univ-d-logo">INKRISE</a>
-    <button class="univ-d-close" onclick="closeDrawer()">✕</button>
+    <button class="univ-d-close" onclick="closeDrawer()" aria-label="Fermer le menu"><span aria-hidden="true">✕</span></button>
   </div>
   <div class="univ-d-sec">Explorer</div>
   <a href="index.html" class="univ-d-item"><div class="univ-d-icon">🏠</div>Accueil</a>
@@ -474,12 +475,18 @@ img { max-width: 100%; display: block; }
   <button class="univ-d-item" id="drawerLogout" style="display:none;" onclick="doLogout()"><div class="univ-d-icon">🚪</div><span style="color:var(--danger-link);">Déconnexion</span></button>
 </div>
 
+<!-- Repère « contenu principal » : sans lui, un lecteur d'écran
+     doit retraverser toute la navigation à chaque page. -->
+<main id="contenu">
+
 <div class="comm-container" id="app">
   <div class="loading-spinner" id="global-loader">
     <div class="spinner"></div>
     <div class="loading-text">Chargement de la communauté...</div>
   </div>
 </div>
+
+</main>
 
 <div id="inkriseBottomNav" data-active="communaute"></div>
 <script src="assets/inkrise-nav.js"></script>

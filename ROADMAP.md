@@ -42,9 +42,10 @@ Inkrise = plateforme pour artistes manga/webtoon :
   `covers`, `pages`, `community`).
 - **Serveur** : `api/og.js` (aperçus de lien, Vercel) et
   `supabase/functions/` (paiement CinetPay, envoi des notifications push).
-- **Tests** : 24 suites Playwright, 568 vérifications, plus sept outils de
+- **Tests** : 24 suites Playwright, 568 vérifications, plus huit outils de
   diagnostic (contraste, défauts silencieux, RLS sur PostgreSQL réel,
-  échappement, pannes, chasse aux zones cliquables, navigation au clavier).
+  échappement, pannes, chasse aux zones cliquables, navigation au clavier,
+  structure pour lecteurs d'écran).
   Voir `tests/README.md`.
 
 ## Livré lors de l'audit (3 sprints)
@@ -195,6 +196,15 @@ Inkrise = plateforme pour artistes manga/webtoon :
     une panne. Et comme `scroll-behavior: auto !important` ne peut rien
     contre `scrollIntoView({behavior:'smooth'})`, le glissement est
     rétrogradé en saut depuis `inkrise-theme.js`, chargé sur les 21 pages.
+
+18. **Ce qu'entend un lecteur d'écran** — nouvel outil
+    `tests/outil-semantique.js`. Seize défauts : **treize commandes sans
+    nom** (le bouton de recherche du bandeau, la cloche, la fermeture du
+    menu, l'œil du mot de passe, les actions sur un chapitre…, toutes
+    annoncées « bouton » et rien d'autre) ; **huit pages sans `<h1>`**,
+    dont l'accueil, la bibliothèque, le profil et la communauté ; et
+    **aucune page** ne portait de repère « contenu principal », donc
+    impossible de sauter la navigation.
 
 15. **Personne n'est obligé d'écrire court** — l'outil de défauts
     silencieux balaie désormais **320 px** (iPhone SE) en plus de 390 et

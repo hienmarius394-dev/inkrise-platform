@@ -332,8 +332,8 @@
   <div class="nav-right">
     <a href="auth.html" class="nav-connexion-btn" id="navConnexion">Connexion</a>
     <a href="profil.html" class="nav-avatar-btn" id="navAvatar">?</a>
-    <a href="profil.html#notifications" class="nav-notif-link" id="navNotifLink" title="Notifications">🔔<span class="nav-notif-dot" id="navNotifDot"></span></a>
-    <button class="univ-nav-hbg" onclick="openDrawer()">☰</button>
+    <a href="profil.html#notifications" class="nav-notif-link" id="navNotifLink" title="Notifications" aria-label="Notifications">🔔<span class="nav-notif-dot" id="navNotifDot"></span></a>
+    <button class="univ-nav-hbg" onclick="openDrawer()" aria-label="Ouvrir le menu"><span aria-hidden="true">☰</span></button>
   </div>
 </nav>
 
@@ -342,7 +342,7 @@
 <div class="univ-drawer" id="univDrawer">
   <div class="univ-d-hdr">
     <a href="index.html" class="univ-d-logo">INKRISE</a>
-    <button class="univ-d-close" onclick="closeDrawer()">✕</button>
+    <button class="univ-d-close" onclick="closeDrawer()" aria-label="Fermer le menu"><span aria-hidden="true">✕</span></button>
   </div>
   <div class="univ-d-sec">Explorer</div>
   <a href="index.html" class="univ-d-item"><div class="univ-d-icon">🏠</div>Accueil</a>
@@ -360,13 +360,17 @@
   <button class="univ-d-item" id="drawerLogout" style="display:none;" onclick="doLogout()"><div class="univ-d-icon">🚪</div><span style="color:var(--danger-link);">Déconnexion</span></button>
 </div>
 
+<!-- Repère « contenu principal » : sans lui, un lecteur d'écran
+     doit retraverser toute la navigation à chaque page. -->
+<main id="contenu">
+
 <!-- HERO SEARCH -->
 <div class="search-hero">
   <div class="search-hero-inner">
     <h1 class="search-hero-title" id="heroTitle">Recherche</h1>
     <div class="search-bar-large">
       <input type="text" id="heroSearchInput" placeholder="Titre, auteur, genre…" autocomplete="off" onkeydown="if(event.key==='Enter')doHeroSearch()" />
-      <button onclick="doHeroSearch()">🔍</button>
+      <button onclick="doHeroSearch()" aria-label="Lancer la recherche"><span aria-hidden="true">🔍</span></button>
     </div>
   </div>
 </div>
@@ -420,6 +424,8 @@
 </div>
 
 <!-- BOTTOM NAV -->
+</main>
+
 <div id="inkriseBottomNav" data-active=""></div>
 <script src="assets/inkrise-nav.js"></script>
 

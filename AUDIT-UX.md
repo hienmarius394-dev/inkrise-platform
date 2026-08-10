@@ -1577,6 +1577,65 @@ défilement enlevée, il glisse de nouveau.
 
 ---
 
+## 7.20 Ce qu'entend un lecteur d'écran
+
+Une page peut être parfaitement lisible à l'œil et incompréhensible à
+l'oreille. Nouvel outil, `tests/outil-semantique.js`, qui mesure le **DOM
+rendu** — beaucoup de titres sont posés par JavaScript, les lire dans le
+fichier ne prouverait rien.
+
+**Seize défauts, en trois familles.**
+
+### Treize commandes qui ne disent pas leur nom
+
+Un bouton dont le contenu se réduit à une icône s'annonce « bouton », un
+point c'est tout. Le bouton de recherche du bandeau (13 pages), la cloche
+de notifications (13), la fermeture du menu (14), l'œil qui révèle le mot
+de passe, les trois actions sur un chapitre, les deux interrupteurs de
+publication, le réglage de largeur du lecteur, la navigation entre
+chapitres. Tous nommés par `aria-label`, l'icône passée en
+`aria-hidden`.
+
+### Huit pages sans titre principal
+
+Dont **l'accueil, la bibliothèque, le profil et la communauté**. Le `<h1>`
+est la première chose qu'annonce un lecteur d'écran, et le repère qui dit
+« voilà de quoi parle cette page ». Sans lui, on atterrit dans le vide.
+
+Leur maquette n'a pas de grand titre visible et en ajouter un changerait
+le dessin : d'où un titre **lu mais non vu** (`.sr-uniquement`, en
+`clip-path` — `display: none` le retirerait de l'arbre d'accessibilité,
+c'est-à-dire du seul endroit où il sert).
+
+Le profil partait de `<h3>` : ajouter un `<h1>` y aurait créé un saut de
+niveau. Ses douze titres de section sont donc remontés en `<h2>`.
+
+### Aucune page n'avait de repère « contenu principal »
+
+Sur les vingt et une. Sans `<main>`, impossible de sauter la navigation :
+il faut la retraverser à chaque page. Douze pages sont désormais
+enveloppées dans un vrai `<main>`, les huit autres portent `role="main"`
+sur leur conteneur unique.
+
+### Ce que le test a corrigé chez lui
+
+Ma première version comparait `textContent`, `aria-label` et `title`, et
+accusait les **quatre interrupteurs des Paramètres**. Ils sont pourtant
+parfaitement nommés : `<button>` est un élément **étiquetable**, et leur
+`<label for>` leur donne « Masquer le contenu 18+ », « Garder l'écran
+allumé »… L'outil lit désormais `ariaSnapshot()` — le nom **réellement
+calculé**, celui qu'un lecteur d'écran prononce.
+
+### Et ce que la batterie a rattrapé chez moi
+
+Remonter les `<h3>` du profil en `<h2>` a cassé le message d'erreur de
+« Ma lecture » : le code faisait `vide.querySelector('h3')`, qui rend
+`null` — plus aucun message, aucune trace. Un sélecteur couplé au **niveau
+de titre**. Il vise maintenant un rôle (`[data-role="titre"]`), stable
+quelle que soit la balise.
+
+---
+
 ## Annexe — méthode
 
 ```bash
@@ -1592,6 +1651,8 @@ node tests/outil-injection.js  # 0 contenu utilisateur hors de son cadre
 node tests/outil-panne.js      # 0 page muette sur 42 combinaisons
 node tests/outil-clavier.js    # focus visible, Échap, piège à focus, retour
                                # du focus, et clic non intercepté
+node tests/outil-semantique.js # titres, repère « contenu principal », et nom
+                               # accessible RÉEL de chaque commande
 npm test -- veille             # 16/16 — écran maintenu allumé
 npm test -- confort            # 21/21 — plein écran et zoom
 npm test -- double-page        # 23/23 — paires, sens de lecture, repli
