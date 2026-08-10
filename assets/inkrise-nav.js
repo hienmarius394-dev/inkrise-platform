@@ -178,6 +178,57 @@
     }, 1500);
   });
 
+  /* Traduction d'une erreur technique : window.inkriseErreur(error, repli) → string
+     Vingt-neuf endroits du site affichaient le message brut renvoyé par la
+     base : « new row violates row-level security policy for table
+     "mangas" », « duplicate key value violates unique constraint
+     "profiles_username_key" », « Failed to fetch ». C'est de l'anglais, et
+     ça décrit le mécanisme interne au lieu de dire quoi faire. auth.html
+     traduisait déjà ses erreurs à la main ; cette fonction généralise ce
+     travail au reste du site.
+
+     Le message technique n'est pas perdu : il part dans la console, où on
+     en a besoin pour diagnostiquer. */
+  const ERREURS = [
+    /* Contraintes de longueur ajoutées côté base : sans traduction, un texte
+       trop long affichait le nom SQL de la contrainte. */
+    [/profiles_username_len|username.*(check|length)/i, 'Ton pseudo doit faire entre 2 et 24 caractères.'],
+    [/profiles_bio_len/i,   'Ta bio est trop longue (500 caractères maximum).'],
+    [/mangas_titre_len|packs_tutoriels_titre_len/i, 'Le titre est trop long (80 caractères maximum).'],
+    [/check constraint/i,   'Une des valeurs saisies n\'est pas acceptée. Vérifie le formulaire.'],
+    /* Unicité */
+    [/profiles_username_key|username.*(unique|duplicate)/i, 'Ce pseudo est déjà pris. Choisis-en un autre.'],
+    [/duplicate key|already exists|23505/i, 'C\'est déjà enregistré — inutile de recommencer.'],
+    /* Droits */
+    [/row-level security|violates policy|42501|permission denied/i,
+      'Tu n\'as pas les droits pour faire ça. Reconnecte-toi, ou vérifie que ce contenu t\'appartient.'],
+    [/JWT expired|invalid token|not authenticated|401/i,
+      'Ta session a expiré. Reconnecte-toi pour continuer.'],
+    /* Références et absences */
+    [/foreign key|23503/i, 'Ce contenu n\'existe plus. Recharge la page.'],
+    [/PGRST116|no rows|not found|404/i, 'Introuvable — ce contenu a peut-être été supprimé.'],
+    [/PGRST202|function.*does not exist/i, 'Cette fonctionnalité n\'est pas encore activée sur le site.'],
+    /* Réseau et quotas */
+    [/failed to fetch|networkerror|load failed|net::/i,
+      'Connexion perdue. Vérifie ton réseau et réessaie.'],
+    [/rate limit|too many|429/i, 'Trop de tentatives d\'affilée. Patiente une minute.'],
+    [/payload too large|413|exceeded the maximum|file size/i,
+      'Le fichier est trop lourd. Choisis-en un plus léger.'],
+    [/timeout|timed out|57014/i, 'Le serveur met trop de temps à répondre. Réessaie dans un instant.'],
+    [/edge function|non-2xx|FunctionsFetchError|FunctionsHttpError/i,
+      'Le service est momentanément indisponible. Réessaie dans un instant.']
+  ];
+  window.inkriseErreur = function (error, repli) {
+    const brut = String(
+      (error && (error.message || error.error_description || error.error)) || error || ''
+    ) + ' ' + String((error && (error.code || error.details || error.hint)) || '');
+    if (error) { try { console.warn('[inkrise] erreur technique :', error); } catch (e) {} }
+    for (let i = 0; i < ERREURS.length; i++) {
+      if (ERREURS[i][0].test(brut)) return ERREURS[i][1];
+    }
+    return repli || 'Ça n\'a pas fonctionné. Réessaie dans un instant.';
+  };
+
   /* Confirmation d'une action irréversible : window.inkriseConfirm({…}) → Promise<bool>
      Les fenêtres confirm()/prompt() du navigateur cassaient l'identité du site
      au moment précis où l'on demande à quelqu'un de réfléchir — fond blanc
@@ -321,7 +372,7 @@
             raison: raison, signale_par: data.session.user.id
           });
           if (error && String(error.code) === '23505') { msg.textContent = 'Tu as déjà signalé ce contenu — merci !'; }
-          else if (error) { msg.textContent = 'Erreur : ' + error.message; msg.style.color = '#ef4444'; return; }
+          else if (error) { msg.textContent = window.inkriseErreur(error, "Impossible d'envoyer ton signalement."); msg.style.color = '#ef4444'; return; }
           else { msg.textContent = '✅ Merci, ton signalement a bien été transmis.'; }
           msg.style.color = '#0fb8a6';
           box.querySelectorAll('button').forEach(function (x) { if (x !== close) x.disabled = true; x.style.opacity = '.55'; });

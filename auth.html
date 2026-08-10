@@ -963,7 +963,7 @@ async function handleResendConfirm() {
     options: { emailRedirectTo: window.location.origin + '/auth.html' }
   })
   btn.disabled = false
-  if (error) { showMsg('loginMsg', 'Erreur : ' + error.message, 'error'); return }
+  if (error) { showMsg('loginMsg', inkriseErreur(error, 'Connexion impossible. Réessaie dans un instant.'), 'error'); return }
   showMsg('loginMsg', "✓ Email de confirmation renvoyé ! Vérifie ta boîte mail (et les spams).", 'success')
   btn.style.display = 'none'
 }
@@ -977,7 +977,7 @@ async function handleForgot() {
     redirectTo: window.location.origin + '/auth.html'
   })
   document.getElementById('forgotBtn').disabled = false
-  if (error) { showMsg('forgotMsg', 'Erreur : ' + error.message, 'error'); return }
+  if (error) { showMsg('forgotMsg', inkriseErreur(error, "Impossible d'envoyer l'email de réinitialisation."), 'error'); return }
   showMsg('forgotMsg', '✓ Email envoyé ! Clique sur le lien reçu pour réinitialiser ton mot de passe.', 'success')
 }
 
@@ -999,7 +999,7 @@ async function handleRecovery() {
   document.getElementById('recoveryBtn').disabled = true
   const { error } = await supabaseClient.auth.updateUser({ password })
   document.getElementById('recoveryBtn').disabled = false
-  if (error) { showMsg('recoveryMsg', 'Erreur : ' + error.message, 'error'); return }
+  if (error) { showMsg('recoveryMsg', inkriseErreur(error, 'Impossible de changer ton mot de passe.'), 'error'); return }
   showMsg('recoveryMsg', '✓ Mot de passe mis à jour ! Redirection…', 'success')
   setTimeout(() => { window.location.href = 'index.html' }, 1200)
 }

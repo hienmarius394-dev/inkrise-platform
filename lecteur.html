@@ -2051,7 +2051,7 @@ async function submitComment() {
     contenu: text,
     parent_id: null
   });
-  if (error) { showToast('Erreur : ' + error.message); }
+  if (error) { showToast(inkriseErreur(error, 'Impossible de publier ton commentaire.')); }
   else { textarea.value = ''; await loadComments(mangaId, chapitre.id); }
   btn.disabled = false; btn.textContent = 'Publier';
 }
@@ -2068,7 +2068,7 @@ async function submitReply(parentId) {
     contenu: text,
     parent_id: parentId
   });
-  if (error) { showToast('Erreur : ' + error.message); }
+  if (error) { showToast(inkriseErreur(error, 'Impossible de publier ta réponse.')); }
   else { await loadComments(mangaId, chapitre.id); }
 }
 

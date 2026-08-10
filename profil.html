@@ -1695,7 +1695,7 @@
     });
     if (!ok) return;
     const { error } = await sb.rpc('delete_my_account');
-    if (error) { showToast('Erreur : ' + error.message, 'error'); return; }
+    if (error) { showToast(inkriseErreur(error, "Impossible de supprimer ton compte."), 'error'); return; }
     await sb.auth.signOut();
     showToast('Ton compte a été supprimé. À bientôt peut-être 👋', 'success');
     setTimeout(() => { window.location.href = 'index.html'; }, 1800);
@@ -1712,7 +1712,7 @@
     });
     if (!ok) return;
     const { error } = await sb.from('profiles').update({ is_creator: false }).eq('id', currentUser.id);
-    if (error) { showToast('Erreur : ' + error.message, 'error'); return; }
+    if (error) { showToast(inkriseErreur(error, "Impossible de revenir en mode lecteur."), 'error'); return; }
     userProfile = { ...userProfile, is_creator: false };
     updatePlanUI();
     showToast('Te voilà lecteur 📖 — tu peux redevenir créateur quand tu veux', 'success');
@@ -1725,7 +1725,7 @@
     if (!data.session) { window.location.href = 'auth.html?next=' + encodeURIComponent(location.pathname.split('/').pop() + location.search) + '&raison=' + raisonConnexion(); return; }
     const updates = { is_creator: true };
     const { error } = await sb.from('profiles').update(updates).eq('id', data.session.user.id);
-    if (error) { showToast('Erreur : ' + error.message, 'error'); return; }
+    if (error) { showToast(inkriseErreur(error, "Impossible d'activer l'espace créateur."), 'error'); return; }
     userProfile = { ...userProfile, ...updates };
     updatePlanUI();
     showToast('Espace créateur activé 🎉', 'success');
@@ -2015,6 +2015,22 @@
       mesAchats.map(p => carteFormation(p, false, 0)).join('');
   }
 
+  /* Les packs créés avant l'existence de la liste déroulante « Niveau »
+     portent la valeur brute de la base (« debutant »). Sans normalisation,
+     select.value ne trouvait aucune option correspondante, le champ
+     s'affichait vide, et le premier enregistrement suivant rétrogradait
+     silencieusement le pack en « Tous niveaux ». */
+  const NIVEAU_LABELS = {
+    'debutant': 'Débutant', 'débutant': 'Débutant',
+    'intermediaire': 'Intermédiaire', 'intermédiaire': 'Intermédiaire',
+    'avance': 'Avancé', 'avancé': 'Avancé',
+    'tous niveaux': 'Tous niveaux', 'tous': 'Tous niveaux'
+  };
+  function libelleNiveau(valeur) {
+    const brut = String(valeur ?? '').trim();
+    return NIVEAU_LABELS[brut.toLowerCase()] || 'Tous niveaux';
+  }
+
   function carteFormation(p, gerable, acheteurs) {
     const cover = p.image_url
       ? '<img class="manga-cover" src="' + escFormation(p.image_url) + '" alt="" loading="lazy" />'
@@ -2116,7 +2132,7 @@
     document.getElementById('packVideo').value = pack.contenu_url || '';
     document.getElementById('packObjectifs').value =
       Array.isArray(pack.objectifs) ? pack.objectifs.join('\n') : '';
-    document.getElementById('packNiveau').value = pack.niveau || 'Tous niveaux';
+    document.getElementById('packNiveau').value = libelleNiveau(pack.niveau);
     document.getElementById('packCoverUrl').value = pack.image_url || '';
     document.getElementById('packCoverStatus').textContent = '';
     apercuCouverture(pack.image_url || null);
@@ -2147,7 +2163,7 @@
        `error: null` — on veut donc que la requête soit exacte. */
     const { error } = await sb.from('packs_tutoriels').delete()
       .eq('id', packId).eq('auteur_id', currentUser.id);
-    if (error) { showToast('Suppression impossible : ' + error.message, 'error'); return; }
+    if (error) { showToast(inkriseErreur(error, "Impossible de supprimer ce pack."), 'error'); return; }
     showToast('Formation supprimée', 'success');
     await loadFormations();
   }
@@ -2233,7 +2249,7 @@
       apercuCouverture(pub.publicUrl);
       statut.textContent = '✅ Couverture ajoutée';
     } catch (err) {
-      statut.textContent = 'Envoi impossible : ' + (err.message || 'erreur inconnue');
+      statut.textContent = inkriseErreur(err, "Impossible d'envoyer cette image.");
     }
   });
 
@@ -2309,7 +2325,7 @@
       fermerModalePack();
       await loadFormations();
     } catch (err) {
-      msg.textContent = 'Enregistrement impossible : ' + (err.message || 'erreur inconnue');
+      msg.textContent = inkriseErreur(err, "Impossible d'enregistrer ce pack.");
     } finally {
       bouton.disabled = false; bouton.textContent = libelle;
     }
@@ -2482,7 +2498,7 @@
         showToast('Erreur lors de l\'upload de la couverture.', 'error');
       }
     } catch (err) {
-      showToast('Erreur : ' + (err.message || 'inconnue'), 'error');
+      showToast(inkriseErreur(err, "Impossible de mettre à jour ta couverture."), 'error');
     }
   });
 
@@ -2594,7 +2610,7 @@
       renderProfileSocials(updateData.social_links);
       showToast('✅ Profil mis à jour !', 'success');
     } catch (err) {
-      showToast('Erreur: ' + (err.message || 'inconnue'), 'error');
+      showToast(inkriseErreur(err, "Impossible de mettre à jour ton profil."), 'error');
     } finally {
       btnSave.disabled = false;
       btnSave.textContent = '💾 Sauvegarder';
@@ -2748,7 +2764,7 @@
         document.getElementById('suivisEmpty').style.display = 'block';
       }
       showToast('Tu ne suis plus ce créateur', 'info');
-    } else showToast('Erreur: ' + error.message, 'error');
+    } else showToast(inkriseErreur(error, "Impossible de se désabonner."), 'error');
   }
 
   // ── NOTIFICATIONS ──

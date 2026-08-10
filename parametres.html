@@ -439,13 +439,13 @@ async function activerPush() {
       /* L'abonnement navigateur existe mais on ne sait pas où envoyer :
          on le retire pour ne pas laisser croire que c'est actif. */
       await abo.unsubscribe();
-      dire('Enregistrement impossible : ' + error.message, true);
+      dire(inkriseErreur(error, "Impossible d'enregistrer ton abonnement aux notifications."), true);
       return false;
     }
     await enregistrer({ pref_notif_push: true });
     return true;
   } catch (e) {
-    dire('Activation impossible : ' + e.message, true);
+    dire(inkriseErreur(e, "Impossible d'activer les notifications."), true);
     return false;
   }
 }
@@ -461,7 +461,7 @@ async function desactiverPush() {
     await enregistrer({ pref_notif_push: false });
     return true;
   } catch (e) {
-    dire('Désactivation impossible : ' + e.message, true);
+    dire(inkriseErreur(e, 'Impossible de désactiver les notifications.'), true);
     return false;
   }
 }
@@ -501,7 +501,7 @@ async function exporterMesDonnees() {
     setTimeout(() => URL.revokeObjectURL(url), 4000);
     dire('✅ Fichier téléchargé');
   } catch (e) {
-    dire('Export impossible : ' + e.message, true);
+    dire(inkriseErreur(e, 'Impossible de préparer ton fichier.'), true);
   }
   b.disabled = false; b.textContent = libelle;
 }
@@ -515,7 +515,7 @@ async function supprimerMonCompte() {
   });
   if (!ok) return;
   const { error } = await sb.rpc('delete_my_account');
-  if (error) { dire('Suppression impossible : ' + error.message, true); return; }
+  if (error) { dire(inkriseErreur(error, 'Impossible de supprimer ton compte.'), true); return; }
   await sb.auth.signOut();
   window.location.href = 'index.html';
 }
