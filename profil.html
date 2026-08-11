@@ -1436,6 +1436,16 @@
     const params = new URLSearchParams(location.search);
     const onglet = params.get('tab');
     if (onglet && document.getElementById('tab-' + onglet)) goToTab(onglet);
+
+    /* gestion-chapitres.html renvoie ici quand le manga demandé n'existe
+       pas ou ne t'appartient pas. Sans un mot, on atterrissait sur son
+       profil sans comprendre : on dit ce qui s'est passé. */
+    const RAISONS = {
+      'introuvable': 'Ce manga n\'existe plus, ou il ne t\'appartient pas.',
+      'sans-manga': 'Choisis le manga dont tu veux gérer les chapitres.'
+    };
+    const raison = RAISONS[params.get('raison')];
+    if (raison) showToast(raison, 'info');
     const aEditer = parseInt(params.get('edit'), 10);
     if (Number.isFinite(aEditer)) {
       goToTab('formations');

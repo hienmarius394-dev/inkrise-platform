@@ -56,7 +56,8 @@ const SONDE = () => {
     'Connexion / Inscription', 'Paramètres', 'Déconnexion', 'EXPLORER', 'APPARENCE',
     'Clair', 'Sombre', 'Auto', 'Connexion', 'Profil', 'Aller au contenu',
     'NOTRE MISSION', 'En savoir plus →', 'Mentions légales', 'CGU / CGV',
-    'Confidentialité', 'Rémunération créateurs', 'Wave · Orange Money · MTN MoMo · Stripe',
+    'Confidentialité', 'Rémunération créateurs',
+    'Paiement par Wave · Orange Money · MTN MoMo · Moov · Carte bancaire',
   ];
   let utile = texte;
   for (const c of coquille) utile = utile.split(c).join(' ');

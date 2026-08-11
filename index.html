@@ -445,6 +445,24 @@ h1,h2,h3,.logo { font-family: 'Syne', sans-serif; }
   <div class="creators-scroll" id="creatorsScroll"></div>
 </div>
 
+<!-- CATALOGUE ENTIÈREMENT VIDE
+     Au tout début, les trois sections affichaient trois fois « rien », et
+     les trois « Voir tout → » menaient au même catalogue vide. Un mur de
+     vide, sans rien à faire. -->
+<div id="catalogueVide" style="display:none;text-align:center;padding:34px 22px;margin:8px 0 4px;
+     background:var(--carte);border:1px solid var(--border);border-radius:18px;">
+  <div style="font-size:2.6rem;line-height:1;margin-bottom:12px;" aria-hidden="true">🌱</div>
+  <h2 style="font-family:'Syne',sans-serif;font-size:1.05rem;font-weight:800;margin-bottom:8px;">
+    Le catalogue est encore vide</h2>
+  <p style="font-size:.87rem;line-height:1.6;color:var(--text-2);max-width:340px;margin:0 auto 18px;">
+    Inkrise vient d'ouvrir : personne n'a encore publié. C'est une bonne
+    nouvelle pour toi — la première œuvre du site peut être la tienne.</p>
+  <a id="catalogueVideBtn" href="upload-manga.html"
+     style="display:inline-flex;align-items:center;justify-content:center;min-height:46px;padding:12px 26px;
+     border-radius:12px;background:var(--purple-plein);color:#fff;font-weight:700;font-size:.9rem;
+     text-decoration:none;">📤 Publier mon premier manga</a>
+</div>
+
 <!-- TABS -->
 <div class="section-tabs">
   <button class="section-tab active" onclick="activateTab(this,'secOriginals')">🌟 Originals</button>
@@ -748,6 +766,7 @@ async function loadFeatured() {
   const row = document.getElementById('featuredRow')
   if (!mangas || mangas.length === 0) {
     row.innerHTML = `<div style="padding:20px 0;color:var(--text-3);font-size:13px;">Aucun manga en avant pour l'instant.</div>`
+    signalerVide('featured')
     return
   }
   // Fonds assombris : en 9px, le blanc sur les teintes vives d'origine
@@ -782,7 +801,7 @@ async function loadPopulaires() {
         .neq('statut', 'brouillon')
         .order('vues', { ascending: false }).limit(6)
   const grid = document.getElementById('populairesGrid')
-  if (!mangas || mangas.length === 0) { grid.innerHTML = emptyState('Aucun manga populaire pour l\'instant.'); return }
+  if (!mangas || mangas.length === 0) { grid.innerHTML = emptyState('Aucun manga populaire pour l\'instant.'); signalerVide('populaires'); return }
   grid.innerHTML = mangas.map((m, i) => {
       const bg = m.couverture_url ? `background:url('${safeUrl(m.couverture_url)}') center/cover no-repeat;` : ''
       const colorBg = !m.couverture_url ? colorClass(i) : ''
@@ -813,7 +832,7 @@ async function loadDerniers() {
         .neq('statut', 'brouillon')
         .order('created_at', { ascending: false }).limit(6)
   const grid = document.getElementById('derniersGrid')
-  if (!mangas || mangas.length === 0) { grid.innerHTML = emptyState('Aucune mise à jour récente.'); return }
+  if (!mangas || mangas.length === 0) { grid.innerHTML = emptyState('Aucune mise à jour récente.'); signalerVide('derniers'); return }
   grid.innerHTML = mangas.map((m, i) => {
     const bg = m.couverture_url ? `background:url('${safeUrl(m.couverture_url)}') center/cover no-repeat;` : ''
     const colorBg = !m.couverture_url ? colorClass(i+2) : ''
@@ -838,6 +857,32 @@ async function loadDerniers() {
 }
 
 checkAuth()
+
+/* Quand les TROIS sections reviennent vides, le catalogue l'est
+   entièrement : ce n'est pas « pas de tendance cette semaine », c'est un
+   site qui n'a encore rien. On le dit une seule fois, et on propose la
+   seule chose utile à faire — publier. Trois messages de vide et trois
+   portes vers le même catalogue vide ne servaient personne. */
+const sectionsVides = new Set()
+function signalerVide(quoi) {
+  sectionsVides.add(quoi)
+  if (sectionsVides.size < 3) return
+  const bloc = document.getElementById('catalogueVide')
+  if (!bloc) return
+  bloc.style.display = 'block'
+  document.querySelector('.section-tabs')?.style.setProperty('display', 'none')
+  ;['secOriginals', 'featuredRow', 'secPopulaires', 'populairesGrid',
+    'secNouveaux', 'derniersGrid'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.style.display = 'none'
+  })
+  /* Sans compte, publier commence par en créer un : on l'annonce plutôt
+     que d'envoyer sur un formulaire qui redemandera de se connecter. */
+  supabaseClient.auth.getSession().then(({ data }) => {
+    if (data && data.session) return
+    const btn = document.getElementById('catalogueVideBtn')
+    if (btn) { btn.href = 'auth.html?next=upload-manga.html'; btn.textContent = '✍️ Créer mon compte et publier' }
+  })
+}
 
 if (navigator.onLine) {
   loadCreators()

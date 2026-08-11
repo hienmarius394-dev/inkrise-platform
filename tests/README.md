@@ -49,9 +49,10 @@ INKRISE_CHROME=/chemin/vers/chrome npm test
 | `fusion-createur` | Un seul tableau de bord : créer, modifier et supprimer un pack depuis le profil, anciennes adresses redirigées, et le bouton « Nouveau pack » atteignable quand on n'a encore rien publié |
 | `deploiement` | Ce que voit quelqu'un qui revient **après une mise en ligne** : le service worker est laissé prendre le contrôle, un fichier change sur le serveur, et on vérifie que la nouvelle feuille de style est bien celle appliquée — sans casser le hors-ligne |
 | `messages` | Ce que lit quelqu'un quand ça rate : quinze erreurs réelles de PostgREST, GoTrue et du réseau passées à la table de traduction, et la vérification qu'aucun jargon n'en ressort ; garde statique interdisant à toute page de réafficher `error.message`, d'ouvrir un `alert()` du navigateur, ou de vouvoyer alors que tout le site tutoie |
+| `premier-jour` | Le tout premier jour, base vide : l'accueil dit le vide **une seule fois** au lieu de trois, et propose de publier (en passant par l'inscription si besoin) ; les tutoriels n'accusent plus un filtre non posé ni ne promettent « d'autres tutoriels » ; gérer un manga inexistant ne dépose plus sur son profil sans un mot ; un seul taux de reversement annoncé sur tout le site |
 | `polices` | Aucune des 21 pages n'appelle un domaine Google ; les quatre familles sont réellement dessinées (largeur mesurée contre la fonte système) ; texte lisible si les fichiers ne répondent plus ; liste de préchargement du service worker vérifiée fichier par fichier |
 
-## Huit outils de diagnostic (hors suites)
+## Neuf outils de diagnostic (hors suites)
 
 ```bash
 node tests/outil-invisible.js   # traque les défauts SILENCIEUX : liens morts,
@@ -96,6 +97,19 @@ node tests/outil-semantique.js  # ce qu'ENTEND un lecteur d'écran : un titre
                                 # <button> étiqueté par un <label for> est
                                 # parfaitement nommé, ma première version
                                 # accusait quatre interrupteurs à tort
+node tests/outil-parcours.js    # le PREMIER JOUR : compte neuf, base
+                                # ENTIÈREMENT VIDE. Toutes les suites
+                                # remplissent Supabase avant de mesurer ;
+                                # c'est l'inverse de ce que voit quelqu'un
+                                # qui vient de s'inscrire. Cherche trois
+                                # défauts : cul-de-sac (aucune action hors
+                                # coquille), page muette, lien mort.
+                                # Deux pièges dans son écriture : `innerText`
+                                # sur un CLONE détaché, puis sur un élément
+                                # NON RENDU, retombe dans les deux cas sur
+                                # textContent — le profil paraissait
+                                # contenir 68 000 caractères et une zone
+                                # masquée passait pour pleine.
 node tests/outil-chasse.js      # parcourt les pages : erreurs JS, textes
                                 # cassés, débordements, cibles tactiles trop
                                 # petites, champs sans étiquette

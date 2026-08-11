@@ -393,7 +393,9 @@ async function loadPacks() {
     const min = Math.min(...prixPayants);
     minPriceEl.textContent = `${min % 1 === 0 ? min : min.toFixed(2)}€`;
   } else {
-    minPriceEl.textContent = 'Gratuit';
+    /* « À partir de : Gratuit » sur un catalogue de zéro pack annonçait un
+       prix pour ce qui n'existe pas. */
+    minPriceEl.textContent = allPacks.length ? 'Gratuit' : '—';
   }
 
   updateFilterCounts();
@@ -444,11 +446,23 @@ function renderPacks() {
   document.getElementById('packCount').textContent = `${count} pack${count > 1 ? 's' : ''}`;
 
   if (count === 0) {
+    /* Deux corrections de texte ici.
+       « Aucun pack dans cette catégorie » s'affichait aussi quand le
+       catalogue entier était vide et qu'aucun filtre n'était posé : on
+       accusait le filtre d'un vide qui n'avait rien à voir avec lui.
+       « D'autres tutoriels arrivent bientôt ! » supposait qu'il en existe
+       déjà, et promettait une suite que rien ne garantit. */
+    const filtre = currentFilter && currentFilter !== 'all';
+    const rienDuTout = allPacks.length === 0;
     grid.innerHTML = `
       <div class="empty-state" style="grid-column:1/-1;">
         <div class="empty-icon">📭</div>
-        <div class="empty-title">Aucun pack dans cette catégorie</div>
-        <div class="empty-sub">D'autres tutoriels arrivent bientôt !</div>
+        <div class="empty-title">${filtre && !rienDuTout
+          ? 'Aucun pack dans cette catégorie'
+          : 'Aucun tutoriel publié pour l\'instant'}</div>
+        <div class="empty-sub">${filtre && !rienDuTout
+          ? 'Essaie une autre catégorie, ou regarde tout le catalogue.'
+          : 'Tu sais dessiner ? Le premier tutoriel du site peut être le tien.'}</div>
       </div>`;
     return;
   }
