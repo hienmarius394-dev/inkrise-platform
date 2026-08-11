@@ -746,7 +746,12 @@ async function init() {
   // Récupère l'id du manga depuis l'URL (?manga_id=xxx)
   const params = new URLSearchParams(window.location.search);
   mangaId = params.get('manga_id');
-  if (!mangaId) { window.location.href = 'profil.html'; return; }
+  /* Ces deux renvois étaient muets : on se retrouvait sur son profil, sur
+     un onglet au hasard, sans savoir pourquoi. Le cas arrive avec un
+     favori devenu caduc ou un manga supprimé depuis un autre appareil.
+     On amène désormais sur l'onglet « Mes Mangas » — l'endroit utile — et
+     on dit ce qui s'est passé. */
+  if (!mangaId) { window.location.replace('profil.html?tab=mangas&raison=sans-manga'); return; }
 
   const { data: profile } = await sb.from('profiles').select('username, avatar_url').eq('id', currentUser.id).single();
   const name = profile?.username || currentUser.email.split('@')[0];
@@ -790,7 +795,7 @@ async function init() {
 // ── CHARGER MANGA ──
 async function loadManga() {
   const { data, error } = await sb.from('mangas').select('*').eq('id', mangaId).eq('auteur_id', currentUser.id).single();
-  if (error || !data) { window.location.href = 'profil.html'; return; }
+  if (error || !data) { window.location.replace('profil.html?tab=mangas&raison=introuvable'); return; }
   manga = data;
 
   document.getElementById('mangaTitre').textContent = data.titre || 'Sans titre';

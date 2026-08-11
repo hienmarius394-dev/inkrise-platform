@@ -1795,10 +1795,93 @@ comportement : ils rougissent.
 
 ---
 
+## 7.23 Le premier jour — quand la base est vide
+
+Cette section vient d'un angle mort de la mesure elle-même. **Toutes les
+suites remplissent Supabase avant de regarder** : deux mangas, un
+chapitre, un pack, un abonné, un avis. C'est commode, et c'est l'inverse
+exact de ce que voit quelqu'un qui vient de créer son compte — ou de ce
+qu'a vu la toute première personne arrivée sur le site.
+
+`tests/outil-parcours.js` parcourt donc le site avec une **base
+entièrement vide**, connecté et déconnecté, et cherche trois choses :
+une page qui ne propose **aucune action** hors coquille commune, une page
+**muette**, une action qui pointe vers une page **inexistante**.
+
+### L'accueil disait trois fois « rien »
+
+Sans un seul manga publié, la page d'accueil affichait :
+
+> Aucun manga en avant pour l'instant. … Aucun manga populaire pour
+> l'instant. … Aucune mise à jour récente.
+
+Trois constats de vide, et trois liens « Voir tout → » menant tous au
+même catalogue vide. Un mur de rien, avec trois portes vers la même pièce
+vide. Rien n'invitait à publier — alors que c'est la seule chose utile
+qu'on puisse faire ce jour-là, et que le titre juste au-dessus dit
+« Publie, partage et monétise ta passion manga ».
+
+Quand les **trois** sections reviennent vides, le catalogue l'est
+entièrement : ce n'est pas « pas de tendance cette semaine », c'est un
+site qui n'a encore rien. On le dit une fois, et on propose de publier.
+Sans compte, le bouton passe par l'inscription en conservant la
+destination — plutôt que d'ouvrir un formulaire qui redemandera de se
+connecter.
+
+### Deux textes qui supposaient ce qui n'existe pas
+
+- `tutoriels.html` annonçait « **Aucun pack dans cette catégorie** »
+  alors qu'aucun filtre n'était posé : on accusait le filtre d'un vide
+  qui n'avait rien à voir avec lui. Et « **D'autres tutoriels arrivent
+  bientôt !** » supposait qu'il en existe déjà, tout en promettant une
+  suite que rien ne garantit.
+- La même page affichait « **À partir de : Gratuit** » pour un catalogue
+  de zéro pack — un prix annoncé pour ce qui n'existe pas.
+
+### Un renvoi muet de plus
+
+`gestion-chapitres.html` renvoyait vers `profil.html` — sans un mot —
+quand le manga demandé n'existait pas ou ne vous appartenait pas. On se
+retrouvait sur son profil, sur un onglet au hasard, sans comprendre. Le
+cas arrive avec un favori devenu caduc ou une œuvre supprimée depuis un
+autre appareil. On arrive maintenant sur l'onglet « Mes Mangas » — le
+seul endroit utile — et la raison est dite.
+
+### Deux taux pour une seule promesse
+
+En lisant les états vides, le taux de reversement est apparu écrit deux
+fois, différemment : `profil.html` promet « **tu gardes 90 % de tes
+ventes de packs** » dans le bloc qu'on lit avant de devenir créateur,
+tandis que `creators-remuneration.html` — la page vers laquelle les CGU
+renvoient comme référence — se contentait de « la grande majorité de
+chaque vente ». Le chiffre était donc déjà engagé ; c'est la page
+faisant foi qui restait vague. Les deux disent maintenant 90 %.
+
+### Deux pièges dans l'écriture de l'outil
+
+Les deux ont failli produire de fausses accusations, et tous deux tiennent
+à la même cause :
+
+1. `innerText` sur un **clone détaché** du document ne connaît plus la
+   mise en forme et rend donc aussi les onglets repliés. Le profil
+   paraissait contenir 68 000 caractères, et `auteur.html` affichait à la
+   fois « Profil introuvable » **et** le profil.
+2. `innerText` sur un élément **non rendu** (`display:none`) retombe lui
+   aussi sur `textContent`. Une zone principale entièrement masquée
+   passait pour pleine de texte — le contrôle « page muette » ne se
+   déclenchait jamais.
+
+Les trois règles de l'outil ont ensuite été éprouvées en injectant chacun
+des trois défauts : elles les voient. `tests/premier-jour.test.js`
+(22 contrôles) fige le résultat, et chacun de ses contrôles a été vérifié
+en rétablissant le comportement d'origine.
+
+---
+
 ## Annexe — méthode
 
 ```bash
-npm test                       # 618/618 ✅  (26 suites)
+npm test                       # 640/640 ✅  (27 suites)
 node tests/outil-contraste.js  # 21 pages RÉELLEMENT atteintes, session simulée
 INKRISE_THEME=sombre \
   node tests/outil-contraste.js   # le même relevé, en thème sombre
@@ -1823,6 +1906,8 @@ npm test -- decouverte         # 17/17 — créateurs et genres accessibles
 npm test -- lecture            # 18/18 — profil de lecteur
 npm test -- inscription        # 14/14 — consentement CGU, crochet Google
 npm test -- messages           # 39/39 — erreurs traduites, une seule voix
+npm test -- premier-jour       # 22/22 — le vide dit et proposé
+node tests/outil-parcours.js   # le PREMIER JOUR : base entièrement vide
 node tests/outil-chasse.js     # 21 pages × 2 états, TOUT DÉPLIÉ
 URLS=… MODES=… node tests/_txt.js   # texte visible de chaque page, à relire
 ```
