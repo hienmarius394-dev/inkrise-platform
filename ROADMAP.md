@@ -44,11 +44,11 @@ Inkrise = plateforme pour artistes manga/webtoon :
   `covers`, `pages`, `community`).
 - **Serveur** : `api/og.js` (aperçus de lien, Vercel) et
   `supabase/functions/` (paiement CinetPay, envoi des notifications push).
-- **Tests** : 27 suites Playwright, 640 vérifications, plus neuf outils de
+- **Tests** : 28 suites Playwright, 649 vérifications, plus dix outils de
   diagnostic (contraste, défauts silencieux, RLS sur PostgreSQL réel,
   échappement, pannes, chasse aux zones cliquables, navigation au clavier,
-  structure pour lecteurs d'écran, et le parcours d'un compte neuf sur une
-  base entièrement vide).
+  structure pour lecteurs d'écran, parcours d'un compte neuf sur une base
+  entièrement vide, et comportement sur un réseau lent réellement bridé).
   Voir `tests/README.md`.
 
 ## Livré lors de l'audit (3 sprints)

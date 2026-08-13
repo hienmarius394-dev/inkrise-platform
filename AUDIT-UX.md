@@ -1878,10 +1878,121 @@ en rétablissant le comportement d'origine.
 
 ---
 
+## 7.24 Le site sur un vrai réseau lent
+
+Dernier angle mort de la même famille que §7.15 (« jamais mesuré avec ses
+vraies polices ») : **toutes les mesures de cet audit ont été prises en
+local**, où une requête revient en une milliseconde. Le public d'Inkrise
+lit sur téléphone, en Afrique de l'Ouest et ailleurs : la 3G y est la
+norme, pas l'exception.
+
+`tests/outil-lent.js` rejoue trois débits par le protocole de débogage
+Chrome — fibre, 3G correcte, 3G médiocre (400 kb/s, 2 s de latence) — plus
+un profil « bord de couverture » à 200 kb/s.
+
+**Première correction à faire, sur l'outil lui-même :** mon serveur de
+test servait les fichiers non compressés. Vercel envoie tout le texte en
+brotli. `assets/supabase.js` pèse 203 Ko sur le disque et **44 Ko sur le
+fil** ; `profil.html`, 132 Ko et 28 Ko. Mesurer sans compression aurait
+fabriqué un problème inexistant en production.
+
+### Le préchargement des polices coûtait 1,6 seconde
+
+Les 21 pages portaient deux lignes ajoutées lors de l'auto-hébergement des
+polices (§7.15) :
+
+```html
+<link rel="preload" as="font" href="assets/fonts/syne-latin.woff2" crossorigin />
+<link rel="preload" as="font" href="assets/fonts/dmsans-latin.woff2" crossorigin />
+```
+
+Elles disent au navigateur : *réclame ces 70 Ko en priorité maximale,
+tout de suite*. Sur fibre, c'est gratuit — la capacité est là. Sur un
+lien à 400 kb/s, **ça vole le tuyau au HTML et au CSS**, sans lesquels
+rien ne peut être peint.
+
+| | Avec préchargement | Sans | Écart |
+|---|---|---|---|
+| fibre | 742–1066 ms | 883–1035 ms | *indistinguable* |
+| 3G | 1807 ms | 1444 ms | −360 ms |
+| 3G médiocre | 6321 / 6328 ms | 4618 / 4670 ms | **−1,7 s** |
+
+Sur fibre, la différence est plus petite que la variation d'un essai à
+l'autre : le préchargement n'y achetait rien de mesurable. Il est retiré
+des 21 pages. `font-display: swap` fait le reste — le texte s'affiche
+immédiatement dans la police système, la vraie arrive derrière.
+
+### Deux inquiétudes vérifiées, puis écartées
+
+Il faut savoir ne pas « corriger » ce qui va bien :
+
+- **Le garde-fou anti-page-figée conclut à la panne au bout de 10 s.**
+  Au bord de la couverture, `lecteur.html` met 12,3 s. J'ai donc cherché
+  la fausse alerte — elle n'existe pas : le garde-fou ne se déclenche que
+  si la page *paraît encore vide* (`loaderVisible() || zoneVide()`), et à
+  10 s le balisage statique est peint depuis longtemps. Conditionné sur
+  ce qui est à l'écran, pas sur une minuterie aveugle.
+- **`hero-manga.webp` pèse 110 Ko, 37 % de l'accueil.** Mais `manga.html`,
+  qui n'a aucune image, s'affiche en 4 590 ms contre 4 614 ms pour
+  l'accueil : l'image n'est pas sur le chemin critique. Le reste du délai
+  est le produit de deux allers-retours à 2 s de latence — de
+  l'architecture, pas un défaut.
+
+### Un envoi coupé publiait une œuvre amputée
+
+Celui-ci est une vraie faute, et il ne se voit qu'en simulant la coupure.
+`upload-manga.html` envoie les planches une par une. Quand l'envoi
+échoue, il compte les échecs, prévient l'auteur — et **publie quand
+même**. Sur un réseau qui lâche à la moitié d'un chapitre, l'œuvre
+partait en ligne avec trois planches sur dix, sans que rien ne le
+signale aux lecteurs.
+
+Le brouillon existe exactement pour ça. Si des planches manquent et que
+l'œuvre devait être publique, elle est désormais **basculée en
+brouillon**, et on le dit :
+
+> « Œuvre interrompue » a été gardé en brouillon : des planches manquent à
+> l'appel. Complète-les depuis la gestion des chapitres, puis publie —
+> personne ne verra une version incomplète entre-temps.
+
+La contre-épreuve est dans la même suite : un envoi qui réussit publie
+toujours normalement. Une règle qui garderait tout en brouillon serait
+pire que le défaut qu'elle corrige.
+
+### Le garde des messages bruts avait un trou
+
+En passant, l'envoi interrompu a montré que
+`firstPageErrorMsg = pageErr.message` échappait au garde statique de
+§7.22 : celui-ci ne surveillait que `error|err|e|e2`, et **`pageErr` n'a
+pas de frontière de mot avant « Err »**. Élargi à n'importe quel
+`.message` porté par une variable d'allure erreur, il a immédiatement
+révélé une seconde fuite réelle — `upErr.message` dans un toast de
+`gestion-chapitres.html`.
+
+Deux fausses accusations sont venues avec, et sont traitées comme telles
+plutôt qu'en relâchant la règle : `opts.message` (le texte de la boîte de
+confirmation) n'est pas une erreur, et le détail technique de
+`manga.html` — 11 px, sous un message en français, seul moyen de
+diagnostiquer une panne signalée par quelqu'un qui n'ouvre pas les outils
+du navigateur — porte maintenant un marqueur `inkrise-diagnostic-assume`.
+Une exception écrite noir sur blanc plutôt qu'un trou dans la règle.
+
+### Où en est le site, chiffré
+
+| | 3G | 3G médiocre | bord de couverture |
+|---|---|---|---|
+| accueil | 4,2 s | 5,4 s | 7,5 s |
+| fiche manga | 4,3 s | 7,2 s | 11,3 s |
+| lecteur | 4,3 s | 8,3 s | 12,3 s |
+
+Aucune fausse panne, aucune page figée, aucun saut de mise en page.
+
+---
+
 ## Annexe — méthode
 
 ```bash
-npm test                       # 640/640 ✅  (27 suites)
+npm test                       # 649/649 ✅  (28 suites)
 node tests/outil-contraste.js  # 21 pages RÉELLEMENT atteintes, session simulée
 INKRISE_THEME=sombre \
   node tests/outil-contraste.js   # le même relevé, en thème sombre
@@ -1907,7 +2018,9 @@ npm test -- lecture            # 18/18 — profil de lecteur
 npm test -- inscription        # 14/14 — consentement CGU, crochet Google
 npm test -- messages           # 39/39 — erreurs traduites, une seule voix
 npm test -- premier-jour       # 22/22 — le vide dit et proposé
+npm test -- reseau-lent        # 9/9 — 3G, et envoi coupé en brouillon
 node tests/outil-parcours.js   # le PREMIER JOUR : base entièrement vide
+node tests/outil-lent.js       # fibre / 3G / 3G médiocre / bord de couverture
 node tests/outil-chasse.js     # 21 pages × 2 états, TOUT DÉPLIÉ
 URLS=… MODES=… node tests/_txt.js   # texte visible de chaque page, à relire
 ```

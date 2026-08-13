@@ -16,8 +16,12 @@
   <meta property="og:image" content="https://inkrise-platform.vercel.app/assets/hero-manga.jpg" />
   <meta name="twitter:card" content="summary_large_image" />
   <link rel="preconnect" href="https://bsdcpwtimsgxcnaamwip.supabase.co" />
-  <link rel="preload" as="font" type="font/woff2" href="assets/fonts/syne-latin.woff2" crossorigin />
-  <link rel="preload" as="font" type="font/woff2" href="assets/fonts/dmsans-latin.woff2" crossorigin />
+  <!-- Pas de <link rel="preload"> sur les polices : mesuré sur une 3G
+       à 400 kb/s, ce préchargement réclamait 70 Ko au débit maximal
+       AVANT que le HTML soit arrivé, et retardait le premier affichage
+       de 1,6 s (6,3 s → 4,6 s). Sur fibre il ne gagnait rien de
+       mesurable. `font-display: swap` fait le reste : le texte
+       s'affiche tout de suite, la police arrive derrière. -->
   <link rel="stylesheet" href="assets/inkrise-fonts.css" />
   <link rel="stylesheet" href="assets/inkrise-theme.css" />
   <script src="assets/inkrise-theme.js"></script>
@@ -1354,6 +1358,7 @@ async function publishManga(draft = false) {
     if (mangaErr) throw mangaErr;
 
     // ÉTAPE 3 — Créer les chapitres + upload des pages
+        let basculeEnBrouillon = false;
         const totalPagesToUpload = chapitres.reduce((sum, c) => sum + (c.pages ? c.pages.length : 0), 0);
         setProgress(70, 'Création des chapitres…', 'Enregistrement dans la base de données', 'Étape 3/3');
 
@@ -1385,7 +1390,7 @@ async function publishManga(draft = false) {
                 const { error: pageErr } = await sb.storage.from('pages').upload(pagePath, page, { upsert: true });
                 if (pageErr) {
                   pageUploadErrors++;
-                  if (!firstPageErrorMsg) firstPageErrorMsg = pageErr.message;
+                  if (!firstPageErrorMsg) firstPageErrorMsg = inkriseErreur(pageErr, 'envoi refusé');
                   console.warn(`Page ${p + 1} ch.${i + 1}:`, pageErr.message);
                 }
 
@@ -1396,11 +1401,23 @@ async function publishManga(draft = false) {
             }
           }
           if (pageUploadErrors > 0) {
+            /* Des planches manquent. Mesuré sur une 3G au bord de la
+               couverture : l'envoi peut lâcher à la moitié d'un chapitre.
+               Publier quand même mettait l'œuvre en ligne AMPUTÉE — les
+               lecteurs ouvraient un chapitre de trois pages sur dix, sans
+               que rien ne le signale. Le brouillon existe exactement pour
+               ça : on y bascule, on le dit, et l'auteur complète au calme
+               depuis la gestion des chapitres. */
+            if (!isDraft) {
+              await sb.from('mangas').update({ statut: 'brouillon' }).eq('id', manga.id);
+              basculeEnBrouillon = true;
+            }
             showToast(`⚠️ ${pageUploadErrors} page(s) n'ont pas pu être envoyées${firstPageErrorMsg ? ' (' + firstPageErrorMsg + ')' : ''} — ajoute-les depuis la gestion des chapitres`, 'error');
           }
         }
 
-        setProgress(100, isDraft ? 'Brouillon sauvegardé !' : 'Manga publié ! 🎉', '', 'Terminé');
+        const enBrouillon = isDraft || basculeEnBrouillon;
+        setProgress(100, enBrouillon ? 'Brouillon sauvegardé !' : 'Manga publié ! 🎉', '', 'Terminé');
 
     await new Promise(r => setTimeout(r, 800));
     document.getElementById('progressOverlay').classList.remove('show');
@@ -1408,8 +1425,10 @@ async function publishManga(draft = false) {
     // Succès
     document.getElementById('mainForm').style.display = 'none';
     document.getElementById('successZone').style.display = 'block';
-    document.getElementById('successTitle').textContent = isDraft ? 'Brouillon sauvegardé !' : 'Manga publié !';
-    document.getElementById('successMsg').textContent = isDraft
+    document.getElementById('successTitle').textContent = enBrouillon ? 'Brouillon sauvegardé !' : 'Manga publié !';
+    document.getElementById('successMsg').textContent = basculeEnBrouillon
+      ? `"${titre}" a été gardé en brouillon : des planches manquent à l'appel. Complète-les depuis la gestion des chapitres, puis publie — personne ne verra une version incomplète entre-temps.`
+      : isDraft
       ? `"${titre}" a été sauvegardé en brouillon. Il n'est visible que par toi — tu pourras le publier depuis ton profil.`
       : `"${titre}" est maintenant visible sur Inkrise ! La communauté peut le découvrir.`;
     document.getElementById('btnVoirManga').href = `manga.html?id=${manga.id}`;

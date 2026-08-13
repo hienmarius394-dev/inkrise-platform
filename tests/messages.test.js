@@ -104,13 +104,38 @@ await ctx.close();
 console.log('\n▶ Plus aucune page n\'affiche le message brut');
 const FICHIERS = fs.readdirSync(ROOT).filter(f => f.endsWith('.html'))
   .concat(fs.readdirSync(path.join(ROOT, 'assets')).filter(f => f.endsWith('.js')).map(f => 'assets/' + f));
-const SORTIES = /(showToast|showMsg|dire|alert)\s*\(|\.(textContent|innerText|innerHTML)\s*=/;
+/* Le message brut n'atteint pas toujours l'écran sur la ligne où il est
+   lu. upload-manga.html faisait `firstPageErrorMsg = pageErr.message` sur
+   une ligne, et l'affichait vingt lignes plus bas : la première version de
+   ce garde ne voyait rien. On surveille donc aussi l'affectation à une
+   variable dont le nom annonce un message destiné à quelqu'un. */
+const SORTIES = /(showToast|showMsg|dire|alert)\s*\(|\.(textContent|innerText|innerHTML)\s*=|(msg|message|erreur|texte|statut|libelle)\w*\s*=\s*[^=]/i;
 const coupables = [];
 for (const f of FICHIERS) {
   const lignes = fs.readFileSync(path.join(ROOT, f), 'utf8').split('\n');
   lignes.forEach((l, i) => {
-    if (!/\b(error|err|e|e2)\.message\b/.test(l)) return;
-    if (/console\.|\/\/|^\s*\*|inkriseErreur|\.test\(|match\(|test\(/.test(l)) return;
+    /* Ne surveiller que `error|err|e|e2` laissait passer tout le reste :
+       `pageErr.message` (upload-manga.html) n'a pas de frontière de mot
+       avant « Err », et « Err » n'est pas « err ». On surveille donc
+       n'importe quel `.message`, quitte à écarter ensuite les emplois
+       légitimes — c'est le sens de marche le plus sûr pour un garde. */
+    /* On ne s'intéresse qu'aux `.message` portés par quelque chose qui
+       RESSEMBLE à une erreur. `opts.message` (le texte de la boîte de
+       confirmation) n'a rien à voir, et le flaguer était une fausse
+       accusation. */
+    if (!/\b(\w*(err|error|exception)\w*|e2?)\.message\b/i.test(l)) return;
+    if (/console\.|\/\/|^\s*\*|\.test\(|match\(|test\(/.test(l)) return;
+    /* `err.message === 'PROFILE_NOT_FOUND'` COMPARE, il n'affiche pas :
+       la valeur retenue vient d'ailleurs. Élargir le garde aux affectations
+       a fait ressortir cette ligne à tort. */
+    if (/\.message\s*(===|!==|==|!=)/.test(l)) return;
+    /* Une ligne qui passe déjà par la traduction est en règle, même si
+       elle mentionne aussi `.message` pour un aiguillage. */
+    if (/inkriseErreur/.test(l)) return;
+    /* Exception assumée et signée dans le code : manga.html affiche un
+       détail technique en 11px SOUS un message en français, pour pouvoir
+       diagnostiquer une panne que quelqu'un signale sans devtools. */
+    if (/inkrise-diagnostic-assume/.test(lignes.slice(Math.max(0, i - 12), i).join('\n'))) return;
     if (SORTIES.test(l)) coupables.push(`${f}:${i + 1}`);
   });
 }
