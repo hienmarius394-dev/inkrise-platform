@@ -16,8 +16,12 @@
   <meta property="og:image" content="https://inkrise-platform.vercel.app/assets/hero-manga.jpg" />
   <meta name="twitter:card" content="summary_large_image" />
   <link rel="preconnect" href="https://bsdcpwtimsgxcnaamwip.supabase.co" />
-  <link rel="preload" as="font" type="font/woff2" href="assets/fonts/syne-latin.woff2" crossorigin />
-  <link rel="preload" as="font" type="font/woff2" href="assets/fonts/dmsans-latin.woff2" crossorigin />
+  <!-- Pas de <link rel="preload"> sur les polices : mesuré sur une 3G
+       à 400 kb/s, ce préchargement réclamait 70 Ko au débit maximal
+       AVANT que le HTML soit arrivé, et retardait le premier affichage
+       de 1,6 s (6,3 s → 4,6 s). Sur fibre il ne gagnait rien de
+       mesurable. `font-display: swap` fait le reste : le texte
+       s'affiche tout de suite, la police arrive derrière. -->
   <link rel="stylesheet" href="assets/inkrise-fonts.css" />
   <link rel="stylesheet" href="assets/inkrise-theme.css" />
   <script src="assets/inkrise-theme.js"></script>
