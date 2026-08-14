@@ -1100,18 +1100,27 @@ function rendreFormulaireAvis(nbAvis) {
     });
   }));
 
-  document.getElementById('avisEnvoyer').addEventListener('click', async () => {
+  document.getElementById('avisEnvoyer').addEventListener('click', async (e) => {
+    const bouton = e.currentTarget;
+    /* Sur une connexion lente, l'envoi met deux secondes ; on retape, et la
+       note repartait une seconde fois. Le `upsert` protège la base, mais la
+       moyenne et le nombre d'avis étaient recalculés deux fois pour rien.
+       Mesuré par tests/outil-double.js. */
+    if (bouton.disabled) return;
     const msg = document.getElementById('avisMsg');
     if (!choisie) { msg.textContent = 'Choisis une note de 1 à 5 étoiles.'; msg.style.color = 'var(--danger-link)'; return; }
-    const commentaire = document.getElementById('avisTexte').value.trim();
-    msg.textContent = 'Envoi…'; msg.style.color = 'var(--muted)';
-    const { error } = await sb.from('avis_mangas').upsert(
-      { manga_id: manga.id, user_id: currentUser.id, note: choisie, commentaire: commentaire || null,
-        updated_at: new Date().toISOString() },
-      { onConflict: 'manga_id,user_id' });
-    if (error) { msg.textContent = inkriseErreur(error, "Impossible d'enregistrer ton avis."); msg.style.color = 'var(--danger-link)'; return; }
-    msg.textContent = '✅ Merci pour ton avis !'; msg.style.color = 'var(--success-link)';
-    await chargerAvis();
+    bouton.disabled = true;
+    try {
+      const commentaire = document.getElementById('avisTexte').value.trim();
+      msg.textContent = 'Envoi…'; msg.style.color = 'var(--muted)';
+      const { error } = await sb.from('avis_mangas').upsert(
+        { manga_id: manga.id, user_id: currentUser.id, note: choisie, commentaire: commentaire || null,
+          updated_at: new Date().toISOString() },
+        { onConflict: 'manga_id,user_id' });
+      if (error) { msg.textContent = inkriseErreur(error, "Impossible d'enregistrer ton avis."); msg.style.color = 'var(--danger-link)'; return; }
+      msg.textContent = '✅ Merci pour ton avis !'; msg.style.color = 'var(--success-link)';
+      await chargerAvis();
+    } finally { bouton.disabled = false; }
   });
 
   const sup = document.getElementById('avisSupprimer');
@@ -1279,6 +1288,16 @@ document.getElementById('btnSubscribe').addEventListener('click', async () => {
   if (!currentUser) { window.location.href = 'auth.html'; return; }
   if (!manga) return;
   const btn = document.getElementById('btnSubscribe');
+  /* Le bouton est désactivé le temps de l'aller-retour. Mesuré par
+     tests/outil-double.js : sur une connexion lente, l'écriture met deux
+     secondes, personne n'attend deux secondes devant un bouton qui n'a pas
+     bougé, et le second appui partait AVANT que le premier n'ait mis à
+     jour l'état — donc une seconde écriture. Selon la table, cela donnait
+     un doublon refusé par la base et une erreur affichée à quelqu'un dont
+     l'action avait pourtant réussi. auteur.html faisait déjà ainsi. */
+  if (btn.disabled) return;
+  btn.disabled = true;
+  try {
   const statEl = document.getElementById('statAbonnes');
   const curr = parseInt(statEl.textContent) || 0;
   if (isSubscribed) {
@@ -1309,6 +1328,7 @@ document.getElementById('btnSubscribe').addEventListener('click', async () => {
       askNotifPermission(manga.titre || 'ce manga');
     }
   }
+  } finally { btn.disabled = false; }
 });
 
 // ── SUIVRE CRÉATEUR ──
@@ -1316,6 +1336,16 @@ document.getElementById('btnFollow').addEventListener('click', async () => {
   if (!currentUser) { showToast('Connecte-toi pour suivre un créateur !', 'info'); return; }
   if (!manga || !manga.auteur_id) return;
   const btn = document.getElementById('btnFollow');
+  /* Le bouton est désactivé le temps de l'aller-retour. Mesuré par
+     tests/outil-double.js : sur une connexion lente, l'écriture met deux
+     secondes, personne n'attend deux secondes devant un bouton qui n'a pas
+     bougé, et le second appui partait AVANT que le premier n'ait mis à
+     jour l'état — donc une seconde écriture. Selon la table, cela donnait
+     un doublon refusé par la base et une erreur affichée à quelqu'un dont
+     l'action avait pourtant réussi. auteur.html faisait déjà ainsi. */
+  if (btn.disabled) return;
+  btn.disabled = true;
+  try {
   const authorN = manga.profiles?.username || 'ce créateur';
   if (isFollowing) {
     const { error } = await sb.from('follows').delete()
@@ -1340,6 +1370,7 @@ document.getElementById('btnFollow').addEventListener('click', async () => {
       // trigger SQL trg_notify_follow (server-side, fiable)
     } else showToast(inkriseErreur(error, 'Impossible de suivre ce créateur.'), 'error');
   }
+  } finally { btn.disabled = false; }
 });
 
 // ── BIBLIOTHÈQUE ──
@@ -1348,6 +1379,16 @@ document.getElementById('btnLibrary').addEventListener('click', async () => {
   if (!currentUser) { showToast('Connecte-toi pour ajouter à ta bibliothèque !', 'info'); return; }
   if (!manga) return;
   const btn = document.getElementById('btnLibrary');
+  /* Le bouton est désactivé le temps de l'aller-retour. Mesuré par
+     tests/outil-double.js : sur une connexion lente, l'écriture met deux
+     secondes, personne n'attend deux secondes devant un bouton qui n'a pas
+     bougé, et le second appui partait AVANT que le premier n'ait mis à
+     jour l'état — donc une seconde écriture. Selon la table, cela donnait
+     un doublon refusé par la base et une erreur affichée à quelqu'un dont
+     l'action avait pourtant réussi. auteur.html faisait déjà ainsi. */
+  if (btn.disabled) return;
+  btn.disabled = true;
+  try {
   if (inLibrary) {
     const { error } = await sb
       .from('bibliotheque')
@@ -1371,6 +1412,7 @@ document.getElementById('btnLibrary').addEventListener('click', async () => {
       showToast('✅ Ajouté à ta bibliothèque !', 'success');
     } else showToast(inkriseErreur(error, 'Impossible d\'ajouter à ta bibliothèque.'), 'error');
   }
+  } finally { btn.disabled = false; }
 });
 
 // ── PAGINATION CHAPITRES ──

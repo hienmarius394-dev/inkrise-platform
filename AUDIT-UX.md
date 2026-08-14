@@ -1989,10 +1989,73 @@ Aucune fausse panne, aucune page figée, aucun saut de mise en page.
 
 ---
 
+## 7.25 Quand on tape deux fois
+
+Conséquence directe de §7.24. Les chiffres qui viennent d'en sortir — une
+page en 4 à 12 secondes, une écriture souvent 2 de plus — décrivent
+exactement la situation où **personne n'attend**. On retape. C'est le
+geste le plus banal du monde, et il ne se reproduit jamais en local : la
+réponse revient avant que le doigt se relève. C'est précisément pour ça
+qu'il n'avait jamais été mesuré.
+
+`tests/outil-double.js` ralentit chaque écriture d'une seconde et demie,
+tape deux fois à 200 ms d'écart, et compte ce qui atteint vraiment la
+base.
+
+### Cinq gestes partaient en double
+
+| Geste | Table | Conséquence du second envoi |
+|---|---|---|
+| suivre un créateur | `follows` | doublon refusé → **message d'erreur** pour une action réussie |
+| s'abonner à un manga | `abonnements_manga` | idem, plus le compteur d'abonnés qui bouge deux fois |
+| ajouter à la bibliothèque | `bibliotheque` | `upsert` : la base tient, l'écriture est perdue |
+| publier un avis | `avis_mangas` | moyenne et nombre d'avis recalculés deux fois pour rien |
+| réagir à un post | `reactions` | doublon refusé → **message d'erreur** ; et au changement d'emoji, un `delete` puis un `insert` entrelacés pouvaient laisser la réaction dans un état incohérent |
+
+Le plus fâcheux n'est pas la base — elle se défend seule avec ses clés.
+C'est ce que voit la personne : elle a suivi quelqu'un, ça a marché, et
+le site lui répond **« C'est déjà enregistré — inutile de recommencer »**.
+
+Cause commune, visible dans le code : l'état (`isFollowing`,
+`isSubscribed`, `inLibrary`) n'est mis à jour qu'**après** l'`await`. Le
+second appui, parti 200 ms plus tard, lit encore l'ancienne valeur et
+repart dans la même branche.
+
+`auteur.html` faisait déjà les choses correctement — `btn.disabled = true`
+en entrée, `false` en sortie. Les cinq autres reprennent ce motif, avec
+`try { … } finally` pour que le verrou se lève même en cas d'erreur.
+
+### La contre-épreuve compte autant que le contrôle
+
+Une garde qui resterait fermée serait **pire** que le défaut qu'elle
+corrige : plus moyen de se désabonner, de changer d'emoji, de corriger sa
+note. `tests/double-appui.test.js` vérifie donc les deux sens — une seule
+écriture sur un double appui, et deux écritures sur deux gestes
+volontaires espacés.
+
+### Deux corrections sur l'outil, avant de croire ce qu'il disait
+
+- Il a d'abord accusé `lecteur.html` de ne rien montrer pendant l'attente.
+  Faux : le code y fait `btn.disabled = true` depuis toujours. C'est mon
+  montage qui ne remplissait pas la zone de saisie, donc l'action sortait
+  avant d'écrire quoi que ce soit. **Zéro écriture veut dire que le geste
+  n'a pas eu lieu** — l'outil le dit maintenant, au lieu d'accuser la
+  commande.
+- Le jeu d'essai ignorait le filtre `?id=eq.…` et renvoyait toujours le
+  premier profil. Le mur communautaire se croyait chez quelqu'un d'autre
+  et n'affichait aucun post : on mesurait une page vide en croyant mesurer
+  des réactions. C'est en rendant le jeu d'essai fidèle au filtre que le
+  défaut des réactions est apparu.
+
+Les dix contrôles ont été éprouvés en retirant les gardes : ils
+rougissent tous.
+
+---
+
 ## Annexe — méthode
 
 ```bash
-npm test                       # 649/649 ✅  (28 suites)
+npm test                       # 663/663 ✅  (29 suites)
 node tests/outil-contraste.js  # 21 pages RÉELLEMENT atteintes, session simulée
 INKRISE_THEME=sombre \
   node tests/outil-contraste.js   # le même relevé, en thème sombre
@@ -2019,8 +2082,10 @@ npm test -- inscription        # 14/14 — consentement CGU, crochet Google
 npm test -- messages           # 39/39 — erreurs traduites, une seule voix
 npm test -- premier-jour       # 22/22 — le vide dit et proposé
 npm test -- reseau-lent        # 9/9 — 3G, et envoi coupé en brouillon
+npm test -- double-appui       # 14/14 — un geste répété, une seule action
 node tests/outil-parcours.js   # le PREMIER JOUR : base entièrement vide
 node tests/outil-lent.js       # fibre / 3G / 3G médiocre / bord de couverture
+node tests/outil-double.js     # ce qui part quand ON TAPE DEUX FOIS
 node tests/outil-chasse.js     # 21 pages × 2 états, TOUT DÉPLIÉ
 URLS=… MODES=… node tests/_txt.js   # texte visible de chaque page, à relire
 ```
