@@ -1702,6 +1702,17 @@ function bindReactions() {
   document.querySelectorAll('.reaction-btn').forEach(btn => {
     btn.addEventListener('click', async function() {
       if (!state.visitor) { showToast('Connecte-toi pour réagir 🔒', 'error'); setTimeout(() => window.location.href = 'auth.html', 900); return; }
+      /* Réagir est le geste le plus fréquent du site, et le plus répété :
+         sur une connexion lente l'écriture met deux secondes, l'emoji ne
+         bouge pas, on retape. Deux insertions partaient alors — la seconde
+         refusée par la clé primaire, donc un message d'erreur pour une
+         réaction qui avait pourtant fonctionné. Pire au changement d'emoji,
+         qui fait supprimer puis insérer : deux gestes entrelacés pouvaient
+         laisser la réaction dans un état incohérent.
+         Mesuré par tests/outil-double.js. */
+      if (this.dataset.enCours === '1') return;
+      this.dataset.enCours = '1';
+      this.disabled = true;
       const postId = parseInt(this.getAttribute('data-post'));
       const type = this.getAttribute('data-type');
       const existing = state.reactions[postId]?.find(r => r.user_id === state.visitor.id);
@@ -1733,6 +1744,12 @@ function bindReactions() {
         }
       } catch (err) {
         showToast(inkriseErreur(err, "Impossible d'enregistrer ta réaction."), 'error');
+      } finally {
+        /* `render()` reconstruit les boutons : celui-ci peut avoir été
+           remplacé entre-temps. On lève le verrou sur l'élément qu'on
+           tient, qu'il soit encore dans la page ou non. */
+        this.dataset.enCours = '';
+        this.disabled = false;
       }
     });
   });

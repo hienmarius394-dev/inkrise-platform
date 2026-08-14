@@ -51,9 +51,10 @@ INKRISE_CHROME=/chemin/vers/chrome npm test
 | `messages` | Ce que lit quelqu'un quand ça rate : quinze erreurs réelles de PostgREST, GoTrue et du réseau passées à la table de traduction, et la vérification qu'aucun jargon n'en ressort ; garde statique interdisant à toute page de réafficher `error.message`, d'ouvrir un `alert()` du navigateur, ou de vouvoyer alors que tout le site tutoie |
 | `premier-jour` | Le tout premier jour, base vide : l'accueil dit le vide **une seule fois** au lieu de trois, et propose de publier (en passant par l'inscription si besoin) ; les tutoriels n'accusent plus un filtre non posé ni ne promettent « d'autres tutoriels » ; gérer un manga inexistant ne dépose plus sur son profil sans un mot ; un seul taux de reversement annoncé sur tout le site |
 | `reseau-lent` | Ce que change une vraie 3G : aucune page ne précharge de police (mesuré, le préchargement retardait le premier affichage de 1,6 s en réclamant 70 Ko avant l'arrivée du HTML), `font-display: swap` conservé, et un envoi de planches interrompu garde l'œuvre en **brouillon** au lieu de la publier amputée — avec la contre-épreuve qu'un envoi réussi publie toujours normalement |
+| `double-appui` | Six gestes tapés deux fois sur une écriture lente — suivre, s'abonner, mettre en bibliothèque, noter, réagir : une seule écriture doit partir, et la commande doit se verrouiller pendant l'attente. Avec la contre-épreuve que le verrou se **lève** : une garde bloquée empêcherait de se désabonner ou de changer d'emoji |
 | `polices` | Aucune des 21 pages n'appelle un domaine Google ; les quatre familles sont réellement dessinées (largeur mesurée contre la fonte système) ; texte lisible si les fichiers ne répondent plus ; liste de préchargement du service worker vérifiée fichier par fichier |
 
-## Dix outils de diagnostic (hors suites)
+## Onze outils de diagnostic (hors suites)
 
 ```bash
 node tests/outil-invisible.js   # traque les défauts SILENCIEUX : liens morts,
@@ -112,6 +113,15 @@ node tests/outil-lent.js        # le site sur un VRAI RÉSEAU LENT : trois
                                 # 44 Ko sur le fil).
 INKRISE_RESEAUX=bord \
   node tests/outil-lent.js      # au bord de la couverture : 200 kb/s, 3 s
+node tests/outil-double.js      # ce qui part quand ON TAPE DEUX FOIS.
+                                # Ralentit chaque écriture d'une seconde et
+                                # demie, tape deux fois à 200 ms d'écart, et
+                                # compte ce qui atteint vraiment la base.
+                                # Ne se reproduit jamais en local : la
+                                # réponse revient avant que le doigt se
+                                # relève. Zéro écriture = le geste n'a pas
+                                # eu lieu — l'outil le dit au lieu
+                                # d'accuser la commande à tort.
 node tests/outil-parcours.js    # le PREMIER JOUR : compte neuf, base
                                 # ENTIÈREMENT VIDE. Toutes les suites
                                 # remplissent Supabase avant de mesurer ;
