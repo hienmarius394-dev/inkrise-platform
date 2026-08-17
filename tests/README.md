@@ -52,9 +52,10 @@ INKRISE_CHROME=/chemin/vers/chrome npm test
 | `premier-jour` | Le tout premier jour, base vide : l'accueil dit le vide **une seule fois** au lieu de trois, et propose de publier (en passant par l'inscription si besoin) ; les tutoriels n'accusent plus un filtre non posé ni ne promettent « d'autres tutoriels » ; gérer un manga inexistant ne dépose plus sur son profil sans un mot ; un seul taux de reversement annoncé sur tout le site |
 | `reseau-lent` | Ce que change une vraie 3G : aucune page ne précharge de police (mesuré, le préchargement retardait le premier affichage de 1,6 s en réclamant 70 Ko avant l'arrivée du HTML), `font-display: swap` conservé, et un envoi de planches interrompu garde l'œuvre en **brouillon** au lieu de la publier amputée — avec la contre-épreuve qu'un envoi réussi publie toujours normalement |
 | `double-appui` | Six gestes tapés deux fois sur une écriture lente — suivre, s'abonner, mettre en bibliothèque, noter, réagir : une seule écriture doit partir, et la commande doit se verrouiller pendant l'attente. Avec la contre-épreuve que le verrou se **lève** : une garde bloquée empêcherait de se désabonner ou de changer d'emoji |
+| `retour-arriere` | Le retour arrière referme la couche ouverte (menu latéral, boîte de confirmation) au lieu de quitter la page — et rend son étape d'historique quand elle est fermée autrement, sinon un retour ultérieur ne ferait rien. Avec deux témoins : sans couche ouverte le retour quitte bien la page, et un filtre posé par un lien se défait. L'adresse du profil suit l'onglet ouvert (recharger retombe au bon endroit) |
 | `polices` | Aucune des 21 pages n'appelle un domaine Google ; les quatre familles sont réellement dessinées (largeur mesurée contre la fonte système) ; texte lisible si les fichiers ne répondent plus ; liste de préchargement du service worker vérifiée fichier par fichier |
 
-## Onze outils de diagnostic (hors suites)
+## Douze outils de diagnostic (hors suites)
 
 ```bash
 node tests/outil-invisible.js   # traque les défauts SILENCIEUX : liens morts,
@@ -113,6 +114,18 @@ node tests/outil-lent.js        # le site sur un VRAI RÉSEAU LENT : trois
                                 # 44 Ko sur le fil).
 INKRISE_RESEAUX=bord \
   node tests/outil-lent.js      # au bord de la couverture : 200 kb/s, 3 s
+node tests/outil-retour.js      # LE RETOUR ARRIÈRE, le geste le plus
+                                # utilisé sur un téléphone. Accomplit un
+                                # geste, appuie sur retour, regarde où l'on
+                                # atterrit. Distingue la couche posée
+                                # par-dessus l'écran (le retour DOIT la
+                                # refermer) du filtre posé par un vrai lien
+                                # (le retour DOIT le défaire) — ma première
+                                # version exigeait l'inverse pour le filtre
+                                # et accusait la page à tort. Les arbitrages
+                                # assumés sont rappelés sans faire rougir
+                                # l'outil : un outil toujours rouge finit
+                                # ignoré.
 node tests/outil-double.js      # ce qui part quand ON TAPE DEUX FOIS.
                                 # Ralentit chaque écriture d'une seconde et
                                 # demie, tape deux fois à 200 ms d'écart, et

@@ -2052,10 +2052,82 @@ rougissent tous.
 
 ---
 
+## 7.26 Le retour arrière — dernier passage
+
+Sur un téléphone, revenir en arrière n'est pas un bouton dans un coin :
+c'est un glissement du pouce depuis le bord, fait cent fois par jour,
+souvent sans y penser. C'est **le** geste pour annuler la dernière chose.
+
+Le constat de départ tient en une commande : **aucune page d'Inkrise
+n'appelait `history.pushState` ni n'écoutait `popstate`.** Rien n'était
+donc inscrit dans l'historique en ouvrant une couche par-dessus l'écran.
+
+### Deux couches ignoraient le geste
+
+- **Le menu latéral**, ouvert depuis les 21 pages. On glissait pour le
+  refermer, on quittait la page.
+- **La boîte « veux-tu vraiment supprimer ton compte ? »**. Le réflexe
+  pour sortir d'une question aussi lourde vous éjectait du site. Échap
+  fonctionnait déjà (§7.18) — mais il n'y a pas de touche Échap sur un
+  téléphone.
+
+`window.inkriseCouche(fermer)` inscrit une étape dans l'historique à
+l'ouverture, et rend la fonction à appeler quand la couche se referme
+autrement (bouton, Échap) : elle **consomme alors l'étape ajoutée**, pour
+que l'historique reste exactement tel qu'il était. Sans cette symétrie, un
+menu fermé par sa croix laissait une étape fantôme et le retour suivant ne
+faisait rien du tout — c'est vérifié explicitement dans la suite.
+
+Le mécanisme vit dans `inkrise-nav.js`, donc les trois couches partagées
+(menu, boîte de confirmation, fenêtre de signalement) en bénéficient d'un
+coup, sur toutes les pages.
+
+### Un arbitrage, écrit noir sur blanc plutôt que corrigé
+
+Changer d'onglet sur le profil quitte encore la page au retour. Les deux
+comportements se défendent : empiler sept onglets dans l'historique
+obligerait à sept retours pour sortir, ce qui est agaçant autrement. Ce
+n'est pas la même situation qu'une couche posée **par-dessus** l'écran, où
+le retour est le geste universel de fermeture et où il n'y avait pas
+d'arbitrage.
+
+Ce qui a été corrigé là : **l'adresse suit l'onglet**. La page lisait déjà
+`?tab=` à l'ouverture — le menu latéral pointe sur
+`profil.html?tab=formations` — mais ne l'écrivait jamais. On ouvrait
+« Formations », on rechargeait, et on retombait sur « Ma lecture ».
+`replaceState` corrige ça sans toucher à l'historique.
+
+Au passage : deux implémentations distinctes du changement d'onglet
+coexistaient — le gestionnaire de clic et `goToTab()`. Ma première
+correction, posée dans `goToTab` seul, n'a rien changé au clic. Les deux
+appellent maintenant la même fonction.
+
+### Deux corrections sur l'outil, encore
+
+- Il a d'abord exigé qu'un **filtre de recherche survive** au retour
+  arrière. C'est l'inverse du juste : les filtres sont de vrais liens
+  (`recherche.html?genre=Action`), et revenir en arrière **doit** défaire
+  le filtre. La page faisait bien son travail ; ma règle était mal
+  conçue. Le scénario est gardé comme témoin, avec la bonne attente.
+- L'arbitrage sur les onglets faisait rougir l'outil en permanence. Un
+  outil toujours rouge finit ignoré : il est désormais rappelé comme
+  **choix assumé**, visible mais sans échec.
+
+### Ce que ce dernier passage confirme
+
+Six passages de suite, six fois le même enseignement : **les défauts se
+cachent là où la mesure ne va pas.** Ici, la mesure n'allait pas parce
+que personne n'avait simulé le geste le plus banal du monde. Et six fois,
+l'outil neuf s'est trompé avant de trouver — d'où la règle tenue tout du
+long : valider un outil en lui injectant le défaut qu'il doit voir, et
+corriger l'outil, pas le site, quand c'est lui qui a tort.
+
+---
+
 ## Annexe — méthode
 
 ```bash
-npm test                       # 663/663 ✅  (29 suites)
+npm test                       # 677/677 ✅  (30 suites)
 node tests/outil-contraste.js  # 21 pages RÉELLEMENT atteintes, session simulée
 INKRISE_THEME=sombre \
   node tests/outil-contraste.js   # le même relevé, en thème sombre
@@ -2083,9 +2155,11 @@ npm test -- messages           # 39/39 — erreurs traduites, une seule voix
 npm test -- premier-jour       # 22/22 — le vide dit et proposé
 npm test -- reseau-lent        # 9/9 — 3G, et envoi coupé en brouillon
 npm test -- double-appui       # 14/14 — un geste répété, une seule action
+npm test -- retour-arriere     # 14/14 — le retour referme la couche
 node tests/outil-parcours.js   # le PREMIER JOUR : base entièrement vide
 node tests/outil-lent.js       # fibre / 3G / 3G médiocre / bord de couverture
 node tests/outil-double.js     # ce qui part quand ON TAPE DEUX FOIS
+node tests/outil-retour.js     # LE RETOUR ARRIÈRE, geste roi du mobile
 node tests/outil-chasse.js     # 21 pages × 2 états, TOUT DÉPLIÉ
 URLS=… MODES=… node tests/_txt.js   # texte visible de chaque page, à relire
 ```
