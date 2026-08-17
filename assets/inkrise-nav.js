@@ -178,6 +178,44 @@
     }, 1500);
   });
 
+  /* ── Le retour arrière referme la couche ouverte ───────────────────
+     Sur un téléphone, revenir en arrière n'est pas un bouton dans un coin :
+     c'est un glissement du pouce depuis le bord, fait cent fois par jour.
+     C'est LE geste pour annuler la dernière chose.
+
+     Aucune page n'inscrivait quoi que ce soit dans l'historique en ouvrant
+     une couche. Mesuré par tests/outil-retour.js : on ouvrait le menu
+     latéral, on glissait pour le refermer — et on quittait la page. Pareil
+     pour la boîte qui demande « veux-tu vraiment supprimer ton compte ? » :
+     le réflexe pour en sortir vous éjectait du site. Échap fonctionnait
+     déjà, mais il n'y a pas de touche Échap sur un téléphone.
+
+     `window.inkriseCouche(fermer)` inscrit une étape dans l'historique et
+     rend la fonction à appeler quand la couche se referme autrement (bouton,
+     Échap) — elle consomme alors l'étape ajoutée, pour que l'historique
+     reste exactement tel qu'il était. */
+  const couches = [];
+  let aConsommer = 0;   // retours déclenchés par nous, à ne pas interpréter
+
+  window.inkriseCouche = function (fermer) {
+    if (typeof fermer !== 'function') return function () {};
+    couches.push(fermer);
+    try { history.pushState({ inkCouche: couches.length }, ''); } catch (e) {}
+    return function retirer() {
+      const i = couches.indexOf(fermer);
+      if (i === -1) return;      // déjà retirée par le retour arrière
+      couches.splice(i, 1);
+      aConsommer++;
+      try { history.back(); } catch (e) { aConsommer--; }
+    };
+  };
+
+  window.addEventListener('popstate', function () {
+    if (aConsommer > 0) { aConsommer--; return; }
+    const fermer = couches.pop();
+    if (fermer) { try { fermer(); } catch (e) {} }
+  });
+
   /* Traduction d'une erreur technique : window.inkriseErreur(error, repli) → string
      Vingt-neuf endroits du site affichaient le message brut renvoyé par la
      base : « new row violates row-level security policy for table
@@ -297,9 +335,17 @@
       const cancel = mk(opts.cancelLabel || 'Annuler', false);
       const ok = mk(opts.confirmLabel || 'Supprimer', true);
 
+      /* Le retour arrière referme la boîte au lieu de quitter la page —
+         le réflexe pour sortir d'une question aussi lourde que « veux-tu
+         vraiment supprimer ton compte ? » vous éjectait du site. */
+      let retirerCouche = window.inkriseCouche(function () {
+        retirerCouche = null;   // l'étape d'historique vient d'être consommée
+        close(false);
+      });
       function close(v) {
         document.removeEventListener('keydown', onKey, true);
         ov.remove();
+        if (retirerCouche) { const r = retirerCouche; retirerCouche = null; r(); }
         if (prev && prev.focus) prev.focus();
         resolve(v);
       }
@@ -399,9 +445,14 @@
     box.setAttribute('role', 'dialog');
     box.setAttribute('aria-modal', 'true');
     const precedent = document.activeElement;
+    let retirerCouche = window.inkriseCouche(function () {
+      retirerCouche = null;
+      fermer();
+    });
     function fermer() {
       document.removeEventListener('keydown', auClavier, true);
       ov.remove();
+      if (retirerCouche) { const r = retirerCouche; retirerCouche = null; r(); }
       if (precedent && precedent.focus && document.contains(precedent)) precedent.focus();
     }
     function auClavier(e) {
@@ -449,11 +500,19 @@
 
     let lastFocus = null;
     const open = window.openDrawer, close = window.closeDrawer;
+    let retirerCouche = null;
     if (typeof open === 'function') {
       window.openDrawer = function () {
         lastFocus = document.activeElement;
         open.apply(this, arguments);
         if (hbg) hbg.setAttribute('aria-expanded', 'true');
+        /* Le retour arrière referme le menu au lieu de quitter la page. */
+        retirerCouche = window.inkriseCouche(function () {
+          if (drawerEl.classList.contains('open') && typeof window.closeDrawer === 'function') {
+            retirerCouche = null;   // l'étape d'historique vient d'être consommée
+            window.closeDrawer();
+          }
+        });
         const first = drawerEl.querySelector('.univ-d-close, a, button');
         if (first) setTimeout(function () { first.focus(); }, 60);
       };
@@ -462,6 +521,7 @@
       window.closeDrawer = function () {
         close.apply(this, arguments);
         if (hbg) hbg.setAttribute('aria-expanded', 'false');
+        if (retirerCouche) { const r = retirerCouche; retirerCouche = null; r(); }
         // Sans ça le focus repart en haut du document à chaque fermeture
         if (lastFocus && lastFocus.focus) { lastFocus.focus(); lastFocus = null; }
       };

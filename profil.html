@@ -2346,6 +2346,26 @@
   });
 
 
+  /* L'adresse suit l'onglet ouvert. La page lisait déjà `?tab=` à
+     l'ouverture — le menu latéral pointe sur `profil.html?tab=formations` —
+     mais ne l'écrivait jamais en changeant d'onglet : on ouvrait
+     « Formations », on rechargeait, et on retombait sur « Ma lecture ».
+     `replaceState` n'ajoute pas d'étape dans l'historique : le retour
+     arrière continue de quitter la page, comme avant.
+
+     Cette fonction est appelée des DEUX endroits qui changent d'onglet —
+     le clic ci-dessous et `goToTab()` plus bas. Les deux existaient déjà
+     en double ; c'est ce qui a fait qu'une première correction, posée
+     dans `goToTab` seul, n'a rien changé au clic. */
+  function refleterOngletDansAdresse(tab) {
+    try {
+      const u = new URL(location.href);
+      u.searchParams.set('tab', tab);
+      u.searchParams.delete('raison');
+      history.replaceState(history.state, '', u.pathname + u.search + u.hash);
+    } catch (e) { /* sans conséquence si l'API n'est pas là */ }
+  }
+
   // ── TABS ──
   document.querySelectorAll('.ptab').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -2353,6 +2373,7 @@
       document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
       btn.classList.add('active');
       document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+      refleterOngletDansAdresse(btn.dataset.tab);
     });
   });
 
@@ -2693,6 +2714,7 @@
       panel.classList.add('active');
       panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
+    refleterOngletDansAdresse(tab);
   }
   window.goToTab = goToTab;
 

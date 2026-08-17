@@ -139,12 +139,18 @@ console.log('\n▶ Gérer un manga qui n\'existe pas');
   p.on('pageerror', e => errors.push(e.message));
   await p.goto(BASE + '/gestion-chapitres.html?manga_id=999');
   await p.waitForTimeout(2200);
-  check('on n\'est plus déposé sur son profil sans un mot',
-        /raison=introuvable/.test(p.url()), p.url().replace(BASE, ''));
-  check('  on arrive sur l\'onglet utile, « Mes Mangas »',
-        /tab=mangas/.test(p.url()));
+  /* On ne juge plus sur `?raison=` : depuis que l'adresse du profil suit
+     l'onglet ouvert, ce paramètre est retiré de l'URL une fois le message
+     affiché — pour qu'il ne réapparaisse pas en rechargeant ou en
+     partageant le lien. Ce qui compte, c'est le message à l'écran. */
   const corps = await p.locator('body').innerText();
-  check('  et la raison est dite', /n'existe plus|ne t'appartient pas/i.test(corps));
+  check('on n\'est plus déposé sur son profil sans un mot',
+        /n'existe plus|ne t'appartient pas/i.test(corps),
+        (corps.match(/[^\n]*(n'existe plus|ne t'appartient pas)[^\n]*/i) || [''])[0].slice(0, 60));
+  check('  on arrive sur l\'onglet utile, « Mes Mangas »',
+        /tab=mangas/.test(p.url()), p.url().replace(BASE, ''));
+  check('  et le paramètre technique ne reste pas dans l\'adresse partageable',
+        !/raison=/.test(p.url()), p.url().replace(BASE, ''));
   await ctx.close();
 }
 
