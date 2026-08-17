@@ -34,7 +34,8 @@ livre/
 ├── METHODE-DE-TRAVAIL.md    Comment on écrit ce livre ensemble
 ├── manuscrit/               Le livre lui-même, un fichier par chapitre
 ├── recherche/               Fiches de cas, science, sources vérifiées
-└── outils/                  Export PDF / EPUB / Word, statistiques
+├── fiches/                  Applications personnelles, une page à imprimer
+└── outils/                  Composition du PDF, schémas, statistiques
 ```
 
 ## Démarrage rapide
@@ -46,8 +47,11 @@ cat livre/PLAN.md
 # Compter les mots du manuscrit
 bash livre/outils/statistiques.sh
 
-# Exporter en PDF / EPUB / DOCX (nécessite pandoc)
+# Composer le livre en PDF
 bash livre/outils/export.sh pdf
+
+# Composer les fiches d'application (une page chacune)
+python3 livre/fiches/construire-fiches.py
 ```
 
 ## Statut

@@ -28,6 +28,7 @@ Dis simplement, en français :
 | Voir l'avancement | « Où on en est ? » |
 | Exporter en PDF | « Sors-moi le PDF » (`bash livre/outils/export.sh pdf`) |
 | Changer le plan | « Ajoute un chapitre sur le sommeil entre le 9 et le 10 » |
+| Créer une fiche | « Fais-moi une fiche pour [situation] » (voir `fiches/README.md`) |
 
 ---
 
@@ -129,5 +130,6 @@ Ne pas les rouvrir sans raison — et surtout pas en cours de rédaction.
 |---|---|
 | `manuscrit/` | Le livre. Un fichier par chapitre, préfixé du numéro. |
 | `recherche/` | Fiches de cas, notes scientifiques, `SOURCES.md`. |
+| `fiches/` | Applications personnelles de la méthode. Une page, à imprimer. Pas du contenu du manuscrit. |
 | `outils/` | Composition du PDF, schémas, statistiques. |
 | `PLAN.md` | L'architecture et l'état d'avancement. La source de vérité. |

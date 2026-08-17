@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><title>Contrat du soir</title>
+<style>
+:root{--ink:#16181d;--accent:#8c3a26;--muted:#6b6f76;--rule:#cfc9c0;--pale:#f6f3ee;}
+@page{size:148mm 210mm;margin:9mm 9mm;}
+*{box-sizing:border-box;}
+body{font-family:"Charter","Bitstream Charter","DejaVu Serif",serif;color:var(--ink);
+     margin:0;font-size:7.1pt;line-height:1.24;}
+.sur{font-family:"DejaVu Sans",sans-serif;font-size:6.4pt;letter-spacing:.2em;
+     text-transform:uppercase;color:var(--accent);}
+h1{font-family:"DejaVu Sans",sans-serif;font-size:12.5pt;font-weight:700;margin:1mm 0 .8mm;
+   letter-spacing:-.015em;}
+.chapeau{color:var(--muted);font-style:italic;font-size:6.7pt;margin:0 0 2mm;
+         border-bottom:.6pt solid var(--rule);padding-bottom:1.4mm;}
+h2{font-family:"DejaVu Sans",sans-serif;font-size:6.6pt;letter-spacing:.14em;
+   text-transform:uppercase;color:var(--accent);margin:2.4mm 0 1mm;}
+.regle{background:var(--pale);border-left:2pt solid var(--accent);padding:2.2mm 2.6mm;margin:0 0 1.6mm;}
+.regle .txt{font-size:8pt;line-height:1.34;}
+.duo{display:flex;gap:3mm;}
+.duo>div{flex:1;}
+.enc{border:.6pt solid var(--rule);padding:1.6mm 2mm;}
+table{width:100%;border-collapse:collapse;font-size:6.6pt;line-height:1.22;}
+td{padding:.8mm 2mm .8mm 0;border-bottom:.5pt solid var(--rule);vertical-align:top;}
+tr:last-child td{border-bottom:none;}
+td.si{width:44%;font-style:italic;color:var(--muted);}
+td.al{font-weight:700;}
+.voix{font-family:"DejaVu Sans",sans-serif;font-size:6.3pt;letter-spacing:.1em;
+      text-transform:uppercase;color:var(--accent);display:block;margin-bottom:.6mm;
+      font-weight:700;font-style:normal;}
+.jauge{font-family:"DejaVu Sans Mono",monospace;font-size:7.2pt;letter-spacing:.08em;
+       margin:1.1mm 0;}
+.note{font-size:6.3pt;color:var(--muted);font-style:italic;margin-top:1.2mm;}
+.suivi{font-family:"DejaVu Sans Mono",monospace;font-size:6.5pt;letter-spacing:.04em;
+       line-height:1.6;}
+.pied{margin-top:2.8mm;padding-top:1.6mm;border-top:.6pt solid var(--rule);
+      font-size:6.3pt;color:var(--muted);display:flex;justify-content:space-between;}
+b{font-weight:700;}
+</style></head><body>
+
+<div class="sur">Système personnel · Grindus</div>
+<h1>Le contrat du soir</h1>
+<p class="chapeau">Le soir alimente le matin. Ce n'est pas du travail en plus, c'est le stock.
+Le soir ne produit jamais de qualité — il produit de la matière. Le matin raffine.</p>
+
+<h2>La règle</h2>
+<div class="regle">
+  <div class="txt"><b>Quand je débarrasse la table du dîner</b>, j'ouvre le fichier.<br>
+  <span style="color:#8c3a26"><b>Lundi &rarr; jeudi :</b></span> j'écris <b>3 idées de vidéo</b>,
+  une phrase d'accroche chacune.<br>
+  <span style="color:#8c3a26"><b>Vendredi :</b></span> j'écris <b>un script complet en version
+  moche</b>, 45 min. Il remplace les idées, il ne s'y ajoute pas.</div>
+</div>
+
+<div class="duo">
+  <div class="enc">
+    <b>PLANCHER — 1 idée, 1 ligne.</b><br>
+    Activable si : moins de 5 h de sommeil · déplacement · maladie · urgence.<br>
+    <span style="color:#8c3a26"><b>Jamais deux soirs de suite.</b></span>
+  </div>
+  <div class="enc">
+    <b>VÉRIFICATION</b><br>
+    3 lignes dans le fichier. Fait ou pas fait.<br>
+    <b>RUPTURE</b> — pas de verdict, pas de rattrapage. Plancher demain.
+  </div>
+</div>
+
+<h2>Les plans si-alors</h2>
+<table>
+<tr>
+  <td class="si"><span class="voix">Lancement</span>Si je pose la dernière assiette dans l'évier</td>
+  <td class="al">→ j'ouvre le fichier et j'écris le titre de la première idée.</td>
+</tr>
+<tr>
+  <td class="si"><span class="voix">Le Comptable</span>Si je pense « j'ai déjà bien bossé ce matin »</td>
+  <td class="al">→ je regarde la jauge de stock, et j'écris une idée.</td>
+</tr>
+<tr>
+  <td class="si"><span class="voix">Le Reporteur</span>Si je pense « je le ferai demain matin »</td>
+  <td class="al">→ j'exécute le plancher immédiatement : 1 idée, maintenant.</td>
+</tr>
+<tr>
+  <td class="si"><span class="voix">L'Optimisateur</span>Si je me mets à chercher des références au lieu d'écrire</td>
+  <td class="al">→ j'écris 3 idées mauvaises tout de suite. On optimise sur du réel.</td>
+</tr>
+<tr>
+  <td class="si"><span class="voix">Vendredi</span>Si je me relis en écrivant le script</td>
+  <td class="al">→ j'arrête de relire. Le script du vendredi doit être mauvais et entier.</td>
+</tr>
+<tr>
+  <td class="si"><span class="voix">Repli</span>Si nuit courte, déplacement ou maladie</td>
+  <td class="al">→ 1 idée — ou, le vendredi, le plan du script en 5 lignes.</td>
+</tr>
+</table>
+
+<h2>La jauge de stock</h2>
+<div class="jauge">IDÉES EN RÉSERVE &nbsp; ▮ ▮ ▮ ▮ ▮ ▮ ▮ ▮ ▮ ▮ ▮ ▮</div>
+<div class="jauge">SCRIPTS EN BROUILLON &nbsp; ▮ ▮ ▮ ▮ ▮ ▮</div>
+<p class="note">Je barre quand je consomme, j'ajoute quand je produis. Le bénéfice du soir est
+invisible — la jauge le rend visible. C'est elle qui décide, pas la motivation.</p>
+
+<h2>Les deux règles de séparation</h2>
+<div class="duo">
+  <div class="enc">
+    <b>Le montage sort du soir.</b><br>
+    Il reste entièrement le matin. Le soir ne reçoit que la génération.
+  </div>
+  <div class="enc">
+    <b>Le vendredi ne se rattrape pas.</b><br>
+    Script manqué le vendredi : on ne le décale pas au samedi. Prochain vendredi.
+  </div>
+</div>
+
+<h2>Suivi du mois</h2>
+<div class="suivi">
+1&nbsp; 2&nbsp; 3&nbsp; 4&nbsp; 5&nbsp; 6&nbsp; 7&nbsp; 8&nbsp; 9&nbsp; 10&nbsp; 11&nbsp; 12&nbsp; 13&nbsp; 14&nbsp; 15&nbsp; 16<br>
+17&nbsp; 18&nbsp; 19&nbsp; 20&nbsp; 21&nbsp; 22&nbsp; 23&nbsp; 24&nbsp; 25&nbsp; 26&nbsp; 27&nbsp; 28&nbsp; 29&nbsp; 30&nbsp; 31
+</div>
+<p class="note">N = 3 idées &nbsp;·&nbsp; <b>S = script du vendredi</b> &nbsp;·&nbsp; P = plancher &nbsp;·&nbsp; – = rupture &nbsp;·&nbsp; R = repos prévu.
+Plus de 8 P dans le mois : la règle est trop grosse, on la réduit le 1er.</p>
+
+<div class="pied">
+  <span>Décision prise le ____ / ____ / ________ &nbsp;·&nbsp; non rouvrable avant le 1er du mois</span>
+  <span>Dompter son cerveau — ch. 5, 6, 9, 17</span>
+</div>
+
+</body></html>
