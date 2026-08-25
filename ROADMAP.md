@@ -30,6 +30,11 @@ Inkrise = plateforme pour artistes manga/webtoon :
 
 ## Architecture
 
+- **Diagnostic** : `diagnostic.html` — page autonome à ouvrir depuis le
+  téléphone concerné quand le site affiche une erreur de connexion. Elle
+  teste chaque maillon (téléphone → site → serveur → clé → données) et rend
+  un verdict en français avec la marche à suivre. Elle n'utilise
+  volontairement pas `inkrise-reseau.js` : l'échec est ce qu'elle mesure.
 - **Frontend** : 20 pages HTML autonomes (vanilla JS + CSS en ligne) —
   `espace-createur.html` n'est plus qu'une redirection vers le profil —
   déployées sur Vercel. Socle partagé dans `assets/` :
@@ -44,7 +49,7 @@ Inkrise = plateforme pour artistes manga/webtoon :
   `covers`, `pages`, `community`).
 - **Serveur** : `api/og.js` (aperçus de lien, Vercel) et
   `supabase/functions/` (paiement CinetPay, envoi des notifications push).
-- **Tests** : 30 suites Playwright, 683 vérifications, plus douze outils de
+- **Tests** : 31 suites Playwright, 689 vérifications, plus douze outils de
   diagnostic (contraste, défauts silencieux, RLS sur PostgreSQL réel,
   échappement, pannes, chasse aux zones cliquables, navigation au clavier,
   structure pour lecteurs d'écran, parcours d'un compte neuf sur une base
