@@ -2124,10 +2124,70 @@ corriger l'outil, pas le site, quand c'est lui qui a tort.
 
 ---
 
+## 7.27 Signalé depuis un vrai téléphone : « Chargement… » pour toujours
+
+Celui-ci ne vient pas d'un outil mais d'une capture d'écran envoyée un
+matin : le bandeau rouge « Connexion au serveur impossible » s'affichait
+bien, et pourtant deux sections de l'accueil restaient sur
+« Chargement… » — indéfiniment.
+
+**Le bandeau avait raison** : il ne s'affiche que si une requête vers
+Supabase échoue réellement. La connexion du téléphone allait bien ; c'est
+le serveur Supabase qui ne répondait pas (un projet du plan gratuit se met
+en veille après quelques jours sans activité).
+
+Le défaut est ailleurs, et il a fallu deux reproductions pour le voir :
+
+1. **Serveur qui refuse net** (`abort`) : les « Chargement… »
+   disparaissaient en 8 s. Ça ne collait pas à la capture.
+2. **Serveur qui accepte la connexion et ne répond jamais** — ce que fait
+   un projet en pause. Là, écran identique. Et mesuré : **avant
+   correction, il ne se passait rien. Jamais.** Pas de bandeau, pas de
+   message, « Chargement… » à l'infini.
+
+Deux mécanismes existaient pourtant, et aucun ne couvrait ce cas :
+
+- `inkrise-reseau.js` n'affiche son bandeau que si une promesse **rejette**.
+  Une promesse qui ne se résout jamais ne rejette pas.
+- Le garde-fou des dix secondes d'`inkrise-nav.js` (§7.x) ne connaît
+  l'accueil ni par ses sélecteurs de chargement (`.empty-state`) ni par sa
+  zone principale (`<main id="contenu">`, absent de sa liste). **Il était
+  inerte sur la page la plus visitée du site.**
+
+### La correction
+
+- Une requête Supabase encore en attente au bout de **20 secondes** est
+  traitée comme un échec. Le seuil est calé sur la mesure de §7.24 : le
+  pire cas sur une 3G au bord de la couverture est de 12,3 s.
+- Les textes d'attente laissés par une requête qui n'aboutira pas sont
+  remplacés par « Indisponible — le serveur n'a pas répondu. »
+
+Ce module s'était explicitement interdit de toucher au contenu, pour ne
+jamais effacer ce qui aurait fini par arriver. **La règle tient** : on ne
+remplace que le texte d'ATTENTE lui-même, et si la section charge plus
+tard, la page réécrit sa zone par-dessus. Un texte d'attente qui ment
+n'est pas du contenu à protéger.
+
+### Ce que je n'ai PAS fait, et pourquoi
+
+Rendre le garde-fou des dix secondes plus sensible aurait été le réflexe
+— il aurait couvert l'accueil. Mais §7.24 a mesuré des premiers
+affichages jusqu'à **12,3 s** sur une connexion réelle : abaisser ou
+élargir ce seuil aurait annoncé « le chargement n'aboutit pas » à des
+gens dont la connexion fonctionne. On échange alors un silence rare
+contre une fausse accusation fréquente. Le délai de 20 s posé sur la
+requête elle-même n'a pas ce défaut.
+
+`tests/reseau-lent.test.js` fige les deux sens : à 12 s rien n'est
+annoncé, passé 20 s le blocage est dit — et sur une 3G au bord de la
+couverture **qui fonctionne**, aucune alerte après 30 s.
+
+---
+
 ## Annexe — méthode
 
 ```bash
-npm test                       # 677/677 ✅  (30 suites)
+npm test                       # 683/683 ✅  (30 suites)
 node tests/outil-contraste.js  # 21 pages RÉELLEMENT atteintes, session simulée
 INKRISE_THEME=sombre \
   node tests/outil-contraste.js   # le même relevé, en thème sombre
