@@ -206,6 +206,85 @@ console.log('\n▶ Contre-épreuve : un envoi qui réussit publie bien');
   await ctx.close();
 }
 
+// ══ 3. Le serveur qui ne répond jamais ══
+/* Signalé depuis un vrai téléphone : le bandeau s'affichait, et l'accueil
+   gardait « Chargement… » sous deux sections, indéfiniment. Un serveur en
+   pause n'refuse pas toujours la connexion — il l'accepte et ne répond
+   jamais. La promesse ne rejette donc pas, et rien ne se déclenchait. */
+console.log('\n▶ Un serveur qui accepte la connexion et ne répond jamais');
+{
+  const ctx = await b.newContext({ viewport:{width:390,height:844}, isMobile:true, hasTouch:true });
+  await ctx.route('https://fonts.googleapis.com/**', r => r.fulfill({status:200,contentType:'text/css',body:''}));
+  /* On répond au bout de deux minutes plutôt que « jamais » : un routeur
+     qui ne rend jamais la main fausse la mesure. */
+  await ctx.route('**supabase.co/**', async r => {
+    await new Promise(res => setTimeout(res, 120000));
+    return r.fulfill({ status:200, contentType:'application/json', body:'[]' });
+  });
+  const p = await ctx.newPage();
+  p.on('pageerror', e => errors.push(e.message));
+  await p.goto(BASE + '/index.html', { waitUntil:'domcontentloaded' });
+
+  const etat = () => p.evaluate(() => ({
+    bandeau: !!document.getElementById('inkriseBandeauReseau'),
+    attentes: [...document.querySelectorAll('div, span, p')].filter(e =>
+      e.children.length === 0 && /^Chargement/.test((e.textContent || '').trim())
+      && e.getBoundingClientRect().height > 0).length,
+  }));
+
+  await p.waitForTimeout(12000);
+  const tot = await etat();
+  check('à 12 s, rien n\'est encore annoncé — on laisse sa chance au réseau',
+        !tot.bandeau);
+
+  await p.waitForTimeout(16000);   // ~28 s au total
+  const tard = await etat();
+  check('passé 20 s, le blocage est annoncé', tard.bandeau);
+  check('  et les « Chargement… » cessent de mentir', tard.attentes === 0,
+        tard.attentes + ' encore visible(s)');
+  const corps = await p.locator('body').innerText();
+  check('  la page dit ce qui se passe, en français',
+        /ne répond pas|Indisponible/.test(corps));
+  await ctx.close();
+}
+
+// ══ 4. Contre-épreuve : lent mais qui marche, aucune fausse alerte ══
+console.log('\n▶ Contre-épreuve : une 3G au bord de la couverture n\'alerte pas');
+{
+  const ctx = await b.newContext({ viewport:{width:390,height:844}, isMobile:true, hasTouch:true });
+  await ctx.addInitScript(u => localStorage.setItem('sb-bsdcpwtimsgxcnaamwip-auth-token',
+    JSON.stringify({ access_token:'t', refresh_token:'r', token_type:'bearer',
+      expires_at: Math.floor(Date.now()/1000)+9999, expires_in:9999, user:u })), U);
+  await ctx.route('https://fonts.googleapis.com/**', r => r.fulfill({status:200,contentType:'text/css',body:''}));
+  await ctx.route('**/auth/v1/**', r => r.fulfill({ status:200, contentType:'application/json',
+    body: JSON.stringify({ ...U, aud:'authenticated' }) }));
+  await ctx.route('**/rest/v1/**', r => {
+    const url = decodeURIComponent(r.request().url());
+    const rows = url.includes('/profiles') ? [PROFILE] : [];
+    const seul = (r.request().headers()['accept'] || '').includes('vnd.pgrst.object');
+    r.fulfill({ status:200, contentType:'application/json',
+      headers:{ 'Content-Range':'0-0/'+rows.length, 'Access-Control-Expose-Headers':'Content-Range' },
+      body: JSON.stringify(seul ? (rows[0]||null) : rows) });
+  });
+  await ctx.route('**/storage/v1/**', r =>
+    r.fulfill({status:200,contentType:'image/svg+xml',body:'<svg xmlns="http://www.w3.org/2000/svg"/>'}));
+  const p = await ctx.newPage();
+  p.on('pageerror', e => errors.push(e.message));
+  const cdp = await ctx.newCDPSession(p);
+  await cdp.send('Network.enable');
+  /* 200 kb/s, 3 s de latence : le pire cas mesuré (§7.24), où le lecteur
+     met 12,3 s. Le seuil de 20 s doit garder de la marge. */
+  await cdp.send('Network.emulateNetworkConditions', { offline:false, latency:3000,
+    downloadThroughput: 200*1024/8, uploadThroughput: 100*1024/8 });
+  await p.goto(BASE + '/index.html', { waitUntil:'commit', timeout: 60000 });
+  await p.waitForTimeout(30000);
+  check('rien n\'est annoncé à tort sur une connexion lente qui fonctionne',
+        !(await p.evaluate(() => !!document.getElementById('inkriseBandeauReseau'))));
+  check('  et aucun « Indisponible » n\'est écrit par erreur',
+        !/Indisponible — le serveur/.test(await p.locator('body').innerText()));
+  await ctx.close();
+}
+
 await b.close(); server.close();
 console.log('\n' + '═'.repeat(56));
 const ko = results.filter(r => !r.p);
