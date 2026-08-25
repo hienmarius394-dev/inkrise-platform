@@ -2184,10 +2184,60 @@ couverture **qui fonctionne**, aucune alerte après 30 s.
 
 ---
 
+## 7.28 Quand je ne peux pas mesurer moi-même
+
+La panne de §7.27 a continué après le correctif — normal, celui-ci rend le
+blocage lisible, il ne le répare pas. Restait à savoir **où** ça casse.
+
+Et là, un mur : le proxy de l'atelier bloque le domaine Supabase **et** le
+domaine Vercel du site. Vérifié, pas supposé :
+
+```
+curl https://bsdcpwtimsgxcnaamwip.supabase.co/rest/v1/  → CONNECT tunnel failed, 403
+curl https://inkrise-platform.vercel.app/index.html     → CONNECT tunnel failed, 403
+```
+
+Aucun chemin réseau vers la production. Toute la méthode de cet audit —
+mesurer plutôt que supposer — devenait inapplicable depuis ici.
+
+Ce qui restait vérifiable l'a été : la clé publique du site n'est pas en
+cause (émise en 2026, valable jusqu'en 2036).
+
+### Déplacer la mesure là où elle est possible
+
+`diagnostic.html` est une page autonome à ouvrir **depuis le téléphone
+concerné**, c'est-à-dire depuis le seul réseau qui compte. Elle teste la
+chaîne maillon par maillon — téléphone → site → serveur → clé → données —
+et rend un verdict en français avec la marche à suivre.
+
+Deux détails qui comptent :
+
+- Elle **n'inclut pas** `inkrise-reseau.js`. Ce module affiche un bandeau
+  dès qu'une requête Supabase échoue ; ici l'échec est précisément ce
+  qu'on veut mesurer et raconter proprement.
+- Chaque appel a un **délai maximal**. Sans lui, un serveur en veille
+  laisserait la page attendre indéfiniment — exactement le défaut corrigé
+  en §7.27.
+
+### Une page de diagnostic qui se trompe est pire qu'aucune
+
+Elle envoie réparer ce qui n'est pas cassé. `tests/diagnostic.test.js`
+rejoue donc les six situations — serveur en veille, serveur injoignable,
+clé refusée, table refusée, téléphone hors ligne, tout va bien — et exige
+que chacune produise **son** verdict, pas un autre.
+
+Au passage, une septième situation a été écartée du montage plutôt que
+corrigée : couper vraiment le réseau empêchait la page de diagnostic de se
+charger elle-même. C'est un artefact du banc d'essai, pas le cas réel — sur
+un téléphone, la page est déjà chargée, ou servie par le cache. Le contrôle
+simule donc un téléphone qui **se déclare** hors ligne.
+
+---
+
 ## Annexe — méthode
 
 ```bash
-npm test                       # 683/683 ✅  (30 suites)
+npm test                       # 689/689 ✅  (31 suites)
 node tests/outil-contraste.js  # 21 pages RÉELLEMENT atteintes, session simulée
 INKRISE_THEME=sombre \
   node tests/outil-contraste.js   # le même relevé, en thème sombre
@@ -2216,6 +2266,7 @@ npm test -- premier-jour       # 22/22 — le vide dit et proposé
 npm test -- reseau-lent        # 9/9 — 3G, et envoi coupé en brouillon
 npm test -- double-appui       # 14/14 — un geste répété, une seule action
 npm test -- retour-arriere     # 14/14 — le retour referme la couche
+npm test -- diagnostic         # 6/6 — chaque panne, son verdict
 node tests/outil-parcours.js   # le PREMIER JOUR : base entièrement vide
 node tests/outil-lent.js       # fibre / 3G / 3G médiocre / bord de couverture
 node tests/outil-double.js     # ce qui part quand ON TAPE DEUX FOIS

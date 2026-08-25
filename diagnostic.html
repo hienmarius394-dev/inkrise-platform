@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Diagnostic — Inkrise</title>
+<meta name="robots" content="noindex" />
+<link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
+<link rel="stylesheet" href="assets/inkrise-fonts.css" />
+<link rel="stylesheet" href="assets/inkrise-theme.css" />
+<script src="assets/inkrise-theme.js"></script>
+<!-- Volontairement SANS inkrise-reseau.js : ce module affiche un bandeau
+     dès qu'une requête Supabase échoue. Ici, l'échec est justement ce
+     qu'on veut mesurer et raconter proprement. -->
+<script src="assets/inkrise-config.js"></script>
+<style>
+  body { font-family:'DM Sans',system-ui,sans-serif; background:var(--bg); color:var(--text);
+         margin:0; padding:20px 16px 60px; line-height:1.6; }
+  .wrap { max-width:640px; margin:0 auto; }
+  h1 { font-family:'Syne',sans-serif; font-size:1.4rem; margin:0 0 6px; }
+  .sous { color:var(--text-2); font-size:.9rem; margin-bottom:22px; }
+  .etape { display:flex; gap:12px; align-items:flex-start; padding:13px 14px; margin-bottom:10px;
+           background:var(--carte); border:1px solid var(--border); border-radius:14px; }
+  .puce { flex-shrink:0; width:26px; text-align:center; font-size:1.1rem; }
+  .nom { font-weight:700; font-size:.92rem; }
+  .detail { font-size:.82rem; color:var(--text-2); word-break:break-word; }
+  #verdict { margin-top:22px; padding:18px 16px; border-radius:16px; display:none;
+             border:1px solid var(--border); background:var(--carte-forte); }
+  #verdict h2 { font-family:'Syne',sans-serif; font-size:1.05rem; margin:0 0 8px; }
+  #verdict p { margin:0 0 10px; font-size:.9rem; }
+  #verdict ol { margin:0; padding-left:20px; font-size:.9rem; }
+  .btn { display:inline-flex; align-items:center; justify-content:center; min-height:46px;
+         padding:12px 22px; border-radius:12px; border:none; background:var(--purple-plein);
+         color:#fff; font:inherit; font-weight:700; cursor:pointer; margin-top:16px; }
+  .btn.second { background:none; border:1px solid var(--border); color:var(--text); }
+  pre { background:var(--bg-2); border:1px solid var(--border); border-radius:10px;
+        padding:12px; font-size:.72rem; overflow-x:auto; white-space:pre-wrap; margin-top:12px; }
+  a { color:var(--purple-link); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Diagnostic Inkrise</h1>
+  <p class="sous">Cette page teste chaque maillon entre ton téléphone et la base de
+     données, puis dit lequel casse. Rien n'est modifié ni envoyé nulle part.</p>
+
+  <div id="etapes"></div>
+  <div id="verdict"></div>
+
+  <button class="btn" onclick="location.reload()">↻ Relancer le test</button>
+  <button class="btn second" id="btnCopier" style="display:none;">📋 Copier le rapport</button>
+  <pre id="rapport" style="display:none;"></pre>
+
+  <p style="margin-top:24px;"><a href="index.html">← Retour à Inkrise</a></p>
+</div>
+
+<script>
+const URL_BASE = (window.INKRISE_SUPABASE_URL) || 'https://bsdcpwtimsgxcnaamwip.supabase.co';
+const CLE = (window.INKRISE_SUPABASE_KEY) ||
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJzZGNwd3RpbXNneGNuYWFtd2lwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAzMTQ1MDIsImV4cCI6MjA5NTg5MDUwMn0.uMcfUsnlULHNqS_87xzUWRUB8tEaCCNQglrWwN2fb44';
+
+const zone = document.getElementById('etapes');
+const journal = [];
+
+function poser(nom) {
+  const d = document.createElement('div');
+  d.className = 'etape';
+  d.innerHTML = '<div class="puce">⏳</div><div><div class="nom"></div><div class="detail">en cours…</div></div>';
+  d.querySelector('.nom').textContent = nom;
+  zone.appendChild(d);
+  return {
+    ok(t)   { d.querySelector('.puce').textContent = '✅'; d.querySelector('.detail').textContent = t;
+              journal.push('OK   — ' + nom + ' : ' + t); },
+    ko(t)   { d.querySelector('.puce').textContent = '❌'; d.querySelector('.detail').textContent = t;
+              journal.push('ÉCHEC— ' + nom + ' : ' + t); },
+    info(t) { d.querySelector('.puce').textContent = 'ℹ️'; d.querySelector('.detail').textContent = t;
+              journal.push('info — ' + nom + ' : ' + t); },
+  };
+}
+
+/* Un fetch qui n'aboutit pas doit être tranché : sans délai maximal, un
+   serveur en veille laisse la page attendre indéfiniment — c'est
+   exactement le défaut qu'on a corrigé dans le site. */
+function avecDelai(promesse, ms) {
+  return Promise.race([
+    promesse,
+    new Promise((_, rejeter) => setTimeout(() => rejeter(new Error('délai dépassé (' + (ms/1000) + ' s)')), ms))
+  ]);
+}
+
+async function lancer() {
+  const t = {};
+
+  // 1. Le téléphone est-il en ligne, et le site lui-même répond-il ?
+  {
+    const e = poser('1. Ton téléphone et le site Inkrise');
+    if (navigator.onLine === false) { e.ko('Le téléphone se déclare hors ligne.'); t.horsLigne = true; }
+    else {
+      const t0 = Date.now();
+      try {
+        await avecDelai(fetch('assets/favicon.svg?d=' + Date.now(), { cache: 'no-store' }), 15000);
+        e.ok('En ligne, et le site répond (' + (Date.now() - t0) + ' ms).');
+      } catch (err) { e.ko('Le site lui-même ne répond pas : ' + err.message); t.siteKo = true; }
+    }
+  }
+
+  // 2. Le serveur de la base est-il joignable ? (sans clé : on attend un refus poli)
+  {
+    const e = poser('2. Le serveur de la base est-il joignable ?');
+    const t0 = Date.now();
+    try {
+      const r = await avecDelai(fetch(URL_BASE + '/rest/v1/', { cache: 'no-store' }), 20000);
+      t.joignable = true;
+      e.ok('Oui — il a répondu HTTP ' + r.status + ' en ' + (Date.now() - t0) + ' ms.');
+    } catch (err) {
+      t.joignable = false;
+      e.ko('Non — ' + err.message + '. Le serveur ne répond pas du tout.');
+    }
+  }
+
+  // 3. La clé publique est-elle acceptée ?
+  if (t.joignable) {
+    const e = poser('3. La clé publique du site est-elle acceptée ?');
+    try {
+      const r = await avecDelai(fetch(URL_BASE + '/rest/v1/', {
+        headers: { apikey: CLE, Authorization: 'Bearer ' + CLE }, cache: 'no-store' }), 20000);
+      t.cleOk = r.status < 400;
+      if (t.cleOk) e.ok('Oui — HTTP ' + r.status + '.');
+      else e.ko('Refusée — HTTP ' + r.status + '. La clé a peut-être été régénérée.');
+    } catch (err) { t.cleOk = false; e.ko(err.message); }
+  }
+
+  // 4. Les données arrivent-elles vraiment ?
+  if (t.cleOk) {
+    const e = poser('4. Les mangas remontent-ils de la base ?');
+    try {
+      const r = await avecDelai(fetch(URL_BASE + '/rest/v1/mangas?select=id&limit=1', {
+        headers: { apikey: CLE, Authorization: 'Bearer ' + CLE }, cache: 'no-store' }), 20000);
+      const corps = await r.text();
+      t.donneesOk = r.ok;
+      if (r.ok) e.ok('Oui — HTTP ' + r.status + ', réponse : ' + corps.slice(0, 80));
+      else e.ko('HTTP ' + r.status + ' — ' + corps.slice(0, 120));
+    } catch (err) { t.donneesOk = false; e.ko(err.message); }
+  }
+
+  // 5. Quelle version du site est réellement installée sur ce téléphone ?
+  {
+    const e = poser('5. Version installée sur ce téléphone');
+    try {
+      const noms = ('caches' in window) ? await caches.keys() : [];
+      const sw = ('serviceWorker' in navigator) ? await navigator.serviceWorker.getRegistration() : null;
+      e.info('Caches : ' + (noms.join(', ') || 'aucun') +
+             ' — service worker : ' + (sw ? (sw.active ? 'actif' : 'en attente') : 'aucun'));
+    } catch (err) { e.info('non lisible : ' + err.message); }
+  }
+
+  rendreVerdict(t);
+}
+
+function rendreVerdict(t) {
+  const v = document.getElementById('verdict');
+  let titre, texte, actions = [];
+
+  if (t.horsLigne || t.siteKo) {
+    titre = '📡 C’est la connexion du téléphone';
+    texte = 'Le site lui-même n’a pas répondu : le problème est entre ce téléphone et internet, ' +
+            'pas du côté d’Inkrise.';
+    actions = ['Change de réseau (wifi ↔ données mobiles) et relance le test.'];
+  } else if (t.joignable === false) {
+    titre = '🛑 Le serveur de la base ne répond pas';
+    texte = 'Ton téléphone et le site vont bien, mais le serveur Supabase ne répond pas du tout. ' +
+            'C’est ce que fait un projet mis en veille — les projets du plan gratuit ' +
+            's’endorment après quelques jours sans activité.';
+    actions = [
+      'Ouvre supabase.com/dashboard et connecte-toi.',
+      'Choisis le projet « bsdcpwtimsgxcnaamwip ».',
+      'S’il est marqué en pause, clique « Restore project » et attends 1 à 2 minutes.',
+      'Reviens ici et relance le test.'
+    ];
+  } else if (t.cleOk === false) {
+    titre = '🔑 Le serveur répond, mais refuse la clé du site';
+    texte = 'La base est vivante : c’est la clé publique qui n’est plus acceptée. ' +
+            'Cela arrive quand les clés du projet ont été régénérées.';
+    actions = [
+      'Dans Supabase → Project Settings → API, copie la clé « anon / public ».',
+      'Remplace-la dans assets/inkrise-config.js, puis redéploie.'
+    ];
+  } else if (t.donneesOk === false) {
+    titre = '⚠️ Le serveur répond, mais pas les données';
+    texte = 'La connexion et la clé fonctionnent : le refus vient de la table elle-même ' +
+            '(droits d’accès, ou table absente). Envoie-moi le rapport ci-dessous.';
+    actions = ['Appuie sur « Copier le rapport » et colle-le-moi.'];
+  } else {
+    titre = '✅ Tout répond normalement';
+    texte = 'Le serveur, la clé et les données fonctionnent depuis ce téléphone, maintenant. ' +
+            'Si Inkrise affiche encore une erreur, c’est une page gardée en mémoire.';
+    actions = [
+      'Ferme complètement l’onglet Inkrise, puis rouvre-le.',
+      'Si l’erreur persiste, envoie-moi le rapport ci-dessous.'
+    ];
+  }
+
+  v.innerHTML = '';
+  const h = document.createElement('h2'); h.textContent = titre; v.appendChild(h);
+  const p = document.createElement('p'); p.textContent = texte; v.appendChild(p);
+  if (actions.length) {
+    const ol = document.createElement('ol');
+    actions.forEach(a => { const li = document.createElement('li'); li.textContent = a; ol.appendChild(li); });
+    v.appendChild(ol);
+  }
+  v.style.display = 'block';
+
+  const rap = 'Diagnostic Inkrise — ' + new Date().toISOString() + '\n' +
+              navigator.userAgent + '\n\n' + journal.join('\n');
+  const pre = document.getElementById('rapport');
+  pre.textContent = rap;
+  pre.style.display = 'block';
+  const btn = document.getElementById('btnCopier');
+  btn.style.display = 'inline-flex';
+  btn.addEventListener('click', async () => {
+    try { await navigator.clipboard.writeText(rap); btn.textContent = '✅ Copié'; }
+    catch (e) { btn.textContent = 'Sélectionne le texte ci-dessous'; }
+  });
+}
+
+lancer();
+</script>
+</body>
+</html>
